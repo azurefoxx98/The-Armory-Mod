@@ -23,30 +23,21 @@
   "Recipe": {
     "Input": [
       {
-        "ItemId": "Ingredient_Bar_Adamantite",
-        "Quantity": 15
-      },
-      {
-        "ItemId": "Ingredient_Bolt_Wool",
-        "Quantity": 50
-      },
-      {
-        "ItemId": "Ingredient_Leather_Light",
-        "Quantity": 4
+        "ItemId": "AcademyHat",
+        "Quantity": 1
       }
     ],
     "BenchRequirement": [
       {
-        "Id": "Armor_Bench",
-        "Type": "Crafting",
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
         "Categories": [
-          "Armor_Head"
-        ],
-        "RequiredTierLevel": 3
+          "WoodPlanks"
+        ]
       }
     ],
     "KnowledgeRequired": false,
-    "TimeSeconds": 3
+    "TimeSeconds": 0
   },
   "Armor": {
     "ArmorSlot": "Head",

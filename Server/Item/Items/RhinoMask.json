@@ -1,0 +1,104 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.RhinoMask.name",
+    "Description": "server.items.RhinoMask.description"
+  },
+  "Parent": "Armor_Iron_Head",
+  "Quality": "Common",
+  "ItemLevel": 5,
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      1,
+      45,
+      22.5
+    ],
+    "Translation": [
+      15,
+      -95
+    ]
+  },
+  "Model": "Items/Armors/Tribal/Rhino.blockymodel",
+  "Texture": "Items/Armors/Tribal/Rhino.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ResourceTypeId": "Wood_Trunk",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Fibre",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Life_Essence"
+      }
+    ],
+    "KnowledgeRequired": false,
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Head"
+        ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "RequiredMemoriesLevel": 3
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Fire": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.75
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": -3,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageEnhancement": {
+      "Fire": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 5
+        }
+      ]
+    }
+  },
+  "MaxDurability": 15,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  },
+  "Icon": "Icons/ItemsGenerated/RhinoMask.png",
+  "Light": {
+    "Color": "#f06",
+    "Radius": 0
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ]
+}

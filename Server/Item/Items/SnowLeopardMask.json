@@ -1,0 +1,104 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.SnowLeopardMask.name",
+    "Description": "server.items.SnowLeopardMask.description"
+  },
+  "Parent": "Armor_Iron_Head",
+  "Quality": "Common",
+  "ItemLevel": 5,
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      1,
+      45,
+      22.5
+    ],
+    "Translation": [
+      16,
+      -99
+    ]
+  },
+  "Model": "Items/Armors/Tribal/SnowLeopard.blockymodel",
+  "Texture": "Items/Armors/Tribal/SnowLeopard.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ResourceTypeId": "Wood_Trunk",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Fibre",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Life_Essence"
+      }
+    ],
+    "KnowledgeRequired": false,
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Head"
+        ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "RequiredMemoriesLevel": 3
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Ice": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.75
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": -3,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageEnhancement": {
+      "Ice": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 5
+        }
+      ]
+    }
+  },
+  "MaxDurability": 15,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  },
+  "Icon": "Icons/ItemsGenerated/SnowLeopardMask.png",
+  "Light": {
+    "Color": "#2ae",
+    "Radius": 0
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ]
+}

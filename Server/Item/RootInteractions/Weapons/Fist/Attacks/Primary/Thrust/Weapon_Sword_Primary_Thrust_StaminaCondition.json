@@ -1,0 +1,24 @@
+{
+  "Type": "StatsCondition",
+  "Costs": {
+    "Stamina": 0.1
+  },
+  "Failed": "Weapon_Sword_Primary_Chain",
+  "Next": {
+    "Type": "ChangeStat",
+    "Behaviour": "Set",
+    "StatModifiers": {
+      "StaminaRegenDelay": -3
+    },
+    "Next": {
+      "Type": "Replace",
+      "Var": "Thrust",
+      "DefaultOk": true,
+      "DefaultValue": {
+        "Interactions": [
+          "Weapon_Sword_Primary_Thrust"
+        ]
+      }
+    }
+  }
+}

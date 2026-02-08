@@ -1,0 +1,98 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.VultureMask.name",
+    "Description": "server.items.VultureMask.description"
+  },
+  "Parent": "Armor_Iron_Head",
+  "Quality": "Common",
+  "ItemLevel": 5,
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      0,
+      37,
+      22.5
+    ],
+    "Translation": [
+      22,
+      -97
+    ]
+  },
+  "Model": "Items/Armors/Tribal/Vulture.blockymodel",
+  "Texture": "Items/Armors/Tribal/Vulture.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ResourceTypeId": "Wood_Trunk",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Fibre",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Life_Essence"
+      }
+    ],
+    "KnowledgeRequired": false,
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Head"
+        ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "RequiredMemoriesLevel": 3
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Fall": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.75
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": -3,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 15,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  },
+  "Icon": "Icons/ItemsGenerated/VultureMask.png",
+  "Animation": "Items/Armors/Tribal/Animations/Vulture.blockyanim",
+  "UsePlayerAnimations": false,
+  "Light": {
+    "Color": "#ee2",
+    "Radius": 0
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.AcademyHat.name"
+  },
+  "Parent": "Armor_Iron_Head",
+  "Quality": "Rare",
+  "ItemLevel": 40,
+  "Icon": "Icons/ItemsGenerated/AcademyHat.png",
+  "IconProperties": {
+    "Scale": 0.18,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      1,
+      -101
+    ]
+  },
+  "Model": "Items/Armors/Sellsword/Head.blockymodel",
+  "Texture": "Items/Armors/Sellsword/Head.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Adamantite",
+        "Quantity": 15
+      },
+      {
+        "ItemId": "Ingredient_Bolt_Wool",
+        "Quantity": 50
+      },
+      {
+        "ItemId": "Ingredient_Leather_Light",
+        "Quantity": 4
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Head"
+        ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 3
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "EarAccessory",
+      "HeadAccessory",
+      "Haircut"
+    ],
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 14,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageEnhancement": {
+      "Fire": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.25
+        }
+      ],
+      "Ice": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.25
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Elemental": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.3
+        }
+      ]
+    }
+  },
+  "MaxDurability": 150,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "Scale": 0.75,
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ]
+}

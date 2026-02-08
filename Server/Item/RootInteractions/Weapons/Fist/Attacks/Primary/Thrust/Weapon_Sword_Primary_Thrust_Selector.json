@@ -1,0 +1,88 @@
+{
+  "Type": "Selector",
+  "$Comment": "Length of Combat",
+  "RunTime": 0.3,
+  "Effects": {
+    "ItemAnimationId": "StabDashCharged",
+    "Trails": [
+      {
+        "PositionOffset": {
+          "X": 0,
+          "Y": 0,
+          "Z": 0
+        },
+        "RotationOffset": {
+          "Pitch": 0,
+          "Roll": 0,
+          "Yaw": 0
+        },
+        "TargetNodeName": "SwordTip",
+        "TrailId": "Small_Charged"
+      }
+    ],
+    "Particles": [
+      {
+        "RotationOffset": {
+          "Pitch": 0,
+          "Roll": 0,
+          "Yaw": 0
+        },
+        "TargetNodeName": "Handle",
+        "SystemId": "Sword_Charged_Trail_Blade",
+        "PositionOffset": {
+          "X": 0,
+          "Y": 0
+        }
+      },
+      {
+        "SystemId": "Sword_Charged_Trail",
+        "TargetEntityPart": "Entity",
+        "TargetNodeName": "Hip",
+        "RotationOffset": {
+          "Yaw": -90
+        },
+        "PositionOffset": {
+          "Y": 0.7,
+          "Z": 0.5
+        }
+      }
+    ],
+    "WorldSoundEventId": "SFX_Light_Melee_T2_Lunge",
+    "LocalSoundEventId": "SFX_Sword_T2_Lunge_Local",
+    "CameraEffect": "Sword_Stab"
+  },
+  "Selector": {
+    "Id": "Stab",
+    "TestLineOfSight": false,
+    "ExtendTop": 0.5,
+    "ExtendLeft": 0.5,
+    "ExtendRight": 0.5,
+    "ExtendBottom": 0.5,
+    "StartDistance": 0.1,
+    "EndDistance": 2.25
+  },
+  "HitBlock": {
+    "Interactions": [
+      "Block_Break_Adventure"
+    ]
+  },
+  "HitEntity": {
+    "Interactions": [
+      {
+        "Type": "Replace",
+        "DefaultOk": true,
+        "Var": "Thrust_Damage",
+        "DefaultValue": {
+          "Interactions": [
+            "Weapon_Sword_Primary_Thrust_Damage"
+          ]
+        }
+      }
+    ]
+  },
+  "Next": {
+    "Type": "Simple",
+    "$Comment": "Pad the interaction length",
+    "RunTime": 0.251
+  }
+}

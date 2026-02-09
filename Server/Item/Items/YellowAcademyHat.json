@@ -23,8 +23,8 @@
   "Recipe": {
     "Input": [
       {
-        "ItemId": "AcademyHat",
-        "Quantity": 1
+        "Quantity": 1,
+        "ResourceTypeId": "AcademyHat"
       }
     ],
     "BenchRequirement": [
@@ -92,5 +92,10 @@
   "Scale": 0.75,
   "Categories": [
     "ArmoryCategory.ArmoryArmors"
+  ],
+  "ResourceTypes": [
+    {
+      "Id": "AcademyHat"
+    }
   ]
 }

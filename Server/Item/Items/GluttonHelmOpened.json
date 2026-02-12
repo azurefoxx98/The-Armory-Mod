@@ -1,30 +1,30 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.DemonLeggings.name"
+    "Name": "server.items.GluttonHelm.name"
   },
-  "Parent": "Armor_Iron_Legs",
+  "Parent": "Armor_Iron_Head",
   "Quality": "Epic",
   "ItemLevel": 40,
-  "Icon": "Icons/ItemsGenerated/Leggings.png",
+  "Icon": "Icons/ItemsGenerated/GluttonHelmOpened.png",
   "IconProperties": {
-    "Scale": 0.415,
+    "Scale": 0.3,
     "Rotation": [
       22.5,
       45,
       22.5
     ],
     "Translation": [
-      -1.2,
-      -22.2
+      -14,
+      -78
     ]
   },
-  "Model": "Items/Armors/Demon/Leggings.blockymodel",
-  "Texture": "Items/Armors/Demon/Leggings.png",
+  "Model": "Items/Armors/Demon/Alt/Glutton_Opened.blockymodel",
+  "Texture": "Items/Armors/Demon/Alt/Glutton.png",
   "Recipe": {
     "Input": [
       {
         "ItemId": "Ingredient_Bar_Adamantite",
-        "Quantity": 22
+        "Quantity": 15
       },
       {
         "ItemId": "Ingredient_Fire_Essence",
@@ -32,7 +32,7 @@
       },
       {
         "ItemId": "Ingredient_Fabric_Scrap_Cindercloth",
-        "Quantity": 6
+        "Quantity": 4
       }
     ],
     "BenchRequirement": [
@@ -40,7 +40,7 @@
         "Id": "Armor_Bench",
         "Type": "Crafting",
         "Categories": [
-          "Armor_Legs"
+          "Armor_Head"
         ],
         "RequiredTierLevel": 3
       }
@@ -49,27 +49,30 @@
     "TimeSeconds": 3
   },
   "Armor": {
-    "ArmorSlot": "Legs",
+    "ArmorSlot": "Head",
     "BaseDamageResistance": 0,
     "CosmeticsToHide": [
-      "Shoes"
+      "EarAccessory",
+      "Ear",
+      "Haircut",
+      "HeadAccessory"
     ],
     "DamageResistance": {
       "Physical": [
         {
-          "Amount": 0.112,
+          "Amount": 0.08,
           "CalculationType": "Multiplicative"
         }
       ],
       "Projectile": [
         {
-          "Amount": 0.112,
+          "Amount": 0.08,
           "CalculationType": "Multiplicative"
         }
       ],
       "Fire": [
         {
-          "Amount": 0.112,
+          "Amount": 0.08,
           "CalculationType": "Multiplicative"
         }
       ]
@@ -77,7 +80,7 @@
     "StatModifiers": {
       "Health": [
         {
-          "Amount": 19,
+          "Amount": 14,
           "CalculationType": "Additive"
         }
       ]
@@ -102,6 +105,14 @@
   },
   "ItemSoundSetId": "ISS_Armor_Heavy",
   "DurabilityLossOnHit": 0.5,
+  "Scale": 0.75,
+  "State": {
+    "state_closed": "DemonHelm",
+    "state_open": "DemonHelmOpened"
+  },
+  "Interactions": {
+    "Ability1": {}
+  },
   "Categories": [
     "ArmoryCategory.ArmoryArmors"
   ]

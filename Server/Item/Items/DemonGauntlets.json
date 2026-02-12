@@ -1,30 +1,30 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.DemonLeggings.name"
+    "Name": "server.items.DemonGauntlets.name"
   },
-  "Parent": "Armor_Iron_Legs",
+  "Parent": "Armor_Iron_Hands",
   "Quality": "Epic",
   "ItemLevel": 40,
-  "Icon": "Icons/ItemsGenerated/Leggings.png",
+  "Icon": "Icons/ItemsGenerated/Gauntlet.png",
   "IconProperties": {
-    "Scale": 0.415,
+    "Scale": 0.5,
     "Rotation": [
-      22.5,
-      45,
+      21.94,
+      45.565,
       22.5
     ],
     "Translation": [
-      -1.2,
-      -22.2
+      3,
+      -42
     ]
   },
-  "Model": "Items/Armors/Demon/Leggings.blockymodel",
-  "Texture": "Items/Armors/Demon/Leggings.png",
+  "Model": "Items/Armors/Demon/Gauntlets.blockymodel",
+  "Texture": "Items/Armors/Demon/Gauntlets.png",
   "Recipe": {
     "Input": [
       {
         "ItemId": "Ingredient_Bar_Adamantite",
-        "Quantity": 22
+        "Quantity": 12
       },
       {
         "ItemId": "Ingredient_Fire_Essence",
@@ -32,7 +32,7 @@
       },
       {
         "ItemId": "Ingredient_Fabric_Scrap_Cindercloth",
-        "Quantity": 6
+        "Quantity": 3
       }
     ],
     "BenchRequirement": [
@@ -40,7 +40,7 @@
         "Id": "Armor_Bench",
         "Type": "Crafting",
         "Categories": [
-          "Armor_Legs"
+          "Armor_Hands"
         ],
         "RequiredTierLevel": 3
       }
@@ -49,27 +49,24 @@
     "TimeSeconds": 3
   },
   "Armor": {
-    "ArmorSlot": "Legs",
+    "ArmorSlot": "Hands",
     "BaseDamageResistance": 0,
-    "CosmeticsToHide": [
-      "Shoes"
-    ],
     "DamageResistance": {
       "Physical": [
         {
-          "Amount": 0.112,
+          "Amount": 0.064,
           "CalculationType": "Multiplicative"
         }
       ],
       "Projectile": [
         {
-          "Amount": 0.112,
+          "Amount": 0.064,
           "CalculationType": "Multiplicative"
         }
       ],
       "Fire": [
         {
-          "Amount": 0.112,
+          "Amount": 0.064,
           "CalculationType": "Multiplicative"
         }
       ]
@@ -77,7 +74,7 @@
     "StatModifiers": {
       "Health": [
         {
-          "Amount": 19,
+          "Amount": 11,
           "CalculationType": "Additive"
         }
       ]

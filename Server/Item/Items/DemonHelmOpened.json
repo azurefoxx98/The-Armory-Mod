@@ -23,30 +23,21 @@
   "Recipe": {
     "Input": [
       {
-        "ItemId": "Ingredient_Bar_Adamantite",
-        "Quantity": 15
-      },
-      {
-        "ItemId": "Ingredient_Fire_Essence",
-        "Quantity": 75
-      },
-      {
-        "ItemId": "Ingredient_Fabric_Scrap_Cindercloth",
-        "Quantity": 4
+        "Quantity": 1,
+        "ResourceTypeId": "DemonHelm"
       }
     ],
     "BenchRequirement": [
       {
-        "Id": "Armor_Bench",
-        "Type": "Crafting",
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
         "Categories": [
-          "Armor_Head"
-        ],
-        "RequiredTierLevel": 3
+          "WoodPlanks"
+        ]
       }
     ],
     "KnowledgeRequired": false,
-    "TimeSeconds": 3
+    "TimeSeconds": 0
   },
   "Armor": {
     "ArmorSlot": "Head",
@@ -108,5 +99,10 @@
   "Scale": 0.75,
   "Categories": [
     "ArmoryCategory.ArmoryArmors"
+  ],
+  "ResourceTypes": [
+    {
+      "Id": "DemonHelm"
+    }
   ]
 }

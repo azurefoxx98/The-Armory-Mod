@@ -23,30 +23,21 @@
   "Recipe": {
     "Input": [
       {
-        "ItemId": "Ingredient_Bar_Adamantite",
-        "Quantity": 3
-      },
-      {
-        "ItemId": "Ingredient_Bolt_Wool",
-        "Quantity": 15
-      },
-      {
-        "ItemId": "Ingredient_Leather_Light",
-        "Quantity": 2
+        "Quantity": 1,
+        "ResourceTypeId": "AcademySleeve"
       }
     ],
     "BenchRequirement": [
       {
-        "Id": "Armor_Bench",
-        "Type": "Crafting",
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
         "Categories": [
-          "Armor_Hands"
-        ],
-        "RequiredTierLevel": 3
+          "WoodPlanks"
+        ]
       }
     ],
     "KnowledgeRequired": false,
-    "TimeSeconds": 3
+    "TimeSeconds": 0
   },
   "Armor": {
     "ArmorSlot": "Hands",
@@ -101,5 +92,10 @@
   "DurabilityLossOnHit": 0.5,
   "Categories": [
     "ArmoryCategory.ArmoryArmors"
+  ],
+  "ResourceTypes": [
+    {
+      "Id": "AcademySleeve"
+    }
   ]
 }

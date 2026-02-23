@@ -23,30 +23,21 @@
   "Recipe": {
     "Input": [
       {
-        "ItemId": "Ingredient_Bar_Adamantite",
-        "Quantity": 6
-      },
-      {
-        "ItemId": "Ingredient_Bolt_Wool",
-        "Quantity": 30
-      },
-      {
-        "ItemId": "Ingredient_Leather_Light",
-        "Quantity": 4
+        "Quantity": 1,
+        "ResourceTypeId": "AcademyJacket"
       }
     ],
     "BenchRequirement": [
       {
-        "Id": "Armor_Bench",
-        "Type": "Crafting",
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
         "Categories": [
-          "Armor_Chest"
-        ],
-        "RequiredTierLevel": 3
+          "WoodPlanks"
+        ]
       }
     ],
     "KnowledgeRequired": false,
-    "TimeSeconds": 3
+    "TimeSeconds": 0
   },
   "Armor": {
     "ArmorSlot": "Chest",
@@ -104,5 +95,10 @@
   "DurabilityLossOnHit": 0.5,
   "Categories": [
     "ArmoryCategory.ArmoryArmors"
+  ],
+  "ResourceTypes": [
+    {
+      "Id": "AcademyJacket"
+    }
   ]
 }

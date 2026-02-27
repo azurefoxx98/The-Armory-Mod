@@ -1,0 +1,72 @@
+{
+  "Parent": "Template_Weapon_Shield",
+  "TranslationProperties": {
+    "Name": "server.items.AntiqueShield.name"
+  },
+  "Model": "Items/Weapons/Tribal Shield/shield.blockymodel",
+  "Texture": "Items/Weapons/Tribal Shield/Shield.png",
+  "Icon": "Icons/ItemsGenerated/Antique_Shield.png",
+  "Quality": "Rare",
+  "ItemLevel": 20,
+  "InteractionVars": {
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Shield_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 5,
+            "CostType": "Damage"
+          }
+        },
+        "Weapon_Daggers_Primary_Swing_Left"
+      ]
+    }
+  },
+  "Recipe": {
+    "TimeSeconds": 3.5,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 4
+      },
+      {
+        "ResourceTypeId": "Wood_Planks",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Leather_Light",
+        "Quantity": 3
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Shield"
+        ],
+        "Id": "Armor_Bench"
+      }
+    ]
+  },
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      0,
+      297,
+      43
+    ],
+    "Translation": [
+      31,
+      -54
+    ]
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryShields"
+  ],
+  "ResourceTypes": [
+    {
+      "Id": "AntiqueShield"
+    }
+  ]
+}

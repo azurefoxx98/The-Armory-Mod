@@ -1,0 +1,64 @@
+{
+  "Parent": "Template_Weapon_Shield",
+  "TranslationProperties": {
+    "Name": "server.items.AntiqueShieldBlue.name"
+  },
+  "Model": "Items/Weapons/Tribal Shield/shield.blockymodel",
+  "Texture": "Items/Weapons/Tribal Shield/ShieldBlue.png",
+  "Icon": "Icons/ItemsGenerated/AntiqueShieldBlue.png",
+  "Quality": "Rare",
+  "ItemLevel": 20,
+  "InteractionVars": {
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Shield_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 5,
+            "CostType": "Damage"
+          }
+        },
+        "Weapon_Daggers_Primary_Swing_Left"
+      ]
+    }
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "AntiqueShield"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      0,
+      297,
+      43
+    ],
+    "Translation": [
+      35,
+      -52
+    ]
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryShields"
+  ],
+  "ResourceTypes": [
+    {
+      "Id": "AntiqueShield"
+    }
+  ]
+}

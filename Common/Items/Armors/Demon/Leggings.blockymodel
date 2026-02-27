@@ -125,6 +125,53 @@
             {
               "id": "4",
               "name": "Pelvis--C2",
+              "position": {"x": -6.3, "y": 1.5, "z": 9.1},
+              "orientation": {"x": -0.07466, "y": 0.37533, "z": -0.18024, "w": 0.90613},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -2.5, "y": 0, "z": 0},
+                "stretch": {"x": 0.9175, "y": 0.98312, "z": 0.98},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 0, "y": 9, "z": 10},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 23, "y": 85},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 86, "y": 9},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 26, "y": 100},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 88, "y": 93},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "bottom": {
+                    "offset": {"x": 70, "y": 84},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "fullbright"
+              }
+            },
+            {
+              "id": "5",
+              "name": "Pelvis--C3",
               "position": {"x": -6.2, "y": 1.5, "z": 9},
               "orientation": {"x": -0.07466, "y": 0.37533, "z": -0.18024, "w": 0.90613},
               "shape": {
@@ -175,8 +222,8 @@
               }
             },
             {
-              "id": "5",
-              "name": "Pelvis--C3",
+              "id": "6",
+              "name": "Pelvis--C4",
               "position": {"x": -6.2, "y": 1.5, "z": 9},
               "orientation": {"x": -0.07466, "y": 0.37533, "z": -0.18024, "w": 0.90613},
               "shape": {
@@ -227,8 +274,8 @@
               }
             },
             {
-              "id": "6",
-              "name": "Pelvis--C4",
+              "id": "7",
+              "name": "Pelvis--C5",
               "position": {"x": -6.2, "y": 1.6, "z": 9},
               "orientation": {"x": -0.07466, "y": 0.37533, "z": -0.18024, "w": 0.90613},
               "shape": {
@@ -279,8 +326,8 @@
               }
             },
             {
-              "id": "7",
-              "name": "Pelvis--C5",
+              "id": "8",
+              "name": "Pelvis--C6",
               "position": {"x": 12.7, "y": -16, "z": -10.7},
               "orientation": {"x": 0, "y": 1, "z": 0, "w": 0},
               "shape": {
@@ -331,7 +378,7 @@
               }
             },
             {
-              "id": "8",
+              "id": "9",
               "name": "R-Thigh",
               "position": {"x": -1.2, "y": -1, "z": 1},
               "orientation": {"x": 0, "y": -0.0192, "z": 0, "w": 0.99982},
@@ -350,7 +397,7 @@
               },
               "children": [
                 {
-                  "id": "9",
+                  "id": "10",
                   "name": "R-Calf",
                   "position": {"x": -0.00001, "y": -21, "z": 2},
                   "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
@@ -401,7 +448,7 @@
                   },
                   "children": [
                     {
-                      "id": "10",
+                      "id": "11",
                       "name": "R-Calf--C1",
                       "position": {"x": 0.30015, "y": -2, "z": 0.00768},
                       "orientation": {"x": 0.10887, "y": 0, "z": 0, "w": 0.99406},
@@ -453,7 +500,7 @@
                       }
                     },
                     {
-                      "id": "11",
+                      "id": "12",
                       "name": "R-Calf--C2",
                       "position": {"x": 0.30015, "y": -2, "z": 0.00768},
                       "orientation": {"x": 0.10887, "y": 0, "z": 0, "w": 0.99406},
@@ -505,14 +552,14 @@
                       }
                     },
                     {
-                      "id": "12",
+                      "id": "13",
                       "name": "R-Foot",
                       "position": {"x": 0.30015, "y": -10, "z": -3.99232},
                       "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
                       "shape": {
                         "type": "box",
                         "offset": {"x": -0.30015, "y": 0, "z": 5.49232},
-                        "stretch": {"x": 0.95, "y": 0.95, "z": 0.95},
+                        "stretch": {"x": 0.95, "y": 0.975, "z": 0.95},
                         "settings": {
                           "isPiece": false,
                           "size": {"x": 17, "y": 14, "z": 21}
@@ -556,7 +603,7 @@
                       },
                       "children": [
                         {
-                          "id": "13",
+                          "id": "14",
                           "name": "R-Foot--C1",
                           "position": {"x": -1.69985, "y": 3, "z": 0.50768},
                           "orientation": {"x": -0.28869, "y": -0.08415, "z": 0.26688, "w": 0.91562},
@@ -608,7 +655,7 @@
                           }
                         },
                         {
-                          "id": "14",
+                          "id": "15",
                           "name": "R-Foot--C2",
                           "position": {"x": -8.70797, "y": 5.62533, "z": -4.90009},
                           "orientation": {"x": -0.10452, "y": -0.03046, "z": 0.27818, "w": 0.95434},
@@ -660,7 +707,7 @@
                           }
                         },
                         {
-                          "id": "15",
+                          "id": "16",
                           "name": "R-Foot--C3",
                           "position": {"x": -12.10421, "y": 11.88693, "z": -7.49968},
                           "orientation": {"x": 0.05591, "y": 0.03393, "z": 0.02177, "w": 0.99762},
@@ -712,7 +759,7 @@
                           }
                         },
                         {
-                          "id": "16",
+                          "id": "17",
                           "name": "R-Foot--C4",
                           "position": {"x": -3.69985, "y": -5, "z": 1.50768},
                           "orientation": {"x": -0.09883, "y": 0.17862, "z": -0.00024, "w": 0.97894},
@@ -764,7 +811,7 @@
                           }
                         },
                         {
-                          "id": "17",
+                          "id": "18",
                           "name": "R-Foot--C5",
                           "position": {"x": -3.69985, "y": -5, "z": 1.50768},
                           "orientation": {"x": -0.09883, "y": 0.17862, "z": -0.00024, "w": 0.97894},
@@ -816,7 +863,7 @@
                           }
                         },
                         {
-                          "id": "18",
+                          "id": "19",
                           "name": "R-Foot--C6",
                           "position": {"x": -5.26952, "y": -3.41242, "z": 11.93378},
                           "orientation": {"x": -0.06698, "y": -0.12905, "z": -0.02972, "w": 0.98893},
@@ -868,7 +915,7 @@
                           }
                         },
                         {
-                          "id": "19",
+                          "id": "20",
                           "name": "R-Foot--C7",
                           "position": {"x": -5.26952, "y": -3.41242, "z": 11.93378},
                           "orientation": {"x": -0.06698, "y": -0.12905, "z": -0.02972, "w": 0.98893},
@@ -920,13 +967,60 @@
                           }
                         }
                       ]
+                    },
+                    {
+                      "id": "21",
+                      "name": "R-Calf--C3",
+                      "position": {"x": 0.30015, "y": -2, "z": 0.10768},
+                      "orientation": {"x": 0.10887, "y": 0, "z": 0, "w": 0.99406},
+                      "shape": {
+                        "type": "box",
+                        "offset": {"x": -0.30015, "y": 7.99834, "z": 8.9925},
+                        "stretch": {"x": 1, "y": 1, "z": 1},
+                        "settings": {
+                          "isPiece": false,
+                          "size": {"x": 9, "y": 14, "z": 0},
+                          "isStaticBox": true
+                        },
+                        "textureLayout": {
+                          "right": {
+                            "offset": {"x": 59, "y": 74},
+                            "mirror": {"x": false, "y": false},
+                            "angle": 0
+                          },
+                          "front": {
+                            "offset": {"x": 52, "y": 94},
+                            "mirror": {"x": false, "y": false},
+                            "angle": 0
+                          },
+                          "left": {
+                            "offset": {"x": 15, "y": 76},
+                            "mirror": {"x": false, "y": false},
+                            "angle": 0
+                          },
+                          "top": {
+                            "offset": {"x": 36, "y": 85},
+                            "mirror": {"x": true, "y": false},
+                            "angle": 0
+                          },
+                          "bottom": {
+                            "offset": {"x": 45, "y": 87},
+                            "mirror": {"x": true, "y": false},
+                            "angle": 0
+                          }
+                        },
+                        "unwrapMode": "custom",
+                        "visible": true,
+                        "doubleSided": false,
+                        "shadingMode": "fullbright"
+                      }
                     }
                   ]
                 }
               ]
             },
             {
-              "id": "20",
+              "id": "22",
               "name": "L-Thigh",
               "position": {"x": 13.8, "y": -1, "z": 1},
               "orientation": {"x": 0, "y": 0.0192, "z": 0, "w": 0.99982},
@@ -945,7 +1039,7 @@
               },
               "children": [
                 {
-                  "id": "21",
+                  "id": "23",
                   "name": "L-Calf",
                   "position": {"x": 0, "y": -21, "z": 2},
                   "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
@@ -996,14 +1090,14 @@
                   },
                   "children": [
                     {
-                      "id": "22",
+                      "id": "24",
                       "name": "L-Foot",
                       "position": {"x": -0.30016, "y": -10, "z": -3.99232},
                       "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
                       "shape": {
                         "type": "box",
                         "offset": {"x": 1.30016, "y": 0, "z": 5.49232},
-                        "stretch": {"x": 0.95, "y": 0.95, "z": 0.95},
+                        "stretch": {"x": 0.95, "y": 0.975, "z": 0.95},
                         "settings": {
                           "isPiece": false,
                           "size": {"x": 17, "y": 14, "z": 21}
@@ -1047,7 +1141,7 @@
                       },
                       "children": [
                         {
-                          "id": "23",
+                          "id": "25",
                           "name": "L-Foot--C1",
                           "position": {"x": 4.26952, "y": -3.41242, "z": 11.93378},
                           "orientation": {"x": -0.06698, "y": 0.12905, "z": 0.02972, "w": 0.98893},
@@ -1099,7 +1193,7 @@
                           }
                         },
                         {
-                          "id": "24",
+                          "id": "26",
                           "name": "L-Foot--C2",
                           "position": {"x": 4.26952, "y": -3.41242, "z": 11.93378},
                           "orientation": {"x": -0.06698, "y": 0.12905, "z": 0.02972, "w": 0.98893},
@@ -1151,7 +1245,7 @@
                           }
                         },
                         {
-                          "id": "25",
+                          "id": "27",
                           "name": "L-Foot--C3",
                           "position": {"x": 2.69985, "y": -5, "z": 1.50768},
                           "orientation": {"x": -0.09883, "y": -0.17862, "z": 0.00024, "w": 0.97894},
@@ -1203,7 +1297,7 @@
                           }
                         },
                         {
-                          "id": "26",
+                          "id": "28",
                           "name": "L-Foot--C4",
                           "position": {"x": 2.69985, "y": -5, "z": 1.50768},
                           "orientation": {"x": -0.09883, "y": -0.17862, "z": 0.00024, "w": 0.97894},
@@ -1255,7 +1349,7 @@
                           }
                         },
                         {
-                          "id": "27",
+                          "id": "29",
                           "name": "L-Foot--C5",
                           "position": {"x": 11.10421, "y": 11.88693, "z": -7.49968},
                           "orientation": {"x": 0.05591, "y": -0.03393, "z": -0.02177, "w": 0.99762},
@@ -1307,7 +1401,7 @@
                           }
                         },
                         {
-                          "id": "28",
+                          "id": "30",
                           "name": "L-Foot--C6",
                           "position": {"x": 7.70797, "y": 5.62533, "z": -4.90009},
                           "orientation": {"x": -0.10452, "y": 0.03046, "z": -0.27818, "w": 0.95434},
@@ -1359,7 +1453,7 @@
                           }
                         },
                         {
-                          "id": "29",
+                          "id": "31",
                           "name": "L-Foot--C7",
                           "position": {"x": 0.69985, "y": 3, "z": 0.50768},
                           "orientation": {"x": -0.28869, "y": 0.08415, "z": -0.26688, "w": 0.91562},
@@ -1413,7 +1507,7 @@
                       ]
                     },
                     {
-                      "id": "30",
+                      "id": "32",
                       "name": "L-Calf--C1",
                       "position": {"x": -0.30015, "y": -2, "z": 0.00768},
                       "orientation": {"x": 0.10887, "y": 0, "z": 0, "w": 0.99406},
@@ -1465,8 +1559,55 @@
                       }
                     },
                     {
-                      "id": "31",
+                      "id": "33",
                       "name": "L-Calf--C2",
+                      "position": {"x": -0.30015, "y": -2, "z": 0.10768},
+                      "orientation": {"x": 0.10887, "y": 0, "z": 0, "w": 0.99406},
+                      "shape": {
+                        "type": "box",
+                        "offset": {"x": 0.30015, "y": 7.99834, "z": 8.9925},
+                        "stretch": {"x": 1, "y": 1, "z": 1},
+                        "settings": {
+                          "isPiece": false,
+                          "size": {"x": 9, "y": 14, "z": 0},
+                          "isStaticBox": true
+                        },
+                        "textureLayout": {
+                          "right": {
+                            "offset": {"x": 15, "y": 76},
+                            "mirror": {"x": false, "y": false},
+                            "angle": 0
+                          },
+                          "front": {
+                            "offset": {"x": 61, "y": 94},
+                            "mirror": {"x": true, "y": false},
+                            "angle": 0
+                          },
+                          "left": {
+                            "offset": {"x": 59, "y": 74},
+                            "mirror": {"x": false, "y": false},
+                            "angle": 0
+                          },
+                          "top": {
+                            "offset": {"x": 27, "y": 85},
+                            "mirror": {"x": false, "y": false},
+                            "angle": 0
+                          },
+                          "bottom": {
+                            "offset": {"x": 36, "y": 87},
+                            "mirror": {"x": false, "y": false},
+                            "angle": 0
+                          }
+                        },
+                        "unwrapMode": "custom",
+                        "visible": true,
+                        "doubleSided": false,
+                        "shadingMode": "fullbright"
+                      }
+                    },
+                    {
+                      "id": "34",
+                      "name": "L-Calf--C3",
                       "position": {"x": -0.30015, "y": -2, "z": 0.00768},
                       "orientation": {"x": 0.10887, "y": 0, "z": 0, "w": 0.99406},
                       "shape": {
@@ -1521,8 +1662,8 @@
               ]
             },
             {
-              "id": "32",
-              "name": "Pelvis--C6",
+              "id": "35",
+              "name": "Cube--C7",
               "position": {"x": 6.1, "y": 0, "z": 0.3},
               "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
               "shape": {
@@ -1573,8 +1714,8 @@
               }
             },
             {
-              "id": "33",
-              "name": "Pelvis--C7",
+              "id": "36",
+              "name": "Cube--C8",
               "position": {"x": -0.1, "y": -16, "z": -10.7},
               "orientation": {"x": 0, "y": 1, "z": 0, "w": 0},
               "shape": {
@@ -1625,8 +1766,8 @@
               }
             },
             {
-              "id": "34",
-              "name": "Pelvis--C8",
+              "id": "37",
+              "name": "Cube--C9",
               "position": {"x": 6.1, "y": 0, "z": 0},
               "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
               "shape": {
@@ -1677,8 +1818,8 @@
               }
             },
             {
-              "id": "35",
-              "name": "Pelvis--C9",
+              "id": "38",
+              "name": "Cube--C10",
               "position": {"x": 6.5, "y": 0, "z": 0.3},
               "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
               "shape": {
@@ -1729,8 +1870,8 @@
               }
             },
             {
-              "id": "36",
-              "name": "R-Foot--C10",
+              "id": "39",
+              "name": "Cube--C11",
               "position": {"x": 0.79999, "y": 4, "z": -6},
               "orientation": {"x": -0.28869, "y": -0.08415, "z": 0.26688, "w": 0.91562},
               "shape": {
@@ -1781,8 +1922,8 @@
               }
             },
             {
-              "id": "37",
-              "name": "R-Foot--C11",
+              "id": "40",
+              "name": "Cube--C12",
               "position": {"x": -6.20813, "y": 6.62533, "z": -11.40776},
               "orientation": {"x": -0.10452, "y": -0.03046, "z": 0.27818, "w": 0.95434},
               "shape": {
@@ -1833,8 +1974,8 @@
               }
             },
             {
-              "id": "38",
-              "name": "R-Foot--C12",
+              "id": "41",
+              "name": "Cube--C13",
               "position": {"x": -9.60437, "y": 12.88693, "z": -14.00736},
               "orientation": {"x": 0.05591, "y": 0.03393, "z": 0.02177, "w": 0.99762},
               "shape": {
@@ -1885,8 +2026,8 @@
               }
             },
             {
-              "id": "39",
-              "name": "L-Foot--C13",
+              "id": "42",
+              "name": "Cube--C14",
               "position": {"x": 11.80001, "y": 4, "z": -6},
               "orientation": {"x": -0.28869, "y": 0.08415, "z": -0.26688, "w": 0.91562},
               "shape": {
@@ -1937,8 +2078,8 @@
               }
             },
             {
-              "id": "40",
-              "name": "L-Foot--C14",
+              "id": "43",
+              "name": "Cube--C15",
               "position": {"x": 18.80813, "y": 6.62533, "z": -11.40776},
               "orientation": {"x": -0.10452, "y": 0.03046, "z": -0.27818, "w": 0.95434},
               "shape": {
@@ -1989,8 +2130,8 @@
               }
             },
             {
-              "id": "41",
-              "name": "L-Foot--C15",
+              "id": "44",
+              "name": "Cube--C16",
               "position": {"x": 22.20437, "y": 12.88693, "z": -14.00736},
               "orientation": {"x": 0.05591, "y": -0.03393, "z": -0.02177, "w": 0.99762},
               "shape": {

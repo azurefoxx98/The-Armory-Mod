@@ -1,0 +1,243 @@
+{
+  "Parent": "Template_Weapon_Mace",
+  "TranslationProperties": {
+    "Name": "server.items.Weapon_Mace_Crude.name"
+  },
+  "Model": "Items/Weapons/Sign/sign.blockymodel",
+  "Texture": "Items/Weapons/Sign/sign4.png",
+  "Icon": "Icons/ItemsGenerated/LoveKweebecSign.png",
+  "Quality": "Developer",
+  "ItemLevel": 8,
+  "InteractionVars": {
+    "Swing_Left_Start": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Left",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Swing",
+            "LocalSoundEventId": "SFX_Mace_T1_Swing_RL_Local"
+          }
+        }
+      ]
+    },
+    "Swing_Right_Start": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Right",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Swing",
+            "LocalSoundEventId": "SFX_Mace_T1_Swing_LR_Local"
+          }
+        }
+      ]
+    },
+    "Swing_Up_Left_Start": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Up_Left",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Swing",
+            "LocalSoundEventId": "SFX_Mace_T1_Swing_Up_Local"
+          }
+        }
+      ]
+    },
+    "Swing_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Left_Damage",
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Impact",
+            "LocalSoundEventId": "SFX_Mace_T1_Impact"
+          },
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 19
+            }
+          }
+        }
+      ]
+    },
+    "Swing_Right_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Right_Damage",
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Impact",
+            "LocalSoundEventId": "SFX_Mace_T1_Impact"
+          },
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 19
+            }
+          }
+        }
+      ]
+    },
+    "Swing_Up_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Up_Left_Damage",
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Impact",
+            "LocalSoundEventId": "SFX_Mace_T1_Impact"
+          },
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 19
+            }
+          }
+        }
+      ]
+    },
+    "Swing_Left_Charged_Selector": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Left_Charged_Selector",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Swing_Charged",
+            "LocalSoundEventId": "SFX_Mace_T1_Swing_Charged_RL_Local"
+          }
+        }
+      ]
+    },
+    "Swing_Left_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Left_Charged_Damage",
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Impact",
+            "LocalSoundEventId": "SFX_Mace_T1_Impact"
+          },
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 26
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ]
+        }
+      ]
+    },
+    "Swing_Right_Charged_Selector": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Right_Charged_Selector",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Swing_Charged",
+            "LocalSoundEventId": "SFX_Mace_T1_Swing_Charged_LR_Local"
+          }
+        }
+      ]
+    },
+    "Swing_Right_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Right_Charged_Damage",
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Impact",
+            "LocalSoundEventId": "SFX_Mace_T1_Impact"
+          },
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 26
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ]
+        }
+      ]
+    },
+    "Swing_Up_Left_Charged_Selector": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Up_Left_Charged_Selector",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Swing_Charged",
+            "LocalSoundEventId": "SFX_Mace_T1_Swing_Charged_Up_Local"
+          }
+        }
+      ]
+    },
+    "Swing_Up_Left_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Up_Left_Charged_Damage",
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Impact",
+            "LocalSoundEventId": "SFX_Mace_T1_Impact"
+          },
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 26
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ]
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "$Comment": "Actively guarding with the weapon",
+          "Parent": "Weapon_Mace_Secondary_Guard_Wield",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Raise",
+            "LocalSoundEventId": "SFX_Mace_T1_Raise_Local"
+          },
+          "BlockedEffects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Block_Impact"
+          },
+          "StaminaCost": {
+            "Value": 5.56,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    },
+    "Groundslam_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Signature_Groundslam_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 59
+            }
+          },
+          "EntityStatsOnHit": [],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T1_Impact",
+            "LocalSoundEventId": "SFX_Mace_T1_Impact"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 80,
+  "DurabilityLossOnHit": 0.5,
+  "IconProperties": {
+    "Scale": 0.2,
+    "Rotation": [
+      0,
+      277,
+      22.5
+    ],
+    "Translation": [
+      -1,
+      -77
+    ]
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Rubble_Stone.name",
+    "Description": "server.items.Rubble_Stone.description"
+  },
+  "Icon": "Icons/ItemsGenerated/ScrapArmorSitting.png",
+  "Categories": [
+    "Blocks.Rocks"
+  ],
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Condition",
+          "RequiredGameMode": "Adventure",
+          "Crouching": false,
+          "Next": "Item_Throw",
+          "Failed": "Block_Secondary"
+        }
+      ]
+    }
+  },
+  "InteractionVars": {
+    "Item_Throw_Projectile": {
+      "Interactions": [
+        {
+          "Parent": "Item_Throw_Projectile",
+          "ProjectileId": "Rubble_Stone"
+        }
+      ]
+    }
+  },
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Items/Blocks/Armor Scraps/Rook/Sitting.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Items/Armors/Knight/rusty.png",
+        "Weight": 1
+      }
+    ],
+    "HitboxType": "Block_Five_Quarter",
+    "Flags": {},
+    "RandomRotation": "YawStep1",
+    "Gathering": {
+      "UseDefaultDropWhenPlaced": false,
+      "Breaking": {
+        "DropList": "ScrapArmorDrops",
+        "GatherType": "Rocks"
+      }
+    },
+    "BlockParticleSetId": "Dust",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "ParticleColor": "#75755b",
+    "BlockSoundSetId": "Metal",
+    "CustomModelScale": 0.75
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Rubble"
+    }
+  ],
+  "PlayerAnimationsId": "Item",
+  "Tags": {
+    "Type": [
+      "Rubble",
+      "Flint"
+    ]
+  },
+  "MaxStack": 100,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DropOnDeath": true,
+  "IconProperties": {
+    "Scale": 0.2,
+    "Rotation": [
+      0,
+      42,
+      22.5
+    ],
+    "Translation": [
+      -3,
+      -10
+    ]
+  }
+}

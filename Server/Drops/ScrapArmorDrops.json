@@ -1,0 +1,56 @@
+{
+  "Container": {
+    "Type": "Multiple",
+    "Containers": [
+      {
+        "Type": "Choice",
+        "Weight": 100,
+        "Containers": [
+          {
+            "Weight": 5,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "RookRustyHelm",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 5,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "RookChestRusty",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 5,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "RookGauntletsRusty",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 5,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "RookBootsRusty",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Type": "Single",
+            "Weight": 50,
+            "Item": {
+              "ItemId": "Ore_Iron"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "Parent": "Template_Weapon_Mace",
+  "TranslationProperties": {
+    "Name": "server.items.RuneBladeStage3.name"
+  },
+  "Model": "Items/Weapons/RuneBlade/runeblade.blockymodel",
+  "Texture": "Items/Weapons/RuneBlade/runeblade_orange.png",
+  "Icon": "Icons/ItemsGenerated/RuneBladeStage3.png",
+  "Quality": "Legendary",
+  "ItemLevel": 40,
+  "Recipe": {
+    "TimeSeconds": 3.5,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Tool_Repair_Kit_Iron",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "RuneBladeStage2",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "SlumberingRubble",
+        "Quantity": 5
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Sword"
+        ],
+        "Id": "Weapon_Bench"
+      }
+    ]
+  },
+  "InteractionVars": {
+    "Swing_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Left_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Fire": 75
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Right_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Right_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Fire": 75
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Up_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Up_Left_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Fire": 75
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Left_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Left_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Fire": 85
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Right_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Right_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Fire": 75
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Up_Left_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Up_Left_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Fire": 85
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Groundslam_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Signature_Groundslam_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Fire": 176
+            }
+          },
+          "EntityStatsOnHit": [],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 15.56,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 680,
+  "DurabilityLossOnHit": 0.5,
+  "Animation": "Items/Weapons/RuneBlade/rune_idle.blockyanim",
+  "IconProperties": {
+    "Scale": 0.2,
+    "Rotation": [
+      22.5,
+      45,
+      57
+    ],
+    "Translation": [
+      13,
+      -24
+    ]
+  },
+  "Trails": [
+    {
+      "TargetEntityPart": "PrimaryItem",
+      "TrailId": "Large_Flame",
+      "TargetNodeName": "Blade3",
+      "PositionOffset": {
+        "X": 0.4,
+        "Y": 0,
+        "Z": 0.2
+      },
+      "RotationOffset": {
+        "Yaw": 0,
+        "Pitch": 0,
+        "Roll": 90
+      }
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryWeapons"
+  ]
+}

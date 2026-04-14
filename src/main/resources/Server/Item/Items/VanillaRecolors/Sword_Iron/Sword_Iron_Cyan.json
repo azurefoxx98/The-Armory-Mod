@@ -1,0 +1,169 @@
+{
+  "Parent": "Template_Weapon_Sword",
+  "TranslationProperties": {
+    "Name": "server.items.Weapon_Sword_Iron.name"
+  },
+  "Model": "Items/Weapons/Sword/Iron.blockymodel",
+  "Texture": "Items/Weapons/IronSwordRecolors/Cyan.png",
+  "Quality": "Uncommon",
+  "Icon": "Icons/ItemsGenerated/Sword_Iron_Cyan.png",
+  "ItemLevel": 20,
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Weapon_Iron_Sword"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "InteractionVars": {
+    "Swing_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Swing_Left_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 10
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Right_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Swing_Right_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 10
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Down_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Swing_Down_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 18
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Thrust_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Thrust_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 26
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 3
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Vortexstrike_Spin_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Signature_Vortexstrike_Spin_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 19
+            }
+          },
+          "EntityStatsOnHit": [],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Vortexstrike_Stab_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Signature_Vortexstrike_Stab_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 56
+            }
+          },
+          "EntityStatsOnHit": [],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 10,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 120,
+  "DurabilityLossOnHit": 0.21,
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Weapon_Iron_Sword"
+    }
+  ],
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      54,
+      81,
+      22.5
+    ],
+    "Translation": [
+      -30,
+      -22
+    ]
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryWeapons"
+  ]
+}

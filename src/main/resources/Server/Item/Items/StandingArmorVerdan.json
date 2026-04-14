@@ -1,0 +1,93 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.DecorativeScrapMedium.name"
+  },
+  "Icon": "Icons/ItemsGenerated/StandingArmorVerdan.png",
+  "Categories": [
+    "Blocks.Rocks"
+  ],
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Condition",
+          "RequiredGameMode": "Adventure",
+          "Crouching": false,
+          "Next": "Item_Throw",
+          "Failed": "Block_Secondary"
+        }
+      ]
+    }
+  },
+  "InteractionVars": {
+    "Item_Throw_Projectile": {
+      "Interactions": [
+        {
+          "Parent": "Item_Throw_Projectile",
+          "ProjectileId": "Rubble_Stone"
+        }
+      ]
+    }
+  },
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Items/Blocks/StandingArmor.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Items/Armors/Knight/verdan.png",
+        "Weight": 1
+      }
+    ],
+    "HitboxType": "Statue",
+    "Flags": {},
+    "RandomRotation": "None",
+    "Gathering": {
+      "UseDefaultDropWhenPlaced": false,
+      "Breaking": {
+        "GatherType": "Rocks",
+        "ItemId": "StandingArmorVerdan"
+      }
+    },
+    "BlockParticleSetId": "Dust",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "ParticleColor": "#75755b",
+    "BlockSoundSetId": "Metal",
+    "CustomModelScale": 0.5,
+    "VariantRotation": "NESW"
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Rubble"
+    }
+  ],
+  "PlayerAnimationsId": "Item",
+  "Tags": {
+    "Type": [
+      "Rubble",
+      "Flint"
+    ]
+  },
+  "MaxStack": 100,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DropOnDeath": true,
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      11,
+      32,
+      5
+    ],
+    "Translation": [
+      -1,
+      -88
+    ]
+  }
+}

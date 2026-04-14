@@ -1,0 +1,94 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.GrandLichHoodAlt.name",
+    "Description": "server.items.GrandLichHood.description"
+  },
+  "Parent": "Armor_Iron_Chest",
+  "Quality": "Epic",
+  "ItemLevel": 40,
+  "Icon": "Icons/ItemsGenerated/GrandLichHoodlessGreenAlt.png",
+  "IconProperties": {
+    "Scale": 0.2,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -3,
+      -63
+    ]
+  },
+  "Model": "Items/Armors/GrandLich/Hoodless.blockymodel",
+  "Texture": "Items/Armors/GrandLich/green_alt.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "GrandLichHood"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 24,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.5
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.144,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.144,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 150,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "ResourceTypes": [
+    {
+      "Id": "GrandLichHood"
+    }
+  ]
+}

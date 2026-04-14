@@ -1,0 +1,33 @@
+{
+  "Input": [
+    {
+      "Quantity": 1,
+      "ResourceTypeId": "Resource_Weapon_Longsword_Cobalt"
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ore_Cobalt",
+    "Quantity": 2
+  },
+  "Output": [
+    {
+      "ItemId": "Ore_Cobalt",
+      "Quantity": 2
+    },
+    {
+      "ItemId": "Ingredient_Fabric_Scrap_Shadoweave",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Ingredient_Hide_Heavy",
+      "Quantity": 1
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

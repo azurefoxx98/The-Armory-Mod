@@ -1,0 +1,56 @@
+{
+  "Parent": "Template_Weapon_Shield",
+  "TranslationProperties": {
+    "Name": "server.items.Weapon_Shield_Iron.name"
+  },
+  "Model": "Items/Weapons/Shield/Iron.blockymodel",
+  "Texture": "Items/Weapons/Shield/Iron_Texture.png",
+  "Icon": "Icons/ItemsGenerated/Weapon_Shield_Iron.png",
+  "Quality": "Uncommon",
+  "ItemLevel": 20,
+  "InteractionVars": {
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Shield_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 14,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "TimeSeconds": 3.5,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 4
+      },
+      {
+        "ItemId": "Ingredient_Leather_Light",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Fabric_Scrap_Linen",
+        "Quantity": 3
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Shield"
+        ],
+        "Id": "Armor_Bench"
+      }
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Weapon_Shield_Iron"
+    }
+  ]
+}

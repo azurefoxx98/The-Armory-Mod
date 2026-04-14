@@ -1,0 +1,33 @@
+{
+  "Input": [
+    {
+      "Quantity": 1,
+      "ResourceTypeId": "Bandolier"
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Potion_Antidote",
+    "Quantity": 2
+  },
+  "Output": [
+    {
+      "ItemId": "Potion_Antidote",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Ingredient_Bolt_Wool",
+      "Quantity": 2
+    },
+    {
+      "ItemId": "Ingredient_Leather_Medium",
+      "Quantity": 2
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

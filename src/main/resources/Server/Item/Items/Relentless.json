@@ -1,0 +1,98 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Adamantite_Chest.name"
+  },
+  "Parent": "Armor_Iron_Chest",
+  "Quality": "Rare",
+  "ItemLevel": 40,
+  "Icon": "Icons/ItemsGenerated/Relentless.png",
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      2,
+      -70
+    ]
+  },
+  "Model": "Items/Armors/Relentless/arrows.blockymodel",
+  "Texture": "Items/Armors/Relentless/arrows.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Weapon_Arrow_Crude",
+        "Quantity": 6
+      },
+      {
+        "ItemId": "Potion_Health_Greater",
+        "Quantity": 3
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Chest"
+        ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 3
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 50,
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": -70,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.144,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.144,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Light": [
+        {
+          "Amount": 0.4,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Charged": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.4
+        }
+      ]
+    }
+  },
+  "MaxDurability": 150,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0
+}

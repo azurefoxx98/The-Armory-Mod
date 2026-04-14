@@ -1,0 +1,31 @@
+{
+  "Container": {
+    "Type": "Multiple",
+    "Containers": [
+      {
+        "Type": "Choice",
+        "Weight": 100,
+        "Containers": [
+          {
+            "Weight": 5,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Antique_Shield",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 75,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Ore_Iron",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

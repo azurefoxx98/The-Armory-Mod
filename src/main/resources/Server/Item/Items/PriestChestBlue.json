@@ -1,0 +1,99 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.PriestChestBlue.name",
+    "Description": "server.items.Priest.description"
+  },
+  "Parent": "Armor_Iron_Head",
+  "Quality": "Rare",
+  "ItemLevel": 40,
+  "Icon": "Icons/ItemsGenerated/PriestChestBlue.png",
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      23.06,
+      43.315,
+      23.06
+    ],
+    "Translation": [
+      3,
+      -58
+    ]
+  },
+  "Model": "Items/Armors/Priest/Chest.blockymodel",
+  "Texture": "Items/Armors/Priest/PriestBlue.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "PriestChest"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 7,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Charged": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Overtop"
+    ]
+  },
+  "MaxDurability": 150,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "ResourceTypes": [
+    {
+      "Id": "PriestChest"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "Input": [
+    {
+      "Quantity": 1,
+      "ResourceTypeId": "AcademyHat"
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ore_Adamantite",
+    "Quantity": 6
+  },
+  "Output": [
+    {
+      "ItemId": "Ore_Adamantite",
+      "Quantity": 6
+    },
+    {
+      "ItemId": "Ingredient_Bolt_Wool",
+      "Quantity": 2
+    },
+    {
+      "ItemId": "Ingredient_Leather_Light",
+      "Quantity": 2
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

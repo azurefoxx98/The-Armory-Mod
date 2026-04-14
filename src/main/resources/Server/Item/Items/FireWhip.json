@@ -1,0 +1,260 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Weapon_Club_Steel_Flail_Rusty.name"
+  },
+  "Categories": [
+    "Items.Weapons"
+  ],
+  "Quality": "Common",
+  "ItemLevel": 15,
+  "Model": "Items/Weapons/FireWhip/FireWhip.blockymodel",
+  "PlayerAnimationsId": "Club_Flail",
+  "UsePlayerAnimations": true,
+  "Utility": {
+    "Compatible": true
+  },
+  "Interactions": {
+    "Primary": "Club_Flail_Attack"
+  },
+  "InteractionVars": {
+    "Club_Flail_Swing_Left_Effect": {
+      "Interactions": [
+        {
+          "Parent": "Club_Flail_Swing_Left_Effect",
+          "Effects": {
+            "Trails": [
+              {
+                "TrailId": "Small_Default",
+                "TargetNodeName": "Chain4",
+                "TargetEntityPart": "PrimaryItem"
+              },
+              {
+                "TrailId": "Small_Default",
+                "RotationOffset": {
+                  "Yaw": 0,
+                  "Pitch": 90,
+                  "Roll": 0
+                },
+                "TargetNodeName": "Chain4",
+                "TargetEntityPart": "PrimaryItem"
+              },
+              {
+                "TrailId": "Small_Default",
+                "RotationOffset": {
+                  "Yaw": 0,
+                  "Pitch": 0,
+                  "Roll": 90
+                },
+                "TargetNodeName": "Chain4",
+                "TargetEntityPart": "PrimaryItem"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "Club_Flail_Swing_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Club_Flail_Swing_Left_Damage",
+          "DamageCalculator": {
+            "Type": "Absolute",
+            "BaseDamage": {
+              "Fire": 19
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Club_Steel_Impact"
+          }
+        }
+      ]
+    },
+    "Club_Flail_Swing_Right_Effect": {
+      "Interactions": [
+        {
+          "Parent": "Club_Flail_Swing_Right_Effect",
+          "Effects": {
+            "Trails": [
+              {
+                "TrailId": "Small_Default",
+                "TargetNodeName": "Chain4",
+                "TargetEntityPart": "PrimaryItem"
+              },
+              {
+                "TrailId": "Small_Default",
+                "RotationOffset": {
+                  "Yaw": 0,
+                  "Pitch": 90,
+                  "Roll": 0
+                },
+                "TargetNodeName": "Chain4",
+                "TargetEntityPart": "PrimaryItem"
+              },
+              {
+                "TrailId": "Small_Default",
+                "RotationOffset": {
+                  "Yaw": 0,
+                  "Pitch": 0,
+                  "Roll": 90
+                },
+                "TargetNodeName": "Chain4",
+                "TargetEntityPart": "PrimaryItem"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "Club_Flail_Swing_Right_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Club_Flail_Swing_Right_Damage",
+          "DamageCalculator": {
+            "Type": "Absolute",
+            "BaseDamage": {
+              "Fire": 19
+            },
+            "RandomPercentageModifier": 0.1
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Club_Steel_Impact"
+          }
+        }
+      ]
+    },
+    "Club_Flail_Spin_Swing_Left_Charged_Effect": {
+      "Interactions": [
+        {
+          "Parent": "Club_Flail_Spin_Swing_Left_Charged_Effect",
+          "Effects": {
+            "Trails": [
+              {
+                "TrailId": "Small_Default",
+                "TargetNodeName": "Chain4",
+                "TargetEntityPart": "PrimaryItem"
+              },
+              {
+                "TrailId": "Small_Charged",
+                "RotationOffset": {
+                  "Yaw": 0,
+                  "Pitch": 90,
+                  "Roll": 0
+                },
+                "TargetNodeName": "Chain4",
+                "TargetEntityPart": "PrimaryItem"
+              },
+              {
+                "TrailId": "Small_Charged",
+                "RotationOffset": {
+                  "Yaw": 0,
+                  "Pitch": 0,
+                  "Roll": 90
+                },
+                "TargetNodeName": "Chain4",
+                "TargetEntityPart": "PrimaryItem"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "Club_Flail_Spin_Swing_Left_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Club_Flail_Spin_Swing_Left_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Fire": 16
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Club_Wood_Impact"
+          }
+        }
+      ]
+    }
+  },
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      42,
+      45,
+      0
+    ],
+    "Translation": [
+      -31,
+      -41
+    ]
+  },
+  "Texture": "Items/Weapons/FireWhip/FireWhip.png",
+  "Icon": "Icons/ItemsGenerated/FireWhip.png",
+  "DroppedItemAnimation": "Items/Animations/Dropped/Dropped_Diagonal_Left.blockyanim",
+  "MaxDurability": 81,
+  "DurabilityLossOnHit": 0.56,
+  "Tags": {
+    "Family": [
+      "Club"
+    ],
+    "Type": [
+      "Weapon"
+    ]
+  },
+  "Weapon": {},
+  "ItemSoundSetId": "ISS_Weapons_Blunt_Small",
+  "Trails": [
+    {
+      "TrailId": "Fire_Trap_Fire",
+      "TargetEntityPart": "PrimaryItem",
+      "TargetNodeName": "Chain4",
+      "RotationOffset": {
+        "Pitch": 0,
+        "Yaw": 0
+      }
+    }
+  ],
+  "Particles": [
+    {
+      "TargetEntityPart": "PrimaryItem",
+      "TargetNodeName": "Handle",
+      "SystemId": "Fire_Charge1",
+      "PositionOffset": {
+        "X": 0.9
+      },
+      "Scale": 0.5
+    }
+  ],
+  "Light": {
+    "Color": "#741",
+    "Radius": 2
+  },
+  "Recipe": {
+    "TimeSeconds": 3.5,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 4
+      },
+      {
+        "ResourceTypeId": "Ingredient_Bar_Gold",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Fire_Essence",
+        "Quantity": 9
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Sword"
+        ],
+        "Id": "Armor_Bench",
+        "RequiredTierLevel": 3
+      }
+    ],
+    "RequiredMemoriesLevel": 1
+  }
+}

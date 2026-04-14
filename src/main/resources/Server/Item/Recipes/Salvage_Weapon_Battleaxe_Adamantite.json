@@ -1,0 +1,33 @@
+{
+  "Input": [
+    {
+      "Quantity": 1,
+      "ResourceTypeId": "Resource_Weapon_Battleaxe_Adamantite"
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ore_Adamantite",
+    "Quantity": 3
+  },
+  "Output": [
+    {
+      "ItemId": "Ore_Adamantite",
+      "Quantity": 3
+    },
+    {
+      "ItemId": "Ingredient_Hide_Heavy",
+      "Quantity": 1
+    },
+    {
+      "ItemId": "Ingredient_Fabric_Scrap_Cindercloth",
+      "Quantity": 1
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

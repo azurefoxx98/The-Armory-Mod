@@ -1,0 +1,33 @@
+{
+  "Input": [
+    {
+      "Quantity": 1,
+      "ResourceTypeId": "AcademyJacket"
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ore_Adamantite",
+    "Quantity": 3
+  },
+  "Output": [
+    {
+      "ItemId": "Ore_Adamantite",
+      "Quantity": 3
+    },
+    {
+      "ItemId": "Ingredient_Bolt_Wool",
+      "Quantity": 2
+    },
+    {
+      "ItemId": "Ingredient_Leather_Light",
+      "Quantity": 2
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 4
+}

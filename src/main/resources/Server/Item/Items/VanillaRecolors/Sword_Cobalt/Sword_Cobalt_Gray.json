@@ -1,0 +1,169 @@
+{
+  "Parent": "Template_Weapon_Sword",
+  "TranslationProperties": {
+    "Name": "server.items.Weapon_Sword_Cobalt.name"
+  },
+  "Model": "Items/Weapons/Sword/Cobalt.blockymodel",
+  "Texture": "Items/Weapons/CobaltSwordRecolors/Gray.png",
+  "Icon": "Icons/ItemsGenerated/Sword_Cobalt_Gray.png",
+  "Quality": "Rare",
+  "ItemLevel": 35,
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Weapon_Sword_Cobalt"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "InteractionVars": {
+    "Swing_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Swing_Left_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 12
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Right_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Swing_Right_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 12
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Down_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Swing_Down_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 22
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Thrust_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Thrust_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 32
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 3
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Vortexstrike_Spin_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Signature_Vortexstrike_Spin_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 23
+            }
+          },
+          "EntityStatsOnHit": [],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Vortexstrike_Stab_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Signature_Vortexstrike_Stab_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 70
+            }
+          },
+          "EntityStatsOnHit": [],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 12.22,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 150,
+  "DurabilityLossOnHit": 0.21,
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Weapon_Sword_Cobalt"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryWeapons"
+  ],
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      44,
+      97,
+      22.5
+    ],
+    "Translation": [
+      -35,
+      -37
+    ]
+  }
+}

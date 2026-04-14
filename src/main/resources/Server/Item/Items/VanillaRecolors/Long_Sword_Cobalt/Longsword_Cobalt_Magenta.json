@@ -1,0 +1,167 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Weapon_Longsword_Cobalt.name"
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryWeapons"
+  ],
+  "Icon": "Icons/ItemsGenerated/Longsword_Cobalt_Magenta.png",
+  "Quality": "Rare",
+  "ItemLevel": 35,
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Weapon_Longsword_Cobalt"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Model": "Items/Weapons/Longsword/Cobalt.blockymodel",
+  "Texture": "Items/Weapons/CobaltLongSwordRecolors/Magenta.png",
+  "PlayerAnimationsId": "Longsword",
+  "Interactions": {
+    "Primary": "Longsword_Attack"
+  },
+  "InteractionVars": {
+    "Longsword_Swing_Left_Effect": {
+      "Interactions": [
+        {
+          "Parent": "Longsword_Swing_Left_Effect",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Longsword_Special_Swing"
+          }
+        }
+      ]
+    },
+    "Longsword_Swing_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Longsword_Swing_Left_Damage",
+          "DamageCalculator": {
+            "Type": "Absolute",
+            "BaseDamage": {
+              "Physical": 33
+            },
+            "RandomPercentageModifier": 0.15
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Longsword_Special_Impact"
+          }
+        }
+      ]
+    },
+    "Longsword_Swing_Right_Effect": {
+      "Interactions": [
+        {
+          "Parent": "Longsword_Swing_Left_Effect",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Longsword_Special_Swing"
+          }
+        }
+      ]
+    },
+    "Longsword_Swing_Right_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Longsword_Swing_Right_Damage",
+          "DamageCalculator": {
+            "Type": "Absolute",
+            "BaseDamage": {
+              "Physical": 33
+            },
+            "RandomPercentageModifier": 0.15
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Longsword_Special_Impact"
+          }
+        }
+      ]
+    },
+    "Longsword_Swing_Up_Left_Effect": {
+      "Interactions": [
+        {
+          "Parent": "Longsword_Swing_Left_Effect",
+          "Effects": {
+            "WorldSoundEventId": "SFX_Longsword_Special_Swing"
+          }
+        }
+      ]
+    },
+    "Longsword_Swing_Up_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Longsword_Swing_Up_Left_Damage",
+          "DamageCalculator": {
+            "Type": "Absolute",
+            "BaseDamage": {
+              "Physical": 33
+            },
+            "RandomPercentageModifier": 0.15
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Longsword_Special_Impact"
+          }
+        }
+      ]
+    },
+    "Longsword_Stab_Charged_Effect": "Longsword_Stab_Charged_Effect",
+    "Longsword_Stab_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Longsword_Stab_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 99
+            },
+            "Type": "Absolute",
+            "RandomPercentageModifier": 0.15
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Longsword_Special_Impact"
+          }
+        }
+      ]
+    }
+  },
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      45,
+      90,
+      0
+    ],
+    "Translation": [
+      -45,
+      -45
+    ]
+  },
+  "DroppedItemAnimation": "Items/Animations/Dropped/Dropped_Diagonal_Left.blockyanim",
+  "MaxDurability": 140,
+  "DurabilityLossOnHit": 0.52,
+  "Tags": {
+    "Type": [
+      "Weapon"
+    ],
+    "Family": [
+      "Longsword"
+    ]
+  },
+  "Weapon": {},
+  "ItemSoundSetId": "ISS_Weapons_Blade_Large",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Weapon_Longsword_Cobalt"
+    }
+  ]
+}

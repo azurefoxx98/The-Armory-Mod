@@ -1,0 +1,114 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.IronCrown.name"
+  },
+  "Quality": "Uncommon",
+  "ItemLevel": 20,
+  "PlayerAnimationsId": "Block",
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "Icon": "Icons/ItemsGenerated/IronCrownAlt.png",
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -99
+    ]
+  },
+  "Model": "Items/Armors/Crown/headband.blockymodel",
+  "Texture": "Items/Armors/Crown/IronCrown.png",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 9,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "HeadAccessory"
+    ]
+  },
+  "MaxDurability": 100,
+  "DurabilityLossOnHit": 0.5,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Iron"
+    ]
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 9
+      },
+      {
+        "ItemId": "Ingredient_Bar_Gold",
+        "Quantity": 4
+      },
+      {
+        "ItemId": "Ingredient_Fabric_Scrap_Linen",
+        "Quantity": 3
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Head"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 3
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Crown"
+    }
+  ]
+}

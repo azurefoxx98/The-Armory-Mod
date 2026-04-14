@@ -1,0 +1,26 @@
+{
+  "Input": [
+    {
+      "ResourceTypeId": "Crown"
+    },
+    {
+      "ItemId": "Ingredient_Bar_Iron"
+    }
+  ],
+  "Output": [
+    {
+      "Quantity": 2,
+      "ResourceTypeId": "TarnishedCrown"
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Id": "Armor_Bench",
+      "Type": "Crafting",
+      "Categories": [
+        "Armor_Head"
+      ],
+      "RequiredTierLevel": 1
+    }
+  ]
+}

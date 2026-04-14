@@ -1,0 +1,100 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.PriestHelmBlack.name",
+    "Description": "server.items.Priest.description"
+  },
+  "Parent": "Armor_Iron_Head",
+  "Quality": "Rare",
+  "ItemLevel": 40,
+  "Icon": "Icons/ItemsGenerated/PriestHelmBlack.png",
+  "IconProperties": {
+    "Scale": 0.45,
+    "Rotation": [
+      23.06,
+      43.315,
+      23.06
+    ],
+    "Translation": [
+      3,
+      -109
+    ]
+  },
+  "Model": "Items/Armors/Priest/Helm.blockymodel",
+  "Texture": "Items/Armors/Priest/PriestBlack.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "PriestHelm"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "Haircut",
+      "HeadAccessory"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 7,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Charged": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 150,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "ResourceTypes": [
+    {
+      "Id": "PriestHelm"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ]
+}

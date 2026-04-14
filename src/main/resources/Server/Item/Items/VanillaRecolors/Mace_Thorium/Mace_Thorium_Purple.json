@@ -1,0 +1,196 @@
+{
+  "Parent": "Template_Weapon_Mace",
+  "TranslationProperties": {
+    "Name": "server.items.Weapon_Mace_Thorium.name"
+  },
+  "Model": "Items/Weapons/Mace/Thorium.blockymodel",
+  "Texture": "Items/Weapons/ThoriumClubRecolors/purple.png",
+  "Icon": "Icons/ItemsGenerated/Mace_Thorium_Purple.png",
+  "Quality": "Rare",
+  "ItemLevel": 30,
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Weapon_Mace_Thorium"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "InteractionVars": {
+    "Swing_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Left_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 36
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Right_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Right_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 36
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Up_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Up_Left_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 36
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Left_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Left_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 52
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Right_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Right_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 52
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Up_Left_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Up_Left_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 52
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Groundslam_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Signature_Groundslam_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 116
+            }
+          },
+          "EntityStatsOnHit": [],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 12.22,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 150,
+  "DurabilityLossOnHit": 0.5,
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Weapon_Mace_Thorium"
+    }
+  ],
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      43,
+      97,
+      22.5
+    ],
+    "Translation": [
+      -45,
+      -44
+    ]
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryWeapons"
+  ]
+}

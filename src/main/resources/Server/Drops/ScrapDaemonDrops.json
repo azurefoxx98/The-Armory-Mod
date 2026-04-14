@@ -1,0 +1,56 @@
+{
+  "Container": {
+    "Type": "Multiple",
+    "Containers": [
+      {
+        "Type": "Choice",
+        "Weight": 100,
+        "Containers": [
+          {
+            "Weight": 5,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "DemonChestplate",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 5,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "DemonGauntlets",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 5,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "DemonChestplate",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 5,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "DemonLeggings",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Type": "Single",
+            "Weight": 75,
+            "Item": {
+              "ItemId": "Ingredient_Fire_Essence"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

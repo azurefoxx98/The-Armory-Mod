@@ -1,0 +1,107 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Iron_Chest.name"
+  },
+  "Quality": "Uncommon",
+  "ItemLevel": 20,
+  "PlayerAnimationsId": "Block",
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "Icon": "Icons/ItemsGenerated/Armor_Iron_Chest_Red.png",
+  "IconProperties": {
+    "Scale": 0.45,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -1,
+      -4
+    ]
+  },
+  "Model": "Items/Armors/Iron/Chest.blockymodel",
+  "Texture": "Items/Armors/VanillaRecolors/Iron/Chest/red.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Armor_Iron_Chest"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "Overtop",
+      "Cape"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.09,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.09,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 17,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 100,
+  "DurabilityLossOnHit": 0.5,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Iron"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Armor_Iron_Chest"
+    }
+  ]
+}

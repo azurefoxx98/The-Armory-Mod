@@ -1,0 +1,110 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.AntiqueDragonChestplatePurple.name",
+    "Description": "server.items.AntiqueDragonSet.description"
+  },
+  "Parent": "Armor_Iron_Head",
+  "Quality": "Common",
+  "ItemLevel": 5,
+  "Icon": "Icons/ItemsGenerated/AntiqueDragonChestplatePurple.png",
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -67
+    ]
+  },
+  "Model": "Items/Armors/DragonKnight/Chest.blockymodel",
+  "Texture": "Items/Armors/DragonKnight/WoodPurple.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "AntiqueDragonChestplate"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 9,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Light": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 5
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Overtop",
+      "Undertop"
+    ]
+  },
+  "MaxDurability": 60,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "AntiqueDragonChestplate"
+    },
+    {
+      "Id": "AntiqueDragonSet"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "Container": {
+    "Capacity": 1
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenItemStackContainer"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.AntiqueDragonHelmOpen.name",
+    "Description": "server.items.AntiqueDragonSet.description"
+  },
+  "Parent": "Armor_Iron_Head",
+  "Quality": "Uncommon",
+  "ItemLevel": 5,
+  "Icon": "Icons/ItemsGenerated/IronDragonHelmOpen.png",
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      10,
+      -112
+    ]
+  },
+  "Model": "Items/Armors/DragonKnight/HelmOpen.blockymodel",
+  "Texture": "Items/Armors/DragonKnight/Iron/IronBlue.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "IronDragonHelm"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.07,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.13,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 19,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Light": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 8
+        }
+      ]
+    }
+  },
+  "MaxDurability": 120,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "IronDragonHelm"
+    },
+    {
+      "Id": "IronDragonSet"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.GreenAmulet.name"
+  },
+  "Quality": "Uncommon",
+  "ItemLevel": 20,
+  "PlayerAnimationsId": "Block",
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "Icon": "Icons/ItemsGenerated/GreenAmulet.png",
+  "IconProperties": {
+    "Scale": 1,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -2,
+      -67
+    ]
+  },
+  "Model": "Items/Armors/Necklace/Amulet.blockymodel",
+  "Texture": "Items/Armors/Necklace/GreenAmulet.png",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 9,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 100,
+  "DurabilityLossOnHit": 0.5,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Iron"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Crown"
+    }
+  ],
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Crystal_Green",
+        "Quantity": 4
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Chest"
+        ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 3
+  }
+}

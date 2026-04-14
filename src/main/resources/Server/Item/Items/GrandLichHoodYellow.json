@@ -1,0 +1,100 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.GrandLichHood.name",
+    "Description": "server.items.GrandLichHood.description"
+  },
+  "Parent": "Armor_Iron_Chest",
+  "Quality": "Epic",
+  "ItemLevel": 40,
+  "Icon": "Icons/ItemsGenerated/GrandLichHoodYellow.png",
+  "IconProperties": {
+    "Scale": 0.2,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -3,
+      -63
+    ]
+  },
+  "Model": "Items/Armors/GrandLich/Hood.blockymodel",
+  "Texture": "Items/Armors/GrandLich/yellow.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "GrandLichHood"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 24,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.5
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.144,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.144,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Haircut",
+      "HeadAccessory",
+      "EarAccessory",
+      "Ear"
+    ]
+  },
+  "MaxDurability": 150,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "ResourceTypes": [
+    {
+      "Id": "GrandLichHood"
+    }
+  ]
+}

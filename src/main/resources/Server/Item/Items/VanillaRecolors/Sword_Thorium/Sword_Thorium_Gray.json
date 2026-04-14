@@ -1,0 +1,169 @@
+{
+  "Parent": "Template_Weapon_Sword",
+  "TranslationProperties": {
+    "Name": "server.items.Weapon_Sword_Thorium.name"
+  },
+  "Model": "Items/Weapons/Sword/Thorium.blockymodel",
+  "Texture": "Items/Weapons/ThoriumSwordRecolors/Gray.png",
+  "Icon": "Icons/ItemsGenerated/Sword_Thorium_Gray.png",
+  "Quality": "Rare",
+  "ItemLevel": 30,
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Weapon_Sword_Thorium"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "InteractionVars": {
+    "Swing_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Swing_Left_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 12
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Right_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Swing_Right_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 12
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Down_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Swing_Down_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 22
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Thrust_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Primary_Thrust_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 32
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 3
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Vortexstrike_Spin_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Signature_Vortexstrike_Spin_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 23
+            }
+          },
+          "EntityStatsOnHit": [],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Vortexstrike_Stab_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Signature_Vortexstrike_Stab_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 70
+            }
+          },
+          "EntityStatsOnHit": [],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Sword_T2_Impact",
+            "LocalSoundEventId": "SFX_Sword_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Sword_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 12.22,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 150,
+  "DurabilityLossOnHit": 0.21,
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      45,
+      85,
+      22.5
+    ],
+    "Translation": [
+      -31,
+      -33
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Weapon_Sword_Thorium"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryWeapons"
+  ]
+}

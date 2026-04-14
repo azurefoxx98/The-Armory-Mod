@@ -1,0 +1,87 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '8.3.0'
+}
+
+group = 'com.example.myhytalemod'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+def serverJarPath = file('libs/HytaleServer.jar')
+def projectServerJar = file('server/HytaleServer.jar')
+def siblingServerJar = file('../server/HytaleServer.jar')
+
+dependencies {
+    if (serverJarPath.exists()) {
+        compileOnly files(serverJarPath)
+    } else if (projectServerJar.exists()) {
+        compileOnly files(projectServerJar)
+    } else if (siblingServerJar.exists()) {
+        compileOnly files(siblingServerJar)
+    } else {
+        compileOnly files('libs/HytaleServer.jar')
+    }
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation 'com.google.code.gson:gson:2.10.1'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    dependencies {
+        exclude(dependency { it.moduleGroup == 'com.hypixel' })
+    }
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+tasks.named('build') {
+    dependsOn shadowJar
+}
+
+tasks.register('copyServerJar') {
+    doLast {
+        def destJar = file('libs/HytaleServer.jar')
+        if (!destJar.exists()) {
+            def sources = [file('server/HytaleServer.jar'), file('../server/HytaleServer.jar')]
+            for (src in sources) {
+                if (src.exists()) {
+                    copy {
+                        from src
+                        into 'libs'
+                    }
+                    break
+                }
+            }
+        }
+    }
+}
+
+tasks.named('compileJava') {
+    dependsOn 'copyServerJar'
+}
+
+tasks.register('deployToServer', Copy) {
+    from shadowJar
+    into 'server/mods'
+    doLast {
+        println "Deployed to server/mods/"
+    }
+}
+
+tasks.register('watch') {
+    doLast {
+        println "Watching for changes... Press Ctrl+C to stop."
+        println "Run 'gradle build --continuous' for auto-rebuild on file changes."
+    }
+}

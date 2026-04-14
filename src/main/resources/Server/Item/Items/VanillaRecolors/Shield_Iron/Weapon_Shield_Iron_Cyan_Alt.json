@@ -1,0 +1,63 @@
+{
+  "Parent": "Template_Weapon_Shield",
+  "TranslationProperties": {
+    "Name": "server.items.Weapon_Shield_Iron.name"
+  },
+  "Model": "Items/Weapons/Shield/Iron.blockymodel",
+  "Texture": "Items/Weapons/IronShieldRecolors/cyan_alt.png",
+  "Icon": "Icons/ItemsGenerated/Weapon_Shield_Iron_Cyan_Alt.png",
+  "Quality": "Uncommon",
+  "ItemLevel": 20,
+  "InteractionVars": {
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Shield_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 14,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Weapon_Shield_Iron"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Weapon_Shield_Iron"
+    }
+  ],
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      320,
+      265,
+      22.5
+    ],
+    "Translation": [
+      -19,
+      -24
+    ]
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryShields"
+  ]
+}

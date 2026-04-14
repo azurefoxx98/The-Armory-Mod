@@ -1,0 +1,120 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.AntiqueDragonChestplate.name",
+    "Description": "server.items.AntiqueDragonSet.description"
+  },
+  "Parent": "Armor_Iron_Head",
+  "Quality": "Uncommon",
+  "ItemLevel": 5,
+  "Icon": "Icons/ItemsGenerated/IronDragonChestplate.png",
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -67
+    ]
+  },
+  "Model": "Items/Armors/DragonKnight/Chest.blockymodel",
+  "Texture": "Items/Armors/DragonKnight/Iron/IronBlue.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ResourceTypeId": "AntiqueDragonChestplate",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 20
+      },
+      {
+        "ItemId": "Ingredient_Life_Essence",
+        "Quantity": 25
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Chest"
+        ],
+        "RequiredTierLevel": 1
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 3,
+    "RequiredMemoriesLevel": 1
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.07,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.13,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 19,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Light": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 8
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Overtop",
+      "Undertop"
+    ]
+  },
+  "MaxDurability": 120,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "IronDragonChestplate"
+    },
+    {
+      "Id": "IronDragonSet"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "Container": {
+    "Capacity": 1
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "OpenItemStackContainer"
+        }
+      ]
+    }
+  }
+}

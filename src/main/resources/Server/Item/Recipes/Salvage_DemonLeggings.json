@@ -1,0 +1,33 @@
+{
+  "Input": [
+    {
+      "Quantity": 1,
+      "ItemId": "DemonLeggings"
+    }
+  ],
+  "PrimaryOutput": {
+    "ItemId": "Ore_Adamantite",
+    "Quantity": 6
+  },
+  "Output": [
+    {
+      "ItemId": "Ore_Adamantite",
+      "Quantity": 6
+    },
+    {
+      "ItemId": "Ingredient_Fire_Essence",
+      "Quantity": 30
+    },
+    {
+      "ItemId": "Ingredient_Fabric_Scrap_Cindercloth",
+      "Quantity": 2
+    }
+  ],
+  "BenchRequirement": [
+    {
+      "Type": "Processing",
+      "Id": "Salvagebench"
+    }
+  ],
+  "TimeSeconds": 12
+}

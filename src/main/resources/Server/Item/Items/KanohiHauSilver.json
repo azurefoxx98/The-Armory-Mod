@@ -1,0 +1,55 @@
+{
+  "Model": "Items/Armors/Kanohi/Hau.blockymodel",
+  "Texture": "Items/Armors/Kanohi/Silver.png",
+  "Icon": "Icons/ItemsGenerated/KanohiHauSilver.png",
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -7,
+      -87
+    ]
+  },
+  "Armor": {
+    "DamageResistance": {
+      "Fire": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 100
+        }
+      ]
+    }
+  },
+  "TranslationProperties": {
+    "Name": "Kanohi Hau",
+    "Description": "How did this get here?"
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Kanohi_Hau"
+    }
+  ],
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Kanohi_Hau"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  }
+}

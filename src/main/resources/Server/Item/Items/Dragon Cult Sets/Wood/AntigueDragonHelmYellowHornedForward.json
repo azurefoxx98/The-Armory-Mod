@@ -1,0 +1,100 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.AntiqueDragonHelmCyan.name",
+    "Description": "server.items.AntiqueDragonSet.description"
+  },
+  "Parent": "Armor_Iron_Head",
+  "Quality": "Common",
+  "ItemLevel": 5,
+  "Icon": "Icons/ItemsGenerated/AntigueDragonHelmYellowHornedForward.png",
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      1,
+      -103
+    ]
+  },
+  "Model": "Items/Armors/DragonKnight/HelmHornedForward.blockymodel",
+  "Texture": "Items/Armors/DragonKnight/WoodYellow.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "AntiqueDragonHelm"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "EarAccessory",
+      "Ear",
+      "Haircut",
+      "HeadAccessory"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 9,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Light": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 5
+        }
+      ]
+    }
+  },
+  "MaxDurability": 60,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "AntiqueDragonHelm"
+    },
+    {
+      "Id": "AntiqueDragonSet"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "Parent": "Template_Weapon_Mace",
+  "TranslationProperties": {
+    "Name": "server.items.Zweihander.name"
+  },
+  "Model": "Items/Weapons/Excalibur/excalibur.blockymodel",
+  "Texture": "Items/Weapons/Excalibur/excalibur.png",
+  "Icon": "Icons/ItemsGenerated/Excalibur.png",
+  "Quality": "Rare",
+  "ItemLevel": 40,
+  "Recipe": {
+    "TimeSeconds": 4.5,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 60
+      },
+      {
+        "ItemId": "Ingredient_Leather_Heavy",
+        "Quantity": 20
+      },
+      {
+        "ItemId": "Ingredient_Ice_Essence",
+        "Quantity": 20
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Mace"
+        ],
+        "Id": "Weapon_Bench",
+        "RequiredTierLevel": 3
+      },
+      {
+        "Type": "DiagramCrafting",
+        "Categories": [
+          "Weapons.Mace"
+        ],
+        "Id": "Armory"
+      }
+    ]
+  },
+  "InteractionVars": {
+    "Swing_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Left_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 45
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Right_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Right_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 45
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Up_Left_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Up_Left_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 45
+            }
+          },
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Left_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Left_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 65
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Right_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Right_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 65
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Swing_Up_Left_Charged_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Primary_Swing_Up_Left_Charged_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 65
+            }
+          },
+          "EntityStatsOnHit": [
+            {
+              "EntityStatId": "SignatureEnergy",
+              "Amount": 2
+            }
+          ],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Groundslam_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Signature_Groundslam_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 146
+            }
+          },
+          "EntityStatsOnHit": [],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Mace_T2_Impact",
+            "LocalSoundEventId": "SFX_Mace_T2_Impact"
+          }
+        }
+      ]
+    },
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Mace_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 15.56,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "MaxDurability": 180,
+  "DurabilityLossOnHit": 0.5,
+  "IconProperties": {
+    "Scale": 0.13,
+    "Rotation": [
+      24,
+      87,
+      167
+    ],
+    "Translation": [
+      -13,
+      -58
+    ]
+  },
+  "Particles": [
+    {
+      "TargetNodeName": "Node",
+      "SystemId": "Weapon_Frost_Mist",
+      "PositionOffset": {
+        "X": 0,
+        "Y": 0
+      },
+      "RotationOffset": {
+        "Pitch": 0,
+        "Roll": 90
+      }
+    }
+  ],
+  "SoundEventId": "SFX_Global_Weather_Thunder",
+  "Weapon": {
+    "StatModifiers": {
+      "Health": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 1.1
+        }
+      ]
+    }
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryWeapons"
+  ]
+}

@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
  * @author LadyPaladra
  * @version 1.14.0
  */
+@SuppressWarnings("unused")
 public class TheArmoryMod extends JavaPlugin {
 
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();

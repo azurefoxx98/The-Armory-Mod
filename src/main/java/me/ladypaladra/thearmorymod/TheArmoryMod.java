@@ -1,11 +1,11 @@
 package me.ladypaladra.thearmorymod;
 
+import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
-import com.hypixel.hytale.logger.HytaleLogger;
+import me.ladypaladra.thearmorymod.parry.ParryModule;
 
 import javax.annotation.Nonnull;
-import java.util.logging.Level;
 
 /**
  * @author LadyPaladra
@@ -14,22 +14,15 @@ import java.util.logging.Level;
 public class TheArmoryMod extends JavaPlugin {
 
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static TheArmoryMod instance;
 
     public TheArmoryMod(@Nonnull JavaPluginInit init) {
         super(init);
-        instance = this;
-    }
-
-    public static TheArmoryMod getInstance() {
-        return instance;
     }
 
     @Override
     protected void setup() {
         LOGGER.atInfo().log("Setting up...");
-
-
+        ParryModule.register(this);
         LOGGER.atInfo().log("Setup complete!");
     }
 
@@ -41,6 +34,5 @@ public class TheArmoryMod extends JavaPlugin {
     @Override
     protected void shutdown() {
         LOGGER.atInfo().log("Shutting down...");
-        instance = null;
     }
 }

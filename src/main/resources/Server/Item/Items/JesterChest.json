@@ -1,0 +1,103 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.JesterChest.name",
+    "Description": "server.items.Jester.decription"
+  },
+  "Parent": "Armor_Iron_Chest",
+  "Quality": "Common",
+  "ItemLevel": 15,
+  "Icon": "Icons/ItemsGenerated/JesterChest.png",
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -58
+    ]
+  },
+  "Model": "Items/Armors/Jester/Chest.blockymodel",
+  "Texture": "Items/Armors/Jester/Full.png",
+  "Recipe": {
+    "TimeSeconds": 2,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Leather_Light",
+        "Quantity": 2
+      },
+      {
+        "Quantity": 6,
+        "ItemId": "Ingredient_Fabric_Scrap_Linen"
+      },
+      {
+        "ItemId": "Ingredient_Bolt_Wool",
+        "Quantity": 6
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Chest"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "Overtop",
+      "Undertop",
+      "Gloves"
+    ],
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 5,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Leather"
+    ]
+  },
+  "MaxDurability": 120,
+  "ItemSoundSetId": "ISS_Armor_Leather",
+  "ResourceTypes": [
+    {
+      "Id": "JesterSet"
+    },
+    {
+      "Id": "JesterChest"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ]
+}

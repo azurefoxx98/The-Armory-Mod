@@ -1,0 +1,49 @@
+{
+  "Model": "Items/Weapons/MekanichalKrafters/KrafterOpen.blockymodel",
+  "Texture": "Items/Weapons/MekanichalKrafters/Krafter.png",
+  "Icon": "Icons/ItemsGenerated/MekanichalKrafter_Arrow.png",
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      3,
+      -19
+    ]
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "AddItem",
+          "ItemId": "Weapon_Arrow_Crude",
+          "Quantity": 1,
+          "Next": {
+            "Type": "ResetCooldown",
+            "Cooldown": {
+              "Id": "KrafterCD",
+              "Cooldown": 30.0
+            }
+          },
+          "Failed": {
+            "Type": "SendMessage",
+            "Message": "Krafter is still processing."
+          }
+        }
+      ]
+    }
+  },
+  "MaxStack": 1,
+  "Quality": "Developer",
+  "State": {
+    "KrafterClosed": "MekanichalKrafter_Arrow",
+    "KrafterOpen": "MekanichalKrafter_Arrow"
+  },
+  "Scale": 0.5,
+  "TranslationProperties": {
+    "Description": "[WIP] Is broken."
+  }
+}

@@ -82,29 +82,21 @@
   "Recipe": {
     "Input": [
       {
-        "ItemId": "Ingredient_Bar_Iron",
-        "Quantity": 9
-      },
-      {
-        "ItemId": "Ingredient_Bar_Gold",
-        "Quantity": 4
-      },
-      {
-        "ItemId": "Ingredient_Fabric_Scrap_Linen",
-        "Quantity": 3
+        "Quantity": 1,
+        "ResourceTypeId": "Crown"
       }
     ],
     "BenchRequirement": [
       {
-        "Id": "Armor_Bench",
-        "Type": "Crafting",
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
         "Categories": [
-          "Armor_Head"
+          "WoodPlanks"
         ]
       }
     ],
     "KnowledgeRequired": false,
-    "TimeSeconds": 3
+    "TimeSeconds": 0
   },
   "ResourceTypes": [
     {

@@ -1,0 +1,95 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.JesterLegs.name",
+    "Description": "server.items.Jester.decription"
+  },
+  "Parent": "Armor_Iron_Legs",
+  "Quality": "Common",
+  "ItemLevel": 15,
+  "Icon": "Icons/ItemsGenerated/JesterLegsAlt.png",
+  "IconProperties": {
+    "Scale": 0.445,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0.6,
+      -19
+    ]
+  },
+  "Model": "Items/Armors/Jester/LegsAlt.blockymodel",
+  "Texture": "Items/Armors/Jester/Full.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "JesterLegs"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "Shoes",
+      "Pants",
+      "Overpants"
+    ],
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 5,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Leather"
+    ]
+  },
+  "MaxDurability": 120,
+  "ItemSoundSetId": "ISS_Armor_Leather",
+  "ResourceTypes": [
+    {
+      "Id": "JesterSet"
+    },
+    {
+      "Id": "JesterLegs"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ]
+}

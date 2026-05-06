@@ -4,6 +4,7 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
+import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.EntityStatType;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
@@ -23,7 +24,7 @@ public final class ArmoryStatService {
         if (map == null) map = store.getComponent(ownerRef, EntityStatMap.getComponentType());
         if (map == null) return 1.0f;
 
-        var value = map.get(statIndex);
+        EntityStatValue value = map.get(statIndex);
 
         if (value == null) {
             map.update();

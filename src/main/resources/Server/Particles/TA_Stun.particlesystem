@@ -1,0 +1,49 @@
+{
+  "Spawners": [
+    {
+      "SpawnerId": "TA_Stunned1",
+      "PositionOffset": {
+        "X": 0,
+        "Y": 0.1,
+        "Z": 0.0
+      },
+      "FixedRotation": false,
+      "StartDelay": 1.2,
+      "RotationOffset": {
+        "Roll": -30.0
+      }
+    },
+    {
+      "SpawnerId": "TA_Stunned2",
+      "PositionOffset": {
+        "X": 0,
+        "Y": 0.1,
+        "Z": 0.0
+      },
+      "FixedRotation": false,
+      "RotationOffset": {
+        "Roll": 30.0
+      }
+    },
+    {
+      "SpawnerId": "TA_Stunned3",
+      "PositionOffset": {
+        "Y": 0.1
+      },
+      "RotationOffset": {
+        "Pitch": 90.0
+      }
+    },
+    {
+      "SpawnerId": "TA_Stunned4",
+      "PositionOffset": {
+        "Y": 0.1
+      },
+      "RotationOffset": {
+        "Pitch": 90.0,
+        "Yaw": 180.0
+      }
+    }
+  ],
+  "IsImportant": false
+}

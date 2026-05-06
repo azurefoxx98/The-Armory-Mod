@@ -1,0 +1,111 @@
+{
+  "ParticleRotationInfluence": "Billboard",
+  "LightInfluence": 0.0,
+  "MaxConcurrentParticles": 5,
+  "ParticleLifeSpan": {
+    "Min": 0.8,
+    "Max": 1.1
+  },
+  "SpawnRate": {
+    "Min": 2.0,
+    "Max": 2.0
+  },
+  "ParticleRotateWithSpawner": true,
+  "Particle": {
+    "Texture": "Particles/Textures/Shapes/Star_Stylized.png",
+    "ScaleRatioConstraint": "OneToOne",
+    "UVOption": "None",
+    "Animation": {
+      "0": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        },
+        "Opacity": 1.0,
+        "Color": "#ffa86f",
+        "Rotation": {
+          "Z": {
+            "Min": 0,
+            "Max": 0
+          }
+        },
+        "Scale": {
+          "X": {
+            "Min": 1.0,
+            "Max": 1.0
+          }
+        }
+      },
+      "10": {
+        "Scale": {
+          "X": {
+            "Min": 4.0,
+            "Max": 4.0
+          }
+        },
+        "Rotation": {
+          "Z": {
+            "Min": 0.0,
+            "Max": 0.0
+          }
+        }
+      },
+      "100": {
+        "Opacity": 1.0,
+        "Scale": {
+          "X": {
+            "Min": 0.0,
+            "Max": 0.0
+          }
+        },
+        "Color": "#ffefc8",
+        "Rotation": {
+          "Z": {
+            "Min": 100.0,
+            "Max": 100.0
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "Rotation": {
+        "Z": {
+          "Min": -15,
+          "Max": 15
+        }
+      },
+      "Scale": {
+        "X": {
+          "Min": 0.05,
+          "Max": 0.05
+        }
+      },
+      "FrameIndex": {
+        "Min": 0,
+        "Max": 0
+      },
+      "Opacity": 0.896
+    },
+    "UseSpriteBlending": true
+  },
+  "RenderMode": "Erosion",
+  "LinearFiltering": true,
+  "UseEmitDirection": false,
+  "SpawnBurst": false,
+  "EmitOffset": {
+    "X": {
+      "Min": 0.35,
+      "Max": 0.35
+    },
+    "Z": {
+      "Min": 0.35,
+      "Max": 0.35
+    }
+  },
+  "Shape": "Cube",
+  "Attractors": [
+    {
+      "RadialTangentImpulse": 3.0
+    }
+  ]
+}

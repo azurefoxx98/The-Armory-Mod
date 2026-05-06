@@ -1,0 +1,123 @@
+{
+  "EmitOffset": {
+    "X": {
+      "Min": 0.25,
+      "Max": 0.4
+    },
+    "Y": {
+      "Min": 0,
+      "Max": 0.3
+    },
+    "Z": {
+      "Min": 0,
+      "Max": 0.1
+    }
+  },
+  "ParticleRotationInfluence": "Billboard",
+  "LightInfluence": 0.9,
+  "MaxConcurrentParticles": 10,
+  "ParticleLifeSpan": {
+    "Min": 1.0,
+    "Max": 2.0
+  },
+  "SpawnRate": {
+    "Min": 6.0,
+    "Max": 8.0
+  },
+  "ParticleRotateWithSpawner": false,
+  "Attractors": [
+    {
+      "LinearAcceleration": {
+        "X": 0.4,
+        "Y": 0.7,
+        "Z": 0.4
+      },
+      "Radius": 5.0,
+      "DampingMultiplier": {
+        "X": 0.0,
+        "Y": 0.5,
+        "Z": 0.0
+      },
+      "RadialImpulse": 0.5,
+      "RadialTangentAcceleration": 0.1,
+      "RadialAcceleration": 0.6,
+      "Position": {
+        "Y": -0.5
+      }
+    }
+  ],
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Ball5.png",
+    "ScaleRatioConstraint": "OneToOne",
+    "UVOption": "None",
+    "Animation": {
+      "0": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        },
+        "Opacity": 1.0,
+        "Scale": {
+          "X": {
+            "Min": 1.5,
+            "Max": 1.5
+          }
+        },
+        "Color": "#fcfcfc",
+        "Rotation": {
+          "Z": {
+            "Min": 0,
+            "Max": 0
+          }
+        }
+      },
+      "10": {
+        "Color": "#efefef",
+        "Opacity": 1.0,
+        "Scale": {
+          "X": {
+            "Min": 0.6,
+            "Max": 0.6
+          }
+        }
+      },
+      "60": {
+        "Opacity": 0.092,
+        "Color": "#b2b2b2"
+      },
+      "80": {
+        "Scale": {
+          "X": {
+            "Min": 2.0,
+            "Max": 2.0
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "Rotation": {
+        "Z": {
+          "Min": -15,
+          "Max": 15
+        }
+      },
+      "Scale": {
+        "X": {
+          "Min": 0.05,
+          "Max": 0.05
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#ff9259",
+      "FrameIndex": {
+        "Min": 0,
+        "Max": 0
+      }
+    }
+  },
+  "RenderMode": "Erosion",
+  "TrailSpawnerPositionMultiplier": 0.0,
+  "TrailSpawnerRotationMultiplier": 1.0,
+  "LinearFiltering": true,
+  "UseEmitDirection": false
+}

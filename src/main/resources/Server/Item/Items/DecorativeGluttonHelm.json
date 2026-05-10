@@ -1,0 +1,109 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.DecorativeCavalierChest.name"
+  },
+  "Icon": "Icons/ItemsGenerated/DecorativeGluttonHelm.png",
+  "Categories": [
+    "ArmoryCategory.ArmoryProps"
+  ],
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Condition",
+          "RequiredGameMode": "Adventure",
+          "Crouching": false,
+          "Next": "Item_Throw",
+          "Failed": "Block_Secondary"
+        }
+      ]
+    }
+  },
+  "InteractionVars": {
+    "Item_Throw_Projectile": {
+      "Interactions": [
+        {
+          "Parent": "Item_Throw_Projectile",
+          "ProjectileId": "Rubble_Stone"
+        }
+      ]
+    }
+  },
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Items/Blocks/Armors/GluttonHelm.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Items/Armors/Demon/Alt/Glutton.png",
+        "Weight": 1
+      }
+    ],
+    "Flags": {},
+    "RandomRotation": "None",
+    "Gathering": {
+      "UseDefaultDropWhenPlaced": false,
+      "Breaking": {
+        "GatherType": "Rocks",
+        "ItemId": "DecorativeGluttonHelm"
+      }
+    },
+    "BlockParticleSetId": "Dust",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "ParticleColor": "#75755b",
+    "BlockSoundSetId": "Metal",
+    "CustomModelScale": 0.75,
+    "VariantRotation": "NESW"
+  },
+  "PlayerAnimationsId": "Item",
+  "Tags": {
+    "Type": [
+      "Rubble",
+      "Flint"
+    ]
+  },
+  "MaxStack": 100,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DropOnDeath": true,
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      9,
+      335,
+      359
+    ],
+    "Translation": [
+      4,
+      -19
+    ]
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Id": "Furniture_Bench",
+        "Categories": [
+          "Furniture_Misc"
+        ]
+      }
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Decoration"
+    }
+  ]
+}

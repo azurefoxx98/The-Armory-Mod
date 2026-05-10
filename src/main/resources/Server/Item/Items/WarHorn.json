@@ -1,0 +1,71 @@
+{
+  "Model": "Items/Items/Horns/LongHorn.blockymodel",
+  "Texture": "Items/Items/Horns/LongHorn.png",
+  "MaxStack": 1,
+  "UsePlayerAnimations": true,
+  "PlayerAnimationsId": {
+    "Parent": "Handgun",
+    "Animations": {
+      "Consume": {
+        "FirstPerson": "Characters/Animations/Items/Main_Handed/Item/Attacks/Drink/Drink_FPS.blockyanim",
+        "ThirdPerson": "Characters/Animations/Items/Main_Handed/Item/Attacks/Drink/Drink.blockyanim",
+        "Speed": 1,
+        "Looping": true
+      }
+    }
+  },
+  "Utility": {
+    "Usable": true
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Charging",
+          "Effects": {
+            "WorldSoundEventId": "Horn_War_SFX",
+            "ItemAnimationId": "Consume",
+            "ClearAnimationOnFinish": true,
+            "WaitForAnimationToFinish": false,
+            "ClearSoundEventOnFinish": false,
+            "Particles": [
+              {
+                "SystemId": "Alerted",
+                "TargetEntityPart": "Entity",
+                "PositionOffset": {
+                  "Y": 0,
+                  "X": 0,
+                  "Z": 0.8
+                },
+                "TargetNodeName": "Head",
+                "Scale": 4
+              }
+            ]
+          },
+          "RunTime": 3,
+          "HorizontalSpeedMultiplier": 0.5,
+          "CancelOnItemChange": true
+        }
+      ]
+    }
+  },
+  "Icon": "Icons/ItemsGenerated/WarHorn.png",
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      237,
+      14,
+      22.5
+    ],
+    "Translation": [
+      -10,
+      -14
+    ]
+  },
+  "SubCategory": "Horns",
+  "Quality": "Common",
+  "ItemSoundSetId": "ISS_Items_Bones",
+  "Categories": [
+    "ArmoryCategory.ArmoryProps"
+  ]
+}

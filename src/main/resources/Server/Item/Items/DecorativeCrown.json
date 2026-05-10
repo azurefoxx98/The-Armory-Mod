@@ -1,0 +1,109 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.DecorativeCrown.name"
+  },
+  "Icon": "Icons/ItemsGenerated/DecorativeCrown.png",
+  "Categories": [
+    "ArmoryCategory.ArmoryProps"
+  ],
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Condition",
+          "RequiredGameMode": "Adventure",
+          "Crouching": false,
+          "Next": "Item_Throw",
+          "Failed": "Block_Secondary"
+        }
+      ]
+    }
+  },
+  "InteractionVars": {
+    "Item_Throw_Projectile": {
+      "Interactions": [
+        {
+          "Parent": "Item_Throw_Projectile",
+          "ProjectileId": "Rubble_Stone"
+        }
+      ]
+    }
+  },
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Items/Blocks/Armors/Crown.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Items/Armors/Crown/IronCrown.png",
+        "Weight": 1
+      }
+    ],
+    "Flags": {},
+    "RandomRotation": "None",
+    "Gathering": {
+      "UseDefaultDropWhenPlaced": false,
+      "Breaking": {
+        "GatherType": "Rocks",
+        "ItemId": "DecorativeCrown"
+      }
+    },
+    "BlockParticleSetId": "Dust",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "ParticleColor": "#75755b",
+    "BlockSoundSetId": "Metal",
+    "CustomModelScale": 0.75,
+    "VariantRotation": "NESW"
+  },
+  "PlayerAnimationsId": "Item",
+  "Tags": {
+    "Type": [
+      "Rubble",
+      "Flint"
+    ]
+  },
+  "MaxStack": 100,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DropOnDeath": true,
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      16,
+      335,
+      0
+    ],
+    "Translation": [
+      3,
+      -15
+    ]
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Id": "Furniture_Bench",
+        "Categories": [
+          "Furniture_Misc"
+        ]
+      }
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Decoration"
+    }
+  ]
+}

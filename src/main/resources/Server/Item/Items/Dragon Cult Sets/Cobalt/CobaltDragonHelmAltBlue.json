@@ -1,0 +1,118 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.CobaltDragonChestplate.name",
+    "Description": "server.items.AntiqueDragonSet.description"
+  },
+  "Parent": "Armor_Iron_Head",
+  "Quality": "Rare",
+  "ItemLevel": 35,
+  "Icon": "Icons/ItemsGenerated/CobaltDragonHelmAltBlue.png",
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      5,
+      -101
+    ]
+  },
+  "Model": "Items/Armors/DragonKnight/HelmOpen.blockymodel",
+  "Texture": "Items/Armors/DragonKnight/Cobalt/CobaltBlue.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "CobaltDragonHead"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 3,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.13,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.13,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Ice": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.05
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 25,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Light": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 10
+        }
+      ],
+      "Signature": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Haircut",
+      "FacialHair",
+      "HeadAccessory",
+      "FaceAccessory",
+      "EarAccessory",
+      "Ear"
+    ]
+  },
+  "MaxDurability": 120,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "CobaltDragonHead"
+    },
+    {
+      "Id": "CobaltDragonSet"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "Container": {
+    "Capacity": 1
+  },
+  "SubCategory": "Cobalt Dragon Set"
+}

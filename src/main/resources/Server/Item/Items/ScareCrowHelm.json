@@ -1,0 +1,94 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Copper_Head.name"
+  },
+  "Parent": "Armor_Iron_Head",
+  "ItemLevel": 10,
+  "Icon": "Icons/ItemsGenerated/ScareCrowHelm.png",
+  "Model": "Items/Armors/Scarecrow/ScarecrowHelm.blockymodel",
+  "Texture": "Items/Armors/Scarecrow/default.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Deco_Scarecrow",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Head"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 3
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "EarAccessory",
+      "Ear",
+      "Haircut",
+      "HeadAccessory"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.036,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.036,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 5,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 80,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Copper"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "Quality": "Common",
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      6,
+      23,
+      4
+    ],
+    "Translation": [
+      -2,
+      -106
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "ResourceScareCrowHelm"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "SubCategory": "Scarecrow"
+}

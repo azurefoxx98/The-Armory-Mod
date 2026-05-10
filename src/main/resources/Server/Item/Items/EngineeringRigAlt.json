@@ -1,0 +1,131 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.EngineeringRig.name",
+    "Description": "server.items.EngineeringRig.description"
+  },
+  "Quality": "Epic",
+  "ItemLevel": 45,
+  "PlayerAnimationsId": "Block",
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "Icon": "Icons/ItemsGenerated/EngineeringRigAlt.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_EngineeringRig"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.06,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 17,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "Regenerating": {
+      "Stamina": [
+        {
+          "Interval": 1,
+          "RegenType": "Percentage",
+          "Amount": 0.1
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Overtop"
+    ]
+  },
+  "MaxDurability": 120,
+  "DurabilityLossOnHit": 0.5,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Hermes_Boots_Mod"
+    ]
+  },
+  "IconProperties": {
+    "Scale": 0.25,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      3,
+      -59
+    ]
+  },
+  "Scale": 1,
+  "ItemEntity": {
+    "ShowItemParticles": false,
+    "ParticleColor": "#ffffff",
+    "Physics": {
+      "InvertedGravity": false
+    }
+  },
+  "UsePlayerAnimations": false,
+  "Model": "Items/Armors/Engineer/ChestAlt.blockymodel",
+  "Texture": "Items/Armors/Engineer/chest.png",
+  "Parent": "Armor_Iron_Chest",
+  "Light": {
+    "Radius": 1,
+    "Color": "#730"
+  },
+  "SubCategory": "Engineering Rig",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_EngineeringRig"
+    }
+  ]
+}

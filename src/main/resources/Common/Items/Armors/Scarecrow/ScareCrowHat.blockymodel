@@ -1,0 +1,739 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Origin",
+      "position": {"x": 0, "y": 75, "z": 0},
+      "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
+      "shape": {
+        "type": "none",
+        "offset": {"x": 0, "y": 0, "z": 0},
+        "stretch": {"x": 1, "y": 1, "z": 1},
+        "settings": {
+          "isPiece": false
+        },
+        "textureLayout": {},
+        "unwrapMode": "custom",
+        "visible": true,
+        "doubleSided": false,
+        "shadingMode": "flat"
+      },
+      "children": [
+        {
+          "id": "2",
+          "name": "Pelvis",
+          "position": {"x": 0, "y": -24, "z": 0},
+          "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
+          "shape": {
+            "type": "none",
+            "offset": {"x": 0, "y": 0, "z": 0},
+            "stretch": {"x": 1, "y": 1, "z": 1},
+            "settings": {
+              "isPiece": false
+            },
+            "textureLayout": {},
+            "unwrapMode": "custom",
+            "visible": true,
+            "doubleSided": false,
+            "shadingMode": "flat"
+          },
+          "children": [
+            {
+              "id": "3",
+              "name": "Belly",
+              "position": {"x": 0, "y": 4, "z": 0},
+              "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
+              "shape": {
+                "type": "none",
+                "offset": {"x": 0, "y": 8, "z": 0},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false
+                },
+                "textureLayout": {},
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              },
+              "children": [
+                {
+                  "id": "4",
+                  "name": "Chest",
+                  "position": {"x": 0, "y": 5, "z": -3},
+                  "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
+                  "shape": {
+                    "type": "none",
+                    "offset": {"x": 0, "y": 11, "z": 3},
+                    "stretch": {"x": 1, "y": 1, "z": 1},
+                    "settings": {
+                      "isPiece": false
+                    },
+                    "textureLayout": {},
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  },
+                  "children": [
+                    {
+                      "id": "5",
+                      "name": "Head",
+                      "position": {"x": 0, "y": 8, "z": -1},
+                      "orientation": {"x": 0, "y": 0, "z": -0.01451, "w": 0.99989},
+                      "shape": {
+                        "type": "none",
+                        "offset": {"x": 0, "y": 0, "z": 0},
+                        "stretch": {"x": 1, "y": 1, "z": 1},
+                        "settings": {
+                          "isPiece": false
+                        },
+                        "textureLayout": {},
+                        "unwrapMode": "custom",
+                        "visible": true,
+                        "doubleSided": false,
+                        "shadingMode": "flat"
+                      },
+                      "children": [
+                        {
+                          "id": "6",
+                          "name": "Hat_base",
+                          "position": {"x": 1.17889, "y": 29.98605, "z": 0.85054},
+                          "orientation": {"x": 0.0041, "y": -0.04823, "z": -0.03007, "w": 0.99838},
+                          "shape": {
+                            "type": "box",
+                            "offset": {"x": 0, "y": 0, "z": 0},
+                            "stretch": {"x": 1.75, "y": 1.46331, "z": 1.75},
+                            "settings": {
+                              "isPiece": false,
+                              "size": {"x": 34, "y": 2, "z": 32}
+                            },
+                            "textureLayout": {
+                              "back": {
+                                "offset": {"x": 68, "y": 65},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              },
+                              "right": {
+                                "offset": {"x": 69, "y": 65},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              },
+                              "front": {
+                                "offset": {"x": 68, "y": 65},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              },
+                              "left": {
+                                "offset": {"x": 69, "y": 65},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              },
+                              "top": {
+                                "offset": {"x": 67, "y": 1},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              },
+                              "bottom": {
+                                "offset": {"x": 67, "y": 33},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              }
+                            },
+                            "unwrapMode": "custom",
+                            "visible": true,
+                            "doubleSided": false,
+                            "shadingMode": "standard"
+                          },
+                          "children": [
+                            {
+                              "id": "7",
+                              "name": "Hay8",
+                              "position": {"x": -12.59825, "y": 3.85594, "z": 11.06747},
+                              "orientation": {"x": 0.18004, "y": 0.25045, "z": 0.13025, "w": 0.94228},
+                              "shape": {
+                                "type": "quad",
+                                "offset": {"x": -10, "y": 12, "z": 3},
+                                "stretch": {"x": 1.75, "y": 1.75, "z": 0.85},
+                                "settings": {
+                                  "isPiece": false,
+                                  "size": {"x": 7, "y": 23},
+                                  "normal": "+Z"
+                                },
+                                "textureLayout": {
+                                  "front": {
+                                    "offset": {"x": 102, "y": 38},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  }
+                                },
+                                "unwrapMode": "custom",
+                                "visible": true,
+                                "doubleSided": true,
+                                "shadingMode": "standard"
+                              }
+                            },
+                            {
+                              "id": "8",
+                              "name": "Hat",
+                              "position": {"x": -1.96642, "y": 3.29691, "z": 0.07012},
+                              "orientation": {"x": 0.00754, "y": 0.07434, "z": -0.13985, "w": 0.98735},
+                              "shape": {
+                                "type": "box",
+                                "offset": {"x": -1.30433, "y": 4.49521, "z": -0.06259},
+                                "stretch": {"x": 1.75, "y": 1.81997, "z": 1.75},
+                                "settings": {
+                                  "isPiece": false,
+                                  "size": {"x": 14, "y": 16, "z": 14}
+                                },
+                                "textureLayout": {
+                                  "back": {
+                                    "offset": {"x": 114, "y": 94},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "right": {
+                                    "offset": {"x": 100, "y": 94},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "front": {
+                                    "offset": {"x": 86, "y": 94},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "left": {
+                                    "offset": {"x": 72, "y": 94},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "top": {
+                                    "offset": {"x": 86, "y": 80},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  }
+                                },
+                                "unwrapMode": "custom",
+                                "visible": true,
+                                "doubleSided": false,
+                                "shadingMode": "standard"
+                              }
+                            },
+                            {
+                              "id": "9",
+                              "name": "Hat_rag1",
+                              "position": {"x": -1.07771, "y": -4.86166, "z": 17.44492},
+                              "orientation": {"x": -0.51179, "y": -0.01354, "z": -0.00546, "w": 0.85899},
+                              "shape": {
+                                "type": "none",
+                                "offset": {"x": 0, "y": 0, "z": 4},
+                                "stretch": {"x": 1, "y": 1, "z": 1},
+                                "settings": {
+                                  "isPiece": false
+                                },
+                                "textureLayout": {},
+                                "unwrapMode": "custom",
+                                "visible": true,
+                                "doubleSided": false,
+                                "shadingMode": "flat"
+                              },
+                              "children": [
+                                {
+                                  "id": "10",
+                                  "name": "Hat_rag1--C1",
+                                  "position": {"x": 1.5, "y": -13, "z": 6.5},
+                                  "orientation": {"x": -0.00027, "y": 0.00872, "z": 0.01309, "w": 0.99988},
+                                  "shape": {
+                                    "type": "quad",
+                                    "offset": {"x": 0, "y": 0, "z": 0},
+                                    "stretch": {"x": 1.75, "y": 1.75, "z": 1.75},
+                                    "settings": {
+                                      "isPiece": false,
+                                      "size": {"x": 39, "y": 8},
+                                      "normal": "+Z",
+                                      "isStaticBox": true
+                                    },
+                                    "textureLayout": {
+                                      "front": {
+                                        "offset": {"x": 67, "y": 65},
+                                        "mirror": {"x": false, "y": false},
+                                        "angle": 0
+                                      }
+                                    },
+                                    "unwrapMode": "custom",
+                                    "visible": true,
+                                    "doubleSided": true,
+                                    "shadingMode": "standard"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "id": "11",
+                              "name": "Hat_rag2",
+                              "position": {"x": 17.98364, "y": -5.86411, "z": 1.19057},
+                              "orientation": {"x": -0.38513, "y": 0.58982, "z": 0.37564, "w": 0.60223},
+                              "shape": {
+                                "type": "quad",
+                                "offset": {"x": 0, "y": -13.3, "z": 10.8},
+                                "stretch": {"x": 1.75, "y": 1.75, "z": 1.75},
+                                "settings": {
+                                  "isPiece": false,
+                                  "size": {"x": 33, "y": 7},
+                                  "normal": "+Z"
+                                },
+                                "textureLayout": {
+                                  "front": {
+                                    "offset": {"x": 67, "y": 66},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  }
+                                },
+                                "unwrapMode": "custom",
+                                "visible": true,
+                                "doubleSided": true,
+                                "shadingMode": "standard"
+                              }
+                            },
+                            {
+                              "id": "12",
+                              "name": "Hat_rag3",
+                              "position": {"x": 0.29018, "y": -3.84793, "z": -18.35155},
+                              "orientation": {"x": -0.00933, "y": -0.82586, "z": -0.5636, "w": 0.01517},
+                              "shape": {
+                                "type": "none",
+                                "offset": {"x": 0, "y": 1, "z": 3},
+                                "stretch": {"x": 1, "y": 1, "z": 1},
+                                "settings": {
+                                  "isPiece": false
+                                },
+                                "textureLayout": {},
+                                "unwrapMode": "custom",
+                                "visible": true,
+                                "doubleSided": false,
+                                "shadingMode": "flat"
+                              },
+                              "children": [
+                                {
+                                  "id": "13",
+                                  "name": "Hat_rag3--C1",
+                                  "position": {"x": -1, "y": -13.4, "z": 5},
+                                  "orientation": {"x": 0, "y": 0, "z": -0.02181, "w": 0.99976},
+                                  "shape": {
+                                    "type": "quad",
+                                    "offset": {"x": 0, "y": 0, "z": 0},
+                                    "stretch": {"x": 1.75, "y": 1.75, "z": 1.75},
+                                    "settings": {
+                                      "isPiece": false,
+                                      "size": {"x": 33, "y": 6},
+                                      "normal": "+Z",
+                                      "isStaticBox": true
+                                    },
+                                    "textureLayout": {
+                                      "front": {
+                                        "offset": {"x": 68, "y": 67},
+                                        "mirror": {"x": false, "y": false},
+                                        "angle": 0
+                                      }
+                                    },
+                                    "unwrapMode": "custom",
+                                    "visible": true,
+                                    "doubleSided": true,
+                                    "shadingMode": "standard"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "id": "14",
+                              "name": "Hat_rag4",
+                              "position": {"x": -18.78312, "y": -4.29119, "z": 2.65902},
+                              "orientation": {"x": -0.46873, "y": -0.52681, "z": -0.46963, "w": 0.53124},
+                              "shape": {
+                                "type": "none",
+                                "offset": {"x": 0, "y": 0, "z": 4},
+                                "stretch": {"x": 1, "y": 1, "z": 1},
+                                "settings": {
+                                  "isPiece": false
+                                },
+                                "textureLayout": {},
+                                "unwrapMode": "custom",
+                                "visible": true,
+                                "doubleSided": false,
+                                "shadingMode": "flat"
+                              },
+                              "children": [
+                                {
+                                  "id": "15",
+                                  "name": "Hat_rag4--C1",
+                                  "position": {"x": 0, "y": -15, "z": 1},
+                                  "orientation": {"x": 0.15212, "y": 0, "z": 0, "w": 0.98836},
+                                  "shape": {
+                                    "type": "quad",
+                                    "offset": {"x": 0, "y": 0, "z": 0},
+                                    "stretch": {"x": 1.75, "y": 1.75, "z": 1.75},
+                                    "settings": {
+                                      "isPiece": false,
+                                      "size": {"x": 39, "y": 6},
+                                      "normal": "+Z",
+                                      "isStaticBox": true
+                                    },
+                                    "textureLayout": {
+                                      "front": {
+                                        "offset": {"x": 67, "y": 67},
+                                        "mirror": {"x": false, "y": false},
+                                        "angle": 0
+                                      }
+                                    },
+                                    "unwrapMode": "custom",
+                                    "visible": true,
+                                    "doubleSided": true,
+                                    "shadingMode": "standard"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "id": "16",
+                              "name": "Hat2",
+                              "position": {"x": -1, "y": 4, "z": 0},
+                              "orientation": {"x": 0.01576, "y": 0.03509, "z": -0.00117, "w": 0.99926},
+                              "shape": {
+                                "type": "box",
+                                "offset": {"x": -1.39383, "y": 2.8755, "z": 0.04157},
+                                "stretch": {"x": 1.875, "y": 1.81997, "z": 1.875},
+                                "settings": {
+                                  "isPiece": false,
+                                  "size": {"x": 18, "y": 7, "z": 19}
+                                },
+                                "textureLayout": {
+                                  "back": {
+                                    "offset": {"x": 109, "y": 30},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "right": {
+                                    "offset": {"x": 108, "y": 30},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "front": {
+                                    "offset": {"x": 106, "y": 19},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "left": {
+                                    "offset": {"x": 108, "y": 30},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "top": {
+                                    "offset": {"x": 106, "y": 0},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  }
+                                },
+                                "unwrapMode": "custom",
+                                "visible": true,
+                                "doubleSided": false,
+                                "shadingMode": "standard"
+                              },
+                              "children": [
+                                {
+                                  "id": "17",
+                                  "name": "Node",
+                                  "position": {"x": 5.39383, "y": -3.76144, "z": 9.95843},
+                                  "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
+                                  "shape": {
+                                    "type": "box",
+                                    "offset": {"x": 2, "y": 3, "z": 9},
+                                    "stretch": {"x": 1.875, "y": 1.75, "z": 1.75},
+                                    "settings": {
+                                      "isPiece": false,
+                                      "size": {"x": 6, "y": 5, "z": 1}
+                                    },
+                                    "textureLayout": {
+                                      "right": {
+                                        "offset": {"x": 104, "y": 19},
+                                        "mirror": {"x": true, "y": false},
+                                        "angle": 0
+                                      },
+                                      "front": {
+                                        "offset": {"x": 116, "y": 21},
+                                        "mirror": {"x": false, "y": false},
+                                        "angle": 0
+                                      },
+                                      "left": {
+                                        "offset": {"x": 103, "y": 19},
+                                        "mirror": {"x": false, "y": false},
+                                        "angle": 0
+                                      },
+                                      "top": {
+                                        "offset": {"x": 101, "y": 27},
+                                        "mirror": {"x": false, "y": false},
+                                        "angle": 0
+                                      }
+                                    },
+                                    "unwrapMode": "custom",
+                                    "visible": true,
+                                    "doubleSided": false,
+                                    "shadingMode": "standard"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "id": "18",
+                              "name": "Hat",
+                              "position": {"x": 0.21984, "y": 10.97554, "z": 0},
+                              "orientation": {"x": -0.14392, "y": -0.29404, "z": -0.27634, "w": 0.90358},
+                              "shape": {
+                                "type": "box",
+                                "offset": {"x": -3.80184, "y": 12.07627, "z": 3.68102},
+                                "stretch": {"x": 1.75, "y": 1.81997, "z": 1.75},
+                                "settings": {
+                                  "isPiece": false,
+                                  "size": {"x": 7, "y": 7, "z": 8}
+                                },
+                                "textureLayout": {
+                                  "back": {
+                                    "offset": {"x": 114, "y": 94},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "right": {
+                                    "offset": {"x": 93, "y": 96},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "front": {
+                                    "offset": {"x": 86, "y": 96},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "left": {
+                                    "offset": {"x": 72, "y": 94},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  },
+                                  "top": {
+                                    "offset": {"x": 86, "y": 86},
+                                    "mirror": {"x": false, "y": false},
+                                    "angle": 0
+                                  }
+                                },
+                                "unwrapMode": "custom",
+                                "visible": true,
+                                "doubleSided": false,
+                                "shadingMode": "standard"
+                              },
+                              "children": [
+                                {
+                                  "id": "19",
+                                  "name": "Node",
+                                  "position": {"x": 6.24807, "y": -7.9674, "z": -5.09088},
+                                  "orientation": {"x": -0.05005, "y": 0.37228, "z": -0.11175, "w": 0.92001},
+                                  "shape": {
+                                    "type": "quad",
+                                    "offset": {"x": -6.79407, "y": 10.84959, "z": -0.0776},
+                                    "stretch": {"x": 1.75, "y": 1.75, "z": 1.75},
+                                    "settings": {
+                                      "isPiece": false,
+                                      "size": {"x": 16, "y": 16},
+                                      "normal": "+Z"
+                                    },
+                                    "textureLayout": {
+                                      "front": {
+                                        "offset": {"x": 100, "y": 78},
+                                        "mirror": {"x": false, "y": false},
+                                        "angle": 0
+                                      }
+                                    },
+                                    "unwrapMode": "custom",
+                                    "visible": true,
+                                    "doubleSided": true,
+                                    "shadingMode": "standard"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "20",
+                          "name": "Hay",
+                          "position": {"x": -11.12312, "y": 24.35495, "z": 12.36603},
+                          "orientation": {"x": -0.02068, "y": 0.25799, "z": -0.00706, "w": 0.9659},
+                          "shape": {
+                            "type": "none",
+                            "offset": {"x": 0, "y": 0, "z": 0},
+                            "stretch": {"x": 1, "y": 1, "z": 1},
+                            "settings": {
+                              "isPiece": false
+                            },
+                            "textureLayout": {},
+                            "unwrapMode": "custom",
+                            "visible": true,
+                            "doubleSided": false,
+                            "shadingMode": "flat"
+                          },
+                          "children": [
+                            {
+                              "id": "21",
+                              "name": "Hay",
+                              "position": {"x": 20.92102, "y": -0.8585, "z": 12.16494},
+                              "orientation": {"x": 0.04357, "y": -0.49809, "z": 0, "w": 0.86603},
+                              "shape": {
+                                "type": "none",
+                                "offset": {"x": 0, "y": 0, "z": 0},
+                                "stretch": {"x": 1, "y": 1, "z": 1},
+                                "settings": {
+                                  "isPiece": false
+                                },
+                                "textureLayout": {},
+                                "unwrapMode": "custom",
+                                "visible": true,
+                                "doubleSided": false,
+                                "shadingMode": "flat"
+                              },
+                              "children": [
+                                {
+                                  "id": "22",
+                                  "name": "Hay",
+                                  "position": {"x": -32.39507, "y": -0.14535, "z": -7.78461},
+                                  "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
+                                  "shape": {
+                                    "type": "none",
+                                    "offset": {"x": 0, "y": 0, "z": 0},
+                                    "stretch": {"x": 1, "y": 1, "z": 1},
+                                    "settings": {
+                                      "isPiece": false
+                                    },
+                                    "textureLayout": {},
+                                    "unwrapMode": "custom",
+                                    "visible": true,
+                                    "doubleSided": false,
+                                    "shadingMode": "flat"
+                                  },
+                                  "children": [
+                                    {
+                                      "id": "23",
+                                      "name": "Hay",
+                                      "position": {"x": 20.92102, "y": -0.8585, "z": -12.16494},
+                                      "orientation": {"x": -0.04357, "y": 0.49809, "z": 0, "w": 0.86603},
+                                      "shape": {
+                                        "type": "none",
+                                        "offset": {"x": 0, "y": 0, "z": 0},
+                                        "stretch": {"x": 1, "y": 1, "z": 1},
+                                        "settings": {
+                                          "isPiece": false
+                                        },
+                                        "textureLayout": {},
+                                        "unwrapMode": "custom",
+                                        "visible": true,
+                                        "doubleSided": false,
+                                        "shadingMode": "flat"
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "24",
+                          "name": "HeadDetail",
+                          "position": {"x": 0.41291, "y": 10.05438, "z": 12.1611},
+                          "orientation": {"x": -0.25962, "y": 0.024, "z": 0.00702, "w": 0.96539},
+                          "shape": {
+                            "type": "none",
+                            "offset": {"x": 0, "y": 0, "z": 0},
+                            "stretch": {"x": 1, "y": 1, "z": 1},
+                            "settings": {
+                              "isPiece": false
+                            },
+                            "textureLayout": {},
+                            "unwrapMode": "custom",
+                            "visible": true,
+                            "doubleSided": false,
+                            "shadingMode": "flat"
+                          },
+                          "children": [
+                            {
+                              "id": "25",
+                              "name": "HeadDetail",
+                              "position": {"x": 1.1159, "y": 11.18169, "z": -19.28743},
+                              "orientation": {"x": 0.50092, "y": -0.04999, "z": 0, "w": 0.86405},
+                              "shape": {
+                                "type": "none",
+                                "offset": {"x": 0, "y": 0, "z": 0},
+                                "stretch": {"x": 1, "y": 1, "z": 1},
+                                "settings": {
+                                  "isPiece": false
+                                },
+                                "textureLayout": {},
+                                "unwrapMode": "custom",
+                                "visible": true,
+                                "doubleSided": false,
+                                "shadingMode": "flat"
+                              },
+                              "children": [
+                                {
+                                  "id": "26",
+                                  "name": "HeadDetail",
+                                  "position": {"x": 13.57482, "y": 6.63625, "z": 7.70707},
+                                  "orientation": {"x": 0.17023, "y": -0.51624, "z": 0.46974, "w": 0.6956},
+                                  "shape": {
+                                    "type": "none",
+                                    "offset": {"x": 0, "y": 0, "z": 0},
+                                    "stretch": {"x": 1, "y": 1, "z": 1},
+                                    "settings": {
+                                      "isPiece": false
+                                    },
+                                    "textureLayout": {},
+                                    "unwrapMode": "custom",
+                                    "visible": true,
+                                    "doubleSided": false,
+                                    "shadingMode": "flat"
+                                  },
+                                  "children": [
+                                    {
+                                      "id": "27",
+                                      "name": "HeadDetail",
+                                      "position": {"x": 0.657, "y": 20.78277, "z": 14.43906},
+                                      "orientation": {"x": 0, "y": -0.61503, "z": 0.78807, "w": 0.02617},
+                                      "shape": {
+                                        "type": "none",
+                                        "offset": {"x": 0, "y": 0, "z": 0},
+                                        "stretch": {"x": 1, "y": 1, "z": 1},
+                                        "settings": {
+                                          "isPiece": false
+                                        },
+                                        "textureLayout": {},
+                                        "unwrapMode": "custom",
+                                        "visible": true,
+                                        "doubleSided": false,
+                                        "shadingMode": "flat"
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "format": "character",
+  "lod": "auto"
+}

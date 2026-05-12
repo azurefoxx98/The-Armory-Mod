@@ -24,30 +24,21 @@
   "Recipe": {
     "Input": [
       {
-        "ItemId": "Potion_Antidote",
-        "Quantity": 6
-      },
-      {
-        "ItemId": "Ingredient_Bolt_Wool",
-        "Quantity": 30
-      },
-      {
-        "ItemId": "Ingredient_Leather_Medium",
-        "Quantity": 4
+        "Quantity": 1,
+        "ResourceTypeId": "Bandolier"
       }
     ],
     "BenchRequirement": [
       {
-        "Id": "Armor_Bench",
-        "Type": "Crafting",
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
         "Categories": [
-          "Armor_Chest"
-        ],
-        "RequiredTierLevel": 3
+          "WoodPlanks"
+        ]
       }
     ],
     "KnowledgeRequired": false,
-    "TimeSeconds": 3
+    "TimeSeconds": 0
   },
   "Container": {
     "Capacity": 8,

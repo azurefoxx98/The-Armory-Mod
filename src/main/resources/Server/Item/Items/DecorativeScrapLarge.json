@@ -9,13 +9,7 @@
   "Interactions": {
     "Secondary": {
       "Interactions": [
-        {
-          "Type": "Condition",
-          "RequiredGameMode": "Adventure",
-          "Crouching": false,
-          "Next": "Item_Throw",
-          "Failed": "Block_Secondary"
-        }
+        "Block_Secondary"
       ]
     }
   },

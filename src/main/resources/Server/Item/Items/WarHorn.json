@@ -67,5 +67,31 @@
   "ItemSoundSetId": "ISS_Items_Bones",
   "Categories": [
     "ArmoryCategory.ArmoryProps"
-  ]
+  ],
+  "Recipe": {
+    "TimeSeconds": 1,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Bone_Fragment",
+        "Quantity": 5
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Tinkering"
+        ]
+      }
+    ]
+  },
+  "TranslationProperties": {
+    "Name": "server.items.WarHorn.name"
+  },
+  "ItemLevel": 70
 }

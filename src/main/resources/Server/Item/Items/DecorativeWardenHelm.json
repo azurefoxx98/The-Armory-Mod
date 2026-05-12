@@ -1,6 +1,6 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.DecorativeCavalierChest.name"
+    "Name": "server.items.DecorativeWardenHelm.name"
   },
   "Icon": "Icons/ItemsGenerated/DecorativeWardenHelm.png",
   "Categories": [
@@ -9,13 +9,7 @@
   "Interactions": {
     "Secondary": {
       "Interactions": [
-        {
-          "Type": "Condition",
-          "RequiredGameMode": "Adventure",
-          "Crouching": false,
-          "Next": "Item_Throw",
-          "Failed": "Block_Secondary"
-        }
+        "Block_Secondary"
       ]
     }
   },
@@ -59,7 +53,7 @@
     },
     "ParticleColor": "#75755b",
     "BlockSoundSetId": "Metal",
-    "CustomModelScale": 0.75,
+    "CustomModelScale": 0.5,
     "VariantRotation": "NESW"
   },
   "PlayerAnimationsId": "Item",

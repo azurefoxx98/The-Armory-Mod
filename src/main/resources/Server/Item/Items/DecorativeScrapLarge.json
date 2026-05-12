@@ -4,7 +4,7 @@
   },
   "Icon": "Icons/ItemsGenerated/ScrapArmorPile.png",
   "Categories": [
-    "Blocks.Rocks"
+    "ArmoryCategory.ArmoryProps"
   ],
   "Interactions": {
     "Secondary": {
@@ -65,7 +65,7 @@
   },
   "ResourceTypes": [
     {
-      "Id": "Rubble"
+      "Id": "Resource_Decoration"
     }
   ],
   "PlayerAnimationsId": "Item",
@@ -88,6 +88,23 @@
     "Translation": [
       7,
       -25
+    ]
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Id": "Furniture_Bench",
+        "Categories": [
+          "Furniture_Misc"
+        ]
+      }
     ]
   }
 }

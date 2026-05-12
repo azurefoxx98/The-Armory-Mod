@@ -1,10 +1,10 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.DecorativeScrapMedium.name"
+    "Name": "RubyArmor"
   },
   "Icon": "Icons/ItemsGenerated/StandingArmorVerdan.png",
   "Categories": [
-    "Blocks.Rocks"
+    "ArmoryCategory.ArmoryProps"
   ],
   "Interactions": {
     "Secondary": {
@@ -36,7 +36,7 @@
     "CustomModel": "Items/Blocks/StandingArmor.blockymodel",
     "CustomModelTexture": [
       {
-        "Texture": "Items/Armors/Knight/verdan.png",
+        "Texture": "Items/Armors/Knight/Ruby.png",
         "Weight": 1
       }
     ],
@@ -89,5 +89,6 @@
       -1,
       -88
     ]
-  }
+  },
+  "SubCategory": "Battlegrounds"
 }

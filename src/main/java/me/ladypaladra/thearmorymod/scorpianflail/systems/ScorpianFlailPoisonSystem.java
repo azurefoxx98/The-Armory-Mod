@@ -61,7 +61,7 @@ public final class ScorpianFlailPoisonSystem extends DamageEventSystem {
         }
 
         Ref<EntityStore> targetRef = chunk.getReferenceTo(index);
-        if (targetRef == null || !targetRef.isValid()) {
+        if (!targetRef.isValid()) {
             return;
         }
 
@@ -96,10 +96,6 @@ public final class ScorpianFlailPoisonSystem extends DamageEventSystem {
 
         if (source instanceof Damage.EntitySource entitySource) {
             return entitySource.getRef();
-        }
-
-        if (source instanceof Damage.ProjectileSource projectileSource) {
-            return projectileSource.getRef();
         }
 
         return null;

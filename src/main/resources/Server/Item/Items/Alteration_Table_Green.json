@@ -1,0 +1,141 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Bench_Armor_Tailoring.name",
+    "Description": "server.items.Bench_Armor_Tailoring.description"
+  },
+  "Categories": [
+    "Furniture.Benches"
+  ],
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Alteration_Table"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Items/Blocks/Workbenches/Alteration/AlterationTable.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Items/Blocks/Bench/Green.png",
+        "Weight": 1
+      }
+    ],
+    "HitboxType": "Bench_Alchemy",
+    "VariantRotation": "NESW",
+    "Interactions": {
+      "Use": {
+        "Interactions": [
+          {
+            "Type": "OpenLargeStructuralCraftingBench"
+          }
+        ]
+      }
+    },
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Benches"
+      }
+    },
+    "BlockParticleSetId": "Wood",
+    "ParticleColor": "#5C583E",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "BlockSoundSetId": "Wood",
+    "Bench": {
+      "Type": "StructuralCrafting",
+      "Id": "Builders",
+      "Categories": [
+        "WoodPlanks",
+        "OrnatePlanks",
+        "DecorativePlanks",
+        "Bricks",
+        "Decorative",
+        "Ornate",
+        "Smooth",
+        "Stairs",
+        "HalfSlab",
+        "SmoothHalfSlab",
+        "Beam",
+        "Platform",
+        "Roof",
+        "Pillar",
+        "Wall",
+        "Gate",
+        "Ladder",
+        "Window",
+        "Wardrobe",
+        "Door",
+        "Trapdoor",
+        "Table",
+        "Chair",
+        "Bench",
+        "Stool",
+        "Shelf",
+        "Sign",
+        "VillageWall"
+      ],
+      "HeaderCategories": [
+        "WoodPlanks",
+        "OrnatePlanks",
+        "DecorativePlanks"
+      ],
+      "AlwaysShowInventoryHints": true,
+      "AllowBlockGroupCycling": true
+    },
+    "BlockEntity": {
+      "Components": {
+        "BenchBlock": {
+          "TierLevel": 1
+        }
+      }
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "IconProperties": {
+    "Scale": 0.435,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      13,
+      -13
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Bench"
+    ]
+  },
+  "MaxStack": 1,
+  "ItemLevel": 9,
+  "ItemSoundSetId": "ISS_Blocks_Wood",
+  "Icon": "Icons/ItemsGenerated/Alteration_Table_Green.png",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Alteration_Table"
+    }
+  ]
+}

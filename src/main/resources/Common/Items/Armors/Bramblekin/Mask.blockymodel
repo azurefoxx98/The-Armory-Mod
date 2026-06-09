@@ -1,0 +1,565 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Head",
+      "position": {"x": 0, "y": 55.92878, "z": 0},
+      "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
+      "shape": {
+        "type": "none",
+        "offset": {"x": 0, "y": 0, "z": 0},
+        "stretch": {"x": 1, "y": 1, "z": 1},
+        "settings": {
+          "isPiece": true
+        },
+        "textureLayout": {},
+        "unwrapMode": "custom",
+        "visible": true,
+        "doubleSided": false,
+        "shadingMode": "flat"
+      },
+      "children": [
+        {
+          "id": "2",
+          "name": "mask",
+          "position": {"x": 0, "y": 4.15282, "z": 0.70191},
+          "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
+          "shape": {
+            "type": "box",
+            "offset": {"x": 0, "y": 0, "z": 0},
+            "stretch": {"x": 1.14691, "y": 0.8483, "z": 1.15573},
+            "settings": {
+              "isPiece": false,
+              "size": {"x": 32, "y": 32, "z": 31}
+            },
+            "textureLayout": {
+              "back": {
+                "offset": {"x": 95, "y": 32},
+                "mirror": {"x": false, "y": false},
+                "angle": 0
+              },
+              "right": {
+                "offset": {"x": 64, "y": 32},
+                "mirror": {"x": false, "y": false},
+                "angle": 0
+              },
+              "front": {
+                "offset": {"x": 32, "y": 32},
+                "mirror": {"x": false, "y": false},
+                "angle": 0
+              },
+              "left": {
+                "offset": {"x": 95, "y": 32},
+                "mirror": {"x": true, "y": false},
+                "angle": 0
+              },
+              "top": {
+                "offset": {"x": 32, "y": 1},
+                "mirror": {"x": false, "y": false},
+                "angle": 0
+              },
+              "bottom": {
+                "offset": {"x": 64, "y": 1},
+                "mirror": {"x": false, "y": false},
+                "angle": 0
+              }
+            },
+            "unwrapMode": "custom",
+            "visible": true,
+            "doubleSided": true,
+            "shadingMode": "flat"
+          },
+          "children": [
+            {
+              "id": "3",
+              "name": "L-Horns",
+              "position": {"x": 12, "y": 10, "z": -7},
+              "orientation": {"x": -0.23315, "y": -0.10927, "z": -0.39274, "w": 0.88287},
+              "shape": {
+                "type": "box",
+                "offset": {"x": 0, "y": 6.00001, "z": 0},
+                "stretch": {"x": 1.1, "y": 1.1, "z": 1.1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 11, "y": 20, "z": 12}
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 116, "y": 12},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "right": {
+                    "offset": {"x": 96, "y": 12},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 90
+                  },
+                  "front": {
+                    "offset": {"x": 116, "y": 1},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  },
+                  "left": {
+                    "offset": {"x": 116, "y": 24},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "top": {
+                    "offset": {"x": 30, "y": 28},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  },
+                  "bottom": {
+                    "offset": {"x": 105, "y": 11},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              },
+              "children": [
+                {
+                  "id": "4",
+                  "name": "Horns",
+                  "position": {"x": 0.71288, "y": 7.67619, "z": 0.85462},
+                  "orientation": {"x": 0.20306, "y": 0.04969, "z": 0.39845, "w": 0.89305},
+                  "shape": {
+                    "type": "none",
+                    "offset": {"x": 0.00013, "y": 8.00019, "z": 0.00004},
+                    "stretch": {"x": 1, "y": 1, "z": 1},
+                    "settings": {
+                      "isPiece": false
+                    },
+                    "textureLayout": {},
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  },
+                  "children": [
+                    {
+                      "id": "5",
+                      "name": "Bounce",
+                      "position": {"x": 0, "y": -9, "z": 0},
+                      "orientation": {"x": 0.02754, "y": 0.99412, "z": 0.10474, "w": 0},
+                      "shape": {
+                        "type": "none",
+                        "offset": {"x": 0, "y": 0, "z": 0},
+                        "stretch": {"x": 1, "y": 1, "z": 1},
+                        "settings": {
+                          "isPiece": false
+                        },
+                        "textureLayout": {},
+                        "unwrapMode": "custom",
+                        "visible": true,
+                        "doubleSided": false,
+                        "shadingMode": "flat"
+                      },
+                      "children": [
+                        {
+                          "id": "6",
+                          "name": "Horns--C1",
+                          "position": {"x": 0.49281, "y": 8.78888, "z": 1.87425},
+                          "orientation": {"x": 0.02754, "y": 0.99412, "z": 0.10474, "w": 0},
+                          "shape": {
+                            "type": "box",
+                            "offset": {"x": 0, "y": 0, "z": 0},
+                            "stretch": {"x": 0.76096, "y": 1, "z": 0.77296},
+                            "settings": {
+                              "isPiece": false,
+                              "size": {"x": 11, "y": 20, "z": 12},
+                              "isStaticBox": true
+                            },
+                            "textureLayout": {
+                              "back": {
+                                "offset": {"x": 116, "y": 1},
+                                "mirror": {"x": true, "y": true},
+                                "angle": 270
+                              },
+                              "right": {
+                                "offset": {"x": 116, "y": 24},
+                                "mirror": {"x": true, "y": false},
+                                "angle": 90
+                              },
+                              "front": {
+                                "offset": {"x": 116, "y": 1},
+                                "mirror": {"x": true, "y": true},
+                                "angle": 270
+                              },
+                              "left": {
+                                "offset": {"x": 116, "y": 12},
+                                "mirror": {"x": true, "y": true},
+                                "angle": 270
+                              },
+                              "top": {
+                                "offset": {"x": 18, "y": 28},
+                                "mirror": {"x": false, "y": true},
+                                "angle": 90
+                              }
+                            },
+                            "unwrapMode": "custom",
+                            "visible": true,
+                            "doubleSided": false,
+                            "shadingMode": "flat"
+                          }
+                        },
+                        {
+                          "id": "7",
+                          "name": "Horns--C2",
+                          "position": {"x": -1.5338, "y": 26.23426, "z": 5.57674},
+                          "orientation": {"x": 0.18878, "y": -0.97465, "z": -0.12005, "w": 0},
+                          "shape": {
+                            "type": "quad",
+                            "offset": {"x": 2.74415, "y": 1.20889, "z": -0.09065},
+                            "stretch": {"x": 1, "y": 1, "z": 1},
+                            "settings": {
+                              "isPiece": false,
+                              "size": {"x": 64, "y": 64},
+                              "normal": "+Z",
+                              "isStaticBox": true
+                            },
+                            "textureLayout": {
+                              "front": {
+                                "offset": {"x": 192, "y": 0},
+                                "mirror": {"x": true, "y": true},
+                                "angle": 270
+                              }
+                            },
+                            "unwrapMode": "custom",
+                            "visible": true,
+                            "doubleSided": true,
+                            "shadingMode": "flat"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "8",
+                      "name": "Horns",
+                      "position": {"x": 3, "y": 7.696, "z": 0},
+                      "orientation": {"x": -0.03234, "y": 0.0145, "z": -0.25163, "w": 0.96717},
+                      "shape": {
+                        "type": "none",
+                        "offset": {"x": 0.00013, "y": 10.00022, "z": 0.00004},
+                        "stretch": {"x": 1, "y": 1, "z": 1},
+                        "settings": {
+                          "isPiece": false
+                        },
+                        "textureLayout": {},
+                        "unwrapMode": "custom",
+                        "visible": true,
+                        "doubleSided": false,
+                        "shadingMode": "flat"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "9",
+              "name": "Mask Base",
+              "position": {"x": 0, "y": -7.771, "z": 16.903},
+              "orientation": {"x": 0.4964, "y": 0.20562, "z": -0.32275, "w": 0.77919},
+              "shape": {
+                "type": "box",
+                "offset": {"x": 1, "y": -1, "z": -2},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 15, "y": 15, "z": 27}
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 38, "y": 39},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 0, "y": 1},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 90
+                  },
+                  "top": {
+                    "offset": {"x": 0, "y": 1},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": true,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "10",
+              "name": "R-Horns",
+              "position": {"x": -12, "y": 10, "z": -7},
+              "orientation": {"x": -0.23314, "y": 0.10927, "z": 0.39275, "w": 0.88287},
+              "shape": {
+                "type": "box",
+                "offset": {"x": 0, "y": 6, "z": 0},
+                "stretch": {"x": -1.1, "y": 1.1, "z": 1.1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 11, "y": 20, "z": 12}
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 116, "y": 12},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "right": {
+                    "offset": {"x": 96, "y": 12},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 90
+                  },
+                  "front": {
+                    "offset": {"x": 116, "y": 1},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  },
+                  "left": {
+                    "offset": {"x": 116, "y": 24},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "top": {
+                    "offset": {"x": 30, "y": 28},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  },
+                  "bottom": {
+                    "offset": {"x": 104, "y": 11},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              },
+              "children": [
+                {
+                  "id": "11",
+                  "name": "Horns",
+                  "position": {"x": -0.58279, "y": 7.48264, "z": -1.00515},
+                  "orientation": {"x": 0.14813, "y": -0.17451, "z": -0.30851, "w": 0.92327},
+                  "shape": {
+                    "type": "none",
+                    "offset": {"x": -0.00013, "y": 8.00019, "z": 0.00004},
+                    "stretch": {"x": 1, "y": 1, "z": 1},
+                    "settings": {
+                      "isPiece": false
+                    },
+                    "textureLayout": {},
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  },
+                  "children": [
+                    {
+                      "id": "12",
+                      "name": "Bounce",
+                      "position": {"x": -0.43811, "y": -6.03296, "z": -0.64143},
+                      "orientation": {"x": 0.2338, "y": 0.96874, "z": 0.08292, "w": 0},
+                      "shape": {
+                        "type": "none",
+                        "offset": {"x": 0, "y": 0, "z": 0},
+                        "stretch": {"x": 1, "y": 1, "z": 1},
+                        "settings": {
+                          "isPiece": false
+                        },
+                        "textureLayout": {},
+                        "unwrapMode": "custom",
+                        "visible": true,
+                        "doubleSided": false,
+                        "shadingMode": "flat"
+                      },
+                      "children": [
+                        {
+                          "id": "13",
+                          "name": "Horns--C1",
+                          "position": {"x": 2.36753, "y": 5.59193, "z": 0.35363},
+                          "orientation": {"x": 0.2338, "y": 0.96874, "z": 0.08292, "w": 0},
+                          "shape": {
+                            "type": "box",
+                            "offset": {"x": 0, "y": 0, "z": 0},
+                            "stretch": {"x": -0.76096, "y": 0.77311, "z": 0.77296},
+                            "settings": {
+                              "isPiece": false,
+                              "size": {"x": 11, "y": 20, "z": 12},
+                              "isStaticBox": true
+                            },
+                            "textureLayout": {
+                              "back": {
+                                "offset": {"x": 116, "y": 1},
+                                "mirror": {"x": true, "y": true},
+                                "angle": 270
+                              },
+                              "right": {
+                                "offset": {"x": 116, "y": 24},
+                                "mirror": {"x": true, "y": false},
+                                "angle": 90
+                              },
+                              "front": {
+                                "offset": {"x": 116, "y": 1},
+                                "mirror": {"x": true, "y": true},
+                                "angle": 270
+                              },
+                              "left": {
+                                "offset": {"x": 116, "y": 12},
+                                "mirror": {"x": true, "y": true},
+                                "angle": 270
+                              },
+                              "top": {
+                                "offset": {"x": 18, "y": 28},
+                                "mirror": {"x": false, "y": true},
+                                "angle": 90
+                              }
+                            },
+                            "unwrapMode": "custom",
+                            "visible": true,
+                            "doubleSided": false,
+                            "shadingMode": "flat"
+                          }
+                        },
+                        {
+                          "id": "14",
+                          "name": "Horns--C2",
+                          "position": {"x": 3.42316, "y": -0.35032, "z": -1.92321},
+                          "orientation": {"x": -0.73037, "y": -0.68297, "z": 0.011, "w": 0},
+                          "shape": {
+                            "type": "box",
+                            "offset": {"x": -0.91903, "y": 5.87632, "z": 0.79007},
+                            "stretch": {"x": 1, "y": 1, "z": 1},
+                            "settings": {
+                              "isPiece": false,
+                              "size": {"x": 4, "y": 12, "z": 4},
+                              "isStaticBox": true
+                            },
+                            "textureLayout": {
+                              "back": {
+                                "offset": {"x": 98, "y": 1},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              },
+                              "right": {
+                                "offset": {"x": 98, "y": 1},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              },
+                              "front": {
+                                "offset": {"x": 98, "y": 1},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              },
+                              "left": {
+                                "offset": {"x": 98, "y": 1},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              },
+                              "top": {
+                                "offset": {"x": 98, "y": 1},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              },
+                              "bottom": {
+                                "offset": {"x": 98, "y": 1},
+                                "mirror": {"x": false, "y": false},
+                                "angle": 0
+                              }
+                            },
+                            "unwrapMode": "custom",
+                            "visible": true,
+                            "doubleSided": false,
+                            "shadingMode": "flat"
+                          }
+                        },
+                        {
+                          "id": "15",
+                          "name": "Horns--C3",
+                          "position": {"x": 14.82845, "y": 23.18245, "z": 3.709},
+                          "orientation": {"x": 0.2338, "y": 0.96874, "z": 0.08292, "w": 0},
+                          "shape": {
+                            "type": "quad",
+                            "offset": {"x": 0, "y": 0, "z": 0},
+                            "stretch": {"x": -1, "y": 1, "z": 1},
+                            "settings": {
+                              "isPiece": false,
+                              "size": {"x": 44, "y": 46},
+                              "normal": "+Z",
+                              "isStaticBox": true
+                            },
+                            "textureLayout": {
+                              "front": {
+                                "offset": {"x": 192, "y": 64},
+                                "mirror": {"x": true, "y": true},
+                                "angle": 270
+                              }
+                            },
+                            "unwrapMode": "custom",
+                            "visible": true,
+                            "doubleSided": true,
+                            "shadingMode": "flat"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "16",
+                      "name": "Horns",
+                      "position": {"x": -3.72029, "y": -1.09849, "z": 1.33177},
+                      "orientation": {"x": -0.0478, "y": 0.05915, "z": -0.78996, "w": 0.60843},
+                      "shape": {
+                        "type": "none",
+                        "offset": {"x": 0, "y": -4, "z": 0},
+                        "stretch": {"x": 1, "y": 1, "z": 1},
+                        "settings": {
+                          "isPiece": false
+                        },
+                        "textureLayout": {},
+                        "unwrapMode": "custom",
+                        "visible": true,
+                        "doubleSided": false,
+                        "shadingMode": "flat"
+                      }
+                    },
+                    {
+                      "id": "17",
+                      "name": "Horns",
+                      "position": {"x": -3, "y": 4.609, "z": 0},
+                      "orientation": {"x": 0.01802, "y": 0.05338, "z": -0.05487, "w": 0.9969},
+                      "shape": {
+                        "type": "none",
+                        "offset": {"x": -0.00013, "y": 17.00022, "z": 0.00004},
+                        "stretch": {"x": 1, "y": 1, "z": 1},
+                        "settings": {
+                          "isPiece": false
+                        },
+                        "textureLayout": {},
+                        "unwrapMode": "custom",
+                        "visible": true,
+                        "doubleSided": false,
+                        "shadingMode": "flat"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "format": "character",
+  "lod": "auto"
+}

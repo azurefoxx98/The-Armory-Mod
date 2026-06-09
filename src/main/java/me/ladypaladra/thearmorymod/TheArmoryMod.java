@@ -33,7 +33,7 @@ public class TheArmoryMod extends JavaPlugin {
         ArmorStandModule.register(this);
 
         getEntityStoreRegistry().registerSystem(new ScorpianFlailPoisonSystem());
-        //getEntityStoreRegistry().registerSystem(new EngineeringRigMobilitySystem());
+        // getEntityStoreRegistry().registerSystem(new EngineeringRigMobilitySystem());
 
         LOGGER.atInfo().log("Setup complete!");
     }

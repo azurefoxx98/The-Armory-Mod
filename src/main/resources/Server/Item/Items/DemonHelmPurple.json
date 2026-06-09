@@ -1,11 +1,10 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.DemonHelm_Open.name",
+    "Name": "server.items.DemonHelm.name",
     "Description": "server.items.Daemon.description"
   },
-  "Parent": "Armor_Iron_Head",
+  "Parent": "DemonHelm",
   "Quality": "Epic",
-  "ItemLevel": 40,
   "Icon": "Icons/ItemsGenerated/DemonHelmPurple.png",
   "IconProperties": {
     "Scale": 0.2,
@@ -16,7 +15,7 @@
     ],
     "Translation": [
       32,
-      -101
+      -34
     ]
   },
   "Model": "Items/Armors/Demon/Head.blockymodel",
@@ -40,6 +39,21 @@
     "KnowledgeRequired": false,
     "TimeSeconds": 0
   },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "Scale": 0.75,
+  "ResourceTypes": [
+    {
+      "Id": "DemonHelm"
+    }
+  ],
+  "ItemLevel": 40,
   "Armor": {
     "ArmorSlot": "Head",
     "BaseDamageResistance": 0,
@@ -53,19 +67,19 @@
       "Physical": [
         {
           "Amount": 0.08,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ],
       "Projectile": [
         {
           "Amount": 0.08,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ],
       "Fire": [
         {
           "Amount": 0.2,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ]
     },
@@ -87,24 +101,10 @@
     }
   },
   "MaxDurability": 150,
-  "Tags": {
-    "Type": [
-      "Armor"
-    ],
-    "Family": [
-      "Adamantite"
-    ]
-  },
   "ItemSoundSetId": "ISS_Armor_Heavy",
   "DurabilityLossOnHit": 0.5,
-  "Scale": 0.75,
   "Categories": [
     "ArmoryCategory.ArmoryArmors"
-  ],
-  "ResourceTypes": [
-    {
-      "Id": "DemonHelm"
-    }
   ],
   "SubCategory": "Daemon Set"
 }

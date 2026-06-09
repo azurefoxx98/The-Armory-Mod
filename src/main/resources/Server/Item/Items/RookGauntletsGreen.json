@@ -75,13 +75,13 @@
       "Physical": [
         {
           "Amount": 0.04,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ],
       "Projectile": [
         {
           "Amount": 0.04,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ]
     },
@@ -92,7 +92,10 @@
           "CalculationType": "Additive"
         }
       ]
-    }
+    },
+    "CosmeticsToHide": [
+      "Gloves"
+    ]
   },
   "MaxDurability": 100,
   "DurabilityLossOnHit": 0.5,

@@ -1,6 +1,7 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.GhostSword.name"
+    "Name": "server.items.GhostSword.name",
+    "Description": "server.items.GhostSword.description"
   },
   "Categories": [
     "ArmoryCategory.ArmoryWeapons"
@@ -8,12 +9,8 @@
   "Icon": "Icons/ItemsGenerated/GhostSword.png",
   "Quality": "Uncommon",
   "ItemLevel": 20,
-  "Model": "Items/Weapons/Ghost/ghost_sword.blockymodel",
-  "Texture": "Items/Weapons/Ghost/ghost_sword.png",
-  "PlayerAnimationsId": "Longsword",
-  "Interactions": {
-    "Primary": "Longsword_Attack"
-  },
+  "Model": "Items/Weapons/GhostSword/ghost_sword.blockymodel",
+  "Texture": "Items/Weapons/GhostSword/ghost_sword.png",
   "InteractionVars": {
     "Longsword_Swing_Left_Effect": {
       "Interactions": [
@@ -139,5 +136,38 @@
     ]
   },
   "Weapon": {},
-  "ItemSoundSetId": "ISS_Weapons_Blade_Large"
+  "ItemSoundSetId": "ISS_Weapons_Blade_Large",
+  "PlayerAnimationsId": "Template_Ghostly_Sword",
+  "UsePlayerAnimations": false,
+  "Trails": [
+    {
+      "TrailId": "Ghostly",
+      "TargetNodeName": "Origin_Projectile",
+      "TargetEntityPart": "PrimaryItem",
+      "PositionOffset": {
+        "X": 0,
+        "Y": -0.5
+      }
+    }
+  ],
+  "Parent": "Template_Weapon_Sword",
+  "Particles": [
+    {
+      "SystemId": "Eye_Void_Smoke_Green",
+      "TargetEntityPart": "Entity",
+      "TargetNodeName": "Chest",
+      "Color": "#00ffae",
+      "Scale": 0.8,
+      "PositionOffset": {
+        "Y": -1
+      }
+    }
+  ],
+  "Light": {
+    "Color": "#175",
+    "Radius": 1
+  },
+  "Interactions": {
+    "Primary": "Longsword_Attack"
+  }
 }

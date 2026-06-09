@@ -10,7 +10,7 @@
   "Categories": [
     "ArmoryCategory.ArmoryArmors"
   ],
-  "Icon": "Icons/ItemsGenerated/Test.png",
+  "Icon": "Icons/ItemsGenerated/EngineeringRig.png",
   "Recipe": {
     "Input": [
       {
@@ -66,13 +66,13 @@
       "Physical": [
         {
           "Amount": 0.06,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ],
       "Projectile": [
         {
           "Amount": 0.06,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ]
     },
@@ -81,6 +81,18 @@
         {
           "Amount": 17,
           "CalculationType": "Additive"
+        }
+      ],
+      "Move_Speed": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.2
+        }
+      ],
+      "Jump_Height": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.2
         }
       ]
     },

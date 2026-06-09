@@ -1,0 +1,59 @@
+{
+  "Animations": {
+    "Sprint": {
+      "FirstPerson": "Characters/Animations/Items/Ghostly/Sprint/Sprint_FPS.blockyanim",
+      "Speed": 1,
+      "ThirdPerson": "Characters/Animations/Items/Broom/Sprint/Sprint.blockyanim",
+      "Looping": true,
+      "BlendingDuration": 0.7
+    }
+  },
+  "Camera": {
+    "Pitch": {
+      "TargetNodes": [
+        "Head",
+        "RShoulder"
+      ]
+    },
+    "Yaw": {
+      "TargetNodes": [
+        "Belly"
+      ]
+    }
+  },
+  "WiggleWeights": {
+    "Pitch": 1.5,
+    "PitchDeceleration": 0.15,
+    "Roll": 0.1,
+    "RollDeceleration": 0.15,
+    "X": 2,
+    "XDeceleration": 0.15,
+    "Y": 0.1,
+    "YDeceleration": 0.15,
+    "Z": 0.1,
+    "ZDeceleration": 0.15
+  },
+  "PullbackConfig": {
+    "LeftOffsetOverride": [
+      0,
+      0,
+      -1.6
+    ],
+    "LeftRotationOverride": [
+      0,
+      0,
+      0
+    ],
+    "RightOffsetOverride": [
+      0,
+      0,
+      -1.6
+    ],
+    "RightRotationOverride": [
+      0,
+      0,
+      0
+    ]
+  },
+  "Parent": "Sword"
+}

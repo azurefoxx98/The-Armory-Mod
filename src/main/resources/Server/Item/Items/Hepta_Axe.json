@@ -98,6 +98,57 @@
       ]
     },
     "Guard_Wield": {
+      "Secondary": {
+        "Interactions": [
+          {
+            "Type": "CooldownCondition",
+            "Id": "HeptaSpeed",
+            "Next": {
+              "Type": "Charging",
+              "HorizontalSpeedMultiplier": 2.5,
+              "RunTime": 1,
+              "Effects": {
+                "MovementEffects": {
+                  "DisableBackward": true,
+                  "DisableLeft": true,
+                  "DisableRight": true,
+                  "DisableCrouch": true
+                },
+                "CameraEffect": "Battleaxe_Bash",
+                "WorldSoundEventId": "SFX_Deployable_Totem_Heal_Spawn",
+                "Trails": [
+                  {
+                    "TrailId": "Large_Charged",
+                    "TargetNodeName": "L-Foot",
+                    "TargetEntityPart": "Entity"
+                  },
+                  {
+                    "TrailId": "Large_Charged",
+                    "TargetNodeName": "R-Foot",
+                    "TargetEntityPart": "Entity"
+                  }
+                ],
+                "Particles": [
+                  {
+                    "SystemId": "Explosion_Big"
+                  }
+                ]
+              },
+              "CancelOnItemChange": true,
+              "Next": {
+                "1.0": {
+                  "Type": "TriggerCooldown",
+                  "Cooldown": {
+                    "Id": "HeptaSpeed",
+                    "Cooldown": 5
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "Parent": "Root_Weapon_Battleaxe_Secondary_Guard"
+      },
       "Interactions": [
         {
           "Parent": "Weapon_Battleaxe_Secondary_Guard_Wield",
@@ -130,18 +181,71 @@
       "TrailId": "Small_Flame",
       "TargetEntityPart": "PrimaryItem",
       "RotationOffset": {
-        "Roll": 45,
+        "Roll": 0,
         "Pitch": 0
       },
       "FixedRotation": false,
       "PositionOffset": {
-        "Z": 0,
+        "X": 0,
         "Y": 0,
-        "X": 0.5
+        "Z": 0
       }
     }
   ],
   "Categories": [
     "ArmoryCategory.ArmoryWeapons"
-  ]
+  ],
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "CooldownCondition",
+          "Id": "HeptaSpeed",
+          "Next": {
+            "Type": "Charging",
+            "HorizontalSpeedMultiplier": 2.5,
+            "RunTime": 1,
+            "Effects": {
+              "MovementEffects": {
+                "DisableBackward": true,
+                "DisableLeft": true,
+                "DisableRight": true,
+                "DisableCrouch": true
+              },
+              "CameraEffect": "Battleaxe_Bash",
+              "WorldSoundEventId": "SFX_Deployable_Totem_Heal_Spawn",
+              "Trails": [
+                {
+                  "TrailId": "Large_Charged",
+                  "TargetNodeName": "L-Foot",
+                  "TargetEntityPart": "Entity"
+                },
+                {
+                  "TrailId": "Large_Charged",
+                  "TargetNodeName": "R-Foot",
+                  "TargetEntityPart": "Entity"
+                }
+              ],
+              "Particles": [
+                {
+                  "SystemId": "Explosion_Big"
+                }
+              ]
+            },
+            "CancelOnItemChange": true,
+            "Next": {
+              "1.0": {
+                "Type": "TriggerCooldown",
+                "Cooldown": {
+                  "Id": "HeptaSpeed",
+                  "Cooldown": 5
+                }
+              }
+            }
+          }
+        }
+      ],
+      "Parent": "Root_Weapon_Battleaxe_Secondary_Guard"
+    }
+  }
 }

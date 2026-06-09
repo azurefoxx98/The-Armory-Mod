@@ -1,0 +1,28 @@
+{
+  "Parent": "Mannequin",
+  "Texture": "Characters/ArmorStand/ArmorStand_Mannequin.png",
+  "MinScale": 1.0,
+  "MaxScale": 1.0,
+  "EyeHeight": 1.6,
+  "HitBox": {
+    "Min": { "X": -0.3, "Y": 0, "Z": -0.3 },
+    "Max": { "X": 0.3, "Y": 1.8, "Z": 0.3 }
+  },
+  "AnimationSets": {
+    "Idle": {
+      "Animations": [
+        { "Animation": "Characters/ArmorStand/Idle.blockyanim", "Looping": false, "Speed": 1.0 }
+      ]
+    },
+    "IdlePassive": {
+      "Animations": [
+        { "Animation": "Characters/ArmorStand/Idle.blockyanim", "Looping": false, "Speed": 1.0 }
+      ]
+    },
+    "Hurt": {
+      "Animations": [
+        { "Animation": "Characters/ArmorStand/Idle.blockyanim", "Looping": false, "Speed": 1.0 }
+      ]
+    }
+  }
+}

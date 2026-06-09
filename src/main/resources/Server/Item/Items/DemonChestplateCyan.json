@@ -3,9 +3,7 @@
     "Name": "server.items.DemonChestplate.name",
     "Description": "server.items.Daemon.description"
   },
-  "Parent": "Armor_Iron_Chest",
-  "Quality": "Epic",
-  "ItemLevel": 40,
+  "Parent": "DemonChestplate",
   "Icon": "Icons/ItemsGenerated/DemonChestplateCyan.png",
   "IconProperties": {
     "Scale": 0.335,
@@ -15,8 +13,8 @@
       22.5
     ],
     "Translation": [
-      -3,
-      -54
+      -1,
+      -8
     ]
   },
   "Model": "Items/Armors/Demon/Chest.blockymodel",
@@ -40,6 +38,25 @@
     "KnowledgeRequired": false,
     "TimeSeconds": 0
   },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "ResourceDemonChest"
+    }
+  ],
+  "Light": {
+    "Color": "#074",
+    "Radius": 0
+  },
+  "Quality": "Epic",
+  "ItemLevel": 40,
   "Armor": {
     "ArmorSlot": "Chest",
     "BaseDamageResistance": 0,
@@ -55,19 +72,19 @@
       "Physical": [
         {
           "Amount": 0.144,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ],
       "Projectile": [
         {
           "Amount": 0.144,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ],
       "Fire": [
         {
           "Amount": 0.2,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ]
     },
@@ -84,27 +101,10 @@
     ]
   },
   "MaxDurability": 150,
-  "Tags": {
-    "Type": [
-      "Armor"
-    ],
-    "Family": [
-      "Adamantite"
-    ]
-  },
   "ItemSoundSetId": "ISS_Armor_Heavy",
   "DurabilityLossOnHit": 0.5,
   "Categories": [
     "ArmoryCategory.ArmoryArmors"
   ],
-  "ResourceTypes": [
-    {
-      "Id": "ResourceDemonChest"
-    }
-  ],
-  "Light": {
-    "Color": "#074",
-    "Radius": 0
-  },
   "SubCategory": "Daemon Set"
 }

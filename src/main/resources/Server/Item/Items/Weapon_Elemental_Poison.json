@@ -39,10 +39,6 @@
   "Model": "Items/Weapons/Elementals/ElementSword.blockymodel",
   "Texture": "Items/Weapons/Elementals/Poison.png",
   "PlayerAnimationsId": "Longsword",
-  "Interactions": {
-    "Primary": "Longsword_Attack",
-    "Secondary": "Root_Weapon_Battleaxe_Secondary_Guard"
-  },
   "InteractionVars": {
     "Longsword_Swing_Left_Effect": {
       "Interactions": [
@@ -185,5 +181,9 @@
         "Roll": 90
       }
     }
-  ]
+  ],
+  "Interactions": {
+    "Primary": "Longsword_Attack",
+    "Secondary": "Root_Weapon_Battleaxe_Secondary_Guard"
+  }
 }

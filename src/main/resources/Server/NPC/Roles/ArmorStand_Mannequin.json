@@ -1,0 +1,29 @@
+{
+  "Type": "Generic",
+  "Appearance": "ArmorStand_Mannequin",
+  "NameTranslationKey": "server.npcRoles.ArmorStand_Mannequin.name",
+  "DefaultPlayerAttitude": "Ignore",
+  "Invulnerable": true,
+  "KnockbackScale": 0,
+  "MaxHealth": { "Compute": "MaxHealth" },
+  "Parameters": {
+    "MaxHealth": {
+      "Value": 100000,
+      "Description": "Max health for the NPC"
+    }
+  },
+  "DisableDamageGroups": ["Player"],
+  "MotionControllerList": [
+    { "Type": "Walk", "MinWalkSpeed": 0.01, "MaxWalkSpeed": 0.01, "Gravity": 10, "MaxFallSpeed": 8 }
+  ],
+  "HotbarSize": 3,
+  "OffHandSlots": 1,
+  "DefaultOffHandSlot": -1,
+  "Instructions": [
+    {
+      "Sensor": { "Type": "Any" },
+      "BodyMotion": { "Type": "Nothing" },
+      "HeadMotion": { "Type": "Nothing" }
+    }
+  ]
+}

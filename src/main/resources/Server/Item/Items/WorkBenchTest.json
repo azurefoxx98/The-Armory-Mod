@@ -24,14 +24,14 @@
   },
   "Model": "Items/Armors/Warden/Chest.blockymodel",
   "Texture": "Items/Armors/Warden/Warden.png",
-    "Armor": {
+  "Armor": {
     "ArmorSlot": "Chest",
     "BaseDamageResistance": 0,
     "DamageResistance": {
       "Projectile": [
         {
           "Amount": 0.09,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ]
     },
@@ -66,11 +66,6 @@
       "Iron"
     ]
   },
-  "ResourceTypes": [
-    {
-      "Id": "WardenChest"
-    }
-  ],
   "Interactions": {
     "Secondary": {
       "Interactions": [
@@ -81,5 +76,10 @@
         }
       ]
     }
-  }
+  },
+  "ResourceTypes": [
+    {
+      "Id": "WardenChest"
+    }
+  ]
 }

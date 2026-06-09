@@ -3,9 +3,8 @@
     "Name": "server.items.DemonGauntlets.name",
     "Description": "server.items.Daemon.description"
   },
-  "Parent": "Armor_Iron_Hands",
+  "Parent": "DemonGauntlets",
   "Quality": "Epic",
-  "ItemLevel": 40,
   "Icon": "Icons/ItemsGenerated/DemonGauntletsPurple.png",
   "IconProperties": {
     "Scale": 0.5,
@@ -16,7 +15,7 @@
     ],
     "Translation": [
       3,
-      -42
+      -2
     ]
   },
   "Model": "Items/Armors/Demon/Gauntlets.blockymodel",
@@ -40,6 +39,20 @@
     "KnowledgeRequired": false,
     "TimeSeconds": 0
   },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "ResourceDemonGauntlets"
+    }
+  ],
+  "ItemLevel": 40,
   "Armor": {
     "ArmorSlot": "Hands",
     "BaseDamageResistance": 0,
@@ -47,19 +60,19 @@
       "Physical": [
         {
           "Amount": 0.064,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ],
       "Projectile": [
         {
           "Amount": 0.064,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ],
       "Fire": [
         {
           "Amount": 0.2,
-          "CalculationType": "Multiplicative"
+          "CalculationType": "Percent"
         }
       ]
     },
@@ -81,23 +94,10 @@
     }
   },
   "MaxDurability": 150,
-  "Tags": {
-    "Type": [
-      "Armor"
-    ],
-    "Family": [
-      "Adamantite"
-    ]
-  },
   "ItemSoundSetId": "ISS_Armor_Heavy",
   "DurabilityLossOnHit": 0.5,
   "Categories": [
     "ArmoryCategory.ArmoryArmors"
-  ],
-  "ResourceTypes": [
-    {
-      "Id": "ResourceDemonGauntlets"
-    }
   ],
   "SubCategory": "Daemon Set"
 }

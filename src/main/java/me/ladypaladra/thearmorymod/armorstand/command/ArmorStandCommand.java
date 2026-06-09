@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * ArmorStandCommand
@@ -34,7 +35,11 @@ public class ArmorStandCommand extends AbstractCommandCollection {
 
     public static final String ARMOR_STAND_BLOCK_ID = "ArmorStand_Block";
 
-    private static final String MANNEQUIN_ROLE = "ArmorStand_Mannequin";
+    private static final Set<String> MANNEQUIN_ROLES = Set.of(
+            "ArmorStand_Mannequin",
+            "HubSocial:ArmorStand_Mannequin",
+            "ArmorStandMod:ArmorStand_Mannequin"
+    );
 
     public ArmorStandCommand() {
         super("armorstand", "Armor Stand commands");
@@ -115,8 +120,8 @@ public class ArmorStandCommand extends AbstractCommandCollection {
                                     NPCEntity.getComponentType()
                             );
 
-                            if (npc != null && MANNEQUIN_ROLE.equals(npc.getRoleName())) {
-                                ArmorStandModule.untrackMannequin(npc);
+                            if (npc != null && MANNEQUIN_ROLES.contains(npc.getRoleName())) {
+                                ArmorStandModule.untrackMannequin(entityRef);
 
                                 entityStore.removeEntity(entityRef, RemoveReason.REMOVE);
 

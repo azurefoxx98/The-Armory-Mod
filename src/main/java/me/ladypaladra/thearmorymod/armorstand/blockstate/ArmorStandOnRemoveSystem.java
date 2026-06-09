@@ -9,14 +9,10 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.math.util.ChunkUtil;
-import com.hypixel.hytale.server.core.entity.Entity;
 import com.hypixel.hytale.server.core.modules.block.BlockModule;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.BlockChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
-import com.hypixel.hytale.server.npc.entities.NPCEntity;
-
-import me.ladypaladra.thearmorymod.armorstand.ArmorStandModule;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,7 +22,7 @@ import java.util.logging.Logger;
 /**
  * ArmorStandOnRemoveSystem — handles cleanup when an Armor Stand block is removed.
  *
- * When the block is broken, this system despawns the mannequin NPC and cleans
+ * When the block is broken, this system despawns the mannequin and cleans
  * the transient runtime state from ArmorStandTickSystem.
  */
 @SuppressWarnings({"removal", "deprecation"})
@@ -60,6 +56,7 @@ public class ArmorStandOnRemoveSystem extends RefSystem<ChunkStore> {
                                @Nonnull Store<ChunkStore> store,
                                @Nonnull CommandBuffer<ChunkStore> commandBuffer) {
 
+        // Do not clean up on chunk unload. Only clean up on actual block removal.
         if (reason == RemoveReason.UNLOAD) {
             return;
         }
@@ -113,15 +110,7 @@ public class ArmorStandOnRemoveSystem extends RefSystem<ChunkStore> {
 
                 world.execute(() -> {
                     try {
-                        Entity entity = world.getEntity(mannequinUuid);
-
-                        if (entity != null) {
-                            if (entity instanceof NPCEntity npc) {
-                                ArmorStandModule.untrackMannequin(npc);
-                            }
-
-                            entity.remove();
-                        }
+                        ArmorStandTickSystem.removeMannequinByUuid(world, mannequinUuid);
                     } catch (Exception e) {
                         LOGGER.warning(
                                 "Failed to remove persisted mannequin on block break: "

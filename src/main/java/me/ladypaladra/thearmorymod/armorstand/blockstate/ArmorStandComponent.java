@@ -9,10 +9,15 @@ import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 
 import java.util.UUID;
 
+/**
+ * ArmorStandComponent — persists the mannequin NPC UUID for an Armor Stand block.
+ * Stored as a block component on the ChunkStore.
+ */
 public class ArmorStandComponent implements Component<ChunkStore> {
 
     private static ComponentType<ChunkStore, ArmorStandComponent> COMPONENT_TYPE;
 
+    @SuppressWarnings("unchecked")
     public static final BuilderCodec<ArmorStandComponent> CODEC =
             ((BuilderCodec.Builder<ArmorStandComponent>)
                     BuilderCodec.builder(ArmorStandComponent.class, ArmorStandComponent::new)

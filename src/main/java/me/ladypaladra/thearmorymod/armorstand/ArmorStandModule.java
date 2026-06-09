@@ -11,6 +11,7 @@ import com.hypixel.hytale.server.npc.entities.NPCEntity;
 
 import me.ladypaladra.thearmorymod.TheArmoryMod;
 import me.ladypaladra.thearmorymod.armorstand.blockstate.ArmorStandComponent;
+import me.ladypaladra.thearmorymod.armorstand.blockstate.ArmorStandLegacyMannequinSystem;
 import me.ladypaladra.thearmorymod.armorstand.blockstate.ArmorStandOnRemoveSystem;
 import me.ladypaladra.thearmorymod.armorstand.blockstate.ArmorStandTickSystem;
 import me.ladypaladra.thearmorymod.armorstand.command.ArmorStandCommand;
@@ -21,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class ArmorStandModule {
 
-    private static final Set<NPCEntity> activeMannequins = ConcurrentHashMap.newKeySet();
+    private static final Set<Ref<EntityStore>> activeMannequins = ConcurrentHashMap.newKeySet();
 
     private ArmorStandModule() {}
 
@@ -37,8 +38,11 @@ public final class ArmorStandModule {
 
         ArmorStandComponent.setComponentType(compType);
 
+        plugin.getEntityStoreRegistry().registerSystem(new ArmorStandLegacyMannequinSystem());
+
         plugin.getChunkStoreRegistry().registerSystem(new ArmorStandTickSystem(compType));
         plugin.getChunkStoreRegistry().registerSystem(new ArmorStandOnRemoveSystem(compType));
+
         plugin.getCommandRegistry().registerCommand(new ArmorStandCommand());
 
         TheArmoryMod.LOGGER.atInfo().log("ArmorStandModule registered!");
@@ -60,21 +64,7 @@ public final class ArmorStandModule {
     }
 
     private static Set<Ref<EntityStore>> snapshotTrackedMannequinRefs() {
-        Set<Ref<EntityStore>> mannequinRefs = new HashSet<>();
-
-        for (NPCEntity npc : activeMannequins) {
-            if (npc == null) continue;
-
-            try {
-                Ref<EntityStore> mannequinRef = npc.getReference();
-
-                if (mannequinRef != null) {
-                    mannequinRefs.add(mannequinRef);
-                }
-            } catch (Exception ignored) {}
-        }
-
-        return mannequinRefs;
+        return new HashSet<>(activeMannequins);
     }
 
     private static void scheduleTrackedMannequinRemoval(Ref<EntityStore> mannequinRef) {
@@ -97,15 +87,31 @@ public final class ArmorStandModule {
         } catch (Throwable ignored) {}
     }
 
-    public static void trackMannequin(NPCEntity npc) {
-        if (npc != null) {
-            activeMannequins.add(npc);
+    public static void trackMannequin(Ref<EntityStore> mannequinRef) {
+        if (mannequinRef != null) {
+            activeMannequins.add(mannequinRef);
         }
     }
 
-    public static void untrackMannequin(NPCEntity npc) {
-        if (npc != null) {
-            activeMannequins.remove(npc);
+    public static void untrackMannequin(Ref<EntityStore> mannequinRef) {
+        if (mannequinRef != null) {
+            activeMannequins.remove(mannequinRef);
         }
+    }
+
+    public static void trackMannequin(NPCEntity npc) {
+        if (npc == null) return;
+
+        try {
+            trackMannequin(npc.getReference());
+        } catch (Exception ignored) {}
+    }
+
+    public static void untrackMannequin(NPCEntity npc) {
+        if (npc == null) return;
+
+        try {
+            untrackMannequin(npc.getReference());
+        } catch (Exception ignored) {}
     }
 }

@@ -5,6 +5,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
 import me.ladypaladra.thearmorymod.armorstand.ArmorStandModule;
+import me.ladypaladra.thearmorymod.krafter.KrafterModule;
 import me.ladypaladra.thearmorymod.largebench.LargeStructuralCraftingModule;
 import me.ladypaladra.thearmorymod.parry.ParryModule;
 import me.ladypaladra.thearmorymod.scorpianflail.systems.ScorpianFlailPoisonSystem;
@@ -29,6 +30,7 @@ public class TheArmoryMod extends JavaPlugin {
         ArmoryStatsModule.register(this);
         // ArmorTailoringModule.register(this);
         LargeStructuralCraftingModule.register(this);
+        KrafterModule.register(this);
 
         ArmorStandModule.register(this);
 

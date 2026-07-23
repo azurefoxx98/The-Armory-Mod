@@ -1,0 +1,103 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.DemonGauntlets.name",
+    "Description": "server.items.Daemon.description"
+  },
+  "Parent": "DemonGauntlets",
+  "Quality": "Epic",
+  "Icon": "Icons/ItemsGenerated/DemonGauntletsPurple.png",
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      21.94,
+      45.565,
+      22.5
+    ],
+    "Translation": [
+      3,
+      -2
+    ]
+  },
+  "Model": "Items/Armors/Demon/Gauntlets.blockymodel",
+  "Texture": "Items/Armors/Demon/GauntletsPurple.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "ResourceDemonGauntlets"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "ResourceDemonGauntlets"
+    }
+  ],
+  "ItemLevel": 40,
+  "Armor": {
+    "ArmorSlot": "Hands",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.064,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.064,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Fire": [
+        {
+          "Amount": 0.2,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 11,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Charged": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 150,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "SubCategory": "Daemon Set"
+}

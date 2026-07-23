@@ -1,49 +1,244 @@
 {
-  "Model": "Items/Weapons/MekanichalKrafters/KrafterOpen.blockymodel",
-  "Texture": "Items/Weapons/MekanichalKrafters/Krafter.png",
-  "Icon": "Icons/ItemsGenerated/MekanichalKrafter_Arrow.png",
+  "TranslationProperties": {
+    "Name": "server.items.MekanichalKrafter_Arrow.name",
+    "Description": "server.items.MekanichalKrafter_Arrow.description"
+  },
+  "Categories": [
+    "Furniture.Benches"
+  ],
+  "Recipe": {
+    "TimeSeconds": 3,
+    "Input": [
+      {
+        "Quantity": 100,
+        "ItemId": "Weapon_Arrow_Crude"
+      },
+      {
+        "ItemId": "Ingredient_Voidheart",
+        "Quantity": 1
+      },
+      {
+        "ResourceTypeId": "Wood_Planks",
+        "Quantity": 3
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Crafting"
+        ],
+        "RequiredTierLevel": 2
+      }
+    ]
+  },
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Items/Weapons/MekanichalKrafters/KrafterClosed.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Items/Weapons/MekanichalKrafters/Krafter.png",
+        "Weight": 1
+      }
+    ],
+    "VariantRotation": "NESW",
+    "CubeShadingMode": "Standard",
+    "State": {
+      "Definitions": {
+        "KrafterClosed": {
+          "Material": "Solid",
+          "DrawType": "Model",
+          "Opacity": "Transparent",
+          "CustomModel": "Items/Weapons/MekanichalKrafters/KrafterClosed.blockymodel",
+          "CustomModelTexture": [
+            {
+              "Texture": "Items/Weapons/MekanichalKrafters/Krafter.png",
+              "Weight": 1
+            }
+          ],
+          "HitboxType": "KrafterClosed",
+          "VariantRotation": "NESW",
+          "CubeShadingMode": "Standard",
+          "Interactions": {
+            "Use": {
+              "Interactions": [
+                {
+                  "Type": "MekanichalKrafterInteraction",
+                  "Mode": "CheckOpen",
+                  "Failed": {
+                    "Type": "SendMessage",
+                    "Message": "Krafter is still processing."
+                  },
+                  "Next": {
+                    "Type": "AddItem",
+                    "ItemId": "Weapon_Arrow_Crude",
+                    "Quantity": 1,
+                    "Next": {
+                      "Type": "MekanichalKrafterInteraction",
+                      "Mode": "ConsumeAndRestart"
+                    },
+                    "Failed": {
+                      "Type": "SendMessage",
+                      "Message": "Could not add the arrow."
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "Gathering": {
+            "Breaking": {
+              "GatherType": "Benches"
+            }
+          },
+          "BlockParticleSetId": "Wood",
+          "ParticleColor": "#5C583E",
+          "Support": {
+            "Down": [
+              {
+                "FaceType": "Full"
+              }
+            ]
+          },
+          "BlockSoundSetId": "Wood"
+        },
+        "KrafterOpen": {
+          "Material": "Solid",
+          "DrawType": "Model",
+          "Opacity": "Transparent",
+          "CustomModel": "Items/Weapons/MekanichalKrafters/KrafterOpen.blockymodel",
+          "CustomModelTexture": [
+            {
+              "Texture": "Items/Weapons/MekanichalKrafters/Krafter.png",
+              "Weight": 1
+            }
+          ],
+          "HitboxType": "Krafter",
+          "VariantRotation": "NESW",
+          "CubeShadingMode": "Standard",
+          "Interactions": {
+            "Use": {
+              "Interactions": [
+                {
+                  "Type": "MekanichalKrafterInteraction",
+                  "Mode": "CheckOpen",
+                  "Failed": {
+                    "Type": "SendMessage",
+                    "Message": "Krafter is still processing."
+                  },
+                  "Next": {
+                    "Type": "AddItem",
+                    "ItemId": "Weapon_Arrow_Crude",
+                    "Quantity": 1,
+                    "Next": {
+                      "Type": "MekanichalKrafterInteraction",
+                      "Mode": "ConsumeAndRestart"
+                    },
+                    "Failed": {
+                      "Type": "SendMessage",
+                      "Message": "Could not add the arrow."
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "Gathering": {
+            "Breaking": {
+              "GatherType": "Benches"
+            }
+          },
+          "BlockParticleSetId": "Wood",
+          "ParticleColor": "#5C583E",
+          "Support": {
+            "Down": [
+              {
+                "FaceType": "Full"
+              }
+            ]
+          },
+          "BlockSoundSetId": "Wood"
+        }
+      }
+    },
+    "Interactions": {
+      "Use": {
+        "Interactions": [
+          {
+            "Type": "MekanichalKrafterInteraction",
+            "Mode": "CheckOpen",
+            "Failed": {
+              "Type": "SendMessage",
+              "Message": "Krafter is still processing."
+            },
+            "Next": {
+              "Type": "AddItem",
+              "ItemId": "Weapon_Arrow_Crude",
+              "Quantity": 1,
+              "Next": {
+                "Type": "MekanichalKrafterInteraction",
+                "Mode": "ConsumeAndRestart"
+              },
+              "Failed": {
+                "Type": "SendMessage",
+                "Message": "Could not add the arrow."
+              }
+            }
+          }
+        ]
+      }
+    },
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Benches"
+      }
+    },
+    "BlockParticleSetId": "Wood",
+    "ParticleColor": "#5C583E",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "BlockSoundSetId": "Wood",
+    "BlockEntity": {
+      "Components": {
+        "MekanichalKrafterBlock": {
+          "Ready": false
+        }
+      }
+    },
+    "HitboxType": "KrafterClosed",
+    "FlipType": "Symmetric",
+    "RotationYawPlacementOffset": "TwoSeventy",
+    "RandomRotation": "None"
+  },
+  "PlayerAnimationsId": "Block",
   "IconProperties": {
     "Scale": 0.4,
     "Rotation": [
-      22.5,
-      45,
-      22.5
+      37,
+      307,
+      360
     ],
     "Translation": [
       3,
-      -19
+      -14
     ]
   },
-  "Interactions": {
-    "Secondary": {
-      "Interactions": [
-        {
-          "Type": "AddItem",
-          "ItemId": "Weapon_Arrow_Crude",
-          "Quantity": 1,
-          "Next": {
-            "Type": "ResetCooldown",
-            "Cooldown": {
-              "Id": "KrafterCD",
-              "Cooldown": 30.0
-            }
-          },
-          "Failed": {
-            "Type": "SendMessage",
-            "Message": "Krafter is still processing."
-          }
-        }
-      ]
-    }
+  "Tags": {
+    "Type": [
+      "Bench",
+      "MekanichalKrafter"
+    ]
   },
   "MaxStack": 1,
-  "Quality": "Developer",
-  "State": {
-    "KrafterClosed": "MekanichalKrafter_Arrow",
-    "KrafterOpen": "MekanichalKrafter_Arrow"
-  },
-  "Scale": 0.5,
-  "TranslationProperties": {
-    "Description": "[WIP] Is broken."
-  }
+  "Quality": "Epic",
+  "ItemSoundSetId": "ISS_Blocks_Wood",
+  "Icon": "Icons/ItemsGenerated/MekanichalKrafter_Arrow.png"
 }

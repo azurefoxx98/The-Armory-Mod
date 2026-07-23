@@ -1,0 +1,110 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.DemonChestplate.name",
+    "Description": "server.items.Daemon.description"
+  },
+  "Parent": "DemonChestplate",
+  "Quality": "Epic",
+  "Icon": "Icons/ItemsGenerated/DemonChestplatePurple.png",
+  "IconProperties": {
+    "Scale": 0.335,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      1,
+      -7
+    ]
+  },
+  "Model": "Items/Armors/Demon/Chest.blockymodel",
+  "Texture": "Items/Armors/Demon/ChestPurple.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "ResourceDemonChest"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "ResourceDemonChest"
+    }
+  ],
+  "Light": {
+    "Color": "#407",
+    "Radius": 0
+  },
+  "ItemLevel": 40,
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 24,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.144,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.144,
+          "CalculationType": "Multiplicative"
+        }
+      ],
+      "Fire": [
+        {
+          "Amount": 0.2,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Charged": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Overtop"
+    ]
+  },
+  "MaxDurability": 150,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "SubCategory": "Daemon Set"
+}

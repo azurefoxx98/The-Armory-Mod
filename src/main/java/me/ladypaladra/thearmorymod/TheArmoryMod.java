@@ -32,7 +32,7 @@ public class TheArmoryMod extends JavaPlugin {
         LargeStructuralCraftingModule.register(this);
         KrafterModule.register(this);
 
-        ArmorStandModule.register(this);
+        // ArmorStandModule.register(this);
 
         getEntityStoreRegistry().registerSystem(new ScorpianFlailPoisonSystem());
         // getEntityStoreRegistry().registerSystem(new EngineeringRigMobilitySystem());

@@ -103,7 +103,9 @@
               }
             ]
           },
-          "BlockSoundSetId": "Wood"
+          "BlockSoundSetId": "Wood",
+          "Looping": true,
+          "AmbientSoundEventId": "Mekanical_Krafter_Ambient"
         },
         "KrafterOpen": {
           "Material": "Solid",
@@ -185,8 +187,10 @@
               "Failed": {
                 "Type": "SendMessage",
                 "Message": "Could not add the arrow."
-              }
-            }
+              },
+              "Effects": {}
+            },
+            "Effects": {}
           }
         ]
       }
@@ -216,7 +220,8 @@
     "HitboxType": "KrafterClosed",
     "FlipType": "Symmetric",
     "RotationYawPlacementOffset": "TwoSeventy",
-    "RandomRotation": "None"
+    "RandomRotation": "None",
+    "Looping": false
   },
   "PlayerAnimationsId": "Block",
   "IconProperties": {

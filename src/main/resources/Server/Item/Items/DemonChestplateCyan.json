@@ -66,6 +66,12 @@
           "Amount": 24,
           "CalculationType": "Additive"
         }
+      ],
+      "Mana": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 15
+        }
       ]
     },
     "DamageResistance": {
@@ -104,7 +110,8 @@
   "ItemSoundSetId": "ISS_Armor_Heavy",
   "DurabilityLossOnHit": 0.5,
   "Categories": [
-    "ArmoryCategory.ArmoryArmors"
+    "ArmoryCategory.ArmoryArmors",
+"Items.Armors"
   ],
   "SubCategory": "Daemon Set"
 }

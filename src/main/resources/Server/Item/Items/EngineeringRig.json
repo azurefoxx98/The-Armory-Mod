@@ -8,7 +8,8 @@
   "PlayerAnimationsId": "Block",
   "ItemSoundSetId": "ISS_Armor_Heavy",
   "Categories": [
-    "ArmoryCategory.ArmoryArmors"
+    "ArmoryCategory.ArmoryArmors",
+"Items.Armors"
   ],
   "Icon": "Icons/ItemsGenerated/EngineeringRig.png",
   "Recipe": {
@@ -106,7 +107,9 @@
       ]
     },
     "CosmeticsToHide": [
-      "Overtop"
+      "Overtop",
+      "Undertop",
+      "Gloves"
     ]
   },
   "MaxDurability": 120,
@@ -140,7 +143,7 @@
     }
   },
   "UsePlayerAnimations": false,
-  "Model": "Items/Armors/Engineer/Chest.blockymodel",
+  "Model": "Items/Armors/Engineer/EngineeringRigFixed.blockymodel",
   "Texture": "Items/Armors/Engineer/chest.png",
   "Parent": "Armor_Iron_Chest",
   "Light": {

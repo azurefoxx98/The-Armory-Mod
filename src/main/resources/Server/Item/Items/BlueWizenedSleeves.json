@@ -71,6 +71,12 @@
           "Amount": 11,
           "CalculationType": "Additive"
         }
+      ],
+      "Mana": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 20
+        }
       ]
     },
     "DamageEnhancement": {
@@ -104,7 +110,8 @@
   "ItemSoundSetId": "ISS_Armor_Heavy",
   "DurabilityLossOnHit": 0.5,
   "Categories": [
-    "ArmoryCategory.ArmoryArmors"
+    "ArmoryCategory.ArmoryArmors",
+"Items.Armors"
   ],
   "ResourceTypes": [
     {

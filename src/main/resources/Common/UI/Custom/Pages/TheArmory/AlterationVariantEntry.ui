@@ -1,0 +1,100 @@
+$C = "../../Common.ui";
+$Sounds = "../../Sounds.ui";
+
+// This is one clickable variant entry, built by reducing the barter card pattern to a
+// single slot. The outer Group is the list cell. ItemSlotButton is the engine's clickable
+// item widget, and the inner ItemSlot renders the icon and its quality background from
+// the ItemId set by the server. The server drives the overlays with plain Visible flips,
+// the same technique used by the barter card's out of stock veil. Every widget and
+// property here comes from the builtin BarterTradeRow document.
+//
+// This file began as the gear cell and was renamed when the gear list moved to a single
+// ItemGrid. It now serves only the variant column. An ItemSlot takes an item id and
+// nothing else. That works here because a variant is an item id, and it is exactly why
+// the gear list could not keep this shape once its cells had to show per-instance text.
+Group {
+  Anchor: (Width: 68, Height: 68);
+  Padding: (Full: 2);
+
+  // Leave the tooltip style unset. The client already draws its rich item tooltip from
+  // the ItemSlot inside. Declaring another style put a second, plainer box over it on
+  // every hover.
+  ItemSlotButton #Entry {
+    Anchor: (Full: 0);
+    LayoutMode: Full;
+    Padding: 2;
+    Style: (
+      Default: (Background: #252f3a),
+      Hovered: (Background: #c9a050),
+      Pressed: (Background: #a08040),
+      Sounds: $Sounds.@CosmeticsTiles,
+    );
+
+    ItemSlot #Icon {
+      Anchor: (Full: 0);
+      ShowQualityBackground: true;
+    }
+
+    // Everything the player did not choose steps back, leaving the chosen cell at full
+    // strength. This makes both lists on the screen use the same visual language. The
+    // gear list is an ItemGrid and can only express selection with IsItemIncompatible
+    // because runtime refuses a per-slot colour. This list comes from a document, so it
+    // can also have a real ring. Keeping the ring and adding the other list's dimming
+    // makes the columns read alike while this one still reads better.
+    //
+    // Declare this before the frame and badge so both draw over it at full strength. A
+    // dimmed selection ring would defeat the point of having one.
+    Group #DimVeil {
+      Anchor: (Full: 0);
+      Background: (Color: #0a0e12(0.55));
+      Visible: false;
+    }
+
+    // ButtonStyle has no selected state, so the selection frame is four gold bars that
+    // become visible together.
+    Group #SelectedFrame {
+      Anchor: (Full: 0);
+      Visible: false;
+
+      Group {
+        Anchor: (Height: 2, Top: 0);
+        Background: (Color: $C.@ColorGoldHighlight);
+      }
+
+      Group {
+        Anchor: (Height: 2, Bottom: 0);
+        Background: (Color: $C.@ColorGoldHighlight);
+      }
+
+      Group {
+        Anchor: (Width: 2, Left: 0);
+        Background: (Color: $C.@ColorGoldHighlight);
+      }
+
+      Group {
+        Anchor: (Width: 2, Right: 0);
+        Background: (Color: $C.@ColorGoldHighlight);
+      }
+    }
+
+    // Show this on the variant that matches the selected piece, so the player can see
+    // where they are standing in the family.
+    Group #CurrentMarker {
+      Anchor: (Height: 16, Top: 0);
+      Background: (Color: #0a0e12(0.75));
+      Visible: false;
+
+      Label #CurrentMarkerLabel {
+        Style: (
+          FontSize: 11,
+          TextColor: #b4c8c9,
+          HorizontalAlignment: Center,
+          VerticalAlignment: Center,
+          RenderUppercase: true,
+          RenderBold: true
+        );
+        Text: %server.customUI.alterationPage.currentVariant;
+      }
+    }
+  }
+}

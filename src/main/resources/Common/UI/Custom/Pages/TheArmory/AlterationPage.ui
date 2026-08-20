@@ -1,0 +1,686 @@
+$C = "../../Common.ui";
+$Sounds = "../../Sounds.ui";
+
+// Label styles kept local so the page reads at a glance, following the pattern the
+// builtin Memories panel uses. Colors and sizes are lifted from the builtin label
+// styles so the page sits inside the game's look without inventing new ones.
+@HeaderStyle = LabelStyle(
+  FontSize: 15,
+  VerticalAlignment: Center,
+  RenderUppercase: true,
+  RenderBold: true,
+  FontName: "Secondary",
+  TextColor: #89899f,
+  LetterSpacing: 0.5
+);
+
+@SectionStyle = LabelStyle(
+  ...@HeaderStyle,
+  TextColor: #b4c8c9,
+  HorizontalAlignment: Center
+);
+
+@NameStyle = LabelStyle(
+  FontSize: 15,
+  TextColor: #b4c8c9,
+  HorizontalAlignment: Center,
+  Wrap: true
+);
+
+@CaptionStyle = LabelStyle(
+  FontSize: 13,
+  TextColor: $C.@ColorGrayCaption,
+  HorizontalAlignment: Center
+);
+
+@EmptyStateStyle = LabelStyle(
+  FontSize: 14,
+  TextColor: $C.@ColorCaptionLight,
+  HorizontalAlignment: Center,
+  VerticalAlignment: Center,
+  Wrap: true
+);
+
+// The active category chip. TextButton has no selected state in the shipped style
+// vocabulary, so the active chip is marked with a gold underline the server flips
+// visible. Same trick the barter card uses for its out of stock overlay.
+@ChipMark = Group {
+  Anchor: (Height: 2, Top: 2);
+  Background: (Color: $C.@ColorGoldHighlight);
+  Visible: false;
+};
+
+$C.@PageOverlay {
+  LayoutMode: Middle;
+
+  $C.@DecoratedContainer {
+    @CloseButton = true;
+
+    // Wide and short. The altar column only needs about 560 vertical pixels, so a taller
+    // window just opened a hole under it, while the two grids always want more width.
+    Anchor: (Height: 720, Width: 1360);
+
+    #Title {
+      Group {
+        LayoutMode: Center;
+
+        Label #TitleLabel {
+          Style: (...@HeaderStyle, FontName: "Default", FontSize: 18, TextColor: #b4c8c9, HorizontalAlignment: Center);
+          // The markup token grammar rejects underscores in translation keys, so the
+          // title gets its own camel case key instead of reusing the item id key.
+          Text: %server.customUI.alterationPage.title;
+        }
+      }
+    }
+
+    #Content {
+      LayoutMode: Top;
+      Padding: (Full: 9);
+
+      Group {
+        LayoutMode: Left;
+        FlexWeight: 1;
+
+        // Column one, every alterable piece the player owns, bag and worn. The column
+        // takes a flex share rather than a fixed width, so it always matches the variant
+        // column on the other side and the fixed 400 wide altar between them lands dead
+        // centre whatever the container decoration leaves for content. The padding
+        // mirrors the variant column's, wide on the outer edge and narrow against the
+        // altar.
+        Group #GearColumn {
+          LayoutMode: Top;
+          FlexWeight: 1;
+          Padding: (Left: 10, Right: 4, Vertical: 12);
+
+          Group #GearHeader {
+            LayoutMode: Left;
+            Anchor: (Height: 22);
+
+            Label #GearTitle {
+              Style: @HeaderStyle;
+              Text: %server.customUI.alterationPage.gearHeader;
+            }
+
+            Group {
+              FlexWeight: 1;
+            }
+
+            Label #GearCount {
+              Style: @HeaderStyle;
+              Text: "0";
+            }
+          }
+
+          // The filter belongs to the gear list, so it lives in the gear column right
+          // above it rather than as a bar across the whole page. The label gets its own
+          // line, which leaves the full column width for the chips.
+          Label #FilterLabel {
+            Style: (...@HeaderStyle, TextColor: $C.@ColorCaptionLight);
+            Anchor: (Height: 18, Top: 6);
+            Text: %server.customUI.alterationPage.filterGearLabel;
+          }
+
+          // One row, six chips, each taking an equal flex share so the row fills the
+          // column exactly however wide the column ends up. Same mechanism as the charge
+          // pips. The wrapper stays 36 tall because the button is 32 and the active mark
+          // adds 2 of bar plus 2 of gap under it.
+          Group #ChipRow {
+            LayoutMode: Left;
+            Anchor: (Height: 36, Top: 4, Bottom: 4);
+
+            Group {
+              FlexWeight: 1;
+              LayoutMode: Top;
+              Anchor: (Height: 36, Right: 4);
+
+              // The shipped template pads 16 a side, which eats 32 of a chip that is only
+              // about 70 wide here and would clip WEAPON. Six a side leaves room for the
+              // longest label at the style's own font size.
+              $C.@SmallSecondaryTextButton #ChipAllButton {
+                @Text = %server.customUI.alterationPage.chipAll;
+
+                Padding: (Horizontal: 6);
+              }
+
+              @ChipMark #ChipAllMark {}
+            }
+
+            Group {
+              FlexWeight: 1;
+              LayoutMode: Top;
+              Anchor: (Height: 36, Right: 4);
+
+              $C.@SmallSecondaryTextButton #ChipHeadButton {
+                @Text = %server.customUI.alterationPage.chipHead;
+
+                Padding: (Horizontal: 6);
+              }
+
+              @ChipMark #ChipHeadMark {}
+            }
+
+            Group {
+              FlexWeight: 1;
+              LayoutMode: Top;
+              Anchor: (Height: 36, Right: 4);
+
+              $C.@SmallSecondaryTextButton #ChipChestButton {
+                @Text = %server.customUI.alterationPage.chipChest;
+
+                Padding: (Horizontal: 6);
+              }
+
+              @ChipMark #ChipChestMark {}
+            }
+
+            Group {
+              FlexWeight: 1;
+              LayoutMode: Top;
+              Anchor: (Height: 36, Right: 4);
+
+              $C.@SmallSecondaryTextButton #ChipHandsButton {
+                @Text = %server.customUI.alterationPage.chipHands;
+
+                Padding: (Horizontal: 6);
+              }
+
+              @ChipMark #ChipHandsMark {}
+            }
+
+            Group {
+              FlexWeight: 1;
+              LayoutMode: Top;
+              Anchor: (Height: 36, Right: 4);
+
+              $C.@SmallSecondaryTextButton #ChipLegsButton {
+                @Text = %server.customUI.alterationPage.chipLegs;
+
+                Padding: (Horizontal: 6);
+              }
+
+              @ChipMark #ChipLegsMark {}
+            }
+
+            // No right margin on the last chip so the row ends flush with the column.
+            Group {
+              FlexWeight: 1;
+              LayoutMode: Top;
+              Anchor: (Height: 36);
+
+              $C.@SmallSecondaryTextButton #ChipWeaponButton {
+                @Text = %server.customUI.alterationPage.chipWeapon;
+
+                Padding: (Horizontal: 6);
+              }
+
+              @ChipMark #ChipWeaponMark {}
+            }
+          }
+
+          $C.@TextField #SearchInput {
+            @Anchor = (Height: 38, Top: 9, Bottom: 10);
+
+            // Its own key. This used to point at the SCRIBING page's placeholder, which
+            // read "Search your items" over a list that only ever holds gear, and quietly
+            // tied two features that are documented as sharing no code: editing one
+            // bench's wording would have silently changed the other's.
+            PlaceholderText: %server.customUI.alterationPage.searchPlaceholder;
+            Padding: (Horizontal: 12, Left: 34);
+            Decoration: (
+              Default: (
+                Icon: (Texture: "Common/SearchIcon.png", Width: 15, Height: 15, Offset: 10),
+                ClearButtonStyle: $C.@ClearButtonStyle
+              )
+            );
+          }
+
+          Group #OwnedBody {
+            LayoutMode: Left;
+            FlexWeight: 1;
+
+            Group { FlexWeight: 1; }
+
+            // 420 = seven 56 slots + six 2 gaps + 2 padding on each side + 12 for
+            // the scrollbar gutter. Seven columns fit the gear column; eight need 478.
+            ItemGrid #OwnedGrid {
+              Anchor: (Width: 420);
+              SlotsPerRow: 7;
+              AreItemsDraggable: false;
+              ScrollbarStyle: $C.@DefaultScrollbarStyle;
+              ShowScrollbar: true;
+              KeepScrollPosition: true;
+              Padding: 2;
+              Style: (
+                SlotSize: 56,
+                SlotIconSize: 48,
+                SlotSpacing: 2,
+                SlotBackground: "../../Common/BlockSelectorSlotBackground.png",
+                // Restored from the per-cell document this grid replaced. That cell was an
+                // ItemSlotButton carrying Sounds: $Sounds.@CosmeticsTiles, and swapping it
+                // for one grid dropped the click and the hover without anyone deciding to.
+                // ItemGridStyle carries both fields itself, so nothing here is a workaround.
+                // The two sounds are the same pair the button used, CosmeticsTiles to commit
+                // and the light hover, so the list sounds exactly as it did before.
+                // The pitch spread is not decoration. It is the two values @CosmeticsTiles
+                // itself carries, and it is what stops a fast run down a list of gear from
+                // sounding like one machine noise repeated. Dropping it would restore the
+                // sound and still lose the detail.
+                ItemStackActivateSound: (
+                  SoundPath: $Sounds.@CosmeticsTilesActivate,
+                  MinPitch: -0.4,
+                  MaxPitch: 0.4,
+                  Volume: 6
+                ),
+                ItemStackHoveredSound: (SoundPath: $Sounds.@ButtonsLightHover, Volume: 6)
+              );
+            }
+
+            Group { FlexWeight: 1; }
+          }
+
+          // The sentence is painted from the server because there are three reasons this
+          // list can be empty and they need three different sentences. Declares no
+          // translation of its own on purpose, the same way #SourceName does two columns
+          // over: a label carrying a markup translation AND a runtime TextSpans set is a
+          // combination nothing in this engine exercises.
+          Label #GearEmpty {
+            Style: @EmptyStateStyle;
+            Anchor: (Height: 34);
+            Text: "";
+            Visible: false;
+          }
+        }
+
+        // Column two, the altar. Source, the transform mark, the result preview, the
+        // charge gauge, the one committing button and the guidance strip, read top to
+        // bottom. The single flex spacer below the stock row is where all the leftover
+        // height goes, so the buttons and the strip sit on the floor of the panel.
+        Group #AltarColumn {
+          LayoutMode: Top;
+          Anchor: (Width: 400);
+          Padding: (Horizontal: 6, Vertical: 8);
+
+          Group #AltarPanel {
+            LayoutMode: Top;
+            FlexWeight: 1;
+            Background: (TexturePath: "../../Common/ContainerBackgroundSecondary.png", Border: 23);
+            Padding: (Horizontal: 18, Vertical: 10);
+
+            Label #AltarTitle {
+              Style: @SectionStyle;
+              Anchor: (Height: 24);
+              Text: %server.customUI.alterationPage.altarTitle;
+            }
+
+            // Source slot, the DroppedItemSlot construction. The fill group carries the
+            // icon and is hidden outright when nothing is selected, so an empty altar
+            // never has to be expressed as an empty item id.
+            Group {
+              LayoutMode: Center;
+              Padding: (Top: 4);
+
+              // The border is the one node that stays visible when the slot is empty, so
+              // it owns the frame. No tooltip style here, the client draws its own rich
+              // item tooltip off the ItemSlot and a second box on top only doubled it.
+              Group #SourceSlotBorder {
+                Anchor: (Width: 88, Height: 88);
+                Background: (Color: #1a2530);
+                Padding: 2;
+
+                Group #SourceSlotFill {
+                  Anchor: (Full: 0);
+                  Visible: false;
+
+                  ItemGrid #SourceSlot {
+                    Anchor: (Full: 0);
+                    SlotsPerRow: 1;
+                    AreItemsDraggable: false;
+                    RenderItemQualityBackground: true;
+                    Style: (
+                      SlotSize: 84,
+                      SlotIconSize: 84,
+                      SlotSpacing: 0,
+                      SlotBackground: "../../Common/BlockSelectorSlotBackground.png",
+                      // Hover only, never activate. This slot answers a hover with the
+                      // native tooltip, so the hover sound is honest, and it is not
+                      // clickable, so a click sound would promise an action it does not
+                      // have. Vanilla's own @DefaultItemGridStyle sounds every grid on
+                      // hover including its display-only ones, so this matches the game.
+                      ItemStackHoveredSound: (SoundPath: $Sounds.@ButtonsLightHover, Volume: 6)
+                    );
+                  }
+                }
+              }
+            }
+
+            // Names come from the server as Message spans, so the markup leaves them
+            // empty. Mixing a markup translation with a runtime TextSpans set on one
+            // label is untested, and the placeholder is painted from the server too.
+            Label #SourceName {
+              Style: @NameStyle;
+              Anchor: (Height: 36, Top: 4);
+              Text: "";
+            }
+
+            Label #SourceDurability {
+              Style: @CaptionStyle;
+              Anchor: (Height: 18);
+              Text: "";
+            }
+
+            // Shipped decorative separator, a line into a diamond into a line. It reads
+            // as "something happens across here" without inventing a glyph.
+            $C.@PanelSeparatorFancy {
+              @Anchor = (Vertical: 8);
+            }
+
+            // Result preview. The armed frame is four gold bars flipped visible once a
+            // variant is chosen, because a Background color cannot be repainted from a
+            // server Set command the way Visible can.
+            Group {
+              LayoutMode: Center;
+
+              Group #ResultSlotContainer {
+                Anchor: (Width: 88, Height: 88);
+
+                Group #ResultSlotBorder {
+                  Anchor: (Full: 0);
+                  Background: (Color: #1a2530);
+                  Padding: 2;
+
+                  Group #ResultSlotFill {
+                    Anchor: (Full: 0);
+                    Visible: false;
+
+                    ItemGrid #ResultSlot {
+                      Anchor: (Full: 0);
+                      SlotsPerRow: 1;
+                      AreItemsDraggable: false;
+                      RenderItemQualityBackground: true;
+                      Style: (
+                        SlotSize: 84,
+                        SlotIconSize: 84,
+                        SlotSpacing: 0,
+                        SlotBackground: "../../Common/BlockSelectorSlotBackground.png",
+                        // Hover only, same reason as the source slot above.
+                        ItemStackHoveredSound: (SoundPath: $Sounds.@ButtonsLightHover, Volume: 6)
+                      );
+                    }
+                  }
+                }
+
+                Group #ResultArmedFrame {
+                  Anchor: (Full: 0);
+                  Visible: false;
+
+                  Group {
+                    Anchor: (Height: 2, Top: 0);
+                    Background: (Color: $C.@ColorGoldHighlight);
+                  }
+
+                  Group {
+                    Anchor: (Height: 2, Bottom: 0);
+                    Background: (Color: $C.@ColorGoldHighlight);
+                  }
+
+                  Group {
+                    Anchor: (Width: 2, Left: 0);
+                    Background: (Color: $C.@ColorGoldHighlight);
+                  }
+
+                  Group {
+                    Anchor: (Width: 2, Right: 0);
+                    Background: (Color: $C.@ColorGoldHighlight);
+                  }
+                }
+              }
+            }
+
+            Label #ResultName {
+              Style: @NameStyle;
+              Anchor: (Height: 36, Top: 4);
+              Text: "";
+            }
+
+            Label #ResultDurability {
+              Style: @CaptionStyle;
+              Anchor: (Height: 18);
+              Text: "";
+            }
+
+            $C.@ContentSeparator {
+              @Anchor = (Vertical: 8);
+            }
+
+            // Charges are discrete, so the gauge is three framed pips rather than a
+            // progress bar. A continuous bar would misread as a partial charge.
+            Group #ChargeHeader {
+              LayoutMode: Left;
+              Anchor: (Height: 20);
+
+              Label #ChargeLabel {
+                Style: @HeaderStyle;
+                Text: %server.customUI.alterationPage.chargesLabel;
+              }
+
+              Group {
+                FlexWeight: 1;
+              }
+
+              Label #ChargeCount {
+                Style: @HeaderStyle;
+                Text: "0 / 3";
+              }
+            }
+
+            // Each pip takes a third of the row. FlexWeight splitting a Left row is the
+            // same mechanism the two fuel buttons below already use, and a wide bar reads
+            // as a real gauge where the old small squares read as checkboxes.
+            Group #PipRow {
+              LayoutMode: Left;
+              Anchor: (Height: 26);
+              Padding: (Top: 4);
+
+              Group #Pip1Frame {
+                FlexWeight: 1;
+                Anchor: (Height: 22, Right: 8);
+                Background: (TexturePath: "../../Common/CheckBoxFrame.png", Border: 7);
+                Padding: (Full: 4);
+
+                Group #Pip1 {
+                  Anchor: (Full: 0);
+                  Background: (Color: $C.@ColorGoldHighlight);
+                  Visible: false;
+                }
+              }
+
+              Group #Pip2Frame {
+                FlexWeight: 1;
+                Anchor: (Height: 22, Right: 8);
+                Background: (TexturePath: "../../Common/CheckBoxFrame.png", Border: 7);
+                Padding: (Full: 4);
+
+                Group #Pip2 {
+                  Anchor: (Full: 0);
+                  Background: (Color: $C.@ColorGoldHighlight);
+                  Visible: false;
+                }
+              }
+
+              Group #Pip3Frame {
+                FlexWeight: 1;
+                Anchor: (Height: 22);
+                Background: (TexturePath: "../../Common/CheckBoxFrame.png", Border: 7);
+                Padding: (Full: 4);
+
+                Group #Pip3 {
+                  Anchor: (Full: 0);
+                  Background: (Color: $C.@ColorGoldHighlight);
+                  Visible: false;
+                }
+              }
+            }
+
+            Group #StockRow {
+              LayoutMode: Left;
+              Anchor: (Height: 20, Top: 4);
+
+              Label #StockLabel {
+                Style: (...@CaptionStyle, HorizontalAlignment: Start);
+                Text: %server.customUI.alterationPage.stockedKitsLabel;
+              }
+
+              Group {
+                FlexWeight: 1;
+              }
+
+              Label #StockCount {
+                Style: (...@CaptionStyle, HorizontalAlignment: End);
+                Text: "0";
+              }
+            }
+
+            // All the panel's leftover height collects here, under the charge gauge, so
+            // the action block and the guidance strip pin to the floor of the panel with
+            // only its own padding beneath them.
+            Group {
+              FlexWeight: 1;
+            }
+
+            $C.@ContentSeparator {
+              @Anchor = (Vertical: 8);
+            }
+
+            // The one committing action on the screen, so it wears the primary texture
+            // and the heavier memory restore sting.
+            // Starts enabled on purpose. The server disables it on the very first paint
+            // when nothing is selected, so the enabled start is never visible in normal
+            // play. Setting Disabled from a server command is inferred from Visible and
+            // is not observed anywhere in the shipped pages, so if that set turns out to
+            // be a no-op a button that starts enabled still works, guarded by the
+            // selection checks in handleAlter, while one that starts disabled would be
+            // dead forever and take the whole screen with it.
+            $C.@TextButton #AlterButton {
+              @Text = %server.customUI.alterationPage.alterButton;
+              @Sounds = $Sounds.@ButtonMemoryRestore;
+
+              Disabled: false;
+            }
+
+            // Fuel handling reads as subordinate to ALTER, so both are small and
+            // secondary. The engine's pages only bind clicks on button widgets.
+            Group #FuelRow {
+              LayoutMode: Left;
+              Anchor: (Height: 32, Top: 6);
+
+              $C.@SmallSecondaryTextButton #StockButton {
+                @Text = %server.customUI.alterationPage.stockButton;
+
+                FlexWeight: 1;
+              }
+
+              Group {
+                Anchor: (Width: 8);
+              }
+
+              $C.@SmallSecondaryTextButton #WithdrawButton {
+                @Text = %server.customUI.alterationPage.withdrawButton;
+
+                FlexWeight: 1;
+              }
+            }
+
+            $C.@ContentSeparator {
+              @Anchor = (Vertical: 8);
+            }
+
+            // Guidance strip, the last line of the stack. It is never empty, it always
+            // says what the player should do next, and it carries the refusals too so
+            // nothing needs a second surface. ContainerPanelPatch is the shipped inset
+            // panel look, the same texture $C.@SimpleContainer uses, and the mod already
+            // ships it in its own Common tree so it renders whatever the client resolves
+            // streamed mod textures against. The color is set from the server on the
+            // Message, so the label declares no color of its own.
+            Group #StatusBar {
+              Anchor: (Height: 32, Top: 6);
+              Background: (TexturePath: "../../Common/ContainerPanelPatch.png", Border: 4);
+              Padding: (Horizontal: 10);
+
+              Label #Status {
+                Anchor: (Full: 0);
+                Style: (
+                  FontSize: 13,
+                  HorizontalAlignment: Center,
+                  VerticalAlignment: Center,
+                  Wrap: true,
+                  TextColor: #96a9be
+                );
+                Text: "";
+              }
+            }
+          }
+        }
+
+        // Column three, every variant in the selected piece's family. Same flex share as
+        // the gear column, with the padding mirrored, so the two sides are the same size
+        // and the altar sits between them. An empty state keeps a blank grid from reading
+        // as a broken screen.
+        Group #VariantColumn {
+          LayoutMode: Top;
+          FlexWeight: 1;
+          Padding: (Left: 4, Right: 10, Vertical: 12);
+
+          Group #VariantHeader {
+            LayoutMode: Left;
+            Anchor: (Height: 22);
+
+            Label #VariantTitle {
+              Style: @HeaderStyle;
+              Text: %server.customUI.alterationPage.variantHeader;
+            }
+
+            Group {
+              FlexWeight: 1;
+            }
+
+            Label #VariantCount {
+              Style: @HeaderStyle;
+              Text: "0";
+            }
+          }
+
+          // Keeps the variant grid level with the gear grid, which sits lower because the
+          // gear column carries the filter label and the chip row. 18 of label plus 6 of
+          // margin above it, then 36 of chip row plus 4 above and 4 below, so 68.
+          Group {
+            Anchor: (Height: 68);
+          }
+
+          Group {
+            FlexWeight: 1;
+            Padding: (Top: 8);
+
+            Group #VariantList {
+              LayoutMode: TopScrolling;
+              ScrollbarStyle: $C.@DefaultScrollbarStyle;
+              FlexWeight: 1;
+
+              Group #VariantGrid {
+                LayoutMode: LeftCenterWrap;
+              }
+            }
+
+            Label #VariantEmpty {
+              Style: @EmptyStateStyle;
+              Anchor: (Full: 0);
+              Padding: (Horizontal: 40);
+              Text: %server.customUI.alterationPage.variantsEmpty;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+$C.@BackButton {}

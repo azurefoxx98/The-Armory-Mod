@@ -1579,7 +1579,7 @@
                       "shape": {
                         "type": "box",
                         "offset": {"x": 0, "y": 0, "z": 0},
-                        "stretch": {"x": 0.875, "y": 0.875, "z": 1.0375},
+                        "stretch": {"x": 0.875, "y": 0.875, "z": 1.0875},
                         "settings": {
                           "isPiece": false,
                           "size": {"x": 4, "y": 4, "z": 3},
@@ -1783,7 +1783,7 @@
                     {
                       "id": "39",
                       "name": "cube--C3",
-                      "position": {"x": 0, "y": 4, "z": 0},
+                      "position": {"x": 0, "y": 4, "z": -0.3},
                       "orientation": {"x": 0, "y": 0, "z": -0.38268, "w": 0.92388},
                       "shape": {
                         "type": "box",
@@ -1907,6 +1907,58 @@
                     },
                     {
                       "id": "42",
+                      "name": "cube--C2",
+                      "position": {"x": 0, "y": 0, "z": 0},
+                      "orientation": {"x": 0.38268, "y": 0, "z": 0, "w": 0.92388},
+                      "shape": {
+                        "type": "box",
+                        "offset": {"x": 0, "y": 5.1, "z": -7.5},
+                        "stretch": {"x": 0.825, "y": 1, "z": 1.025},
+                        "settings": {
+                          "isPiece": false,
+                          "size": {"x": 2, "y": 1, "z": 17},
+                          "isStaticBox": true
+                        },
+                        "textureLayout": {
+                          "back": {
+                            "offset": {"x": 8, "y": 66},
+                            "mirror": {"x": false, "y": false},
+                            "angle": 0
+                          },
+                          "right": {
+                            "offset": {"x": 8, "y": 83},
+                            "mirror": {"x": false, "y": false},
+                            "angle": 270
+                          },
+                          "front": {
+                            "offset": {"x": 8, "y": 66},
+                            "mirror": {"x": false, "y": false},
+                            "angle": 0
+                          },
+                          "left": {
+                            "offset": {"x": 10, "y": 83},
+                            "mirror": {"x": false, "y": false},
+                            "angle": 270
+                          },
+                          "top": {
+                            "offset": {"x": 10, "y": 83},
+                            "mirror": {"x": true, "y": true},
+                            "angle": 0
+                          },
+                          "bottom": {
+                            "offset": {"x": 12, "y": 66},
+                            "mirror": {"x": true, "y": false},
+                            "angle": 0
+                          }
+                        },
+                        "unwrapMode": "custom",
+                        "visible": true,
+                        "doubleSided": false,
+                        "shadingMode": "flat"
+                      }
+                    },
+                    {
+                      "id": "43",
                       "name": "BookPage",
                       "position": {"x": 0.75, "y": 9.54594, "z": -1.06066},
                       "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
@@ -1925,7 +1977,7 @@
                       },
                       "children": [
                         {
-                          "id": "43",
+                          "id": "44",
                           "name": "cube--C1",
                           "position": {"x": 0, "y": 0, "z": 0},
                           "orientation": {"x": 0.37172, "y": -0.09096, "z": 0.21959, "w": 0.8974},
@@ -1972,7 +2024,7 @@
                           }
                         },
                         {
-                          "id": "44",
+                          "id": "45",
                           "name": "cube--C2",
                           "position": {"x": 0, "y": 0, "z": 0},
                           "orientation": {"x": 0.37172, "y": -0.09096, "z": 0.21959, "w": 0.8974},
@@ -2026,7 +2078,7 @@
                       ]
                     },
                     {
-                      "id": "45",
+                      "id": "46",
                       "name": "BookPage",
                       "position": {"x": -0.25, "y": 9.54594, "z": -1.06066},
                       "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
@@ -2045,7 +2097,7 @@
                       },
                       "children": [
                         {
-                          "id": "46",
+                          "id": "47",
                           "name": "cube--C1",
                           "position": {"x": -0.5, "y": 0, "z": 0},
                           "orientation": {"x": 0.37941, "y": 0.04995, "z": -0.12059, "w": 0.91598},
@@ -2092,7 +2144,7 @@
                           }
                         },
                         {
-                          "id": "47",
+                          "id": "48",
                           "name": "cube--C2",
                           "position": {"x": -0.5, "y": 0, "z": 0},
                           "orientation": {"x": 0.37941, "y": 0.04995, "z": -0.12059, "w": 0.91598},
@@ -2154,7 +2206,7 @@
       ]
     },
     {
-      "id": "48",
+      "id": "49",
       "name": "L-Attachment",
       "position": {"x": 16, "y": 0, "z": 0},
       "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
@@ -2173,7 +2225,7 @@
       },
       "children": [
         {
-          "id": "49",
+          "id": "50",
           "name": "Block",
           "position": {"x": 0, "y": 17, "z": 2},
           "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
@@ -2192,7 +2244,7 @@
           },
           "children": [
             {
-              "id": "50",
+              "id": "51",
               "name": "Bench",
               "position": {"x": 0, "y": 12, "z": -2},
               "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
@@ -2211,7 +2263,7 @@
               },
               "children": [
                 {
-                  "id": "51",
+                  "id": "52",
                   "name": "BookStand",
                   "position": {"x": 0, "y": 0, "z": 0},
                   "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},

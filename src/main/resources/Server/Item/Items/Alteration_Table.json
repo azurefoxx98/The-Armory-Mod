@@ -29,7 +29,7 @@
         "Categories": [
           "Workbench_Crafting"
         ],
-        "RequiredTierLevel": 1
+        "RequiredTierLevel": 2
       }
     ]
   },
@@ -40,17 +40,22 @@
     "CustomModel": "Items/Blocks/Workbenches/Alteration/AlterationTable.blockymodel",
     "CustomModelTexture": [
       {
-        "Texture": "Items/Blocks/Bench/AlterationTable.png",
+        "Texture": "Items/Blocks/Workbenches/Alteration/AlterationTable.png",
         "Weight": 1
       }
     ],
-    "HitboxType": "Bench_Alchemy",
+    "HitboxType": "ArmoryAlterationTable",
+    "InteractionHitboxType": "ArmoryAlterationTable_Interaction",
     "VariantRotation": "NESW",
+    "InteractionHint": "server.interactionHints.open",
     "Interactions": {
       "Use": {
         "Interactions": [
           {
-            "Type": "OpenLargeStructuralCraftingBench"
+            "Type": "OpenCustomUI",
+            "Page": {
+              "Id": "TheArmoryAlterationPage"
+            }
           }
         ]
       }
@@ -72,41 +77,12 @@
     "BlockSoundSetId": "Wood",
     "Bench": {
       "Type": "StructuralCrafting",
-      "Id": "Builders",
+      "Id": "ArmoryAlteration",
       "Categories": [
-        "WoodPlanks",
-        "OrnatePlanks",
-        "DecorativePlanks",
-        "Bricks",
-        "Decorative",
-        "Ornate",
-        "Smooth",
-        "Stairs",
-        "HalfSlab",
-        "SmoothHalfSlab",
-        "Beam",
-        "Platform",
-        "Roof",
-        "Pillar",
-        "Wall",
-        "Gate",
-        "Ladder",
-        "Window",
-        "Wardrobe",
-        "Door",
-        "Trapdoor",
-        "Table",
-        "Chair",
-        "Bench",
-        "Stool",
-        "Shelf",
-        "Sign",
-        "VillageWall"
+        "ArmoryAlteration"
       ],
       "HeaderCategories": [
-        "WoodPlanks",
-        "OrnatePlanks",
-        "DecorativePlanks"
+        "ArmoryAlteration"
       ],
       "AlwaysShowInventoryHints": true,
       "AllowBlockGroupCycling": true
@@ -140,10 +116,5 @@
   "MaxStack": 1,
   "ItemLevel": 9,
   "ItemSoundSetId": "ISS_Blocks_Wood",
-  "Icon": "Icons/ItemsGenerated/Alteration_Table.png",
-  "ResourceTypes": [
-    {
-      "Id": "Resource_Alteration_Table"
-    }
-  ]
+  "Icon": "Icons/ItemsGenerated/Alteration_Table.png"
 }

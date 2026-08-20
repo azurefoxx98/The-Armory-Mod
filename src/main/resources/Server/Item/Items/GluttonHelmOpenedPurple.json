@@ -52,13 +52,13 @@
     "DamageResistance": {
       "Physical": [
         {
-          "Amount": 0.08,
+          "Amount": 0.144,
           "CalculationType": "Percent"
         }
       ],
       "Projectile": [
         {
-          "Amount": 0.08,
+          "Amount": 0.144,
           "CalculationType": "Percent"
         }
       ],
@@ -72,8 +72,14 @@
     "StatModifiers": {
       "Health": [
         {
-          "Amount": 14,
+          "Amount": 35,
           "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 5
         }
       ]
     },
@@ -107,7 +113,7 @@
   },
   "Categories": [
     "ArmoryCategory.ArmoryArmors",
-"Items.Armors"
+    "Items.Armors"
   ],
   "ResourceTypes": [
     {

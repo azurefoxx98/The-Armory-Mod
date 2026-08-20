@@ -55,13 +55,13 @@
     "DamageResistance": {
       "Physical": [
         {
-          "Amount": 0.064,
+          "Amount": 0.144,
           "CalculationType": "Percent"
         }
       ],
       "Projectile": [
         {
-          "Amount": 0.064,
+          "Amount": 0.144,
           "CalculationType": "Percent"
         }
       ],
@@ -75,8 +75,14 @@
     "StatModifiers": {
       "Health": [
         {
-          "Amount": 11,
+          "Amount": 24,
           "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 15
         }
       ]
     },
@@ -103,7 +109,7 @@
   "ItemSoundSetId": "ISS_Armor_Heavy",
   "Categories": [
     "ArmoryCategory.ArmoryArmors",
-"Items.Armors"
+    "Items.Armors"
   ],
   "ResourceTypes": [
     {

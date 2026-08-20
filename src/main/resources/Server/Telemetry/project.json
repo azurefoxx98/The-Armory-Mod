@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "hosted": { "projectKey": "proj_LI8M5tv38MTWNUsmjKsokdVQ" },
+  "telemetry": {
+    "crash": {
+      "supported": true,
+      "uncaughtExceptions": true,
+      "setupFailures": true,
+      "startFailures": true,
+      "exceptionalWorldRemovals": true
+    },
+    "events": {
+      "errors": { "supported": true },
+      "lifecycle": { "supported": true },
+      "breadcrumbs": { "supported": true, "automatic": true }
+    },
+    "stats": { "supported": true },
+    "performance": { "supported": true, "defaultEnabled": false, "thresholdMs": 100 },
+    "usage": { "supported": true, "defaultEnabled": false },
+    "reports": {
+      "supported": true,
+      "issue": { "enabled": true },
+      "suggestion": { "enabled": true }
+    }
+  }
+}

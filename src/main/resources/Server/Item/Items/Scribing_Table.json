@@ -1,0 +1,98 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Scribing_Table.name",
+    "Description": "server.items.Scribing_Table.description"
+  },
+  "Categories": [
+    "Furniture.Benches"
+  ],
+  "Recipe": {
+    "TimeSeconds": 3,
+    "Input": [
+      {
+        "ResourceTypeId": "Wood_Planks",
+        "Quantity": 20
+      },
+      {
+        "ItemId": "Ingredient_Bolt_Linen",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Deco_Inkwell",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Crafting"
+        ],
+        "RequiredTierLevel": 2
+      }
+    ]
+  },
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Items/Blocks/Workbenches/Scribing/Scribing_Bench.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Items/Blocks/Workbenches/Scribing/Scribing_Bench.png",
+        "Weight": 1
+      }
+    ],
+    "HitboxType": "ArmoryScribingTable",
+    "InteractionHitboxType": "ArmoryScribingTable_Interaction",
+    "VariantRotation": "NESW",
+    "InteractionHint": "server.interactionHints.open",
+    "Interactions": {
+      "Use": {
+        "Interactions": [
+          {
+            "Type": "OpenCustomUI",
+            "Page": {
+              "Id": "TheArmoryScribingPage"
+            }
+          }
+        ]
+      }
+    },
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Woods"
+      }
+    },
+    "BlockParticleSetId": "Wood",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "BlockSoundSetId": "Wood"
+  },
+  "PlayerAnimationsId": "Block",
+  "IconProperties": {
+    "Scale": 0.2857,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -17.64,
+      -21.47
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Bench"
+    ]
+  },
+  "MaxStack": 1,
+  "Icon": "Icons/ItemsGenerated/Scribing_Table.png"
+}

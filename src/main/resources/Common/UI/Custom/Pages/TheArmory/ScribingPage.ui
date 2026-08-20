@@ -1,0 +1,1253 @@
+$C = "../../Common.ui";
+$Sounds = "../../Sounds.ui";
+
+// This is the Scribing Table screen. Every size, colour and gap comes from the reviewed
+// screen prototype. The first implementation borrowed only the blueprint's four column
+// numbers and invented everything else, which made it look like an unfinished form. If a
+// number seems arbitrary, it belongs to the prototype and was derived from the measured
+// tooltip.
+//
+// Let the shipped composite widgets handle the textures. Using $C.@SimpleContainer,
+// @TextField, @TextButton and the ItemSlot pair brings in Hytale's own nine-slice panels,
+// which makes this screen fit the rest of the game. Rebuilding them from a screenshot
+// made the first pass look flat.
+
+@HeaderStyle = LabelStyle(
+  FontSize: 15,
+  VerticalAlignment: Center,
+  RenderUppercase: true,
+  RenderBold: true,
+  FontName: "Secondary",
+  TextColor: #89899f,
+  LetterSpacing: 0.9
+);
+
+// Field labels sit a size below the column headers and keep the same tracking.
+@FieldLabelStyle = LabelStyle(
+  FontSize: 13,
+  VerticalAlignment: Center,
+  RenderUppercase: true,
+  RenderBold: true,
+  FontName: "Secondary",
+  TextColor: #89899f,
+  LetterSpacing: 1.3
+);
+
+@CountStyle = LabelStyle(
+  FontSize: 12,
+  VerticalAlignment: Center,
+  HorizontalAlignment: End,
+  TextColor: $C.@ColorCaptionLight
+);
+
+@TargetNameStyle = LabelStyle(
+  FontSize: 15,
+  TextColor: #b4c8c9,
+  Wrap: true
+);
+
+@TargetCaptionStyle = LabelStyle(
+  FontSize: 12,
+  TextColor: $C.@ColorGrayCaption,
+  Wrap: true
+);
+
+// An empty state isn't a refusal, so don't use the error red here. Weight and tracking
+// distinguish it instead of colour.
+@EmptyTitleStyle = LabelStyle(
+  FontSize: 15,
+  RenderUppercase: true,
+  RenderBold: true,
+  FontName: "Secondary",
+  LetterSpacing: 1.9,
+  TextColor: #93a3b5,
+  HorizontalAlignment: Center
+);
+
+@EmptyBodyStyle = LabelStyle(
+  FontSize: 13,
+  TextColor: $C.@ColorCaptionLight,
+  HorizontalAlignment: Center,
+  Wrap: true
+);
+
+@LegendCodeStyle = LabelStyle(
+  FontSize: 11,
+  TextColor: #8fa2b4,
+  VerticalAlignment: Center
+);
+
+@LegendArrowStyle = LabelStyle(
+  FontSize: 11,
+  TextColor: $C.@ColorCaptionLight,
+  VerticalAlignment: Center
+);
+
+@LegendExampleStyle = LabelStyle(
+  FontSize: 13,
+  TextColor: #cfd9dd,
+  VerticalAlignment: Center
+);
+
+// Put a colour chip beside its hex. Keep the hex in a neutral, readable colour instead of
+// drawing it in its own colour. The chip already shows the colour, while the code is what
+// the player has to copy. Crimson text on a dark card looks pretty but is unreadable.
+@Swatch = Group {
+  @Color = #ffffff;
+  @Text = "#ffffff";
+
+  FlexWeight: 1;
+  LayoutMode: Left;
+  Anchor: (Height: 15, Right: 6);
+
+  // This is a 13 square with a dark 1px edge. That keeps a pale swatch readable as a chip
+  // against the panel instead of letting it bleed into the background. Every chip in the
+  // design uses the same outline.
+  Group {
+    Anchor: (Width: 13, Height: 13, Right: 6);
+    Background: (Color: #0a0e12);
+    Padding: (Full: 1);
+
+    Group {
+      Anchor: (Full: 0);
+      Background: (Color: @Color);
+    }
+  }
+
+  Label {
+    Style: (FontSize: 11, TextColor: #a9bccb, VerticalAlignment: Center);
+    Text: @Text;
+  }
+};
+
+// This is the active category chip. TextButton has no selected state in the shipped style
+// vocabulary, so the server marks the active chip by making a gold underline visible.
+// The barter card uses the same trick for its out of stock overlay.
+@ChipMark = Group {
+  Anchor: (Height: 2, Top: 2);
+  Background: (Color: $C.@ColorGoldHighlight);
+  Visible: false;
+};
+
+// Use $C.@VerticalSeparator for the column rule. This shipped widget carries
+// ContainerVerticalSeparator.png at exactly the design's width of 6. An earlier pass used
+// a flat 1px line because the real widget hadn't been found yet.
+
+$C.@PageOverlay {
+  LayoutMode: Middle;
+
+  $C.@DecoratedContainer {
+    @CloseButton = true;
+
+    // Use 780 rather than the alteration bench's 720. The desk column contains a target
+    // panel, two labelled fields, two buttons, a reference block and a status strip. At
+    // 720, they fit only when pressed flush together. The extra 60 provides the gaps.
+    //
+    // The width is 1506 rather than 1360, and it is derived rather than guessed. The desk
+    // column is fixed at 424, while both side columns use FlexWeight 1. Each side always
+    // receives exactly half of the remaining space, so the desk stays centred without
+    // arithmetic that goes stale when another number changes. This leaves
+    // (1506 - 34 padding - 424) / 2 = 546 per side. The picker needs that share to hold
+    // six chips, with INSCRIBED as the longest label.
+    //
+    // This is within the game's own limits. Vanilla declares a 1500 wide element, and the
+    // client's main inventory page works out to 1611: @CenterPanelWidth 715, two
+    // @SidePanelWidth values of 410 and two @HorizontalPanelSpacing values of 38. This
+    // screen therefore stays inside a width Hytale already requests.
+    Anchor: (Height: 780, Width: 1506);
+
+    #Title {
+      Group {
+        LayoutMode: Center;
+
+        Label #TitleLabel {
+          Style: (...@HeaderStyle, FontName: "Default", FontSize: 18, TextColor: #b4c8c9, HorizontalAlignment: Center);
+          Text: %server.customUI.scribingPage.title;
+        }
+      }
+    }
+
+    // The container's real @ContentPadding is 17, made from 9 plus 8 in its definition.
+    #Content {
+      LayoutMode: Left;
+      Padding: (Full: 17);
+
+      // ---------------------------------------------------------------- column one
+      Group #PickerColumn {
+        LayoutMode: Top;
+        FlexWeight: 1;
+        Padding: (Left: 2, Right: 10);
+
+        Group #PickerHeader {
+          LayoutMode: Left;
+          Anchor: (Height: 22);
+
+          Label #PickerTitle {
+            Style: @HeaderStyle;
+            Text: %server.customUI.scribingPage.itemsHeader;
+          }
+
+          Group {
+            FlexWeight: 1;
+          }
+
+          Label #PickerCount {
+            Style: (...@HeaderStyle, HorizontalAlignment: End);
+            Text: "0";
+          }
+        }
+
+        Label #FilterLabel {
+          Style: (...@HeaderStyle, TextColor: $C.@ColorCaptionLight);
+          Anchor: (Height: 18, Top: 6);
+          Text: %server.customUI.scribingPage.filterItemsLabel;
+        }
+
+        Group #ChipRow {
+          LayoutMode: Left;
+          Anchor: (Height: 36, Top: 4, Bottom: 4);
+
+          Group {
+            FlexWeight: 56;
+            LayoutMode: Top;
+            Anchor: (Height: 36, Right: 4);
+
+            $C.@SmallSecondaryTextButton #ChipAllButton {
+              @Text = %server.customUI.scribingPage.chipAll;
+
+              Padding: (Horizontal: 6);
+            }
+
+            @ChipMark #ChipAllMark {}
+          }
+
+          Group {
+            FlexWeight: 76;
+            LayoutMode: Top;
+            Anchor: (Height: 36, Right: 4);
+
+            $C.@SmallSecondaryTextButton #ChipArmorButton {
+              @Text = %server.customUI.scribingPage.chipArmor;
+
+              Padding: (Horizontal: 6);
+            }
+
+            @ChipMark #ChipArmorMark {}
+          }
+
+          Group {
+            FlexWeight: 88;
+            LayoutMode: Top;
+            Anchor: (Height: 36, Right: 4);
+
+            $C.@SmallSecondaryTextButton #ChipWeaponButton {
+              @Text = %server.customUI.scribingPage.chipWeapon;
+
+              Padding: (Horizontal: 6);
+            }
+
+            @ChipMark #ChipWeaponMark {}
+          }
+
+          Group {
+            FlexWeight: 64;
+            LayoutMode: Top;
+            Anchor: (Height: 36, Right: 4);
+
+            $C.@SmallSecondaryTextButton #ChipToolButton {
+              @Text = %server.customUI.scribingPage.chipTool;
+
+              Padding: (Horizontal: 6);
+            }
+
+            @ChipMark #ChipToolMark {}
+          }
+
+          Group {
+            FlexWeight: 88;
+            LayoutMode: Top;
+            Anchor: (Height: 36, Right: 4);
+
+            $C.@SmallSecondaryTextButton #ChipBlocksButton {
+              @Text = %server.customUI.scribingPage.chipBlocks;
+
+              Padding: (Horizontal: 6);
+            }
+
+            @ChipMark #ChipBlocksMark {}
+          }
+
+          Group {
+            FlexWeight: 120;
+            LayoutMode: Top;
+            Anchor: (Height: 36);
+
+            $C.@SmallSecondaryTextButton #ChipInscribedButton {
+              @Text = %server.customUI.scribingPage.chipInscribed;
+
+              Padding: (Horizontal: 6);
+            }
+
+            @ChipMark #ChipInscribedMark {}
+          }
+        }
+
+        // This search field is full width and 38 tall, with an input box texture and the
+        // search icon inside it. Don't replace it with $C.@HeaderSearch. That control is
+        // 200 wide, anchored to the right and collapses to 34 because it was built for a
+        // header bar. Using it here made the column look bare and unlike the design. The
+        // decoration supplies the icon and clear button without borrowing the wrong widget.
+        $C.@TextField #SearchInput {
+          @Anchor = (Height: 38, Top: 9, Bottom: 10);
+
+          PlaceholderText: %server.customUI.scribingPage.searchPlaceholder;
+          Padding: (Horizontal: 12, Left: 34);
+          Decoration: (
+            Default: (
+              // Keep this path root relative. Changing it to "../../" breaks the page.
+              // A texture passed as a property into a $C.@ composite resolves in the
+              // context of the document that defines the composite. Here that is Common.ui,
+              // which lives at Common/UI/Custom/. The base is therefore the root regardless
+              // of this document's depth, and any "../" escapes that root and is refused.
+              // Both vanilla uses of this exact Icon property are plain widget declarations
+              // that resolve against their own file. Common.ui:729 is at depth 0 and uses a
+              // bare path, while InputsContent.ui:102 is at depth 3 and uses three "../".
+              // Neither demonstrates this case. A value passed into a composite follows a
+              // different rule from a value placed on a widget declared in this document,
+              // even though the distinction is invisible in the markup.
+              Icon: (Texture: "Common/SearchIcon.png", Width: 15, Height: 15, Offset: 10),
+              ClearButtonStyle: $C.@ClearButtonStyle
+            )
+          );
+        }
+
+        // Use one ItemGrid for the whole picker. The game builds this kind of screen the
+        // same way: a search box above a scrolling item grid appears in vanilla at
+        // ItemLibraryPanel.ui:96 and EntitySpawnItemsPanel.ui:63. Trail of Orbis uses the
+        // same shape for StonePickerPage.
+        //
+        // Don't restore the previous picker structure. It appended one ScribingSlotEntry
+        // per item, with an ItemSlotButton wrapped around its own one-slot ItemGrid. That
+        // put two click owners in one cell: the button wanted Activating and the grid wanted
+        // SlotClicking. In game, every selection then required a double click. No shipped
+        // document nests these controls. Both working patterns keep exactly one owner per
+        // cell. The Alteration Table uses ItemSlotButton + ItemSlot and never misses a
+        // press, while every ItemGrid in the engine and in the two shipping mods stands on
+        // its own. SlotClicking was never the problem. On 0.5.7 it responds to one click,
+        // as CrucibleUIProbe measured across 457 payloads.
+        //
+        // Centring is structural here rather than dependent on a layout mode. The fixed
+        // width grid holds an exact 6 x 56 block plus its scrollbar gutter. Two flex
+        // spacers divide the remaining column width, which keeps the rows dead centre at
+        // any supported width. LeftCenterWrap left a full column of dead space on the
+        // right edge.
+        Group #PickerBody {
+          LayoutMode: Left;
+          FlexWeight: 1;
+
+          Group { FlexWeight: 1; }
+
+          // The width 362 comes from six 56 slots, five 2 gaps, the grid's own 2 padding
+          // on each side and a 12 gutter for the scrollbar, which draws inside the grid's
+          // width. The column is wider at every supported screen size, and the spacers take
+          // up the difference.
+          //
+          // KeepScrollPosition makes the search field usable. The grid repaints after every
+          // keystroke, and without this setting each letter sent the player back to the top
+          // of their inventory.
+          //
+          // AreItemsDraggable must stay off because these are the player's real stacks. If
+          // it is enabled, the client's pickup gesture lifts an item from a picker that
+          // owns nothing and cannot give it back.
+          // The width 478 comes from eight 56 slots, seven 2 gaps, 2 padding on each side
+          // and a 12 scrollbar gutter. This used to be six columns in a 362 wide grid,
+          // sized for the old 398 wide column. The column is now 546, so six columns left a
+          // third of it empty. Keep the slot geometry identical to the Alteration Table's
+          // gear grid: 56, 48 and 2. That geometry has to match between the benches. The
+          // number of slots per row depends on the column width and may differ.
+          ItemGrid #PickerGrid {
+            Anchor: (Width: 478);
+            SlotsPerRow: 8;
+            AreItemsDraggable: false;
+            ScrollbarStyle: $C.@DefaultScrollbarStyle;
+            ShowScrollbar: true;
+            KeepScrollPosition: true;
+            Padding: 2;
+            Style: (
+              SlotSize: 56,
+              SlotIconSize: 48,
+              SlotSpacing: 2,
+              SlotBackground: "../../Common/BlockSelectorSlotBackground.png",
+              // The same pair the Alteration Table's gear list carries, so picking an item
+              // sounds identical at both benches. Both fields belong to ItemGridStyle, so
+              // this is the widget's own vocabulary rather than a substitute for the cell
+              // document the grid replaced.
+              ItemStackActivateSound: (
+                SoundPath: $Sounds.@CosmeticsTilesActivate,
+                MinPitch: -0.4,
+                MaxPitch: 0.4,
+                Volume: 6
+              ),
+              ItemStackHoveredSound: (SoundPath: $Sounds.@ButtonsLightHover, Volume: 6)
+            );
+          }
+
+          Group { FlexWeight: 1; }
+        }
+
+        Group #PickerEmpty {
+          LayoutMode: Top;
+          FlexWeight: 1;
+          Padding: (Full: 24);
+          Visible: false;
+
+          Group {
+            FlexWeight: 1;
+          }
+
+          Label #PickerEmptyTitle {
+            Style: @EmptyTitleStyle;
+            Anchor: (Height: 20, Bottom: 9);
+          }
+
+          Label #PickerEmptyBody {
+            Style: @EmptyBodyStyle;
+          }
+
+          Group {
+            FlexWeight: 1;
+          }
+        }
+      }
+
+      $C.@VerticalSeparator { }
+
+      // ---------------------------------------------------------------- column two
+      Group #DeskColumn {
+        LayoutMode: Top;
+        Anchor: (Width: 424);
+        Padding: (Horizontal: 12);
+
+        Group #DeskHeader {
+          LayoutMode: Left;
+          Anchor: (Height: 22);
+
+          Label #DeskTitle {
+            Style: @HeaderStyle;
+            Text: %server.customUI.scribingPage.deskHeader;
+          }
+        }
+
+        Group #DeskEmpty {
+          LayoutMode: Top;
+          FlexWeight: 1;
+          Padding: (Full: 24);
+          Visible: false;
+
+          Group {
+            FlexWeight: 1;
+          }
+
+          Label #DeskEmptyTitle {
+            Style: @EmptyTitleStyle;
+            Anchor: (Height: 20, Bottom: 9);
+            Text: %server.customUI.scribingPage.pickTitle;
+          }
+
+          Label #DeskEmptyBody {
+            Style: @EmptyBodyStyle;
+            Text: %server.customUI.scribingPage.pickBody;
+          }
+
+          Group {
+            FlexWeight: 1;
+          }
+        }
+
+        Group #DeskEditor {
+          LayoutMode: Top;
+          FlexWeight: 1;
+
+          // This target panel shows the item as it is now, while the preview column shows
+          // what it will become. Hovering therefore gives the player a before and after.
+          // Use an ItemGrid rather than an ItemSlot for the same reason the picker does.
+          // ItemSlot accepts only an item id, so it can draw only the generic tooltip for
+          // the item type. A grid carries the real stack. This is still a display slot, so
+          // ScribingPage passes clickable=false and binds nothing to it. The stack goes on
+          // the wire with metadata nulled, as it does for every ItemGrid on this page.
+          $C.@SimpleContainer #TargetRow {
+            LayoutMode: Left;
+            Anchor: (Height: 72, Top: 9, Bottom: 15);
+            Padding: (Full: 10);
+
+            Group {
+              Anchor: (Width: 52, Height: 52, Right: 11);
+
+              ItemGrid #TargetSlot {
+                Anchor: (Full: 0);
+                SlotsPerRow: 1;
+                // This slot shows a copy of the player's real stack, so the picker's rule
+                // applies here too. It was missing before. If dragging is left on, the
+                // client's pickup gesture lifts an item from a widget that owns nothing
+                // and cannot give it back.
+                AreItemsDraggable: false;
+                Style: (
+                  SlotSize: 52,
+                  SlotIconSize: 52,
+                  SlotSpacing: 0,
+                  SlotBackground: "../../Common/BlockSelectorSlotBackground.png",
+                  // Hover only. The slot answers a hover with the native tooltip, which is
+                  // the "before" against the preview column's "after", and it takes no click.
+                  ItemStackHoveredSound: (SoundPath: $Sounds.@ButtonsLightHover, Volume: 6)
+                );
+              }
+            }
+
+            Group {
+              LayoutMode: Top;
+              FlexWeight: 1;
+
+              Label #TargetName {
+                Style: @TargetNameStyle;
+                Anchor: (Height: 20);
+              }
+
+              Label #TargetCaption {
+                Style: @TargetCaptionStyle;
+                Anchor: (Top: 4);
+              }
+            }
+          }
+
+          Group #NameLabelRow {
+            LayoutMode: Left;
+            Anchor: (Height: 16, Bottom: 6);
+
+            Label #NameLabel {
+              Style: @FieldLabelStyle;
+              Text: %server.customUI.scribingPage.nameLabel;
+            }
+
+            Group {
+              FlexWeight: 1;
+            }
+
+            Label #NameCount {
+              Style: @CountStyle;
+              Text: "";
+            }
+          }
+
+          // MaxLength is the raw cap, not the rendered cap. The player types markup, and
+          // its tags count as characters here even though they take no space in the tooltip.
+          //
+          // Bottom is functional here. $C.@TextField uses
+          // Anchor: (...@Anchor, Height: 38) and has no margin of its own. Without this
+          // margin, the box sits flush against its label above and its error line below,
+          // making the whole column look like one welded stack. Height cannot pass through
+          // @Anchor because the composite writes its own Height after the spread, but a
+          // margin passes through correctly.
+          //
+          // The per-field error lines were removed on 2026-08-10. Each field used to reserve
+          // an 18px red line underneath it. The description message could exceed 18px,
+          // overflow its slot and paint across the Inscribe button below. It also duplicated
+          // text already carried by the status strip at the foot of this column. That strip
+          // is never empty. It always explains what is wrong or what to do next, so each
+          // message needs only that one home.
+          // Bottom is 27, exactly the trailing space this field already had: 3 from its own
+          // margin, the 18 tall error line and that line's 6. The error line is gone, as
+          // explained below, but the column was tuned around the gap it occupied while
+          // empty. Move that number onto the field instead of removing it.
+          $C.@TextField #NameInput {
+            @Anchor = (Bottom: 27);
+
+            MaxLength: 200;
+            PlaceholderText: %server.customUI.scribingPage.namePlaceholder;
+          }
+
+
+          Group #DescriptionLabelRow {
+            LayoutMode: Left;
+            Anchor: (Height: 16, Bottom: 6);
+
+            Label #DescriptionLabel {
+              Style: @FieldLabelStyle;
+              Text: %server.customUI.scribingPage.descriptionLabel;
+            }
+
+            Group {
+              FlexWeight: 1;
+            }
+
+            Label #DescriptionCount {
+              Style: @CountStyle;
+              Text: "";
+            }
+          }
+
+          // MaxVisibleLines matches the line cap, so the text area displays exactly as much
+          // as the player may write. It scrolls instead of growing. Keeping AutoGrow off
+          // stops everything below it from moving while the player types.
+          //
+          // This box has to be the column's only flexible element. It used to have a fixed
+          // Height: 132, with a flex spacer at the foot of the column. Every unused pixel
+          // then collected in one void between the cost row and the legend panel. The void
+          // wasn't constant either. It measured 14px in survival and 68px in creative
+          // because ScribingPage.charges() hides #CostRow for a creative player. A fixed
+          // height is therefore wrong in one of the two modes. On 2026-08-09, the design
+          // called for the slack to move here, onto the one element that can use it. This
+          // also makes the foot of the column identical in both modes instead of only one.
+          //
+          // Deliberately give this no Height. $C.@MultilineTextField uses
+          // Anchor: (...@Anchor) with no height of its own, so the widget accepts whatever
+          // the flex gives it. The shipped UI uses this shape in two ways. SourceEditor.ui:58
+          // and CreateAssetModal.ui:265 both flex a CodeEditor, the engine's other multi-line
+          // text surface, to fill a column without declaring a height. MultilineText.ui:18
+          // also ships a MultilineTextField without a height. Declaring both Height and
+          // FlexWeight would require guessing which one wins, so don't declare both.
+          //
+          // This works out to about 158px with the cost row visible and about 212px without
+          // it, compared with the old 132. If dead space appears at the bottom, it comes
+          // from MaxVisibleLines clamping the text area to the six lines accepted by the
+          // server. Change that one number rather than this layout.
+          // Bottom 27 for the same reason as #NameInput above.
+          $C.@MultilineTextField #DescriptionInput {
+            @Anchor = (Bottom: 27);
+
+            FlexWeight: 1;
+            Padding: (Horizontal: 12, Vertical: 9);
+            AutoGrow: false;
+            MaxVisibleLines: 6;
+            MaxLength: 1200;
+            PlaceholderText: %server.customUI.scribingPage.descriptionPlaceholder;
+          }
+
+
+          // Keep 44 because it is $C.@PrimaryButtonHeight, the height used to draw every
+          // primary button in the game. The buttons didn't need to shrink. They needed to
+          // stop touching the box above, which is why Top is set here.
+          //
+          // The 4 here sits on top of the field block's 27, including the error line's own
+          // 6, and creates 31px between the description box and the buttons. The extra space is
+          // deliberate. Moving from the form to its actions is a larger step than moving
+          // between fields, and this is the one column gap allowed to differ.
+          // Two rows live here, but only one is visible at a time. That is why sealing costs
+          // no height. A hidden sibling takes no space, as this document already relies on
+          // for #DeskEmpty and #DeskEditor. The confirm variant is free until it is needed.
+          //
+          // Sealing is irreversible, so it is armed first and confirmed second. Cursor
+          // geometry provides the protection instead of a warning label. In this 400px row,
+          // INSCRIBE flexes across 0..152, #SealButton sits at 161..279 and CLEAR sits at
+          // 288..400. #ConfirmSealButton is 152 wide and occupies 0..152, so it cannot
+          // overlap the place where SEAL was pressed. A player who reflexively double clicks
+          // lands on CANCEL every time. Don't make the confirm button wider than 152 or
+          // reorder this pair. Their geometry is the entire safeguard.
+          //
+          // The label supplies the other half of the protection. If a button changes meaning
+          // based on a control elsewhere on screen, people seal things accidentally. The
+          // button that performs the seal therefore says exactly what it does.
+          Group #ActionRow {
+            LayoutMode: Left;
+            Anchor: (Height: 44, Top: 4);
+
+            Group #ActionNormal {
+              LayoutMode: Left;
+              FlexWeight: 1;
+
+              $C.@TextButton #InscribeButton {
+                @Text = %server.customUI.scribingPage.inscribeButton;
+                @Sounds = $Sounds.@ButtonMemoryRestore;
+
+                FlexWeight: 1;
+                Anchor: (Right: 9);
+                Disabled: false;
+              }
+
+              $C.@SecondaryTextButton #SealButton {
+                @Text = %server.customUI.scribingPage.sealButton;
+
+                Anchor: (Width: 118, Right: 9);
+                Disabled: false;
+                Visible: false;
+              }
+
+              $C.@SecondaryTextButton #ClearButton {
+                @Text = %server.customUI.scribingPage.clearButton;
+
+                Anchor: (Width: 112);
+              }
+            }
+
+            Group #ActionConfirm {
+              LayoutMode: Left;
+              FlexWeight: 1;
+              Visible: false;
+
+              $C.@TextButton #ConfirmSealButton {
+                @Text = %server.customUI.scribingPage.confirmSealButton;
+                @Sounds = $Sounds.@ButtonMemoryRestore;
+
+                Anchor: (Width: 152, Right: 9);
+              }
+
+              $C.@SecondaryTextButton #CancelSealButton {
+                @Text = %server.customUI.scribingPage.cancelSealButton;
+
+                FlexWeight: 1;
+              }
+            }
+          }
+
+          // Present a cost as a requirement row, following the game's recipe materials:
+          // the item, its name and have over need. Don't turn it into a sentence with a
+          // number. The row was reduced from 56 to 46. It exists only when a server owner
+          // enables the cost, and at the old height the column overflowed as soon as they
+          // did. That kind of defect appears only on somebody else's server. At 46, the
+          // row fits without disturbing the rest of the column.
+          //
+          // The seal costs this row no height, which is why the row has this shape. Sealed
+          // inscriptions need the lock shown with have over need. A second 46px row below
+          // this one was measured and rejected. The column's only flexible element is
+          // #DescriptionInput, which resolves to about 158px in adventure as described
+          // above. Another row would take 54 of those pixels, reducing a box that declares
+          // six lines to about four visible lines. No other part of the column can return
+          // those pixels because the legend's 62 and the fields' 27 were tuned by eye and
+          // approved. The row therefore grows sideways instead of down, leaving the
+          // description box untouched in both modes.
+          //
+          // Each cell owns its own Visible setting so the row degrades cleanly. When sealing
+          // is off, the seal cell disappears and the cost cell takes the full width through
+          // its flex. The result reads byte for byte as the single cost row it replaced.
+          $C.@SimpleContainer #RequirementsRow {
+            LayoutMode: Left;
+            Anchor: (Height: 46, Top: 8);
+            Padding: (Horizontal: 11, Vertical: 6);
+            Visible: false;
+
+            Group #CostCell {
+              LayoutMode: Left;
+              FlexWeight: 1;
+
+              Group {
+                Anchor: (Width: 34, Height: 34, Right: 9);
+
+                ItemGrid #CostSlot {
+                  Anchor: (Full: 0);
+                  SlotsPerRow: 1;
+                  AreItemsDraggable: false;
+                  Style: (
+                    SlotSize: 34,
+                    SlotIconSize: 34,
+                    SlotSpacing: 0,
+                    SlotBackground: "../../Common/BlockSelectorSlotBackground.png",
+                    // Hover only, same reason as the target slot above.
+                    ItemStackHoveredSound: (SoundPath: $Sounds.@ButtonsLightHover, Volume: 6)
+                  );
+                }
+              }
+
+              Group {
+                LayoutMode: Top;
+                FlexWeight: 1;
+
+                Label #CostLabel {
+                  Style: (FontSize: 11, RenderUppercase: true, RenderBold: true, FontName: "Secondary", LetterSpacing: 1.3, TextColor: $C.@ColorCaptionLight);
+                  Text: %server.customUI.scribingPage.costLabel;
+                }
+
+                Label #CostName {
+                  Style: (FontSize: 14, TextColor: #b4c8c9);
+                  Anchor: (Top: 2);
+                  Text: "";
+                }
+              }
+
+              // 44 rather than the old 60. Two cells share 378px of content width here
+              // where one used to have all of it, and the item names are the part that
+              // must not clip, so the fixed count column gives up what it can spare.
+              Label #CostAmount {
+                Style: (FontSize: 15, TextColor: #b4c8c9, VerticalAlignment: Center, HorizontalAlignment: End);
+                Anchor: (Width: 44);
+                Text: "";
+              }
+            }
+
+            Group #SealCell {
+              LayoutMode: Left;
+              FlexWeight: 1;
+              Padding: (Left: 12);
+              Visible: false;
+
+              Group {
+                Anchor: (Width: 34, Height: 34, Right: 9);
+
+                // This is a display slot like every other one on the page. The button in the
+                // action row arms the seal. This cell never does, so it has no click owner.
+                // That is deliberate. Nesting an ItemGrid inside a button once forced a
+                // double click for every selection on this screen. The #PickerGrid comment
+                // explains why each cell must have only one owner.
+                ItemGrid #SealSlot {
+                  Anchor: (Full: 0);
+                  SlotsPerRow: 1;
+                  AreItemsDraggable: false;
+                  Style: (
+                    SlotSize: 34,
+                    SlotIconSize: 34,
+                    SlotSpacing: 0,
+                    SlotBackground: "../../Common/BlockSelectorSlotBackground.png",
+                    ItemStackHoveredSound: (SoundPath: $Sounds.@ButtonsLightHover, Volume: 6)
+                  );
+                }
+              }
+
+              Group {
+                LayoutMode: Top;
+                FlexWeight: 1;
+
+                Label #SealLabel {
+                  Style: (FontSize: 11, RenderUppercase: true, RenderBold: true, FontName: "Secondary", LetterSpacing: 1.3, TextColor: $C.@ColorCaptionLight);
+                  Text: %server.customUI.scribingPage.sealLabel;
+                }
+
+                Label #SealName {
+                  Style: (FontSize: 14, TextColor: #b4c8c9);
+                  Anchor: (Top: 2);
+                  Text: "";
+                }
+              }
+
+              Label #SealAmount {
+                Style: (FontSize: 15, TextColor: #b4c8c9, VerticalAlignment: Center, HorizontalAlignment: End);
+                Anchor: (Width: 44);
+                Text: "";
+              }
+            }
+          }
+
+        }
+
+        // This third state is why #LegendPanel and #StatusBar sit below #DeskEditor as
+        // siblings. A sealed item can never be re-inscribed, so its editor isn't rendered
+        // disabled. It isn't rendered at all. A disabled field that still looks like a
+        // field has the same "looks pressable but is not" defect guarded against by
+        // ItemSlots.display. IsReadOnly is attested only on CodeEditor and never on
+        // @TextField, so disabling the field wasn't a proven option either. The player can
+        // still read their text because the preview column draws it.
+        //
+        // Moving them costs #DeskEditor nothing. The legend's 160 and the strip's 34 stay
+        // the same inside or beside it because all three state panels flex. The move also
+        // fixes a quieter bug. The status strip used to live inside #DeskEditor, so when
+        // nothing was selected, setStatus wrote to a widget that wasn't on screen.
+        Group #DeskSealed {
+          LayoutMode: Top;
+          FlexWeight: 1;
+          Visible: false;
+
+          $C.@SimpleContainer #SealedRow {
+            LayoutMode: Left;
+            Anchor: (Height: 72, Top: 9, Bottom: 15);
+            Padding: (Full: 10);
+
+            Group {
+              Anchor: (Width: 52, Height: 52, Right: 11);
+
+              ItemGrid #SealedSlot {
+                Anchor: (Full: 0);
+                SlotsPerRow: 1;
+                AreItemsDraggable: false;
+                Style: (
+                  SlotSize: 52,
+                  SlotIconSize: 52,
+                  SlotSpacing: 0,
+                  SlotBackground: "../../Common/BlockSelectorSlotBackground.png",
+                  ItemStackHoveredSound: (SoundPath: $Sounds.@ButtonsLightHover, Volume: 6)
+                );
+              }
+            }
+
+            Group {
+              LayoutMode: Top;
+              FlexWeight: 1;
+
+              Label #SealedName {
+                Style: @TargetNameStyle;
+                Anchor: (Height: 20);
+              }
+
+              Label #SealedCaption {
+                Style: @TargetCaptionStyle;
+                Anchor: (Top: 4);
+              }
+            }
+          }
+
+          $C.@SimpleContainer #SealedNotice {
+            LayoutMode: Top;
+            Padding: (Horizontal: 11, Vertical: 9);
+
+            Label #SealedTitle {
+              Style: (...@EmptyTitleStyle, HorizontalAlignment: Start);
+              Anchor: (Height: 20, Bottom: 7);
+              Text: %server.customUI.scribingPage.sealedTitle;
+            }
+
+            // Borrow @EmptyBodyStyle's shape but override its colour. The style resolves to
+            // $C.@ColorCaptionLight, #5a6a7a, the dimmest text on the page. That works for an
+            // empty state saying nothing is here, but this is the panel's actual content.
+            // It names who sealed the item and when. Without the override, it appeared
+            // quieter than the caption beneath the item's own name.
+            //
+            // #96a9be is #StatusBar's colour at #StatusBar's size. Both serve the same role:
+            // a sentence the page tells the player. Reuse that treatment instead of adding
+            // a third value. Leave the shared style untouched because three approved empty
+            // states use it. Changing those by accident would quietly alter their tuning.
+            Label #SealedBody {
+              Style: (...@EmptyBodyStyle, HorizontalAlignment: Start, TextColor: #96a9be);
+              Text: "";
+            }
+          }
+
+          // Say plainly that this is staff only. On a test server, the owner is OP and
+          // silently holds this permission at all times. That already hid a problem once
+          // with the length bypass. To the person running the play-test, a bare button here
+          // would make the seal look broken. The line above explains why the button exists.
+          //
+          // Keep the flex spacer below this panel, not above it. That change fixed the
+          // in-game layout on 2026-08-11. Above the panel, it pinned this block to the floor
+          // of the column and left roughly 340px of empty space between the explanation of
+          // the seal and the button that undoes it. The button then looked orphaned instead
+          // of belonging to the panel. A real-content column on this screen is top aligned
+          // with slack underneath, as #PreviewColumn demonstrates with this exact spacer.
+          // The alternative pattern uses two spacers to centre #DeskEmpty, but that is for
+          // a panel containing only a message. This panel contains more than a message.
+          //
+          // Use a framed panel here rather than a loose row for the same reason. Every other
+          // block in this column is a $C.@SimpleContainer. A bare label and button at the
+          // foot was the only unframed part of the screen. Keep this frame separate from
+          // #SealedNotice. The frame boundary is what justifies the shift from the notice's left aligned
+          // body to this block's centred body, and shows at a glance that this part isn't
+          // addressed to everybody.
+          $C.@SimpleContainer #SealedAdminRow {
+            LayoutMode: Top;
+            Anchor: (Top: 8);
+            Padding: (Horizontal: 11, Vertical: 9);
+            Visible: false;
+
+            // Use 14 and #ffffff instead of the old 12 and $C.@ColorCaptionLight, which
+            // resolves to #5a6a7a and is the dimmest text on the page. This is the only
+            // actionable line for a sealed item, but the old treatment made it quieter than
+            // the caption beneath the item name. White belongs here. Across the 135 shipped
+            // custom UI documents, it is the most common TextColor, with 21 uses among 52
+            // distinct colours.
+            //
+            // Place this above the button, not below it. The sentence explains why the
+            // button exists and should be read first. Below the button, it reads like a
+            // consequence of pressing it. Use 14 rather than 15 so it remains subordinate
+            // to #SealedName, the subject of the panel.
+            Label #SealedAdminNote {
+              Style: (FontSize: 14, TextColor: #ffffff, HorizontalAlignment: Center, Wrap: true);
+              Anchor: (Bottom: 9);
+              Text: %server.customUI.scribingPage.breakSealNote;
+            }
+
+            // The parent centres this button, not an anchor. LayoutMode: Center lays out its
+            // children from left to right and centres the whole run. That is the shipped
+            // pattern for a button row on a server-driven page, and it works on our own
+            // rendering path as well as in the client's interface tree.
+            // Pages/NameRespawnPointPage.ui centres its confirmation pair in a Group with no
+            // height at all. The mode appears 36 times in 22 of the 135 documents in
+            // Assets.zip.
+            //
+            // Use @Anchor = (...) here, not Anchor: (...). The distinction is load bearing.
+            // @SecondaryTextButton resolves to
+            // Anchor: (...@Anchor, Height: @DefaultButtonHeight), so the parameter form
+            // preserves the button's own 44. The field form replaces the whole anchor and
+            // drops that height. The previous row survived the field form only because it
+            // declared Height: 44 and the button filled it. This wrapper has no height, so
+            // the button must carry its own. The parameter form is also the corpus standard
+            // by an order of magnitude: 138 uses against 13 in all 355 shipped documents.
+            Group {
+              LayoutMode: Center;
+
+              $C.@SecondaryTextButton #BreakSealButton {
+                @Text = %server.customUI.scribingPage.breakSealButton;
+                @Sounds = $Sounds.@ButtonMemoryRestore;
+
+                @Anchor = (Width: 150);
+              }
+            }
+          }
+
+          // The slack goes under the sealed panel and never inside it. The note on
+          // #SealedAdminRow above says why, and it is also what a player with no staff
+          // permission sees: this column top aligned and empty below, exactly like
+          // #PreviewColumn beside it.
+          Group {
+            FlexWeight: 1;
+          }
+        }
+
+        // Don't put a flex spacer back here. Doing so restores the spacing bug identified
+          // on 2026-08-09, where the gaps between the inkwell cost, the writing guide and
+          // the final hint message were uneven. A spacer used to sit at this exact point to
+          // bottom-align the reference material. Because it was the column's only flexible
+          // element, it swallowed every unused pixel. The three gaps at the foot measured
+          // 8, 14 and 8 in survival, then 8, 68 and 8 in creative when #CostRow was hidden.
+          // The slack now goes into #DescriptionInput. These three panels therefore keep an
+          // even gap of 8 in both modes, and nothing here has to absorb extra space. The old
+          // spacer's bottom alignment is now free. The flexible description fills the
+          // column, which already leaves the status strip on the floor.
+          //
+          // Keep the writing guide in one panel, not two. The copy box used to occupy its
+          // own bare dark rectangle above this one. That made the content look like two
+          // unrelated boxes and spent a panel's worth of padding and margin on the split.
+          // The codes and colours form one piece of reference material, so they share a
+          // frame.
+          $C.@SimpleContainer #LegendPanel {
+            LayoutMode: Top;
+            Anchor: (Top: 8, Bottom: 8);
+            Padding: (Horizontal: 11, Vertical: 9);
+
+            Label #LegendTitle {
+              Style: (FontSize: 12, RenderUppercase: true, RenderBold: true, FontName: "Secondary", LetterSpacing: 1.6, TextColor: #89899f);
+              Anchor: (Height: 14, Bottom: 7);
+              Text: %server.customUI.scribingPage.legendTitle;
+            }
+
+            // These three lines must be copyable. A Label cannot be selected, so codes drawn
+            // as labels can only be read and retyped by hand. A read-only CodeEditor is a
+            // real text surface. The player can select a line, copy it with the usual
+            // shortcut and paste it wherever the caret already sits. None of the 135
+            // shipped documents exposes a clipboard API or a caret API, so the only
+            // available route is to let the client handle both ends.
+            //
+            // The height of 62 was chosen on 2026-08-09 for appearance, not as an optimum.
+            //
+            // The blank row below line three comes from the widget, not the height. Three
+            // in-game observations establish this:
+            //
+            //   52 gives 38px of content, clips line three and shows a scrollbar.
+            //   74 gives 60px of content, no scrollbar and a blank row under line three.
+            //   62 gives 48px of content and a scrollbar, with the blank row scrolled out of sight.
+            //
+            // If the blank row were slack, it would disappear at 62 rather than becoming
+            // scrollable. It is a real fourth row: the caret position after the final
+            // newline that every text editor preserves. The Value below ends on line three
+            // without a trailing newline, so our value doesn't create it. The widget offers
+            // no way out either. AutoGrow is attested only on MultilineTextField, and the
+            // only CodeEditor in the shipped corpus, UIGallery/CodeViewer.ui:23, remains in
+            // a fixed Height: 150 box regardless of its snippet.
+            //
+            // The choices are a blank row or a scrollbar. There is no third option without
+            // changing widgets. The scrollbar was chosen because three visible lines with
+            // the empty row hidden read better than four rows with one blank. Don't change
+            // this back to 74. That doesn't remove the fourth line. It makes the fourth line
+            // visible.
+            Group {
+              Anchor: (Height: 62, Bottom: 9);
+              Background: (Color: #0c1015);
+
+              CodeEditor #LegendCopyBox {
+                Anchor: (Full: 0);
+                Style: (TextColor: #a9bccb, FontSize: 11);
+                ContentPadding: 7;
+                IsReadOnly: true;
+                ScrollbarStyle: $C.@DefaultScrollbarStyle;
+                Value: "<b>bold</b>
+<i>italic</i>
+<color is=\"#E8A93B\">gold</color>";
+              }
+            }
+
+            Group #LegendSwatches {
+              LayoutMode: Top;
+
+              Group {
+                LayoutMode: Left;
+                Anchor: (Height: 15, Bottom: 4);
+
+                @Swatch { @Color = #ffffff; @Text = "#ffffff"; }
+                @Swatch { @Color = #E8A93B; @Text = "#E8A93B"; }
+                @Swatch { @Color = #bca57a; @Text = "#bca57a"; }
+                @Swatch { @Color = #4ade80; @Text = "#4ade80"; }
+                @Swatch { @Color = #1eab1e; @Text = "#1eab1e"; }
+              }
+
+              Group {
+                LayoutMode: Left;
+                Anchor: (Height: 15);
+
+                @Swatch { @Color = #05c09a; @Text = "#05c09a"; }
+                @Swatch { @Color = #7a9cc6; @Text = "#7a9cc6"; }
+                @Swatch { @Color = #ccaa00; @Text = "#ccaa00"; }
+                @Swatch { @Color = #be1717; @Text = "#be1717"; }
+                @Swatch { @Color = #b61a82; @Text = "#b61a82"; }
+              }
+            }
+          }
+
+          Group #StatusBar {
+            Anchor: (Height: 34);
+            Background: (TexturePath: "../../Common/ContainerPanelPatch.png", Border: 4);
+            Padding: (Horizontal: 12);
+
+            Label #Status {
+              Anchor: (Full: 0);
+              Style: (
+                FontSize: 13,
+                HorizontalAlignment: Center,
+                VerticalAlignment: Center,
+                Wrap: true,
+                TextColor: #96a9be
+              );
+            }
+          }
+      }
+
+      $C.@VerticalSeparator { }
+
+      // -------------------------------------------------------------- column three
+      // This side used to be fixed at 492 while the picker column flexed. The unequal side
+      // widths moved the desk 41px off centre. Both sides now flex, so they stay equal at
+      // every container width and centre the desk by construction. The 480 wide preview
+      // card still fits inside with room to spare.
+      Group #PreviewColumn {
+        LayoutMode: Top;
+        FlexWeight: 1;
+        Padding: (Left: 12);
+
+        Group #PreviewHeader {
+          LayoutMode: Left;
+          Anchor: (Height: 22);
+
+          Label #PreviewTitle {
+            Style: @HeaderStyle;
+            Text: %server.customUI.scribingPage.previewHeader;
+          }
+        }
+
+        // Keep this exactly 480 wide. The value isn't a matter of taste. The real tooltip
+        // has MaxWidth 480 and wraps every label. A narrower card wraps the description at
+        // a different column from the game, making the card wrong about the exact thing it
+        // exists to preview. The cap of 60 characters per line comes from the same width of
+        // 480. If the card and cap disagree, one of them is a bug.
+        //
+        // Use a real tooltip background here, not $C.@SimpleContainer. That composite uses
+        // Background: ("Common/ContainerPanelPatch.png", Border: 4), the same generic grey
+        // panel as every other box on this screen. It made the card look like a form field
+        // instead of a tooltip. This uses the engine's own tooltip texture with Border: 24,
+        // matching Common.ui:916 at @DefaultTextTooltipStyle and the item tooltip itself.
+        //
+        // This cannot use the item-quality card. A failed boot confirmed that relative
+        // texture paths in custom UI documents are rooted at Common/UI/Custom/ and cannot
+        // climb above it. Across all 135 shipped documents and their 253 texture paths, the
+        // number of "../" never exceeds the document's depth below that root. There are zero
+        // exceptions. Depth 1 uses at most one, depth 2 at most two and depth 3 at most
+        // three. This page is at depth 2, so "../../" reaches the root and one more is
+        // refused. The quality cards live at Common/UI/ItemQualities/Tooltips/, which is a
+        // sibling of Custom/ and therefore unreachable at any depth. The client reports
+        // the failure as "Could not resolve relative path".
+        //
+        // Rarity therefore belongs on the quality label below, using the engine's own
+        // mechanism and the colour from the quality asset. Tinting this texture by rarity
+        // doesn't work either. Its outer ring has alpha 0 all the way around, so a colour
+        // behind it draws a hard rectangle instead of a border.
+        Group #PreviewCard {
+          LayoutMode: Top;
+          Anchor: (Width: 480, Top: 9);
+          Background: (TexturePath: "../../Common/TooltipDefaultBackground.png", Border: 24);
+          Padding: (Full: 24, Top: 21);
+
+          // Don't add a rarity accent bar here. A 3px Group once sat at the top of this card
+          // and carried the quality colour, but it was an invented detail. It doesn't exist
+          // in any version of ItemTooltip.ui, which is byte-identical in release-build-11,
+          // the live 0.5.7 install and 0.6.0-pre. Common quality is #c9d2dd, so the group drew
+          // a white line across a card whose whole purpose is to match the real tooltip. A
+          // play-test identified it immediately as foreign.
+          //
+          // Put rarity on the quality label below and nowhere else. That is the only place
+          // the engine puts it on a card that it cannot re-texture.
+
+          // Name and quality share a row, which is how the shipped tooltip does it
+          // (ItemTooltip.ui:33-46). The quality label carries no colour in the markup
+          // because the client colours it from the quality asset, and so do we.
+          Group #PvHeader {
+            LayoutMode: Left;
+
+            Label #PvName {
+              FlexWeight: 2;
+              Style: (FontSize: 18, RenderBold: true, TextColor: #ffffff, Wrap: true);
+            }
+
+            Label #PvQuality {
+              Padding: (Left: 5, Top: 3);
+              Style: (FontSize: 14, HorizontalAlignment: End);
+              Text: "";
+            }
+          }
+
+          Label #PvId {
+            Style: (FontSize: 14, TextColor: #838383, RenderItalics: true);
+            Anchor: (Top: 2);
+          }
+
+          Group #PvSep1 {
+            Anchor: (Height: 1, Top: 9);
+            Background: (Color: #25262c);
+          }
+
+          Label #PvDescription {
+            Style: (FontSize: 14, TextColor: #696969, Wrap: true);
+            Anchor: (Top: 7);
+          }
+
+          // The stat block was deliberately removed after an in-game review on 2026-08-09.
+          // A version was built from the EntityStatType registry, respected hideFromTooltip,
+          // shipped the real icons and pulled Defense and Attack from baseDamageResistance
+          // and the weapon's damage breakdown. It still didn't match the game. Entire row
+          // families were missing, including projectile and physical resistance, because
+          // those values live in ItemArmor's damageResistance and damageEnhancement maps,
+          // keyed by DamageCause, instead of statModifiers. The weapon Attack figure was
+          // also outright wrong.
+          //
+          // The cause is structural, not a nearly fixed bug. The client receives raw
+          // modifiers and computes every displayed figure natively. A replica would have to
+          // derive an unpublished formula from several independent sources, then remain
+          // correct as items and mods change. A preview with numbers that disagree with the
+          // real tooltip is worse than one without numbers because this card promises to
+          // show what the player will see.
+          //
+          // If this is revisited, the icons can be copied from the client install at
+          // Data/Game/Interface/InGame/Pages/Inventory/CharacterPanelStatIcon*@2x.png and
+          // Hud/Stamina/StaminaIcon@2x.png. None is present in the public Assets.zip. The
+          // artwork was never the blocker.
+
+          Group #PvSep2 {
+            Anchor: (Height: 1, Top: 9);
+            Background: (Color: #25262c);
+          }
+
+          Label #PvDurability {
+            Style: (FontSize: 14, TextColor: #bca57a, HorizontalAlignment: End);
+            Anchor: (Top: 7);
+          }
+        }
+
+        // Don't place a caption below the card. The blueprint's widget table listed one,
+        // but the approved screen has nothing between the card and the bottom of the
+        // column. The reviewed screen is what was signed off. The copy box also lived here
+        // briefly, but moved to the desk column because a tall description pushed it to the
+        // bottom of the screen, far from the fields it describes.
+        Group {
+          FlexWeight: 1;
+        }
+      }
+    }
+  }
+}
+
+// Use the shipped bottom-left back affordance, matching the Alteration Table. It was
+// missing here, so the two benches gave players different ways out of the same kind of
+// screen. Keep it outside @PageOverlay because Common.ui anchors it to the page rather
+// than the container.
+$C.@BackButton {}

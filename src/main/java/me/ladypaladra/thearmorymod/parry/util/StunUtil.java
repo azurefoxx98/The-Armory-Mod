@@ -18,7 +18,6 @@ import me.ladypaladra.thearmorymod.parry.components.StunComponent;
 
 public final class StunUtil {
 
-    private static final ComponentType<EntityStore, StunComponent> stunComponentType = ParryModule.getStunComponentType();
     private static final String STUN_EFFECT_ID = "TA_Entity_Stunned";
 
     private StunUtil() {
@@ -28,10 +27,11 @@ public final class StunUtil {
                                  Store<EntityStore> store,
                                  CommandBuffer<EntityStore> commandBuffer,
                                  float durationSeconds) {
-        if (entityRef == null || !entityRef.isValid() || stunComponentType == null) {
+        if (entityRef == null || !entityRef.isValid()) {
             return;
         }
 
+        ComponentType<EntityStore, StunComponent> stunComponentType = ParryModule.getStunComponentType();
         StunComponent existing = store.getComponent(entityRef, stunComponentType);
         if (existing != null) {
             existing.setTimeRemaining(Math.max(existing.getTimeRemaining(), durationSeconds));

@@ -6,7 +6,6 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
-import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
@@ -16,9 +15,6 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.ladypaladra.thearmorymod.stats.ArmoryStatIds;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public final class GroundMoveSpeedModifierSystem extends EntityTickingSystem<EntityStore> {
 
@@ -26,11 +22,8 @@ public final class GroundMoveSpeedModifierSystem extends EntityTickingSystem<Ent
 
     private volatile int moveSpeedIdx = Integer.MIN_VALUE;
 
-    private final Map<UUID, SpeedState> states = new HashMap<>();
-
     private final Query<EntityStore> query = Archetype.of(
             PlayerRef.getComponentType(),
-            UUIDComponent.getComponentType(),
             EntityStatMap.getComponentType(),
             MovementManager.getComponentType()
     );
@@ -50,74 +43,37 @@ public final class GroundMoveSpeedModifierSystem extends EntityTickingSystem<Ent
             @Nonnull CommandBuffer<EntityStore> commandBuffer
     ) {
         PlayerRef playerRef = chunk.getComponent(index, PlayerRef.getComponentType());
-        UUIDComponent uuidComponent = chunk.getComponent(index, UUIDComponent.getComponentType());
         EntityStatMap statMap = chunk.getComponent(index, EntityStatMap.getComponentType());
         MovementManager movementManager = chunk.getComponent(index, MovementManager.getComponentType());
 
         if (playerRef == null
-                || uuidComponent == null
                 || statMap == null
                 || movementManager == null) {
             return;
         }
 
-        UUID uuid = uuidComponent.getUuid();
-        SpeedState state = states.computeIfAbsent(uuid, ignored -> new SpeedState());
-
-        float multiplier = getMoveSpeedMultiplier(statMap);
-
-        if (multiplier <= 1.0F + EPSILON) {
-            resetSprintSpeedIfNeeded(playerRef, movementManager, state);
+        // A newly created manager can tick before its settings have been initialised.
+        if (movementManager.getDefaultSettings() == null || movementManager.getSettings() == null) {
             return;
         }
 
-        applySprintSpeedIfNeeded(playerRef, movementManager, state, uuid, multiplier);
+        float multiplier = getMoveSpeedMultiplier(statMap);
+        float target = movementManager.getDefaultSettings().forwardSprintSpeedMultiplier * multiplier;
+        float live = movementManager.getSettings().forwardSprintSpeedMultiplier;
+
+        // Live settings are the state, so a replacement manager after reconnect corrects itself.
+        if (Math.abs(live - target) <= EPSILON) {
+            return;
+        }
+
+        movementManager.getSettings().forwardSprintSpeedMultiplier = target;
+        movementManager.update(playerRef.getPacketHandler());
     }
 
     @Override
     public boolean isParallel(int archetypeChunkSize, int taskCount) {
+        // This writes live movement settings and sends a packet, so it must run on the world thread.
         return false;
-    }
-
-    private void applySprintSpeedIfNeeded(
-            @Nonnull PlayerRef playerRef,
-            @Nonnull MovementManager movementManager,
-            @Nonnull SpeedState state,
-            @Nonnull UUID uuid,
-            float multiplier
-    ) {
-        if (state.applied && Math.abs(state.lastMultiplier - multiplier) <= EPSILON) {
-            return;
-        }
-
-        float defaultSprintMultiplier =
-                movementManager.getDefaultSettings().forwardSprintSpeedMultiplier;
-
-        float newSprintMultiplier = defaultSprintMultiplier * multiplier;
-
-        movementManager.getSettings().forwardSprintSpeedMultiplier = newSprintMultiplier;
-
-        movementManager.update(playerRef.getPacketHandler());
-
-        state.applied = true;
-        state.lastMultiplier = multiplier;
-    }
-
-    private void resetSprintSpeedIfNeeded(
-            @Nonnull PlayerRef playerRef,
-            @Nonnull MovementManager movementManager,
-            @Nonnull SpeedState state
-    ) {
-        if (!state.applied) {
-            return;
-        }
-
-        movementManager.getSettings().forwardSprintSpeedMultiplier = movementManager.getDefaultSettings().forwardSprintSpeedMultiplier;
-
-        movementManager.update(playerRef.getPacketHandler());
-
-        state.applied = false;
-        state.lastMultiplier = 1.0F;
     }
 
     private float getMoveSpeedMultiplier(@Nonnull EntityStatMap statMap) {
@@ -151,12 +107,19 @@ public final class GroundMoveSpeedModifierSystem extends EntityTickingSystem<Ent
             return 1.0F;
         }
 
+        // An unmodified stat has matching maxima, though modifiers totaling 1.0 are indistinguishable.
         if (Math.abs(effectiveMax - baseMax) <= EPSILON) {
             return 1.0F;
         }
 
-        float bonusFraction = effectiveMax / baseMax;
-        float multiplier = 1.0F + bonusFraction;
+        // This looks like double counting and has twice been mistaken for a bug.
+        // The engine calculates Multiplicative as value * amount, not value * (1 + amount).
+        // An authored amount of 0.2 therefore makes effectiveMax equal baseMax * 0.2.
+        // Dividing by baseMax recovers 0.2, then adding 1.0 gives the intended 20 percent.
+        // Multiple amounts are summed first, so two amounts of 0.15 recover 0.30.
+        // Using only effectiveMax / baseMax would cut every bonus to a fraction of itself.
+        float authoredAmount = effectiveMax / baseMax;
+        float multiplier = 1.0F + authoredAmount;
 
         return Math.max(1.0F, multiplier);
     }
@@ -176,10 +139,5 @@ public final class GroundMoveSpeedModifierSystem extends EntityTickingSystem<Ent
         }
 
         return Integer.MIN_VALUE;
-    }
-
-    private static final class SpeedState {
-        private boolean applied = false;
-        private float lastMultiplier = 1.0F;
     }
 }

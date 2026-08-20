@@ -18,4 +18,7 @@ public final class ParrySettings {
 
     /** Requires the entity to still be blocking when the hit arrives. */
     public static final boolean REQUIRE_BLOCKING = true;
+
+    /** How long the parried attacker is stunned, in seconds. */
+    public static final float STUN_DURATION_SECONDS = 1F;
 }

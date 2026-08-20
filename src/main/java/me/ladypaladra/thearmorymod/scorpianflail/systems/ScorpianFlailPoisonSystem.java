@@ -22,7 +22,6 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 public final class ScorpianFlailPoisonSystem extends DamageEventSystem {
@@ -30,7 +29,6 @@ public final class ScorpianFlailPoisonSystem extends DamageEventSystem {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
     private static final String SCORPIAN_FLAIL_ITEM_ID = "ScorpianFlail";
-    private static final String FALLBACK_SCORPION_FLAIL_ITEM_ID = "ScorpionFlail";
 
     private static final String POISON_EFFECT_ID = "Poison";
     private static final float POISON_CHANCE = 0.05F;
@@ -134,12 +132,9 @@ public final class ScorpianFlailPoisonSystem extends DamageEventSystem {
             return false;
         }
 
-        String lower = itemId.toLowerCase(Locale.ROOT);
-
-        return lower.equals(SCORPIAN_FLAIL_ITEM_ID.toLowerCase(Locale.ROOT))
-                || lower.contains(SCORPIAN_FLAIL_ITEM_ID.toLowerCase(Locale.ROOT))
-                || lower.equals(FALLBACK_SCORPION_FLAIL_ITEM_ID.toLowerCase(Locale.ROOT))
-                || lower.contains(FALLBACK_SCORPION_FLAIL_ITEM_ID.toLowerCase(Locale.ROOT));
+        // Exact matching keeps a future recolor from inheriting poison by accident.
+        // A new flail variant meant to poison must be added here deliberately.
+        return itemId.equals(SCORPIAN_FLAIL_ITEM_ID);
     }
 
     private static void applyPoison(

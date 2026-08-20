@@ -32,6 +32,8 @@ import static me.ladypaladra.thearmorymod.parry.systems.BlockTrackingSystem.hasP
 
 public class SimpleParrySystem extends DamageEventSystem {
 
+    private static final String PARRY_SUCCESS_SOUND_ID = "TA_Parry_Success";
+
     private final ComponentType<EntityStore, ParryComponent> parryComponentType;
 
     public SimpleParrySystem(ComponentType<EntityStore, ParryComponent> parryComponentType) {
@@ -91,9 +93,11 @@ public class SimpleParrySystem extends DamageEventSystem {
         parryComponent.clearParryWindow();
         parryComponent.setWasBlocking(blockingNow);
 
-        int parrySoundIndex = SoundEvent.getAssetMap().getIndex("TA_Parry_Success");
-        SoundUtil.playSoundEvent2d(defenderRef, parrySoundIndex, SoundCategory.SFX, store);
+        int parrySoundIndex = SoundEvent.getAssetMap().getIndex(PARRY_SUCCESS_SOUND_ID);
+        if (parrySoundIndex >= 0) {
+            SoundUtil.playSoundEvent2d(defenderRef, parrySoundIndex, SoundCategory.SFX, store);
+        }
 
-        StunUtil.applyStun(attackerRef, store, commandBuffer, 1F);
+        StunUtil.applyStun(attackerRef, store, commandBuffer, ParrySettings.STUN_DURATION_SECONDS);
     }
 }

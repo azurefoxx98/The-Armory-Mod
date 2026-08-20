@@ -20,12 +20,16 @@ public final class ProjectileMatchUtil {
                                                  Ref<EntityStore> projectileRef,
                                                  List<String> wildcardPatterns) {
         String assetId = getProjectileAssetId(store, commandBuffer, projectileRef);
-        if (assetId == null || assetId.isBlank()) {
+        return matchesAnyIgnoreCase(assetId, wildcardPatterns);
+    }
+
+    public static boolean matchesAnyIgnoreCase(@Nullable String value, List<String> wildcardPatterns) {
+        if (value == null || value.isBlank()) {
             return false;
         }
 
         for (String pattern : wildcardPatterns) {
-            if (matchesWildcardIgnoreCase(assetId, pattern)) {
+            if (matchesWildcardIgnoreCase(value, pattern)) {
                 return true;
             }
         }

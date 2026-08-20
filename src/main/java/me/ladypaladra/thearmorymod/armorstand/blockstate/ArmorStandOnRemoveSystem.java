@@ -38,8 +38,8 @@ public class ArmorStandOnRemoveSystem extends RefSystem<ChunkStore> {
     @Override
     public void onEntityAdded(@Nonnull Ref<ChunkStore> ref, @Nonnull AddReason reason,
                               @Nonnull Store<ChunkStore> store, @Nonnull CommandBuffer<ChunkStore> commandBuffer) {
-        // Apply the slot filters as soon as the block entity exists — on placement AND
-        // on chunk load — so there is never a window where the container is unfiltered
+        // Apply the slot filters as soon as the block entity exists, on placement and on
+        // chunk load alike, so there is never a window where the container is unfiltered
         // and the built-in sort / quick-stack / transfer buttons could duplicate items.
         // (Container filters are transient and are NOT persisted, so they must be
         //  re-applied every time the block is loaded, not only in the tick loop.)
@@ -60,7 +60,7 @@ public class ArmorStandOnRemoveSystem extends RefSystem<ChunkStore> {
     @Override
     public void onEntityRemove(@Nonnull Ref<ChunkStore> ref, @Nonnull RemoveReason reason,
                                @Nonnull Store<ChunkStore> store, @Nonnull CommandBuffer<ChunkStore> commandBuffer) {
-        // Don't clean up on chunk unload — only on actual block break
+        // Don't clean up on chunk unload, only on an actual block break
         if (reason == RemoveReason.UNLOAD) {
             return;
         }
@@ -88,7 +88,7 @@ public class ArmorStandOnRemoveSystem extends RefSystem<ChunkStore> {
                 // Clean up via ArmorStandTickSystem's static cleanup (removes runtime + despawns NPC)
                 World world = commandBuffer.getExternalData().getWorld();
                 ArmorStandTickSystem.cleanupBlock(posKey, world);
-                LOGGER.info("ArmorStand block removed at " + worldX + "," + worldY + "," + worldZ + " — mannequin cleaned up");
+                LOGGER.info("ArmorStand block removed at " + worldX + "," + worldY + "," + worldZ + ", mannequin cleaned up");
             }
         }
 

@@ -53,7 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
- * ArmorStandTickSystem — ticks all ArmorStand blocks.
+ * ArmorStandTickSystem ticks all ArmorStand blocks.
  * Uses BlockStateInfo (same pattern as Hytale's built-in SpawnMarkerBlockStateSystems)
  * to resolve block world position directly from the ECS, so mannequins spawn
  * correctly on world load without needing a player to open the container first.
@@ -100,7 +100,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
     public void tick(float dt, int index, ArchetypeChunk<ChunkStore> chunk,
                      Store<ChunkStore> store, CommandBuffer<ChunkStore> commandBuffer) {
 
-        // ─── Get components ───
+        // --- Get components ---
         ArmorStandComponent armorComp = chunk.getComponent(index, componentType);
         BlockModule.BlockStateInfo blockInfo = chunk.getComponent(index, blockStateInfoComponentType);
         ItemContainerBlock containerBlock = chunk.getComponent(index, ItemContainerBlock.getComponentType());
@@ -110,7 +110,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
         SimpleItemContainer container = containerBlock.getItemContainer();
         if (container == null) return;
 
-        // ─── Resolve world position from BlockStateInfo (same pattern as SpawnMarkerBlock) ───
+        // --- Resolve world position from BlockStateInfo (same pattern as SpawnMarkerBlock) ---
         Ref<ChunkStore> chunkRef = blockInfo.getChunkRef();
         if (chunkRef == null || !chunkRef.isValid()) return;
 
@@ -145,7 +145,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
         } catch (Exception e) { return; }
         if (world == null) return;
 
-        // ─── Runtime state for this block ───
+        // --- Runtime state for this block ---
         long posKey = com.hypixel.hytale.math.block.BlockUtil.pack(worldX, worldY, worldZ);
         BlockRuntimeKey runtimeKey = runtimeKey(world, posKey);
         BlockRuntime rt = runtimeMap.computeIfAbsent(runtimeKey, k -> new BlockRuntime());
@@ -197,7 +197,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
             return;
         }
 
-        // When container closes → update mannequin
+        // When the container closes, update the mannequin
         if (rt.wasOpen && !isOpen) {
             updateMannequin(armorComp, container, rt, world);
         }
@@ -263,7 +263,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
         rt.wasOpen = isOpen;
     }
 
-    // ─── Armor Slot Filters ───
+    // --- Armor Slot Filters ---
 
     /**
      * Applies the slot filters that keep the Armor Stand from being duped by the
@@ -306,7 +306,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
         }
     }
 
-    // ─── Armor Hash ───
+    // --- Armor Hash ---
 
     private String buildArmorHash(SimpleItemContainer container) {
         StringBuilder sb = new StringBuilder();
@@ -319,7 +319,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
         return sb.toString();
     }
 
-    // ─── Mannequin Management ───
+    // --- Mannequin Management ---
 
     private void updateMannequin(ArmorStandComponent armorComp, SimpleItemContainer container,
                                  BlockRuntime rt, World world) {
@@ -356,7 +356,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
                                     BlockRuntime rt, World world, String sourceHash) {
         try {
             Vector3d blockPos = new Vector3d(rt.worldX + 0.5, rt.worldY, rt.worldZ + 0.5);
-            float yawRad = rt.yawRadians + (float) Math.PI; // Rotate 180° so NPC faces same direction as the block
+            float yawRad = rt.yawRadians + (float) Math.PI; // Rotate 180 degrees so the NPC faces the same direction as the block
 
             NPCPlugin npcPlugin = NPCPlugin.get();
             if (npcPlugin == null || !npcPlugin.hasRoleName(MANNEQUIN_ROLE)) {
@@ -598,7 +598,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
         }
     }
 
-    // ─── Cleanup from any ref ───
+    // --- Cleanup from any ref ---
 
     public static void cleanupBlock(long posKey, World world) {
         BlockRuntime rt = runtimeMap.remove(runtimeKey(world, posKey));
@@ -754,7 +754,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
         return new BlockRuntimeKey(safeWorldName(world), posKey);
     }
 
-    // ─── Transient runtime state per block ───
+    // --- Transient runtime state per block ---
 
     private static class BlockRuntime {
         Ref<EntityStore> mannequinRef = null;

@@ -41,11 +41,18 @@ public final class ArmoryStatService {
         if (baseMax <= 0.0f) return 1.0f;
 
         float multiplier;
+        // An unmodified stat has matching maxima, though modifiers totaling 1.0 are indistinguishable.
         if (Math.abs(effectiveMax - baseMax) <= EPSILON) {
             multiplier = 1.0f;
         } else {
-            float bonusFraction = effectiveMax / baseMax;
-            multiplier = 1.0f + bonusFraction;
+            // The extra 1.0 looks suspicious and has twice been mistaken for double counting.
+            // Engine Multiplicative math is value * amount rather than value * (1 + amount).
+            // An item amount of 0.2 makes the effective maximum baseMax * 0.2.
+            // Dividing by baseMax recovers that 0.2, and 1.0 + 0.2 means 20 percent more.
+            // Amounts are summed before multiplication, so two 0.15 items recover 0.30.
+            // Plain effectiveMax / baseMax would shrink every bonus to a fraction of itself.
+            float authoredAmount = effectiveMax / baseMax;
+            multiplier = 1.0f + authoredAmount;
         }
 
         return multiplier;

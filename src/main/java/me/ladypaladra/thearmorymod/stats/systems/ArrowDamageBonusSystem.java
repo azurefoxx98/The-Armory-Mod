@@ -29,16 +29,8 @@ public class ArrowDamageBonusSystem extends DamageEventSystem {
             "*arrow*"
     );
 
-    private static final List<String> BOW_ITEM_PATTERNS = List.of(
-            "*Bow*",
-            "*bow*",
-            "*Shortbow*",
-            "*shortbow*",
-            "*Longbow*",
-            "*longbow*",
-            "*Crossbow*",
-            "*crossbow*"
-    );
+    // Matching is case insensitive, so one pattern covers every bow, shortbow, longbow and crossbow spelling.
+    private static final List<String> BOW_ITEM_PATTERNS = List.of("*bow*");
 
     private final ArmoryStatService statService;
 
@@ -132,22 +124,6 @@ public class ArrowDamageBonusSystem extends DamageEventSystem {
     }
 
     private static boolean matchesAnyPattern(@Nullable String value) {
-        if (value == null || value.isEmpty()) {
-            return false;
-        }
-
-        for (String pattern : ArrowDamageBonusSystem.BOW_ITEM_PATTERNS) {
-            if (wildcardMatch(value, pattern)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean wildcardMatch(@Nonnull String value, @Nonnull String pattern) {
-        String regex = pattern
-                .replace(".", "\\.")
-                .replace("*", ".*");
-        return value.matches(regex);
+        return ProjectileMatchUtil.matchesAnyIgnoreCase(value, BOW_ITEM_PATTERNS);
     }
 }

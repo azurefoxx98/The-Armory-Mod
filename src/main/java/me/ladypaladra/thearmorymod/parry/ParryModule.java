@@ -11,6 +11,8 @@ import me.ladypaladra.thearmorymod.parry.systems.PlayerParryAdderSystem;
 import me.ladypaladra.thearmorymod.parry.systems.SimpleParrySystem;
 import me.ladypaladra.thearmorymod.parry.systems.StunSystem;
 
+import javax.annotation.Nonnull;
+
 public class ParryModule {
 
     private ParryModule() { }
@@ -30,10 +32,21 @@ public class ParryModule {
         registry.registerSystem(new StunSystem(stunComponentType));
     }
 
+    @Nonnull
     public static ComponentType<EntityStore, ParryComponent> getParryComponentType() {
+        if (parryComponentType == null) {
+            throw new IllegalStateException("ParryComponent component type has not been registered yet.");
+        }
+
         return parryComponentType;
     }
+
+    @Nonnull
     public static ComponentType<EntityStore, StunComponent> getStunComponentType() {
+        if (stunComponentType == null) {
+            throw new IllegalStateException("StunComponent component type has not been registered yet.");
+        }
+
         return stunComponentType;
     }
 }

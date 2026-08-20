@@ -6,7 +6,6 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
-import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
@@ -16,9 +15,6 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.ladypaladra.thearmorymod.stats.ArmoryStatIds;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public final class JumpHeightModifierSystem extends EntityTickingSystem<EntityStore> {
 
@@ -26,11 +22,8 @@ public final class JumpHeightModifierSystem extends EntityTickingSystem<EntitySt
 
     private volatile int jumpHeightIdx = Integer.MIN_VALUE;
 
-    private final Map<UUID, JumpState> states = new HashMap<>();
-
     private final Query<EntityStore> query = Archetype.of(
             PlayerRef.getComponentType(),
-            UUIDComponent.getComponentType(),
             EntityStatMap.getComponentType(),
             MovementManager.getComponentType()
     );
@@ -50,81 +43,41 @@ public final class JumpHeightModifierSystem extends EntityTickingSystem<EntitySt
             @Nonnull CommandBuffer<EntityStore> commandBuffer
     ) {
         PlayerRef playerRef = chunk.getComponent(index, PlayerRef.getComponentType());
-        UUIDComponent uuidComponent = chunk.getComponent(index, UUIDComponent.getComponentType());
         EntityStatMap statMap = chunk.getComponent(index, EntityStatMap.getComponentType());
         MovementManager movementManager = chunk.getComponent(index, MovementManager.getComponentType());
 
         if (playerRef == null
-                || uuidComponent == null
                 || statMap == null
                 || movementManager == null) {
             return;
         }
 
-        UUID uuid = uuidComponent.getUuid();
-        JumpState state = states.computeIfAbsent(uuid, ignored -> new JumpState());
-
-        float multiplier = getJumpHeightMultiplier(statMap);
-
-        if (multiplier <= 1.0F + EPSILON) {
-            resetJumpHeightIfNeeded(playerRef, movementManager, state, uuid);
+        // A newly created manager can tick before its settings have been initialised.
+        if (movementManager.getDefaultSettings() == null || movementManager.getSettings() == null) {
             return;
         }
 
-        applyJumpHeightIfNeeded(playerRef, movementManager, state, uuid, multiplier);
+        float multiplier = getJumpHeightMultiplier(statMap);
+        float targetJumpForce = movementManager.getDefaultSettings().jumpForce * multiplier;
+        float targetSwimJumpForce = movementManager.getDefaultSettings().swimJumpForce * multiplier;
+        float liveJumpForce = movementManager.getSettings().jumpForce;
+        float liveSwimJumpForce = movementManager.getSettings().swimJumpForce;
+
+        // Live settings are the state, so a replacement manager after reconnect corrects itself.
+        if (Math.abs(liveJumpForce - targetJumpForce) <= EPSILON
+                && Math.abs(liveSwimJumpForce - targetSwimJumpForce) <= EPSILON) {
+            return;
+        }
+
+        movementManager.getSettings().jumpForce = targetJumpForce;
+        movementManager.getSettings().swimJumpForce = targetSwimJumpForce;
+        movementManager.update(playerRef.getPacketHandler());
     }
 
     @Override
     public boolean isParallel(int archetypeChunkSize, int taskCount) {
+        // This writes live movement settings and sends a packet, so it must run on the world thread.
         return false;
-    }
-
-    private void applyJumpHeightIfNeeded(
-            @Nonnull PlayerRef playerRef,
-            @Nonnull MovementManager movementManager,
-            @Nonnull JumpState state,
-            @Nonnull UUID uuid,
-            float multiplier
-    ) {
-        if (state.applied && Math.abs(state.lastMultiplier - multiplier) <= EPSILON) {
-            return;
-        }
-
-        float defaultJumpForce = movementManager.getDefaultSettings().jumpForce;
-        float defaultSwimJumpForce = movementManager.getDefaultSettings().swimJumpForce;
-
-        float newJumpForce = defaultJumpForce * multiplier;
-        float newSwimJumpForce = defaultSwimJumpForce * multiplier;
-
-        movementManager.getSettings().jumpForce = newJumpForce;
-        movementManager.getSettings().swimJumpForce = newSwimJumpForce;
-
-        movementManager.update(playerRef.getPacketHandler());
-
-        state.applied = true;
-        state.lastMultiplier = multiplier;
-    }
-
-    private void resetJumpHeightIfNeeded(
-            @Nonnull PlayerRef playerRef,
-            @Nonnull MovementManager movementManager,
-            @Nonnull JumpState state,
-            @Nonnull UUID uuid
-    ) {
-        if (!state.applied) {
-            return;
-        }
-
-        float defaultJumpForce = movementManager.getDefaultSettings().jumpForce;
-        float defaultSwimJumpForce = movementManager.getDefaultSettings().swimJumpForce;
-
-        movementManager.getSettings().jumpForce = defaultJumpForce;
-        movementManager.getSettings().swimJumpForce = defaultSwimJumpForce;
-
-        movementManager.update(playerRef.getPacketHandler());
-
-        state.applied = false;
-        state.lastMultiplier = 1.0F;
     }
 
     private float getJumpHeightMultiplier(@Nonnull EntityStatMap statMap) {
@@ -158,12 +111,19 @@ public final class JumpHeightModifierSystem extends EntityTickingSystem<EntitySt
             return 1.0F;
         }
 
+        // An unmodified stat has matching maxima, though modifiers totaling 1.0 are indistinguishable.
         if (Math.abs(effectiveMax - baseMax) <= EPSILON) {
             return 1.0F;
         }
 
-        float bonusFraction = effectiveMax / baseMax;
-        float multiplier = 1.0F + bonusFraction;
+        // This formula can look doubled and has twice been reported as a defect.
+        // Multiplicative uses value * amount in the engine, not value * (1 + amount).
+        // With an authored 0.2, the effective maximum is baseMax * 0.2.
+        // The ratio restores 0.2, and adding 1.0 produces the intended 20 percent.
+        // The engine sums amounts first, so two entries of 0.15 restore 0.30 here.
+        // Returning just the ratio would reduce every bonus to a fraction of itself.
+        float authoredAmount = effectiveMax / baseMax;
+        float multiplier = 1.0F + authoredAmount;
 
         return Math.max(1.0F, multiplier);
     }
@@ -183,10 +143,5 @@ public final class JumpHeightModifierSystem extends EntityTickingSystem<EntitySt
         }
 
         return Integer.MIN_VALUE;
-    }
-
-    private static final class JumpState {
-        private boolean applied = false;
-        private float lastMultiplier = 1.0F;
     }
 }

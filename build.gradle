@@ -8,30 +8,67 @@ version = '1.19.0'
 
 repositories {
     mavenCentral()
+    maven { url = uri('https://telemetry.alecsmods.com/maven/releases') }
+    maven { url = uri('https://maven.hytalemodding.dev/releases') }
 }
 
 def serverJarPath = file('libs/HytaleServer.jar')
 def projectServerJar = file('server/HytaleServer.jar')
 def siblingServerJar = file('../server/HytaleServer.jar')
 
+// One home for the engine jar. The four way cascade used to be written out once for the
+// compile classpath and would have had to be repeated for the test classpath, and copies
+// of one path are how they drift apart.
+def engineJar = [serverJarPath, projectServerJar, siblingServerJar].find { it.exists() }
+        ?: file('libs/HytaleServer.jar')
+
 dependencies {
-    if (serverJarPath.exists()) {
-        compileOnly files(serverJarPath)
-    } else if (projectServerJar.exists()) {
-        compileOnly files(projectServerJar)
-    } else if (siblingServerJar.exists()) {
-        compileOnly files(siblingServerJar)
-    } else {
-        compileOnly files('libs/HytaleServer.jar')
-    }
+    compileOnly files(engineJar)
+
+    // The engine belongs on the test classpath, and deliberately not as compileOnly.
+    // ScribingSeal and ScribingWrite both work on ItemStack and BsonDocument, and both
+    // types reach this project only through this jar. Without it the properties the sealed
+    // inscription rests on cannot be asserted at all: that a seal survives a round trip,
+    // that inscribing refuses a sealed item, and above all that writing an inscription
+    // preserves every unrelated metadata key. Those were being carried on a code read.
+    // Nothing ships from here, shadowJar already excludes the com.hypixel group.
+    testImplementation files(engineJar)
+
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
     implementation 'com.google.code.gson:gson:2.10.1'
+    // The engine requires a whole vanilla asset to change one field, which left this mod
+    // carrying 41 verbatim copies of Hypixel's files. Each copy is frozen, so a vanilla
+    // change to that item never reaches a player and nothing reports it. Patchly ships only
+    // the difference and merges the rest from whatever version of the game is installed.
+    //
+    // The version is pinned because this asset merge layer decides what every one of those
+    // items actually is at runtime. That version should change when we choose, not when a
+    // build machine resolves a range. The dependency is shaded into this jar, so a server
+    // owner installs nothing extra.
+    implementation 'com.riprod:patchly:3.5.1'
+    // Pinned at 1.2.1 because the docs name unpublished 1.1.0. Version 1.2.1 moved uploads
+    // onto isolated virtual threads so a slow upload cannot delay unrelated server tasks.
+    implementation 'com.alechilles:alecstelemetry-runtime:1.2.1'
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
     }
+}
+
+// Pin the source encoding, because javac otherwise reads these files in whatever encoding the
+// build machine happens to default to. That is not a theoretical risk here. Three files carry
+// characters outside ASCII, and one of them sits inside a string literal that is logged, so a
+// machine defaulting to windows-1252 compiles a message that reads as mojibake to whoever runs
+// the server. Measured: the same literal compiles to e2 80 94 under UTF-8 and to
+// c3 a2 e2 82 ac e2 80 9d under windows-1252, and the build succeeds either way without a
+// warning. Anyone who clones this repository should get the same bytes we do.
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
 
 shadowJar {
@@ -41,12 +78,101 @@ shadowJar {
     }
 }
 
+// Keep authoring sources out of what a server owner downloads.
+//
+// Lady works in Hytale's own asset editor and in Blockbench, and both leave their
+// project file sitting beside the exported one. The engine never reads either. The
+// three .prefab.json.lpf are 2.5 MB on their own, which was 7.5 percent of the jar.
+//
+// These stay in the repository on purpose, because they are how she edits a prefab
+// again later. They just have no business being shipped. Every one of them sits next
+// to the live asset it produced, checked before this was added, so excluding them
+// cannot make anything the only copy of itself.
+processResources {
+    exclude '**/*.lpf'
+    exclude '**/*.bbmodel'
+    exclude '**/*.bck'
+    exclude '**/*.bak'
+}
+
+// The HStats ingest key is absent from this repository on purpose. This repository is public,
+// and committing the private credential would hand a working value to anyone reading its
+// history. The key still has to ship inside the jar because the service has no other way to
+// authenticate reports, so anyone who unzips a release can read it. That is a limit of the
+// service rather than something this build can fix. A keyless build is normal and reports
+// nothing, which is the safe direction to fail.
+//
+// Gradle already sources a project property from the per-user ~/.gradle/gradle.properties,
+// from -P on the command line and from an ORG_GRADLE_PROJECT_armoryHstatsKey environment
+// variable. The environment form is what a build machine wants.
+def localHstatsFile = file('hstats.properties')
+def localHstatsProperties = new Properties()
+if (!project.hasProperty('armoryHstatsKey') && localHstatsFile.isFile()) {
+    localHstatsFile.withInputStream { stream ->
+        localHstatsProperties.load(stream)
+    }
+}
+
+def resolvedArmoryHstatsKey = project.hasProperty('armoryHstatsKey')
+        ? project.property('armoryHstatsKey').toString().trim()
+        : localHstatsProperties.getProperty('armoryHstatsKey', '').trim()
+def resolvedArmoryVersion = project.version.toString()
+def generatedHstatsDirectory = layout.buildDirectory.dir('generated/hstats')
+
+def generateHstatsConfig = tasks.register('generateHstatsConfig') {
+    inputs.property('key', resolvedArmoryHstatsKey)
+    inputs.property('version', resolvedArmoryVersion)
+    outputs.dir(generatedHstatsDirectory)
+
+    // A silent keyless release is easy to mistake for a reporting build, so make the safe
+    // no-report state visible whenever this task runs.
+    doFirst {
+        if (resolvedArmoryHstatsKey.isEmpty()) {
+            println 'This build will not report to HStats because no armoryHstatsKey property was supplied.'
+        }
+    }
+
+    doLast {
+        def outputFile = generatedHstatsDirectory.get().file(
+                'me/ladypaladra/thearmorymod/metrics/hstats.properties'
+        ).asFile
+        outputFile.parentFile.mkdirs()
+
+        // Properties.store writes a timestamp comment, which changes the file on every build
+        // and would defeat the up to date check.
+        outputFile.setText(
+                "key=${resolvedArmoryHstatsKey}\nversion=${resolvedArmoryVersion}\n",
+                'UTF-8'
+        )
+    }
+}
+
+tasks.named('processResources') {
+    dependsOn generateHstatsConfig
+    from(generatedHstatsDirectory)
+}
+
 tasks.named('jar') {
     enabled = false
 }
 
 tasks.named('build') {
     dependsOn shadowJar
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+
+    // Without this, any test that touches ItemStack dies in its static initializer.
+    // ItemStack pulls in Item, then ItemReticleConfig, then the codec validators, then
+    // HytaleLogger, and HytaleLogger refuses to initialize unless its own log manager is
+    // installed first. The failure surfaces as a bare NoClassDefFoundError on the ItemStack
+    // constructor, which points nowhere near the real cause, so the reason is written here.
+    // The engine asks for this itself, in the exception text it throws.
+    //
+    // The package matters and the exception does not give it. The class is under
+    // logger.backend, not logger.
+    systemProperty 'java.util.logging.manager', 'com.hypixel.hytale.logger.backend.HytaleLogManager'
 }
 
 tasks.register('copyServerJar') {

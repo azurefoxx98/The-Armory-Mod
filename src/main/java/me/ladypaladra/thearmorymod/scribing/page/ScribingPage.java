@@ -711,6 +711,16 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         draftName = value(data.name);
         draftDescription = value(data.description);
 
+        // Refused before the player is walked into a confirmation. A seal that cannot later
+        // be undone correctly is worse than no seal, and inscribing is unaffected because it
+        // never touches the raw display key.
+        if (!ScribingSeal.isDisplayKeyTrusted()) {
+            pendingSeal = false;
+            setStatus(cb, LANG_PREFIX + "sealUnavailable", StatusTone.Bad);
+            sendUpdate(cb, eb, false);
+            return;
+        }
+
         ItemStack stack = resolveSelectedStack(store, ref);
         if (stack == null) {
             clearSelection();
@@ -780,6 +790,16 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         ArmoryTelemetry.breadcrumb("ui", "scribing seal committed");
         UICommandBuilder cb = new UICommandBuilder();
         UIEventBuilder eb = new UIEventBuilder();
+
+        // Checked again rather than assumed from the arm step. This is the press that spends
+        // the lock and rewrites the item, so it verifies for itself.
+        if (!ScribingSeal.isDisplayKeyTrusted()) {
+            pendingSeal = false;
+            paintState(cb, store, ref);
+            setStatus(cb, LANG_PREFIX + "sealUnavailable", StatusTone.Bad);
+            sendUpdate(cb, eb, false);
+            return;
+        }
 
         // A confirm that arrives without an arm is not trusted. The client cannot normally
         // produce one, and an irreversible act is the wrong place to assume that holds.
@@ -903,6 +923,15 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
     ) {
         UICommandBuilder cb = new UICommandBuilder();
         UIEventBuilder eb = new UIEventBuilder();
+
+        // Breaking is the operation that restores the player's own text from the stored key.
+        // With the key untrusted it would restore nothing and discard what they wrote, so it
+        // is refused rather than attempted.
+        if (!ScribingSeal.isDisplayKeyTrusted()) {
+            setStatus(cb, LANG_PREFIX + "sealUnavailable", StatusTone.Bad);
+            sendUpdate(cb, eb, false);
+            return;
+        }
 
         if (!playerRef.hasPermission(ScribingConfig.BREAK_SEAL_PERMISSION)) {
             setStatus(cb, LANG_PREFIX + "alreadySealed", StatusTone.Bad);

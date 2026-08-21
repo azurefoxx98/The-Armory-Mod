@@ -1,0 +1,137 @@
+{
+  "Container": {
+    "Type": "Multiple",
+    "Containers": [
+      {
+        "Type": "Choice",
+        "Weight": 25,
+        "Containers": [
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Mace_Thorium_Rusty"
+            }
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Weapon_Battleaxe_Thorium_Rusty"
+            }
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Weapon_Shield_Thorium_Rusty"
+            }
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Dagger_Throrium_Rusty"
+            }
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Sword_Throrium_Rusty"
+            }
+          }
+        ]
+      },
+      {
+        "Type": "Choice",
+        "Weight": 5,
+        "Containers": [
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "BramblekinMask"
+            }
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "BramblekinBracers"
+            }
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "BlueAmulet"
+            }
+          },
+          {
+            "Type": "Choice",
+            "Containers": [
+              {
+                "Type": "Single",
+                "Item": {
+                  "ItemId": "CobaltDragonHelm"
+                }
+              },
+              {
+                "Type": "Single",
+                "Item": {
+                  "ItemId": "CobaltDragonChestplate"
+                }
+              },
+              {
+                "Type": "Single",
+                "Item": {
+                  "ItemId": "CobaltDragonGauntlets"
+                }
+              },
+              {
+                "Type": "Single",
+                "Item": {
+                  "ItemId": "CobaltDragonLeggings"
+                }
+              }
+            ]
+          },
+          {
+            "Type": "Choice",
+            "Containers": [
+              {
+                "Type": "Single",
+                "Item": {
+                  "ItemId": "WardenHelmDesert"
+                }
+              },
+              {
+                "Type": "Single",
+                "Item": {
+                  "ItemId": "WardenChestDesert"
+                }
+              },
+              {
+                "Type": "Single",
+                "Item": {
+                  "ItemId": "WardenLeggingsDesert"
+                }
+              },
+              {
+                "Type": "Single",
+                "Item": {
+                  "ItemId": "WardenSleevesDesert"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Type": "Choice",
+        "Weight": 1,
+        "Containers": [
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "SnowLeopardMask"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

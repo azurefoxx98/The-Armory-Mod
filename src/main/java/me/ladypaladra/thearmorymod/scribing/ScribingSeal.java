@@ -221,6 +221,41 @@ public final class ScribingSeal {
         return DISPLAY_KEY;
     }
 
+    /**
+     * Whether the key above still matches the running engine, decided once at startup.
+     *
+     * <p>Volatile because startup writes it on the boot thread and every read happens on a
+     * player's thread. It starts true so that anything reading it without a running server,
+     * the unit tests above all, behaves exactly as it always has.</p>
+     */
+    private static volatile boolean displayKeyTrusted = true;
+
+    /**
+     * False when the engine renamed the display key underneath us.
+     *
+     * <p>Only sealing and seal breaking read this. Plain inscribing goes through the engine's
+     * own typed display API and never touches the raw key, so it stays available.</p>
+     */
+    public static boolean isDisplayKeyTrusted() {
+        return displayKeyTrusted;
+    }
+
+    /**
+     * Settles whether sealing runs, from the key the running engine actually reports.
+     *
+     * <p>One decision point taking the engine's answer, rather than a one-way switch. A
+     * one-way switch cannot be undone, which makes the behaviour untestable without a
+     * test-only backdoor in production code, and a backdoor is a worse thing to ship than
+     * this parameter. It also mirrors how the palette resolves, so both startup answers work
+     * the same way.</p>
+     *
+     * <p>Package private so nothing outside this feature can turn sealing on or off. Pass
+     * null when the key could not be read at all, which is not a trusted state either.</p>
+     */
+    static void resolveDisplayKey(@Nullable String engineKey) {
+        displayKeyTrusted = DISPLAY_KEY.equals(engineKey);
+    }
+
     // This is the stack half. It is only plumbing, contains no rules, and isn't unit testable.
 
     @SuppressWarnings("deprecation")

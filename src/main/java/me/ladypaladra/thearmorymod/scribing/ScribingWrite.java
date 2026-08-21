@@ -294,16 +294,21 @@ public final class ScribingWrite {
      * is {@code 0x39} instead of {@code 0x00}, which keeps it from reading as terminal green.
      * This value takes the lock's hue and gives it that same structure. It is checked against
      * the live item quality colours at startup by
-     * {@code ScribingPalette.assertNoQualityCollision}, which is why no count is repeated
+     * {@code ScribingPalette.resolveAgainstQualities}, which is why no count is repeated
      * here.</p>
      *
      * <p>Do not add this colour to {@link ScribingPalette}. This line belongs to the mod and
      * is never player input. Widening the palette would alter a legend that was tuned by eye
      * and signed off. The colour still goes through the startup rarity check. Leaving it out
-     * of the palette once also left it out of the only assertion that prevents text we draw
-     * from impersonating an item rarity. That rule applies to everything we paint, not just
-     * the palette. See
-     * {@code ScribingPalette.assertNoQualityCollision(Collection, Collection)}.</p>
+     * of the palette once also left it out of the only check that prevents text we draw from
+     * impersonating an item rarity. That rule applies to everything we paint, not just the
+     * palette. See {@code ScribingPalette.resolveAgainstQualities(Collection, Collection)}.</p>
+     *
+     * <p>Because the player never picks this one, withdrawing it the way a palette colour is
+     * withdrawn would leave the seal line with no colour to ask for. So the drawing site asks
+     * {@code ScribingPalette.isWithdrawn} instead and falls back to an uncoloured line. The
+     * word still reads, and an uncoloured line cannot imitate a rarity, which is the only
+     * thing the rule protects.</p>
      */
     public static final String SEAL_MARK_COLOR = "#39f4f4";
 
@@ -390,7 +395,11 @@ public final class ScribingWrite {
             @Nullable Message description,
             @Nullable Message tooltipBase
     ) {
-        Message mark = Message.translation(SEAL_MARK_KEY).color(SEAL_MARK_COLOR);
+        // Give up our colour rather than impersonate a rarity that this server's own content
+        // has claimed. The line still says Sealed, which is the part that carries meaning.
+        Message mark = ScribingPalette.isWithdrawn(SEAL_MARK_COLOR)
+                ? Message.translation(SEAL_MARK_KEY)
+                : Message.translation(SEAL_MARK_KEY).color(SEAL_MARK_COLOR);
         if (description != null) {
             // The blank row is the root's raw text and the mark is its child, so the row is
             // drawn before the line rather than after it. This project measured root text as

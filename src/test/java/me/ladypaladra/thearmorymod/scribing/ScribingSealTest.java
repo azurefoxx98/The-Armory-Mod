@@ -4,6 +4,7 @@ import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -258,8 +259,60 @@ class ScribingSealTest {
     void theDuplicatedDisplayKeyIsTheOneTheRestoreUses() {
         // ScribingSeal cannot read ItemDisplayMetadata.KEY without class-loading an engine
         // type into this test. It copies the literal instead, and
-        // ScribingModule.verifyDisplayKey checks that copy at boot. This test verifies that
+        // ScribingModule.resolveDisplayKey checks that copy at boot. This test verifies that
         // the accessor and restore agree, which is the half of the pairing a unit test can reach.
         assertEquals(DISPLAY, ScribingSeal.displayKey());
+    }
+
+    // Trust is process-wide state settled once at boot, so a test that left it off would
+    // silently disable sealing for every test that ran after it in this JVM.
+    @AfterEach
+    void restoreDisplayKeyTrust() {
+        ScribingSeal.resolveDisplayKey(ScribingSeal.displayKey());
+    }
+
+    @Test
+    void sealingIsAvailableWhenTheEngineKeyMatches() {
+        ScribingSeal.resolveDisplayKey(DISPLAY);
+
+        assertTrue(ScribingSeal.isDisplayKeyTrusted());
+    }
+
+    /**
+     * The case that used to take the entire server down rather than this one feature. A
+     * plugin throwing out of start is marked FAILED, and the engine turns any failed plugin
+     * into a full server shutdown, so this has to resolve to a flag and never to an
+     * exception.
+     */
+    @Test
+    void sealingIsUnavailableWhenTheEngineRenamedTheKey() {
+        ScribingSeal.resolveDisplayKey("SomethingElse");
+
+        assertFalse(ScribingSeal.isDisplayKeyTrusted());
+    }
+
+    @Test
+    void sealingIsUnavailableWhenTheKeyCouldNotBeReadAtAll() {
+        ScribingSeal.resolveDisplayKey(null);
+
+        assertFalse(ScribingSeal.isDisplayKeyTrusted());
+    }
+
+    @Test
+    void trustIsRecoveredWhenTheKeyAgreesAgain() {
+        ScribingSeal.resolveDisplayKey(null);
+        assertFalse(ScribingSeal.isDisplayKeyTrusted());
+
+        ScribingSeal.resolveDisplayKey(DISPLAY);
+
+        assertTrue(ScribingSeal.isDisplayKeyTrusted());
+    }
+
+    @Test
+    void trustDefaultsToOnSoNothingOffServerIsAccidentallyDisabled() {
+        // Unit tests and any other off-server caller must behave as they always have.
+        ScribingSeal.resolveDisplayKey(ScribingSeal.displayKey());
+
+        assertTrue(ScribingSeal.isDisplayKeyTrusted());
     }
 }

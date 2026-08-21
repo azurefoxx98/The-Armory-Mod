@@ -17,6 +17,11 @@ public final class ScribingMarkup {
     public static final String STRAY_ITALIC = "There is a </i> with no <i> before it.";
     public static final String STRAY_COLOUR = "There is a </color> with no <color...> before it.";
     public static final String COLOUR_NOT_ALLOWED = "%s is not one of the colours you can use. Pick one from the list.";
+    // A withdrawn colour is still drawn on the legend, because the legend is markup and this
+    // server's own content decides the withdrawal at boot. Telling the player it is not on
+    // the list would contradict what they are looking at, so this says what actually happened
+    // and why the swatch is there.
+    public static final String COLOUR_WITHDRAWN = "%s is on the list, but this server already uses it for an item rarity, so it cannot be inscribed here. Pick another.";
     public static final String COLOUR_MALFORMED = "A colour looks like <color is=\"#E8A93B\">. Check the quotes and the #.";
 
     private static final String COLOR_PREFIX = "<color";
@@ -165,11 +170,15 @@ public final class ScribingMarkup {
                 && whole.endsWith("\">")
                 && isSixHexDigits(whole, 12)) {
             String color = whole.substring(11, 18);
+            // Same Kind either way. Only the sentence differs, so nothing downstream that
+            // routes on Kind has to learn about withdrawal.
             Problem problem = ScribingPalette.isAllowed(color)
                     ? null
                     : new Problem(
                             Kind.COLOUR_NOT_ALLOWED,
-                            COLOUR_NOT_ALLOWED.formatted(color),
+                            (ScribingPalette.isWithdrawn(color)
+                                    ? COLOUR_WITHDRAWN
+                                    : COLOUR_NOT_ALLOWED).formatted(color),
                             offset
                     );
             return Token.open(Tag.COLOR, whole.length(), color, problem);

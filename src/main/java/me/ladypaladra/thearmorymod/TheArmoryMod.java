@@ -69,16 +69,21 @@ public class TheArmoryMod extends JavaPlugin {
         ArmoryTelemetry.start();
 
         try {
-            ScribingModule.verifyPalette();
-            ScribingModule.verifyDisplayKey();
+            ScribingModule.resolvePalette();
+            ScribingModule.resolveDisplayKey();
             LOGGER.atInfo().log("Started!");
-            // Report this server only after The Armory has actually started. A failure in either
-            // verification above therefore reports nothing.
+            // Report this server only after The Armory has actually started.
             ArmoryMetrics.start();
         } catch (Throwable throwable) {
             ArmoryTelemetry.startFailure(throwable);
             throw throwable;
         }
+        // Nothing above can throw, and that is deliberate rather than incidental. Every call
+        // here settles its own answer and logs, because the engine marks a plugin that throws
+        // out of start as FAILED and PluginManager turns any failed plugin into a full
+        // shutdownServer. A check of ours failing must never be the reason somebody's server
+        // will not boot. The catch stays because it reports, and because a future call added
+        // here may not have that property.
     }
 
     @Override

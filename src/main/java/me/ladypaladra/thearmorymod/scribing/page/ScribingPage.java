@@ -37,6 +37,7 @@ import me.ladypaladra.thearmorymod.telemetry.ArmoryTelemetry;
 import me.ladypaladra.thearmorymod.ui.ItemSlots;
 import me.ladypaladra.thearmorymod.ui.ItemText;
 import me.ladypaladra.thearmorymod.ui.LastPicked;
+import me.ladypaladra.thearmorymod.ui.MessageTrees;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -99,13 +100,33 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
     private static final Pattern SLOT_INDEX_FIELD =
             Pattern.compile("\"SlotIndex\"\\s*:\\s*\"?(-?\\d+)\"?");
 
+    // Inventory sections walked for stacks a player can inscribe. Order sets the list order
+    // on screen, hand and bag first, then worn armor and the side pouches.
+    //
+    // The tools section is deliberately not here, and leaving it out is the whole fix for a
+    // bug that reached players in 1.21.0. That section is not player storage. The engine's
+    // builder tools system hands every player the six EditorTool items when the entity is
+    // added, matching on the Player and Tool components with no game mode condition, and it
+    // clears and refills the container each time. So a survival player who has never opened
+    // a creative menu is carrying them, no ordinary inventory screen draws that section, and
+    // this picker was listing them as stacks to pick and write on. Players reported seeing
+    // creative tools they could not get out, and they could not because there is no way to
+    // get them out.
+    //
+    // Inscribing one was worse than showing it. The write would land in a container the
+    // server rewrites on the next join, so the ink was spent and the text was gone.
+    //
+    // The engine draws this same line itself. InventoryComponent.EVERYTHING is armor,
+    // hotbar, utility, storage and backpack, exactly these five, and the method that builds
+    // those groups takes the tool component type under the parameter name
+    // ignoredToolInventoryComponentType and puts it in no group at all. A section added here
+    // in future has to be one the player can actually reach and empty.
     private static final int[] SCANNED_SECTIONS = {
             InventoryComponent.HOTBAR_SECTION_ID,
             InventoryComponent.STORAGE_SECTION_ID,
             InventoryComponent.ARMOR_SECTION_ID,
             InventoryComponent.BACKPACK_SECTION_ID,
-            InventoryComponent.UTILITY_SECTION_ID,
-            InventoryComponent.TOOLS_SECTION_ID
+            InventoryComponent.UTILITY_SECTION_ID
     };
 
     private static final String TYPE_DRAFT = "Draft";
@@ -641,7 +662,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // the player nothing, and it is logged.
         boolean mustPay = charges(store, ref);
         CombinedItemContainer inventory = mustPay
-                ? InventoryComponent.getCombined(store, ref, InventoryComponent.HOTBAR_FIRST)
+                ? paymentInventory(store, ref)
                 : null;
         ItemStack cost = mustPay
                 ? new ItemStack(ScribingConfig.COST_ITEM_ID, ScribingConfig.COST_QUANTITY)
@@ -852,8 +873,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         boolean textChanges = !draftName.equals(existing.name() == null ? "" : existing.name())
                 || !draftDescription.equals(existing.description() == null ? "" : existing.description());
 
-        CombinedItemContainer inventory =
-                InventoryComponent.getCombined(store, ref, InventoryComponent.HOTBAR_FIRST);
+        CombinedItemContainer inventory = paymentInventory(store, ref);
         ItemStack inkCost = textChanges && charges(store, ref)
                 ? new ItemStack(ScribingConfig.COST_ITEM_ID, ScribingConfig.COST_QUANTITY)
                 : null;
@@ -1438,7 +1458,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
 
     private static boolean messageIsEmpty(@Nonnull Message message) {
         // The console renderer inserts escape codes that are not whitespace, so it cannot answer this.
-        return ScribingWrite.plainText(message).isBlank();
+        return MessageTrees.plainText(message).isBlank();
     }
 
     /**
@@ -1631,24 +1651,26 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
     }
 
     /**
-     * How many of one item the player is carrying, across every section the picker reads.
+     * How many of one item the player can actually pay with right now.
+     * <p>
+     * This walks the payment containers, not the picker's sections, and the difference is
+     * the whole reason the method reads this way. A count taken from somewhere wider than
+     * the charge is a number the player cannot act on: it reads as enough, enables the
+     * button, and then the charge refuses. The combined container presents its children as
+     * one flat run of slots, so walking it here is walking exactly what removeItemStack
+     * will walk in a moment.
      */
     private int countCarried(
             @Nonnull Store<EntityStore> store,
             @Nonnull Ref<EntityStore> ref,
             @Nonnull String itemId
     ) {
+        ItemContainer inventory = paymentInventory(store, ref);
         int total = 0;
-        for (int section : SCANNED_SECTIONS) {
-            ItemContainer container = resolveContainer(store, ref, section);
-            if (container == null) {
-                continue;
-            }
-            for (short slot = 0; slot < container.getCapacity(); slot++) {
-                ItemStack stack = container.getItemStack(slot);
-                if (stack != null && !stack.isEmpty() && itemId.equals(stack.getItemId())) {
-                    total += stack.getQuantity();
-                }
+        for (short slot = 0; slot < inventory.getCapacity(); slot++) {
+            ItemStack stack = inventory.getItemStack(slot);
+            if (stack != null && !stack.isEmpty() && itemId.equals(stack.getItemId())) {
+                total += stack.getQuantity();
             }
         }
         return total;
@@ -1914,12 +1936,27 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         }
     }
 
+    /**
+     * The container behind a section id, or null when this bench has no business reading it.
+     * <p>
+     * Every path that reaches a stack comes through here: the picker, the carried count, the
+     * restored selection, the inscribe and both seal paths. That is why the membership test
+     * sits on this method rather than at the six call sites. The engine will happily resolve
+     * a section this bench does not scan, the tools section included, so one call site that
+     * forgot to check would put the whole feature back where it was. A section id can arrive
+     * from a remembered pick made before this list changed, or from a later edit that adds
+     * an id somewhere other than the array above, and neither of those should be able to
+     * open a container the player cannot see.
+     */
     @Nullable
     private ItemContainer resolveContainer(
             @Nonnull Store<EntityStore> store,
             @Nonnull Ref<EntityStore> ref,
             int section
     ) {
+        if (!isScanned(section)) {
+            return null;
+        }
         ComponentType<EntityStore, ? extends InventoryComponent> type =
                 InventoryComponent.getComponentTypeById(section);
         if (type == null) {
@@ -1927,6 +1964,41 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         }
         InventoryComponent component = store.getComponent(ref, type);
         return component != null ? component.getInventory() : null;
+    }
+
+    private static boolean isScanned(int section) {
+        for (int scanned : SCANNED_SECTIONS) {
+            if (scanned == section) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The containers a cost is paid from. Every reader of "can the player afford this" goes
+     * through here, and that is the point of the method.
+     * <p>
+     * The count on screen and the charge used to read different containers. The count walked
+     * every section the picker walks while the charge ran against HOTBAR_FIRST, which is
+     * hand and bag only, so an inkwell in the backpack was counted as one the player had. It
+     * lit the Inscribe button and then failed at the charge, refusing over an item the
+     * player could see themselves carrying. An inkwell is a placeable decoration as well as
+     * an ingredient, so keeping a stack out of the way is ordinary play.
+     * <p>
+     * Hand and bag is the reach the Alteration Table already uses for its kits, so this
+     * keeps the two benches saying the same thing about where materials come from. Widening
+     * it is a change to the economy rather than a fix, and it is not made here.
+     * <p>
+     * Naming it once is what makes the two answers agree. They cannot drift while both come
+     * from this one call, which is not true of two lists that merely happen to match today.
+     */
+    @Nonnull
+    private CombinedItemContainer paymentInventory(
+            @Nonnull Store<EntityStore> store,
+            @Nonnull Ref<EntityStore> ref
+    ) {
+        return InventoryComponent.getCombined(store, ref, InventoryComponent.HOTBAR_FIRST);
     }
 
     private void appendPage(@Nonnull UICommandBuilder cb) {

@@ -5,7 +5,6 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.modules.block.BlockModule;
 import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.accessor.BlockAccessor;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 
@@ -26,7 +25,7 @@ public final class MekanichalKrafterUtil {
     }
 
     public static boolean isState(@Nonnull BlockType blockType, @Nonnull String expectedState) {
-        String currentState = BlockAccessor.getCurrentInteractionState(blockType);
+        String currentState = blockType.getCurrentInteractionState();
         return expectedState.equals(currentState);
     }
 

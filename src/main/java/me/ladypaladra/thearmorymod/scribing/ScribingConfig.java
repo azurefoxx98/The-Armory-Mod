@@ -18,9 +18,13 @@ public final class ScribingConfig {
     // The block asset uses the mod's own Scribing Bench model, texture, and icon. Keep all
     // three paths in Scribing_Table.json together whenever the art moves.
 
-    // This is the ink item charged when a server owner enables the cost. The shipped
-    // policy is free scribing, so changing this id has no effect until COST_ENABLED is
-    // enabled.
+    // This is the ink item charged for an inscription. The shipped policy charges, see
+    // COST_ENABLED below, so changing this id changes what every player pays with.
+    //
+    // This comment used to say the shipped policy was free scribing and that the id had no
+    // effect until the cost was turned on. That was true when it was written and stopped
+    // being true the same week, when the default was reversed sixteen lines below it. An
+    // owner reading this to decide whether the setting mattered was told it did not.
     public static final String COST_ITEM_ID = "Deco_Inkwell";
 
     // Inscribing costs one inkwell. A server owner can turn this off to make naming free.

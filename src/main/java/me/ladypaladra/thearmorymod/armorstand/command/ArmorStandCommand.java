@@ -15,9 +15,9 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.npc.entities.NPCEntity;
 
 import me.ladypaladra.thearmorymod.armorstand.ArmorStandModule;
+import me.ladypaladra.thearmorymod.armorstand.blockstate.ArmorStandTickSystem;
 
 import java.awt.Color;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -107,27 +107,26 @@ public class ArmorStandCommand extends AbstractCommandCollection {
                 try {
                     Store<EntityStore> entityStore = world.getEntityStore().getStore();
 
-                    List<Ref<EntityStore>> allRefs = getAllEntityRefs(entityStore);
+                    List<Ref<EntityStore>> mannequinRefs = new ArrayList<>();
+                    ArmorStandTickSystem.forEachEntityRef(entityStore, entityRef -> {
+                        if (entityRef == null || !entityRef.isValid()) return false;
+
+                        NPCEntity npc = entityStore.getComponent(
+                                entityRef,
+                                NPCEntity.getComponentType()
+                        );
+
+                        if (npc != null && MANNEQUIN_ROLES.contains(npc.getRoleName())) {
+                            mannequinRefs.add(entityRef);
+                        }
+                        return false;
+                    });
 
                     int removed = 0;
-
-                    for (Ref<EntityStore> entityRef : allRefs) {
-                        if (entityRef == null || !entityRef.isValid()) continue;
-
-                        try {
-                            NPCEntity npc = entityStore.getComponent(
-                                    entityRef,
-                                    NPCEntity.getComponentType()
-                            );
-
-                            if (npc != null && MANNEQUIN_ROLES.contains(npc.getRoleName())) {
-                                ArmorStandModule.untrackMannequin(entityRef);
-
-                                entityStore.removeEntity(entityRef, RemoveReason.REMOVE);
-
-                                removed++;
-                            }
-                        } catch (Exception ignored) {}
+                    for (Ref<EntityStore> mannequinRef : mannequinRefs) {
+                        ArmorStandModule.untrackMannequin(mannequinRef);
+                        entityStore.removeEntity(mannequinRef, RemoveReason.REMOVE);
+                        removed++;
                     }
 
                     final int count = removed;
@@ -147,29 +146,6 @@ public class ArmorStandCommand extends AbstractCommandCollection {
                     ));
                 }
             });
-        }
-
-        @SuppressWarnings("unchecked")
-        private List<Ref<EntityStore>> getAllEntityRefs(Store<EntityStore> store) {
-            List<Ref<EntityStore>> list = new ArrayList<>();
-
-            try {
-                Field refsField = store.getClass().getDeclaredField("refs");
-
-                refsField.setAccessible(true);
-
-                Object[] refsArray = (Object[]) refsField.get(store);
-
-                if (refsArray != null) {
-                    for (Object object : refsArray) {
-                        if (object instanceof Ref) {
-                            list.add((Ref<EntityStore>) object);
-                        }
-                    }
-                }
-            } catch (Exception ignored) {}
-
-            return list;
         }
     }
 }

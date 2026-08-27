@@ -89,21 +89,29 @@ public final class ArmoryTelemetry {
      * adds a default branch that can fail, client-supplied text will leave the mod in a crash
      * report. Filter it here, where we control what may leave the mod, instead of depending on
      * a switch statement two classes away.</p>
+     *
+     * <p>Nothing that touches the telemetry runtime may be constructed outside
+     * {@link #dispatch}. This guard was bypassed here once, which let linkage failures escape
+     * from the page failure handler it was meant to protect.</p>
      */
     public static void pageFailure(
             @Nonnull String subsystem,
             @Nonnull String operation,
             @Nonnull Throwable throwable
     ) {
-        TelemetryEventContext context = TelemetryEventContext.error()
-                .subsystem(safeToken(subsystem))
-                .operation(safeToken(operation))
-                .featureKey(safeToken(subsystem) + "_table")
-                .runtimeSide("server")
-                .build();
+        String safeSubsystem = safeToken(subsystem);
+        String safeOperation = safeToken(operation);
         dispatch(
                 "page failure capture",
-                target -> target.recordErrorWithContext("page_event_failed", throwable, context)
+                target -> {
+                    TelemetryEventContext context = TelemetryEventContext.error()
+                            .subsystem(safeSubsystem)
+                            .operation(safeOperation)
+                            .featureKey(safeSubsystem + "_table")
+                            .runtimeSide("server")
+                            .build();
+                    target.recordErrorWithContext("page_event_failed", throwable, context);
+                }
         );
     }
 

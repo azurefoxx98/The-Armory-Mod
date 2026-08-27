@@ -2,7 +2,6 @@ package me.ladypaladra.thearmorymod.ui;
 
 import com.hypixel.hytale.protocol.FormattedMessage;
 import com.hypixel.hytale.server.core.Message;
-import me.ladypaladra.thearmorymod.scribing.ScribingWrite;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,7 @@ public final class TooltipMessages {
         if (node == null) {
             return;
         }
-        if (depth > ScribingWrite.MAX_TREE_DEPTH) {
+        if (depth > MessageTrees.MAX_DEPTH) {
             // This is a read-only display path, so dropping the remainder is correct.
             return;
         }

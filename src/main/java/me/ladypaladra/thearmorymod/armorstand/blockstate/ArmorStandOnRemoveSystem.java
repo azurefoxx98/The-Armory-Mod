@@ -3,13 +3,12 @@ package me.ladypaladra.thearmorymod.armorstand.blockstate;
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefSystem;
-import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.server.core.inventory.container.SimpleItemContainer;
 import com.hypixel.hytale.server.core.modules.block.BlockModule;
 import com.hypixel.hytale.server.core.modules.block.components.ItemContainerBlock;
 import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.chunk.BlockChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
+import org.joml.Vector3i;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -72,24 +71,12 @@ public class ArmorStandOnRemoveSystem extends RefSystem<ChunkStore> {
         if (blockInfo == null) return;
 
         // Resolve world position to clean up runtime map
-        Ref<ChunkStore> chunkRef = blockInfo.getChunkRef();
-        if (chunkRef != null && chunkRef.isValid()) {
-            int packedIndex = blockInfo.getIndex();
-            int localX = ChunkUtil.xFromBlockInColumn(packedIndex);
-            int worldY = ChunkUtil.yFromBlockInColumn(packedIndex);
-            int localZ = ChunkUtil.zFromBlockInColumn(packedIndex);
-
-            BlockChunk blockChunk = commandBuffer.getComponent(chunkRef, BlockChunk.getComponentType());
-            if (blockChunk != null) {
-                int worldX = blockChunk.getX() * ChunkUtil.SIZE + localX;
-                int worldZ = blockChunk.getZ() * ChunkUtil.SIZE + localZ;
-                long posKey = com.hypixel.hytale.math.block.BlockUtil.pack(worldX, worldY, worldZ);
-
-                // Clean up via ArmorStandTickSystem's static cleanup (removes runtime + despawns NPC)
-                World world = commandBuffer.getExternalData().getWorld();
-                ArmorStandTickSystem.cleanupBlock(posKey, world);
-                LOGGER.info("ArmorStand block removed at " + worldX + "," + worldY + "," + worldZ + ", mannequin cleaned up");
-            }
+        Vector3i blockPosition = new Vector3i();
+        if (blockInfo.fillWorldPos(commandBuffer, blockPosition)) {
+            // Clean up via ArmorStandTickSystem's static cleanup (removes runtime + despawns NPC)
+            World world = commandBuffer.getExternalData().getWorld();
+            ArmorStandTickSystem.cleanupBlock(blockPosition.x, blockPosition.y, blockPosition.z, world);
+            LOGGER.info("ArmorStand block removed at " + blockPosition.x + "," + blockPosition.y + "," + blockPosition.z + ", mannequin cleaned up");
         }
 
         // Also try to remove by persisted UUID as fallback

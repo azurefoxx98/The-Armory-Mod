@@ -8,11 +8,12 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
-import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.modules.block.BlockModule;
-import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.chunk.BlockOperations;
+import com.hypixel.hytale.server.core.universe.world.chunk.section.BlockSection;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
+import org.joml.Vector3i;
 
 import javax.annotation.Nonnull;
 
@@ -58,38 +59,40 @@ public class MekanichalKrafterTickSystem extends EntityTickingSystem<ChunkStore>
             return;
         }
 
-        Ref<ChunkStore> chunkRef = blockStateInfo.getChunkRef();
+        Ref<ChunkStore> sectionRef = blockStateInfo.getSectionRef();
 
-        if (!chunkRef.isValid()) {
+        if (!sectionRef.isValid()) {
             return;
         }
 
-        WorldChunk chunk = store.getComponent(chunkRef, WorldChunk.getComponentType());
+        BlockSection blockSection = store.getComponent(sectionRef, BlockSection.getComponentType());
 
-        if (chunk == null) {
+        if (blockSection == null) {
             return;
         }
 
         int blockIndex = blockStateInfo.getIndex();
+        BlockType blockType = BlockType.getAssetMap().getAsset(blockSection.get(blockIndex));
 
-        int x = ChunkUtil.xFromBlockInColumn(blockIndex);
-        int y = ChunkUtil.yFromBlockInColumn(blockIndex);
-        int z = ChunkUtil.zFromBlockInColumn(blockIndex);
+        Vector3i blockPosition = new Vector3i();
 
-        BlockType blockType = chunk.getBlockType(x, y, z);
-
-        if (blockType == null || !MekanichalKrafterUtil.isKrafterBlock(blockType)) {
+        if (blockType == null
+                || !MekanichalKrafterUtil.isKrafterBlock(blockType)
+                || !blockStateInfo.fillWorldPos(store, blockPosition)) {
             return;
         }
 
         if (krafter.isReady()) {
             if (!MekanichalKrafterUtil.isState(blockType, MekanichalKrafterUtil.STATE_OPEN)) {
-                MekanichalKrafterUtil.setState(
-                        chunk,
-                        x,
-                        y,
-                        z,
-                        MekanichalKrafterUtil.STATE_OPEN
+                BlockOperations.setBlockInteractionState(
+                        store.getExternalData(),
+                        sectionRef,
+                        blockPosition.x,
+                        blockPosition.y,
+                        blockPosition.z,
+                        blockType,
+                        MekanichalKrafterUtil.STATE_OPEN,
+                        false
                 );
 
                 blockStateInfo.markNeedsSaving(store);
@@ -99,12 +102,15 @@ public class MekanichalKrafterTickSystem extends EntityTickingSystem<ChunkStore>
         }
 
         if (!MekanichalKrafterUtil.isState(blockType, MekanichalKrafterUtil.STATE_CLOSED)) {
-            MekanichalKrafterUtil.setState(
-                    chunk,
-                    x,
-                    y,
-                    z,
-                    MekanichalKrafterUtil.STATE_CLOSED
+            BlockOperations.setBlockInteractionState(
+                    store.getExternalData(),
+                    sectionRef,
+                    blockPosition.x,
+                    blockPosition.y,
+                    blockPosition.z,
+                    blockType,
+                    MekanichalKrafterUtil.STATE_CLOSED,
+                    false
             );
 
             blockStateInfo.markNeedsSaving(store);
@@ -117,13 +123,21 @@ public class MekanichalKrafterTickSystem extends EntityTickingSystem<ChunkStore>
         }
 
         if (krafter.isReady()) {
-            MekanichalKrafterUtil.setState(
-                    chunk,
-                    x,
-                    y,
-                    z,
-                    MekanichalKrafterUtil.STATE_OPEN
-            );
+            BlockType currentBlockType = BlockType.getAssetMap().getAsset(blockSection.get(blockIndex));
+
+            if (currentBlockType != null
+                    && !MekanichalKrafterUtil.isState(currentBlockType, MekanichalKrafterUtil.STATE_OPEN)) {
+                BlockOperations.setBlockInteractionState(
+                        store.getExternalData(),
+                        sectionRef,
+                        blockPosition.x,
+                        blockPosition.y,
+                        blockPosition.z,
+                        currentBlockType,
+                        MekanichalKrafterUtil.STATE_OPEN,
+                        false
+                );
+            }
         }
 
         blockStateInfo.markNeedsSaving(store);

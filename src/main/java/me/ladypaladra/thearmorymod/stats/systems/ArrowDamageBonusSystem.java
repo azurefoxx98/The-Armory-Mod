@@ -1,5 +1,6 @@
 package me.ladypaladra.thearmorymod.stats.systems;
 
+import com.hypixel.hytale.assetstore.AssetRegistry;
 import com.hypixel.hytale.component.Archetype;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -7,6 +8,7 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.SystemGroup;
 import com.hypixel.hytale.component.query.Query;
+import com.hypixel.hytale.server.core.asset.type.item.config.Item;
 import com.hypixel.hytale.server.core.inventory.InventoryComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.entity.damage.Damage;
@@ -29,8 +31,12 @@ public class ArrowDamageBonusSystem extends DamageEventSystem {
             "*arrow*"
     );
 
-    // Matching is case insensitive, so one pattern covers every bow, shortbow, longbow and crossbow spelling.
-    private static final List<String> BOW_ITEM_PATTERNS = List.of("*bow*");
+    private static final String BOW_FAMILY_TAG = "Family=Bow";
+    private static final String CROSSBOW_FAMILY_TAG = "Family=Crossbow";
+
+    // Tag indexes only exist after asset load. Resolve them on the first damage check and
+    // keep them for later checks instead of reading an incomplete map during class loading.
+    private static volatile int[] bowFamilyTagIndexes;
 
     private final ArmoryStatService statService;
 
@@ -59,7 +65,8 @@ public class ArrowDamageBonusSystem extends DamageEventSystem {
 
         if (damage.getAmount() <= 0.0f) return;
 
-        DamageCause cause = damage.getCause();
+        // Resolve the cause index directly because Damage.getCause() is deprecated in Hytale 0.5.9.
+        DamageCause cause = DamageCause.getAssetMap().getAsset(damage.getDamageCauseIndex());
         String causeId = cause != null ? cause.getId() : "null";
 
         Damage.Source source = damage.getSource();
@@ -84,8 +91,9 @@ public class ArrowDamageBonusSystem extends DamageEventSystem {
             attackerRef = entitySource.getRef();
 
             String heldItemId = getHeldItemId(store, commandBuffer, attackerRef);
+            Item heldItem = Item.getAssetMap().getAsset(heldItemId);
             boolean projectileCause = "Projectile".equalsIgnoreCase(causeId);
-            boolean bowMatched = matchesAnyPattern(heldItemId);
+            boolean bowMatched = matchesBowFamily(heldItem);
 
             if (attackerRef.isValid() && projectileCause && bowMatched) {
                 matchedArrow = true;
@@ -123,7 +131,35 @@ public class ArrowDamageBonusSystem extends DamageEventSystem {
         return heldItem != null ? heldItem.getItemId() : "null";
     }
 
-    private static boolean matchesAnyPattern(@Nullable String value) {
-        return ProjectileMatchUtil.matchesAnyIgnoreCase(value, BOW_ITEM_PATTERNS);
+    static boolean matchesBowFamily(@Nullable Item item) {
+        if (item == null || item.getData() == null) {
+            return false;
+        }
+
+        for (int tagIndex : getBowFamilyTagIndexes()) {
+            if (tagIndex != AssetRegistry.TAG_NOT_FOUND
+                    && item.getData().getExpandedTagIndexes().contains(tagIndex)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static int[] getBowFamilyTagIndexes() {
+        int[] tagIndexes = bowFamilyTagIndexes;
+        if (tagIndexes != null) {
+            return tagIndexes;
+        }
+
+        synchronized (ArrowDamageBonusSystem.class) {
+            if (bowFamilyTagIndexes == null) {
+                bowFamilyTagIndexes = new int[] {
+                        AssetRegistry.getTagIndex(BOW_FAMILY_TAG),
+                        AssetRegistry.getTagIndex(CROSSBOW_FAMILY_TAG)
+                };
+            }
+            return bowFamilyTagIndexes;
+        }
     }
 }

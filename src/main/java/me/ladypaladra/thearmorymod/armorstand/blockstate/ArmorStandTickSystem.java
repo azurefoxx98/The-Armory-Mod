@@ -3,7 +3,6 @@ package me.ladypaladra.thearmorymod.armorstand.blockstate;
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
-import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.RotationTuple;
 import com.hypixel.hytale.server.core.entity.Entity;
@@ -26,7 +25,6 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.modules.interaction.InteractionModule;
 import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.chunk.BlockChunk;
 import com.hypixel.hytale.server.core.universe.world.chunk.section.BlockSection;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -40,16 +38,18 @@ import com.hypixel.hytale.protocol.ItemArmorSlot;
 import me.ladypaladra.thearmorymod.armorstand.ArmorStandModule;
 
 import org.joml.Vector3d;
+import org.joml.Vector3i;
 
 import it.unimi.dsi.fastutil.Pair;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 /**
@@ -78,7 +78,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
             "ArmorStandMod:ArmorStand_Mannequin"
     );
 
-    // Transient per-block runtime state, keyed by world plus packed block position.
+    // Transient per-block runtime state, keyed by world plus the full block coordinates.
     private static final Map<BlockRuntimeKey, BlockRuntime> runtimeMap = new ConcurrentHashMap<>();
 
     private final ComponentType<ChunkStore, ArmorStandComponent> componentType;
@@ -111,30 +111,25 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
         if (container == null) return;
 
         // --- Resolve world position from BlockStateInfo (same pattern as SpawnMarkerBlock) ---
-        Ref<ChunkStore> chunkRef = blockInfo.getChunkRef();
-        if (chunkRef == null || !chunkRef.isValid()) return;
+        Ref<ChunkStore> sectionRef = blockInfo.getSectionRef();
+        if (!sectionRef.isValid()) return;
 
-        int packedIndex = blockInfo.getIndex();
-        int localX = ChunkUtil.xFromBlockInColumn(packedIndex);
-        int worldY = ChunkUtil.yFromBlockInColumn(packedIndex);
-        int localZ = ChunkUtil.zFromBlockInColumn(packedIndex);
+        Vector3i blockPosition = new Vector3i();
+        if (!blockInfo.fillWorldPos(store, blockPosition)) return;
 
-        BlockChunk blockChunk = commandBuffer.getComponent(chunkRef, BlockChunk.getComponentType());
-        if (blockChunk == null) return;
+        BlockSection blockSection = commandBuffer.getComponent(sectionRef, BlockSection.getComponentType());
+        if (blockSection == null) return;
 
-        int worldX = blockChunk.getX() * ChunkUtil.SIZE + localX;
-        int worldZ = blockChunk.getZ() * ChunkUtil.SIZE + localZ;
+        int worldX = blockPosition.x;
+        int worldY = blockPosition.y;
+        int worldZ = blockPosition.z;
 
         // Get block rotation for mannequin yaw
         float yawRad = 0.0f;
         try {
-            BlockSection section = blockChunk.getSectionAtBlockY(worldY);
-            if (section != null) {
-                int localYInSection = worldY % ChunkUtil.SIZE;
-                RotationTuple rot = section.getRotation(localX, localYInSection, localZ);
-                if (rot != null && rot.yaw() != null) {
-                    yawRad = (float) rot.yaw().getRadians();
-                }
+            RotationTuple rot = blockSection.getRotation(blockInfo.getIndex());
+            if (rot != null && rot.yaw() != null) {
+                yawRad = (float) rot.yaw().getRadians();
             }
         } catch (Exception ignored) {}
 
@@ -146,8 +141,7 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
         if (world == null) return;
 
         // --- Runtime state for this block ---
-        long posKey = com.hypixel.hytale.math.block.BlockUtil.pack(worldX, worldY, worldZ);
-        BlockRuntimeKey runtimeKey = runtimeKey(world, posKey);
+        BlockRuntimeKey runtimeKey = runtimeKey(world, worldX, worldY, worldZ);
         BlockRuntime rt = runtimeMap.computeIfAbsent(runtimeKey, k -> new BlockRuntime());
         rt.worldX = worldX;
         rt.worldY = worldY;
@@ -600,8 +594,8 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
 
     // --- Cleanup from any ref ---
 
-    public static void cleanupBlock(long posKey, World world) {
-        BlockRuntime rt = runtimeMap.remove(runtimeKey(world, posKey));
+    public static void cleanupBlock(int worldX, int worldY, int worldZ, World world) {
+        BlockRuntime rt = runtimeMap.remove(runtimeKey(world, worldX, worldY, worldZ));
         if (rt != null && rt.mannequinRef != null) {
             Ref<EntityStore> mannequinRef = rt.mannequinRef;
             ArmorStandModule.untrackMannequin(mannequinRef);
@@ -624,17 +618,19 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
             }
         } catch (Exception ignored) {}
 
-        try {
-            Store<EntityStore> entityStore = world.getEntityStore().getStore();
-            for (Ref<EntityStore> entityRef : getAllEntityRefs(entityStore)) {
-                if (entityRef == null || !entityRef.isValid()) continue;
-                UUIDComponent uuidComponent = entityStore.getComponent(entityRef, UUIDComponent.getComponentType());
-                if (uuidComponent != null && mannequinUuid.equals(uuidComponent.getUuid())) {
-                    removeMannequinRef(entityRef);
-                    return;
-                }
-            }
-        } catch (Exception ignored) {}
+        Store<EntityStore> entityStore = world.getEntityStore().getStore();
+        AtomicReference<Ref<EntityStore>> matchingRef = new AtomicReference<>();
+        forEachEntityRef(entityStore, entityRef -> {
+            if (entityRef == null || !entityRef.isValid()) return false;
+            UUIDComponent uuidComponent = entityStore.getComponent(entityRef, UUIDComponent.getComponentType());
+            if (uuidComponent == null || !mannequinUuid.equals(uuidComponent.getUuid())) return false;
+            matchingRef.set(entityRef);
+            return true;
+        });
+
+        if (matchingRef.get() != null) {
+            removeMannequinRef(matchingRef.get());
+        }
     }
 
     private static void removeMannequinRef(Ref<EntityStore> mannequinRef) {
@@ -649,45 +645,44 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
     private static void removeDuplicateMannequinsAtBlock(Store<EntityStore> entityStore,
                                                          Ref<EntityStore> keepRef,
                                                          Vector3d blockPos) {
-        int removed = 0;
-        for (Ref<EntityStore> entityRef : getAllEntityRefs(entityStore)) {
-            if (entityRef == null || sameRef(entityRef, keepRef) || !entityRef.isValid()) continue;
-            try {
-                if (!isMannequinEntity(entityStore, entityRef)) continue;
+        List<Ref<EntityStore>> duplicateRefs = new ArrayList<>();
+        forEachEntityRef(entityStore, entityRef -> {
+            if (entityRef == null || sameRef(entityRef, keepRef) || !entityRef.isValid()) return false;
+            if (!isMannequinEntity(entityStore, entityRef)) return false;
 
-                TransformComponent transform = entityStore.getComponent(entityRef, TransformComponent.getComponentType());
-                if (transform == null || transform.getPosition() == null) continue;
+            TransformComponent transform = entityStore.getComponent(entityRef, TransformComponent.getComponentType());
+            if (transform == null || transform.getPosition() == null) return false;
 
-                Vector3d pos = transform.getPosition();
-                double dx = pos.x - blockPos.x;
-                double dy = pos.y - blockPos.y;
-                double dz = pos.z - blockPos.z;
-                if ((dx * dx + dy * dy + dz * dz) > 0.09D) continue;
+            Vector3d pos = transform.getPosition();
+            double dx = pos.x - blockPos.x;
+            double dy = pos.y - blockPos.y;
+            double dz = pos.z - blockPos.z;
+            if ((dx * dx + dy * dy + dz * dz) > 0.09D) return false;
 
-                removeMannequinRef(entityRef);
-                removed++;
-            } catch (Exception ignored) {}
+            duplicateRefs.add(entityRef);
+            return false;
+        });
+
+        for (Ref<EntityStore> duplicateRef : duplicateRefs) {
+            removeMannequinRef(duplicateRef);
         }
 
-        if (removed > 0) {
-            LOGGER.fine("Removed " + removed + " duplicate ArmorStand mannequin(s) at block center " + blockPos);
+        if (!duplicateRefs.isEmpty()) {
+            LOGGER.fine("Removed " + duplicateRefs.size() + " duplicate ArmorStand mannequin(s) at block center " + blockPos);
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static List<Ref<EntityStore>> getAllEntityRefs(Store<EntityStore> store) {
-        List<Ref<EntityStore>> list = new ArrayList<>();
-        try {
-            Field refsField = store.getClass().getDeclaredField("refs");
-            refsField.setAccessible(true);
-            Object[] refsArray = (Object[]) refsField.get(store);
-            if (refsArray != null) {
-                for (Object value : refsArray) {
-                    if (value instanceof Ref) list.add((Ref<EntityStore>) value);
-                }
+    /**
+     * Visits entity references through the public chunk API so cleanup never depends on the
+     * Store's private ref array. The visitor returns true to stop as soon as it has its answer.
+     */
+    public static boolean forEachEntityRef(Store<EntityStore> store, Predicate<Ref<EntityStore>> visitor) {
+        return store.forEachChunk((chunk, commandBuffer) -> {
+            for (int index = 0; index < chunk.size(); index++) {
+                if (visitor.test(chunk.getReferenceTo(index))) return true;
             }
-        } catch (Exception ignored) {}
-        return list;
+            return false;
+        });
     }
 
     public static boolean isMannequinRoleName(String roleName) {
@@ -750,8 +745,8 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
         }
     }
 
-    private static BlockRuntimeKey runtimeKey(World world, long posKey) {
-        return new BlockRuntimeKey(safeWorldName(world), posKey);
+    private static BlockRuntimeKey runtimeKey(World world, int worldX, int worldY, int worldZ) {
+        return new BlockRuntimeKey(safeWorldName(world), worldX, worldY, worldZ);
     }
 
     // --- Transient runtime state per block ---
@@ -769,5 +764,5 @@ public class ArmorStandTickSystem extends EntityTickingSystem<ChunkStore> {
         float yawRadians = 0.0f;
     }
 
-    private record BlockRuntimeKey(String worldName, long posKey) {}
+    private record BlockRuntimeKey(String worldName, int x, int y, int z) {}
 }

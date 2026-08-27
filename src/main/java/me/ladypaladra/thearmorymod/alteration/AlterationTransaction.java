@@ -227,8 +227,9 @@ public final class AlterationTransaction {
         ItemStack output = buildOutput(input, outputItemId, input.getQuantity());
 
         // e. Remove the exact input stack from its slot, then deliver the output. Order
-        // matches the bench path so a Post cancel leaves the input gone and the output
-        // withheld.
+        // matches the bench path, so a Post cancel leaves the input gone and the output
+        // withheld. It also returns false so the caller does not report success or spend
+        // a table charge.
         ItemStackSlotTransaction inputRemoval = inputContainer.removeItemStackFromSlot(slotIndex, input, input.getQuantity());
         if (!inputRemoval.succeeded()) {
             return false;
@@ -237,7 +238,8 @@ public final class AlterationTransaction {
         CraftRecipeEvent.Post postEvent = new CraftRecipeEvent.Post(recipe, craftQuantity);
         store.invoke(ref, postEvent);
 
-        if (!postEvent.isCancelled()) {
+        boolean outputDelivered = !postEvent.isCancelled();
+        if (outputDelivered) {
             // Put the variant back into the slot the input came from, so a worn piece
             // stays worn and a bag piece keeps its place. The slot was just emptied, so
             // this only fails on a slot filter, and then the normal pickup path takes
@@ -247,11 +249,11 @@ public final class AlterationTransaction {
             }
         }
 
-        if (AlterationConfig.USE_ANIMATION_ID != null) {
+        if (outputDelivered && AlterationConfig.USE_ANIMATION_ID != null) {
             AnimationUtils.playAnimation(ref, AnimationSlot.Action, AlterationConfig.USE_ANIMATION_ID, true, store);
         }
 
-        return true;
+        return outputDelivered;
     }
 
     /**

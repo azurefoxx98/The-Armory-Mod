@@ -5,6 +5,7 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.item.config.metadata.ItemDisplayMetadata;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
+import me.ladypaladra.thearmorymod.ui.MessageTrees;
 import org.bson.BsonDocument;
 
 import javax.annotation.Nonnull;
@@ -17,13 +18,6 @@ import java.util.UUID;
  * Turns validated text into engine messages and handles atomic item writes.
  */
 public final class ScribingWrite {
-
-    /**
-     * Shared limit for every walk of an engine message tree in this mod. Our parser
-     * flattens its own trees to one level, so this only affects trees written by other
-     * code and keeps a pathological tree from overflowing the stack inside the engine tick.
-     */
-    public static final int MAX_TREE_DEPTH = 16;
 
     private ScribingWrite() {
     }
@@ -93,39 +87,6 @@ public final class ScribingWrite {
         return new Existing(name.markup(), description.markup(), name.foreign() || description.foreign());
     }
 
-    /**
-     * Returns only the visible characters in a message, without styling or markup, so they
-     * can be compared with text a player typed.
-     *
-     * <p>Do not use getAnsiMessage for this. It is a console renderer and inserts ANSI
-     * escape codes between runs. A search for "dawnbreaker" would then miss a name where
-     * "Dawn" and "breaker" have different colours. getRawText is not suitable either,
-     * because it returns only the root run.</p>
-     */
-    @Nonnull
-    public static String plainText(@Nullable Message message) {
-        if (message == null) {
-            return "";
-        }
-        StringBuilder text = new StringBuilder();
-        appendPlain(message.getFormattedMessage(), text, 0);
-        return text.toString();
-    }
-
-    private static void appendPlain(@Nullable FormattedMessage node, @Nonnull StringBuilder text, int depth) {
-        if (node == null || depth > MAX_TREE_DEPTH) {
-            return;
-        }
-        if (node.rawText != null) {
-            text.append(node.rawText);
-        }
-        if (node.children != null) {
-            for (FormattedMessage child : node.children) {
-                appendPlain(child, text, depth + 1);
-            }
-        }
-    }
-
     private record Read(@Nullable String markup, boolean foreign) {
     }
 
@@ -170,7 +131,7 @@ public final class ScribingWrite {
         // The depth limit keeps a pathological tree on an item handed to the player from
         // taking down the server with a stack overflow. Once the tree exceeds that limit,
         // we treat it as foreign just like any other text we cannot reproduce.
-        if (depth > MAX_TREE_DEPTH) {
+        if (depth > MessageTrees.MAX_DEPTH) {
             foreign[0] = true;
             return;
         }

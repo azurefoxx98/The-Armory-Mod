@@ -8,19 +8,17 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
-import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
-import com.hypixel.hytale.server.core.modules.entitystats.asset.EntityStatType;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import me.ladypaladra.thearmorymod.stats.ArmoryStatIds;
+import me.ladypaladra.thearmorymod.stats.LazyStatIndex;
+import me.ladypaladra.thearmorymod.stats.StatMultiplier;
 
 import javax.annotation.Nonnull;
 
 public final class JumpHeightModifierSystem extends EntityTickingSystem<EntityStore> {
 
-    private static final float EPSILON = 0.0001F;
-
-    private volatile int jumpHeightIdx = Integer.MIN_VALUE;
+    private final LazyStatIndex jumpHeightIndex = new LazyStatIndex(ArmoryStatIds.JUMP_HEIGHT);
 
     private final Query<EntityStore> query = Archetype.of(
             PlayerRef.getComponentType(),
@@ -64,8 +62,8 @@ public final class JumpHeightModifierSystem extends EntityTickingSystem<EntitySt
         float liveSwimJumpForce = movementManager.getSettings().swimJumpForce;
 
         // Live settings are the state, so a replacement manager after reconnect corrects itself.
-        if (Math.abs(liveJumpForce - targetJumpForce) <= EPSILON
-                && Math.abs(liveSwimJumpForce - targetSwimJumpForce) <= EPSILON) {
+        if (Math.abs(liveJumpForce - targetJumpForce) <= StatMultiplier.EPSILON
+                && Math.abs(liveSwimJumpForce - targetSwimJumpForce) <= StatMultiplier.EPSILON) {
             return;
         }
 
@@ -81,67 +79,6 @@ public final class JumpHeightModifierSystem extends EntityTickingSystem<EntitySt
     }
 
     private float getJumpHeightMultiplier(@Nonnull EntityStatMap statMap) {
-        int statIndex = resolveJumpHeightIdx();
-
-        if (statIndex == Integer.MIN_VALUE) {
-            return 1.0F;
-        }
-
-        EntityStatValue value = statMap.get(statIndex);
-
-        if (value == null) {
-            statMap.update();
-            value = statMap.get(statIndex);
-        }
-
-        if (value == null) {
-            return 1.0F;
-        }
-
-        EntityStatType statType = EntityStatType.getAssetMap().getAsset(statIndex);
-
-        if (statType == null) {
-            return 1.0F;
-        }
-
-        float baseMax = statType.getMax();
-        float effectiveMax = value.getMax();
-
-        if (baseMax <= 0.0F) {
-            return 1.0F;
-        }
-
-        // An unmodified stat has matching maxima, though modifiers totaling 1.0 are indistinguishable.
-        if (Math.abs(effectiveMax - baseMax) <= EPSILON) {
-            return 1.0F;
-        }
-
-        // This formula can look doubled and has twice been reported as a defect.
-        // Multiplicative uses value * amount in the engine, not value * (1 + amount).
-        // With an authored 0.2, the effective maximum is baseMax * 0.2.
-        // The ratio restores 0.2, and adding 1.0 produces the intended 20 percent.
-        // The engine sums amounts first, so two entries of 0.15 restore 0.30 here.
-        // Returning just the ratio would reduce every bonus to a fraction of itself.
-        float authoredAmount = effectiveMax / baseMax;
-        float multiplier = 1.0F + authoredAmount;
-
-        return Math.max(1.0F, multiplier);
-    }
-
-    private int resolveJumpHeightIdx() {
-        int idx = jumpHeightIdx;
-
-        if (idx != Integer.MIN_VALUE) {
-            return idx;
-        }
-
-        int found = EntityStatType.getAssetMap().getIndex(ArmoryStatIds.JUMP_HEIGHT);
-
-        if (found != Integer.MIN_VALUE) {
-            jumpHeightIdx = found;
-            return found;
-        }
-
-        return Integer.MIN_VALUE;
+        return StatMultiplier.forStat(statMap, jumpHeightIndex.get());
     }
 }

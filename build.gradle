@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'me.ladypaladra.thearmorymod'
-version = '1.21.0'
+version = '1.22.0'
 
 repositories {
     mavenCentral()
@@ -72,6 +72,21 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 shadowJar {
+    // Patchly publishes one artifact that is both a droppable plugin and a shadeable library,
+    // so its jar root carries a manifest.json and an icon-256.png of its own. Shadow merges
+    // dependency roots into this one and the first copy of a path wins, and the main source
+    // set output is added ahead of the runtime configuration, so this project's copies are the
+    // ones that ship. That held by accident of ordering rather than by declaration, and a jar
+    // carrying another author's manifest identifies itself to the engine as their plugin while
+    // the build, the schema validator and the diff all stay quiet. Declare the first-wins rule
+    // rather than inheriting it.
+    //
+    // Relocating com.riprod was considered and rejected. It buys no isolation that is not
+    // already present, because the engine gives every jar plugin its own class loader and
+    // Patchly is absent from the server class path, so this copy is the one that binds either
+    // way. It also carries real risk, since shading rewrites matching strings as well as class
+    // references, and Patchly has not been tested under a rewritten package name.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     archiveClassifier.set('')
     dependencies {
         exclude(dependency { it.moduleGroup == 'com.hypixel' })

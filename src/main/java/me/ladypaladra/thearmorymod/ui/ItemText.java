@@ -4,7 +4,6 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.i18n.I18nModule;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import me.ladypaladra.thearmorymod.scribing.ScribingWrite;
 
 import javax.annotation.Nonnull;
 import java.util.Locale;
@@ -52,7 +51,7 @@ public final class ItemText {
         Message display = stack.getDisplayName();
         // Plain visible characters, so a name whose runs carry different colours still
         // matches a needle that crosses the boundary between them.
-        String displayName = ScribingWrite.plainText(display);
+        String displayName = MessageTrees.plainText(display);
         if (display.getMessageId() != null) {
             String translated = I18nModule.get().getMessage(playerRef.getLanguage(), display.getMessageId());
             if (translated != null) {

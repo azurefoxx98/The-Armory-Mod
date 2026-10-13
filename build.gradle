@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'me.ladypaladra.thearmorymod'
-version = '1.22.0'
+version = '1.23.0-dev.1'
 
 repositories {
     mavenCentral()
@@ -45,7 +45,7 @@ dependencies {
     // items actually is at runtime. That version should change when we choose, not when a
     // build machine resolves a range. The dependency is shaded into this jar, so a server
     // owner installs nothing extra.
-    implementation 'com.riprod:patchly:3.5.1'
+    implementation 'com.riprod:patchly:3.6.2'
     // Pinned at 1.2.1 because the docs name unpublished 1.1.0. Version 1.2.1 moved uploads
     // onto isolated virtual threads so a slow upload cannot delay unrelated server tasks.
     implementation 'com.alechilles:alecstelemetry-runtime:1.2.1'
@@ -88,6 +88,10 @@ shadowJar {
     // references, and Patchly has not been tested under a rewritten package name.
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     archiveClassifier.set('')
+    // The standalone dependency includes development tooling that this plugin never runs.
+    // Its engine calls must not become part of the runtime we ship.
+    exclude 'com/azuredoom/**'
+    inputs.property('excludePatterns', excludes.sort())
     dependencies {
         exclude(dependency { it.moduleGroup == 'com.hypixel' })
     }
@@ -173,6 +177,24 @@ tasks.named('jar') {
 
 tasks.named('build') {
     dependsOn shadowJar
+    dependsOn 'verifyBundledRuntime'
+}
+
+tasks.register('verifyBundledRuntime') {
+    group = 'verification'
+    dependsOn shadowJar
+    inputs.file(shadowJar.archiveFile)
+    doLast {
+        new java.util.zip.ZipFile(shadowJar.archiveFile.get().asFile).withCloseable { archive ->
+            def entries = archive.entries().toList()*.name
+            if (entries.any { it.startsWith('com/azuredoom/') }) {
+                throw new GradleException('Standalone development tooling is present in the runtime jar.')
+            }
+            if (!entries.contains('com/riprod/patchly/PatchManager.class')) {
+                throw new GradleException('The bundled patch manager is missing from the runtime jar.')
+            }
+        }
+    }
 }
 
 tasks.named('test') {
@@ -195,14 +217,17 @@ tasks.register('copyServerJar') {
         def destJar = file('libs/HytaleServer.jar')
         if (!destJar.exists()) {
             def sources = [file('server/HytaleServer.jar'), file('../server/HytaleServer.jar')]
-            for (src in sources) {
-                if (src.exists()) {
-                    copy {
-                        from src
-                        into 'libs'
-                    }
-                    break
-                }
+            def appData = System.getenv('APPDATA')
+            if (appData) {
+                sources.add(file("${appData}/Hytale/install/release/package/game/latest/Server/HytaleServer.jar"))
+            }
+            def sourceJar = sources.find { it.isFile() }
+            if (sourceJar == null) {
+                throw new GradleException('No Hytale server jar was found. Install the release channel or provide server/HytaleServer.jar.')
+            }
+            copy {
+                from sourceJar
+                into 'libs'
             }
         }
     }

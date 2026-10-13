@@ -29,6 +29,7 @@ public class TheArmoryMod extends JavaPlugin {
 
     public TheArmoryMod(@Nonnull JavaPluginInit init) {
         super(init);
+        PatchlyStartup.prepare(this);
         patchManager = new PatchManager(this);
     }
 

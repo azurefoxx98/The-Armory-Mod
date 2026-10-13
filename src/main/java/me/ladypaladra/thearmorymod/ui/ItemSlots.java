@@ -26,8 +26,8 @@ public final class ItemSlots {
      * so passing them straight through is guaranteed to hit it. Two shipping mods already
      * solved this the same way, and their solution is copied here rather than reinvented.
      * <p>
-     * Nothing visible is lost. Id, quantity, durability and max durability are all
-     * first-class fields on the constructor rather than metadata, so the native tooltip
+     * Id, quantity, durability, max durability and an explicit quality override remain
+     * on the sanitized stack, so the native tooltip
      * still shows the real durability and the grid still draws the real stack size. The
      * inscribed description rides on the slot's own Description, which the native tooltip
      * reads, so there is one tooltip and it is the game's own. Name stays unset because it
@@ -69,6 +69,7 @@ public final class ItemSlots {
                 stack.getQuantity(),
                 stack.getDurability(),
                 stack.getMaxDurability(),
+                stack.toPacket().quality,
                 null
         ));
         // Required for a slot to accept a press at all, which is what hyui's

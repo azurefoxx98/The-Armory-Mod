@@ -203,42 +203,17 @@ public final class ScribingWrite {
      * status strip. Enforce it at the commit, never in this builder.</p>
      */
     @Nonnull
-    @SuppressWarnings("deprecation")
     public static ItemStack apply(
             @Nonnull ItemStack original,
             @Nullable Message name,
             @Nullable Message description
     ) {
-        BsonDocument metadata = original.getMetadata();
-
-        // Clone the metadata before touching it. getMetadata returns the input stack's own
-        // document, so an in-place edit would mutate the item the player is still holding.
-        // This exact refusal-path bug shipped in commit 3e8bc91. Cloning also keeps the
-        // original and replacement stacks from sharing a live document.
-        BsonDocument replacementMetadata = metadata == null ? null : metadata.clone();
-        if (replacementMetadata != null) {
-            // Removing the record restores the vanilla fallback. Keeping a record with two
-            // null fields does not.
-            replacementMetadata.remove(ItemDisplayMetadata.KEY);
-            if (replacementMetadata.isEmpty()) {
-                replacementMetadata = null;
-            }
-        }
-
-        ItemStack base = new ItemStack(
-                original.getItemId(),
-                original.getQuantity(),
-                original.getDurability(),
-                original.getMaxDurability(),
-                replacementMetadata
-        );
-        if (name == null && description == null) {
-            return base;
-        }
-        return base.withMetadata(
+        ItemStack replacement = original.withMetadata(
                 ItemDisplayMetadata.KEYED_CODEC,
-                new ItemDisplayMetadata(name, description)
+                name == null && description == null ? null : new ItemDisplayMetadata(name, description)
         );
+        replacement.setOverrideDroppedItemAnimation(original.getOverrideDroppedItemAnimation());
+        return replacement;
     }
 
     /**

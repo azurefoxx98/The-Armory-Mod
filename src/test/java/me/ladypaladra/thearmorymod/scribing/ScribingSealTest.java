@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * {@code Item.getAssetStore()}, which is null outside a running server. As a result, a
  * stack-level test fails with a NullPointerException, and changing the classpath does not
  * fix it. We measured that behavior rather than assuming it. The stack half adds one
- * five-argument copy to what is tested here, and an in-game play-test covers it.</p>
+ * native metadata copy to what is tested here and needs a running server to verify it.</p>
  *
  * <p>One property is not covered here, so do not assume otherwise: whether
  * {@code ScribingWrite.apply} leaves unrelated metadata keys alone. Testing that property
@@ -69,9 +69,8 @@ class ScribingSealTest {
 
     @Test
     void sealingDoesNotTouchTheInputDocument() {
-        // getMetadata returns the document for the item the player is still holding. A
-        // writer that edits it in place therefore mutates the player's inventory. That bug
-        // has already shipped once, in commit 3e8bc91.
+        // The document API must leave a caller-owned document unchanged, independently
+        // of how an engine stack supplied it.
         BsonDocument original = foreign();
         ScribingSeal.sealed(original, "Larsonix", UUID.randomUUID(), 1L);
         assertFalse(ScribingSeal.isSealed(original));

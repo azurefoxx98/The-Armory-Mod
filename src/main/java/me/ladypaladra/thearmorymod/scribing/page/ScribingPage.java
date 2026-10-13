@@ -76,9 +76,8 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
     // draws as a blank box. The bullet appears 213 times in that same corpus, in item
     // descriptions the client renders in the tooltip, so it is attested in the font we are
     // drawing with. Written as an escape rather than as a literal so the string cannot be
-    // damaged by whatever encoding a future build assumes for this source file. build.gradle
-    // sets no options.encoding, so javac takes the platform default and only happens to be
-    // right on this JDK. The escape does not care.
+    // damaged by an editor or a build tool that reads this literal with another encoding.
+    // The build also pins UTF-8 for every Java source file.
     private static final String SEPARATOR = " \u2022 ";
 
     // Do not call this "no limit". That made the counter lie to every admin. During the
@@ -1417,11 +1416,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         if (stack == null) {
             return null;
         }
-        Item item = stack.getItem();
-        if (item == null) {
-            return null;
-        }
-        return ItemQuality.getAssetMap().getAsset(item.getQualityIndex());
+        return ItemQuality.getAssetMap().getAsset(stack.getQualityIndex());
     }
 
     @Nonnull

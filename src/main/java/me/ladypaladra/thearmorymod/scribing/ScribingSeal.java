@@ -322,12 +322,8 @@ public final class ScribingSeal {
             @Nonnull ItemStack original,
             @Nullable BsonDocument metadata
     ) {
-        return new ItemStack(
-                original.getItemId(),
-                original.getQuantity(),
-                original.getDurability(),
-                original.getMaxDurability(),
-                metadata
-        );
+        ItemStack replacement = original.withMetadata(metadata);
+        replacement.setOverrideDroppedItemAnimation(original.getOverrideDroppedItemAnimation());
+        return replacement;
     }
 }

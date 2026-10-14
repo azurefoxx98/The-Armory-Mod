@@ -63,23 +63,6 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
     private static final String LANG_PREFIX = "server.customUI.scribingPage.";
     private static final String BENCH_KEY = "scribing";
 
-    // What divides the parts of a field counter. The counters used to run their values
-    // together on a double space and nothing else, so "1 line  0  no limit" read as three
-    // unrelated fragments rather than one reading. During the 2026-08-09 play-test, a
-    // tester described it as "detached, weird spacing, no cap letter, hardly
-    // understandable".
-    //
-    // The U+2022 glyph is a compatibility choice, not a matter of taste. A middle dot
-    // U+00B7 is the usual typographic choice, but it appears zero times across the 24
-    // shipped en-US language files, 10972 lines, so nothing proves the game's font carries
-    // it and an absent glyph
-    // draws as a blank box. The bullet appears 213 times in that same corpus, in item
-    // descriptions the client renders in the tooltip, so it is attested in the font we are
-    // drawing with. Written as an escape rather than as a literal so the string cannot be
-    // damaged by an editor or a build tool that reads this literal with another encoding.
-    // The build also pins UTF-8 for every Java source file.
-    private static final String SEPARATOR = " \u2022 ";
-
     // Do not call this "no limit". That made the counter lie to every admin. During the
     // 2026-08-10 play-test, a tester reported that "it always say no limit ... while
     // there is limits indeed". Holding the bypass permission lifts the server's rendered
@@ -244,6 +227,10 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
     ) {
         ArmoryTelemetry.breadcrumb("ui", "scribing page opened");
         appendPage(commandBuilder);
+        String example = I18nModule.get().getMessage(playerRef.getLanguage(), LANG_PREFIX + "legendExample");
+        if (example != null) {
+            commandBuilder.set("#LegendCopyBox.Value", example);
+        }
 
         LastPicked.Pick pick = LastPicked.recall(playerRef.getUuid(), BENCH_KEY);
         if (pick != null) {
@@ -1304,7 +1291,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         Message status;
         StatusTone tone;
         if (!validation.ok()) {
-            status = Message.raw(firstProblem(validation));
+            status = firstProblem(validation);
             tone = StatusTone.Bad;
         } else if (!draftName.isEmpty() && validation.nameOk().empty()
                 || !draftDescription.isEmpty() && validation.descriptionOk().empty()) {
@@ -1550,11 +1537,13 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
     }
 
     @Nonnull
-    private static String firstProblem(@Nonnull Validation validation) {
-        if (validation.name() instanceof ScribingText.Result.Fail fail) {
-            return fail.problems().getFirst().message();
-        }
-        return ((ScribingText.Result.Fail) validation.description()).problems().getFirst().message();
+    private static Message firstProblem(@Nonnull Validation validation) {
+        ScribingMarkup.Problem problem = validation.name() instanceof ScribingText.Result.Fail fail
+                ? fail.problems().getFirst()
+                : ((ScribingText.Result.Fail) validation.description()).problems().getFirst();
+        Message message = Message.translation(LANG_PREFIX + problem.translationKey());
+        problem.parameters().forEach((name, value) -> message.param(name, Message.raw(value)));
+        return message;
     }
 
     /**
@@ -1779,7 +1768,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
      */
     @Nonnull
     private static Message countSpan(
-            @Nonnull String text,
+            @Nonnull Message text,
             @Nonnull ScribingText.Result result,
             boolean bypass
     ) {
@@ -1789,16 +1778,21 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         } else if (result instanceof ScribingText.Result.Fail) {
             color = StatusTone.Bad.color;
         }
-        return Message.raw(text).color(color);
+        return text.color(color);
     }
 
     @Nonnull
-    private String formatNameCount(@Nonnull Validation validation) {
+    private Message formatNameCount(@Nonnull Validation validation) {
         int used = stats(validation.name(), draftName).renderedChars();
         return validation.bypass()
-                ? used + plural(used, " character", " characters")
-                        + SEPARATOR + draftName.length() + " / " + ScribingConfig.NAME_MAX_RAW_CHARS + " typed"
-                : used + " / " + ScribingConfig.NAME_MAX_CHARS;
+                ? Message.translation(LANG_PREFIX + "nameCountBypass")
+                        .param("count", used)
+                        .param("countText", Integer.toString(used))
+                        .param("raw", Integer.toString(draftName.length()))
+                        .param("max", Integer.toString(ScribingConfig.NAME_MAX_RAW_CHARS))
+                : Message.translation(LANG_PREFIX + "nameCount")
+                        .param("count", Integer.toString(used))
+                        .param("max", Integer.toString(ScribingConfig.NAME_MAX_CHARS));
     }
 
     /**
@@ -1814,25 +1808,27 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
      * actually bound the tooltip.</p>
      */
     @Nonnull
-    private String formatDescriptionCount(@Nonnull Validation validation) {
+    private Message formatDescriptionCount(@Nonnull Validation validation) {
         ScribingMarkup.Stats stats = stats(validation.description(), draftDescription);
         int lines = stats.lineCount();
         int used = stats.renderedChars();
         if (validation.bypass()) {
-            return lines + plural(lines, " line", " lines")
-                    + SEPARATOR + used + plural(used, " character", " characters")
-                    + SEPARATOR + draftDescription.length() + " / " + ScribingConfig.DESC_MAX_RAW_CHARS + " typed";
+            return Message.translation(LANG_PREFIX + "descriptionCountBypass")
+                    .param("lines", lines)
+                    .param("linesText", Integer.toString(lines))
+                    .param("count", used)
+                    .param("countText", Integer.toString(used))
+                    .param("raw", Integer.toString(draftDescription.length()))
+                    .param("max", Integer.toString(ScribingConfig.DESC_MAX_RAW_CHARS));
         }
         // "2 / 6 lines" then "41 / 300". The word rides on the first pair only: the second
         // repeats the same shape immediately after it, so naming the unit twice reads as
         // clutter rather than as clarity.
-        return lines + " / " + ScribingConfig.DESC_MAX_LINES + " lines"
-                + SEPARATOR + used + " / " + ScribingConfig.DESC_MAX_TOTAL_CHARS;
-    }
-
-    @Nonnull
-    private static String plural(int count, @Nonnull String one, @Nonnull String many) {
-        return count == 1 ? one : many;
+        return Message.translation(LANG_PREFIX + "descriptionCount")
+                .param("lines", Integer.toString(lines))
+                .param("maxLines", Integer.toString(ScribingConfig.DESC_MAX_LINES))
+                .param("count", Integer.toString(used))
+                .param("max", Integer.toString(ScribingConfig.DESC_MAX_TOTAL_CHARS));
     }
 
     @Nonnull

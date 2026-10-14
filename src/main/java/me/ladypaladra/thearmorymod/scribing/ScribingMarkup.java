@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Parses the small player-facing formatting grammar without touching engine types.
@@ -46,7 +47,16 @@ public final class ScribingMarkup {
     public record Stats(int renderedChars, int lineCount, int longestLineChars) {
     }
 
-    public record Problem(@Nonnull Kind kind, @Nonnull String message, int offset) {
+    public record Problem(
+            @Nonnull Kind kind,
+            @Nonnull String message,
+            int offset,
+            @Nonnull String translationKey,
+            @Nonnull Map<String, String> parameters
+    ) {
+        public Problem {
+            parameters = Map.copyOf(parameters);
+        }
     }
 
     public record Parsed(
@@ -121,7 +131,11 @@ public final class ScribingMarkup {
 
         flush(text, stack, runs);
         for (OpenTag open : stack) {
-            problems.add(new Problem(Kind.TAG_UNCLOSED, unclosedMessage(open.tag()), open.offset()));
+            problems.add(new Problem(
+                    Kind.TAG_UNCLOSED, unclosedMessage(open.tag()), open.offset(),
+                    "errorTagUnclosed",
+                    Map.of("open", "<" + open.tag().name + ">", "close", "</" + open.tag().name + ">")
+            ));
         }
 
         // Tags occupy no pixels. Counting raw markup would punish formatting and make
@@ -179,7 +193,9 @@ public final class ScribingMarkup {
                             (ScribingPalette.isWithdrawn(color)
                                     ? COLOUR_WITHDRAWN
                                     : COLOUR_NOT_ALLOWED).formatted(color),
-                            offset
+                            offset,
+                            ScribingPalette.isWithdrawn(color) ? "errorColorWithdrawn" : "errorColorNotAllowed",
+                            Map.of("color", color)
                     );
             return Token.open(Tag.COLOR, whole.length(), color, problem);
         }
@@ -188,7 +204,8 @@ public final class ScribingMarkup {
                 Tag.COLOR,
                 whole.length(),
                 null,
-                new Problem(Kind.COLOUR_MALFORMED, COLOUR_MALFORMED, offset)
+                new Problem(Kind.COLOUR_MALFORMED, COLOUR_MALFORMED, offset,
+                        "errorColorMalformed", Map.of("example", "<color is=\"#E8A93B\">"))
         );
     }
 
@@ -223,7 +240,10 @@ public final class ScribingMarkup {
                 return;
             }
         }
-        problems.add(new Problem(Kind.TAG_STRAY_CLOSE, strayMessage(tag), offset));
+        problems.add(new Problem(
+                Kind.TAG_STRAY_CLOSE, strayMessage(tag), offset, "errorTagStrayClose",
+                Map.of("close", "</" + tag.name + ">", "open", tag == Tag.COLOR ? "<color...>" : "<" + tag.name + ">")
+        ));
     }
 
     private static void flush(

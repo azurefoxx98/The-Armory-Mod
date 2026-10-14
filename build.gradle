@@ -51,6 +51,7 @@ dependencies {
     implementation 'com.alechilles:alecstelemetry-runtime:1.2.1'
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'com.ibm.icu:icu4j:71.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Applies output-integrity filtering and tooltip-size policy to parsed text.
@@ -85,7 +86,7 @@ public final class ScribingText {
     private static Result validate(@Nonnull String raw, @Nonnull Limits limits, boolean name) {
         int rawChars = raw.length();
         if (rawChars > limits.maxRawChars()) {
-            return fail(ScribingMarkup.Kind.RAW_TOO_LONG, RAW_TOO_LONG, 0);
+            return fail(ScribingMarkup.Kind.RAW_TOO_LONG, RAW_TOO_LONG, 0, "errorRawTooLong", Map.of());
         }
 
         String normalized = raw.replace("\r\n", "\n").replace('\r', '\n');
@@ -102,7 +103,10 @@ public final class ScribingText {
                     ScribingMarkup.Kind.RENDERED_TOO_LONG,
                     "That " + subject + " is " + stats.renderedChars() + " characters. The limit is "
                             + limits.maxRenderedChars() + ". Tags do not count.",
-                    0
+                    0,
+                    name ? "errorNameTooLong" : "errorDescriptionTooLong",
+                    Map.of("count", Integer.toString(stats.renderedChars()),
+                            "max", Integer.toString(limits.maxRenderedChars()))
             );
         }
         if (stats.lineCount() > limits.maxLines()) {
@@ -110,7 +114,9 @@ public final class ScribingText {
                     ScribingMarkup.Kind.TOO_MANY_LINES,
                     "That description is " + stats.lineCount() + " lines. The limit is "
                             + limits.maxLines() + ".",
-                    0
+                    0,
+                    "errorTooManyLines",
+                    Map.of("count", Integer.toString(stats.lineCount()), "max", Integer.toString(limits.maxLines()))
             );
         }
 
@@ -120,7 +126,11 @@ public final class ScribingText {
                     ScribingMarkup.Kind.LINE_TOO_LONG,
                     "Line " + overflow.line() + " is " + overflow.characters()
                             + " characters. The limit is " + limits.maxLineChars() + ".",
-                    0
+                    0,
+                    "errorLineTooLong",
+                    Map.of("line", Integer.toString(overflow.line()),
+                            "count", Integer.toString(overflow.characters()),
+                            "max", Integer.toString(limits.maxLineChars()))
             );
         }
 
@@ -247,8 +257,14 @@ public final class ScribingText {
     }
 
     @Nonnull
-    private static Result.Fail fail(@Nonnull ScribingMarkup.Kind kind, @Nonnull String message, int offset) {
-        return new Result.Fail(List.of(new ScribingMarkup.Problem(kind, message, offset)));
+    private static Result.Fail fail(
+            @Nonnull ScribingMarkup.Kind kind,
+            @Nonnull String message,
+            int offset,
+            @Nonnull String translationKey,
+            @Nonnull Map<String, String> parameters
+    ) {
+        return new Result.Fail(List.of(new ScribingMarkup.Problem(kind, message, offset, translationKey, parameters)));
     }
 
     private record Glyph(int codePoint, boolean bold, boolean italic, @Nullable String color) {

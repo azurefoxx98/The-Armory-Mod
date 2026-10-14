@@ -59,6 +59,8 @@ public final class ScribingWrite {
     /**
      * Do not call Message.parse on player input. It decodes JSON rather than parsing
      * markup, so this method keeps player text raw and builds the tree itself.
+     * Every run is a child of an unstyled parent, so the first run's colour or style
+     * cannot spread to later runs that did not request it.
      *
      * <p>Bold has no effect on the name. The tooltip's Label #Name declares
      * RenderBold: true, and instance metadata can add a style but cannot remove a
@@ -67,7 +69,10 @@ public final class ScribingWrite {
      */
     @Nullable
     public static Message toMessage(@Nonnull List<ScribingMarkup.StyledRun> runs) {
-        Message root = null;
+        if (runs.isEmpty()) {
+            return null;
+        }
+        Message root = Message.empty();
         for (ScribingMarkup.StyledRun run : runs) {
             Message message = Message.raw(run.text());
             if (run.color() != null) {
@@ -80,11 +85,7 @@ public final class ScribingWrite {
                 message = message.italic(true);
             }
 
-            if (root == null) {
-                root = message;
-            } else {
-                root = root.insert(message);
-            }
+            root.insert(message);
         }
         return root;
     }
@@ -108,7 +109,11 @@ public final class ScribingWrite {
      */
     @Nonnull
     public static Existing readExisting(@Nonnull ItemStack stack) {
-        ItemDisplayMetadata display = stack.getFromMetadataOrNull(ItemDisplayMetadata.KEYED_CODEC);
+        return readDisplay(stack.getFromMetadataOrNull(ItemDisplayMetadata.KEYED_CODEC));
+    }
+
+    @Nonnull
+    static Existing readDisplay(@Nullable ItemDisplayMetadata display) {
         if (display == null) {
             return new Existing(null, null, false);
         }

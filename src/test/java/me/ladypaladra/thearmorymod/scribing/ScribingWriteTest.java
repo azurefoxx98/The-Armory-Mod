@@ -4,6 +4,9 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.item.config.metadata.ItemDisplayMetadata;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -31,7 +34,7 @@ class ScribingWriteTest {
 
     @Test
     void unchangedReopenedFieldsKeepTheExactStoredMessageTree() {
-        Message stored = message("<b>Silent</b> test helm.");
+        Message stored = Message.raw("Silent").bold(true).insert(Message.raw(" test helm."));
         String refilled = "<b>Silent</b><b> test helm.</b>";
 
         var draft = ScribingWrite.prepareSeal(new ItemDisplayMetadata(null, stored), "", refilled,
@@ -94,5 +97,39 @@ class ScribingWriteTest {
 
         assertTrue(draft.textChanges());
         assertNull(draft.name());
+    }
+
+    @Test
+    void boldFirstRunDoesNotMakeTheFollowingPlainRunBold() {
+        String markup = "<b>MMMM</b> MMMM";
+        var existing = ScribingWrite.readDisplay(new ItemDisplayMetadata(null, message(markup)));
+        assertEquals(markup, existing.description());
+        assertFalse(existing.foreign());
+    }
+
+    @Test
+    void firstRunColorDoesNotReplaceTheFollowingDefaultColor() {
+        String markup = "<color is=\"#E8A93B\">Dawn</color>breaker";
+        var existing = ScribingWrite.readDisplay(new ItemDisplayMetadata(message(markup), null));
+        assertEquals(markup, existing.name());
+        assertFalse(existing.foreign());
+    }
+
+    @Test
+    void firstRunItalicDoesNotSpreadToTheFollowingPlainText() {
+        String markup = "<i>soft</i> plain";
+        var existing = ScribingWrite.readDisplay(new ItemDisplayMetadata(null, message(markup)));
+        assertEquals(markup, existing.description());
+    }
+
+    @Test
+    void anEmptyRunListStillClearsTheDisplayField() {
+        assertNull(ScribingWrite.toMessage(List.of()));
+    }
+
+    @Test
+    void anUnstyledParentKeepsAllTextAvailableToSearch() {
+        Message name = message("<color is=\"#E8A93B\">Dawn</color>breaker");
+        assertEquals("Dawnbreaker", me.ladypaladra.thearmorymod.ui.MessageTrees.plainText(name));
     }
 }

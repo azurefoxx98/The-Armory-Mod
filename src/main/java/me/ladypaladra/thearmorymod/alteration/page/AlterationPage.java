@@ -714,9 +714,9 @@ public class AlterationPage extends InteractiveCustomUIPage<AlterationPage.PageE
         // Message values only bind to TextSpans, plain strings to Text. Mixing the two
         // on one label across updates is untested, so this label always uses TextSpans.
         if (stack != null) {
-            ItemSlots.setSlots(cb, "#SourceSlot.Slots", new ItemGridSlot[] { ItemSlots.display(
+            ItemSlots.setSlots(cb, "#SourceSlot.Slots", new ItemGridSlot[] { ItemSlots.displayForPlayer(
                     stack, false, false,
-                    ItemSlots.resolveDescriptionKey(stack, this.playerRef)
+                    this.playerRef
             ) });
             cb.set("#SourceSlotFill.Visible", true);
             cb.set("#SourceName.TextSpans", stack.getDisplayName());
@@ -755,9 +755,9 @@ public class AlterationPage extends InteractiveCustomUIPage<AlterationPage.PageE
         ItemStack projected = AlterationTransaction.buildOutput(source, selectedVariantId, source.getQuantity());
         String transition = formatDurabilityTransition(source, projected);
 
-        ItemSlots.setSlots(cb, "#ResultSlot.Slots", new ItemGridSlot[] { ItemSlots.display(
+        ItemSlots.setSlots(cb, "#ResultSlot.Slots", new ItemGridSlot[] { ItemSlots.displayForPlayer(
                 projected, false, false,
-                ItemSlots.resolveDescriptionKey(projected, this.playerRef)
+                this.playerRef
         ) });
         cb.set("#ResultSlotFill.Visible", true);
         cb.set("#ResultArmedFrame.Visible", true);
@@ -828,11 +828,11 @@ public class AlterationPage extends InteractiveCustomUIPage<AlterationPage.PageE
                 //
                 // Nothing behavioural is lost. Altering a worn piece still returns it to
                 // the slot it was worn in, because the row remembers its section.
-                slots.add(ItemSlots.display(
+                slots.add(ItemSlots.displayForPlayer(
                         stack,
                         true,
                         dimmed,
-                        ItemSlots.resolveDescriptionKey(stack, playerRef)
+                        playerRef
                 ));
                 gearRows.add(new GearRow(section, slot, stack.getItemId()));
             }

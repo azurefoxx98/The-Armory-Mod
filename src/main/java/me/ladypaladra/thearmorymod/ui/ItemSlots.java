@@ -1,17 +1,20 @@
 package me.ladypaladra.thearmorymod.ui;
 
+import com.hypixel.hytale.protocol.FormattedMessage;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.i18n.I18nModule;
 import com.hypixel.hytale.server.core.ui.ItemGridSlot;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.util.MessageUtil;
 import com.hypixel.hytale.protocol.packets.interface_.CustomUICommand;
 import org.bson.BsonDocument;
 import org.bson.BsonValue;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 public final class ItemSlots {
 
@@ -70,6 +73,32 @@ public final class ItemSlots {
             boolean dimmed,
             @Nullable String translatedDescription
     ) {
+        Message description = stack.getDisplayDescription();
+        String key = description != null ? description.getMessageId() : null;
+        return displayWithTranslations(stack, clickable, dimmed,
+                node -> key != null && key.equals(node.messageId) ? translatedDescription : null);
+    }
+
+    @Nonnull
+    public static ItemGridSlot displayForPlayer(
+            @Nonnull ItemStack stack,
+            boolean clickable,
+            boolean dimmed,
+            @Nonnull PlayerRef playerRef
+    ) {
+        return displayWithTranslations(stack, clickable, dimmed, node -> {
+            String translated = I18nModule.get().getMessage(playerRef.getLanguage(), node.messageId);
+            return translated != null ? MessageUtil.formatText(translated, node.params, node.messageParams) : null;
+        });
+    }
+
+    @Nonnull
+    private static ItemGridSlot displayWithTranslations(
+            @Nonnull ItemStack stack,
+            boolean clickable,
+            boolean dimmed,
+            @Nonnull Function<FormattedMessage, String> translations
+    ) {
         ItemGridSlot slot = new ItemGridSlot(stack.withMetadata((BsonDocument) null));
         // Required for a slot to accept a press at all, which is what hyui's
         // ItemGridBuilder does for every slot it makes clickable. The desk's target slot
@@ -88,7 +117,7 @@ public final class ItemSlots {
         // parses its markup, so only the instance description is supplied here. Every run,
         // including an unstyled one, must remain wrapped. Bare text attaches to the parsed
         // tree's root and renders before tagged children, which reorders the inscription.
-        String markup = TooltipMarkup.wrap(TooltipMessages.flatten(stack.getDisplayDescription(), translatedDescription));
+        String markup = TooltipMarkup.wrap(TooltipMessages.flatten(stack.getDisplayDescription(), translations));
         if (!markup.isEmpty()) {
             slot.setDescription(markup);
         }

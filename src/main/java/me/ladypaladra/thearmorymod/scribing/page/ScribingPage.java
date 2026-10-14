@@ -259,16 +259,18 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
             }
         }
 
-        // Both text bindings carry both selectors deliberately. No shipped
-        // ValueChanged binding targets a multiline field, so description events are not
-        // proven. If they do not fire, touching the name still refreshes the full
-        // preview, and Apply reads both fields again so the committed text stays exact.
+        // Both fields travel with each edit. A live value callback can capture earlier
+        // text, so completing the name field refreshes the whole preview.
+        // Apply reads both fields again to keep the committed text exact.
         EventData draftData = new EventData()
                 .append(PageEvent.KEY_TYPE, TYPE_DRAFT)
                 .append(PageEvent.KEY_NAME, "#NameInput.Value")
                 .append(PageEvent.KEY_DESC, "#DescriptionInput.Value");
         eventBuilder.addEventBinding(
                 CustomUIEventBindingType.ValueChanged, "#NameInput", draftData, false
+        );
+        eventBuilder.addEventBinding(
+                CustomUIEventBindingType.FocusLost, "#NameInput", draftData, false
         );
         eventBuilder.addEventBinding(
                 CustomUIEventBindingType.ValueChanged,
@@ -1397,8 +1399,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
             boolean clickable,
             boolean dimmed
     ) {
-        return ItemSlots.display(stack, clickable, dimmed,
-                ItemSlots.resolveDescriptionKey(stack, playerRef));
+        return ItemSlots.displayForPlayer(stack, clickable, dimmed, playerRef);
     }
 
     @Nullable

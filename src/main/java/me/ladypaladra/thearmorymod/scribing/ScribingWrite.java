@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -23,6 +24,36 @@ public final class ScribingWrite {
     }
 
     public record Existing(@Nullable String name, @Nullable String description, boolean foreign) {
+    }
+
+    public record SealDraft(@Nullable Message name, @Nullable Message description, boolean textChanges) {
+    }
+
+    /** Keeps an unchanged inscription intact and charges ink only for a new display. */
+    @Nonnull
+    public static SealDraft prepareSeal(
+            @Nullable ItemDisplayMetadata display,
+            @Nonnull String draftName,
+            @Nonnull String draftDescription,
+            @Nullable Message name,
+            @Nullable Message description
+    ) {
+        Message storedName = display != null ? display.getName() : null;
+        Message storedDescription = display != null ? display.getDescription() : null;
+        Read existingName = read(storedName);
+        Read existingDescription = read(storedDescription);
+        boolean unchangedFields = !existingName.foreign() && !existingDescription.foreign()
+                && draftName.equals(existingName.markup() != null ? existingName.markup() : "")
+                && draftDescription.equals(existingDescription.markup() != null ? existingDescription.markup() : "");
+        boolean unchangedDisplay = sameMessage(storedName, name) && sameMessage(storedDescription, description);
+        return unchangedFields || unchangedDisplay
+                ? new SealDraft(storedName, storedDescription, false)
+                : new SealDraft(name, description, true);
+    }
+
+    private static boolean sameMessage(@Nullable Message first, @Nullable Message second) {
+        return Objects.equals(first != null ? first.getFormattedMessage() : null,
+                second != null ? second.getFormattedMessage() : null);
     }
 
     /**

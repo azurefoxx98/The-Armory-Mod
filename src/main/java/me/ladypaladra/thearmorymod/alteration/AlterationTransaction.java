@@ -275,18 +275,21 @@ public final class AlterationTransaction {
         double inputMax = input.getMaxDurability();
 
         // Unbreakable on either side means there is no wear information to carry.
+        ItemStack output;
         if (outputBase <= 0 || inputBase <= 0 || inputMax <= 0) {
-            ItemStack output = new ItemStack(outputId, quantity, metadata).withQuality(input.toPacket().quality);
-            output.setOverrideDroppedItemAnimation(input.getOverrideDroppedItemAnimation());
-            return output;
+            output = new ItemStack(outputId, quantity, metadata);
+        } else {
+            double modificationFactor = inputMax / inputBase;
+            double newMax = outputBase * modificationFactor;
+            double wearFraction = input.getDurability() / inputMax;
+            double newDurability = Math.max(0.0, Math.min(newMax * wearFraction, newMax));
+            output = new ItemStack(outputId, quantity, newDurability, newMax, metadata);
         }
 
-        double modificationFactor = inputMax / inputBase;
-        double newMax = outputBase * modificationFactor;
-        double wearFraction = input.getDurability() / inputMax;
-        double newDurability = Math.max(0.0, Math.min(newMax * wearFraction, newMax));
-
-        ItemStack output = new ItemStack(outputId, quantity, newDurability, newMax, input.toPacket().quality, metadata);
+        int quality = input.toPacket().quality;
+        if (quality >= 0) {
+            output = output.withQuality(quality);
+        }
         output.setOverrideDroppedItemAnimation(input.getOverrideDroppedItemAnimation());
         return output;
     }

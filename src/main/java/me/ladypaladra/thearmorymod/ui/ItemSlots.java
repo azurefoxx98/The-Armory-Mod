@@ -4,7 +4,11 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.i18n.I18nModule;
 import com.hypixel.hytale.server.core.ui.ItemGridSlot;
+import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.protocol.packets.interface_.CustomUICommand;
+import org.bson.BsonDocument;
+import org.bson.BsonValue;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,6 +40,8 @@ public final class ItemSlots {
      * Description is only set for a stack that actually carries one. Left null, the client
      * falls back to the item's own description, which keeps every ordinary item's tooltip
      * exactly as the game writes it, styling included.
+     * Send these slots through {@link #setSlots}, which translates the stack codec's
+     * quality field into the field accepted by the native UI.
      * <p>
      * Do not set a colour here. This is a measured rule, not a style choice. In game on
      * 2026-08-09, the first version disconnected the tester. It
@@ -64,14 +70,7 @@ public final class ItemSlots {
             boolean dimmed,
             @Nullable String translatedDescription
     ) {
-        ItemGridSlot slot = new ItemGridSlot(new ItemStack(
-                stack.getItemId(),
-                stack.getQuantity(),
-                stack.getDurability(),
-                stack.getMaxDurability(),
-                stack.toPacket().quality,
-                null
-        ));
+        ItemGridSlot slot = new ItemGridSlot(stack.withMetadata((BsonDocument) null));
         // Required for a slot to accept a press at all, which is what hyui's
         // ItemGridBuilder does for every slot it makes clickable. The desk's target slot
         // passes false: nothing listens to it, and a slot that looks pressable but does
@@ -94,6 +93,38 @@ public final class ItemSlots {
             slot.setDescription(markup);
         }
         return slot;
+    }
+
+    /** Writes native slots without exposing persistence-only stack fields to the client. */
+    @Nonnull
+    public static UICommandBuilder setSlots(
+            @Nonnull UICommandBuilder builder,
+            @Nonnull String selector,
+            @Nonnull ItemGridSlot[] slots
+    ) {
+        builder.set(selector, slots);
+        CustomUICommand[] commands = builder.getCommands();
+        CustomUICommand command = commands[commands.length - 1];
+        command.data = clientData(command.data);
+        return builder;
+    }
+
+    /** The custom UI stack calls its rarity field Quality, not QualityOverride. */
+    @Nonnull
+    static String clientData(@Nonnull String data) {
+        BsonDocument payload = BsonDocument.parse(data);
+        for (BsonValue value : payload.getArray("0")) {
+            BsonDocument stack = value.asDocument().getDocument("ItemStack", null);
+            if (stack == null) {
+                continue;
+            }
+            stack.remove("Metadata");
+            BsonValue quality = stack.remove("QualityOverride");
+            if (quality != null && quality.asInt32().getValue() >= 0) {
+                stack.put("Quality", quality);
+            }
+        }
+        return payload.toJson();
     }
 
     @Nullable

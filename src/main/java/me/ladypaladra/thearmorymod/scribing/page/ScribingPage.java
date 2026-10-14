@@ -855,12 +855,15 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // Ink pays for a CHANGE of text, so sealing an inscription the player is not
         // editing costs the lock alone. Charging for a write that writes the same words
         // back would be a fee for nothing.
-        ScribingWrite.Existing existing = ScribingWrite.readExisting(stack);
-        boolean textChanges = !draftName.equals(existing.name() == null ? "" : existing.name())
-                || !draftDescription.equals(existing.description() == null ? "" : existing.description());
+        ScribingWrite.SealDraft sealDraft = ScribingWrite.prepareSeal(
+                stack.getFromMetadataOrNull(ItemDisplayMetadata.KEYED_CODEC),
+                draftName, draftDescription,
+                ScribingWrite.toMessage(validation.nameOk().runs()),
+                ScribingWrite.toMessage(validation.descriptionOk().runs())
+        );
 
         CombinedItemContainer inventory = paymentInventory(store, ref);
-        ItemStack inkCost = textChanges && charges(store, ref)
+        ItemStack inkCost = sealDraft.textChanges() && charges(store, ref)
                 ? new ItemStack(ScribingConfig.COST_ITEM_ID, ScribingConfig.COST_QUANTITY)
                 : null;
         boolean needLock = sealRequired(store, ref);
@@ -889,8 +892,8 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // One stack carrying both the inscription and the seal, committed in one slot
         // replacement, so an item can never end up inscribed but unsealed after the lock
         // has been taken.
-        Message name = ScribingWrite.toMessage(validation.nameOk().runs());
-        Message description = ScribingWrite.toMessage(validation.descriptionOk().runs());
+        Message name = sealDraft.name();
+        Message description = sealDraft.description();
         ItemStack replacement = ScribingWrite.applyAndSeal(
                 stack,
                 name,
@@ -1086,7 +1089,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
             }
         }
 
-        cb.set("#PickerGrid.Slots", slots.toArray(new ItemGridSlot[0]));
+        ItemSlots.setSlots(cb, "#PickerGrid.Slots", slots.toArray(new ItemGridSlot[0]));
 
         int shown = slots.size();
         cb.set("#PickerCount.Text", Integer.toString(shown));
@@ -1171,7 +1174,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // number in it. The count carries the refusal in its own colour because a server
         // command cannot rewrite a LabelStyle, which is also why the row needs no
         // separate error widget beside it.
-        cb.set("#CostSlot.Slots", new ItemGridSlot[] { wireSlot(
+        ItemSlots.setSlots(cb, "#CostSlot.Slots", new ItemGridSlot[] { wireSlot(
                 new ItemStack(ScribingConfig.COST_ITEM_ID, ScribingConfig.COST_QUANTITY),
                 false,
                 false
@@ -1182,7 +1185,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
 
         // The lock cell reads exactly like the ink cell beside it, because they are the
         // same kind of statement and the player should not have to learn two.
-        cb.set("#SealSlot.Slots", new ItemGridSlot[] { wireSlot(
+        ItemSlots.setSlots(cb, "#SealSlot.Slots", new ItemGridSlot[] { wireSlot(
                 new ItemStack(ScribingConfig.SEAL_ITEM_ID, ScribingConfig.SEAL_QUANTITY),
                 false,
                 false
@@ -1205,7 +1208,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
 
         // The real stack, metadata stripped for the wire, so hovering the desk shows this
         // item's own tooltip as the "before" against the preview column's "after".
-        cb.set("#TargetSlot.Slots", new ItemGridSlot[] { wireSlot(stack, false, false) });
+        ItemSlots.setSlots(cb, "#TargetSlot.Slots", new ItemGridSlot[] { wireSlot(stack, false, false) });
         cb.set("#TargetName.TextSpans", stack.getDisplayName());
         // Deliberately not a language key, unlike every other string this page paints.
         // The card replicates what the client already draws, and the shipped tooltip draws
@@ -1680,7 +1683,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
      * The sealed panel: the item, who sealed it, and the way out if the player has one.
      */
     private void paintSealed(@Nonnull UICommandBuilder cb, @Nonnull ItemStack stack) {
-        cb.set("#SealedSlot.Slots", new ItemGridSlot[] { wireSlot(stack, false, false) });
+        ItemSlots.setSlots(cb, "#SealedSlot.Slots", new ItemGridSlot[] { wireSlot(stack, false, false) });
         cb.set("#SealedName.TextSpans", stack.getDisplayName());
         cb.set("#SealedCaption.TextSpans", stack.getQuantity() > 1
                 ? Message.translation(LANG_PREFIX + "captionStack")

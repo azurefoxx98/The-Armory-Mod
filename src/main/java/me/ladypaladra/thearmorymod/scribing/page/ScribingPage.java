@@ -1198,6 +1198,9 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         cb.set("#SealAmount.TextSpans",
                 sealSpan(countCarried(store, ref, ScribingConfig.SEAL_ITEM_ID)));
 
+        // This identifier is separate from the editable display name.
+        cb.set("#PvId.Text", selected ? "ID: " + stack.getItemId() : "");
+
         if (!selected) {
             return;
         }
@@ -1213,12 +1216,6 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // item's own tooltip as the "before" against the preview column's "after".
         ItemSlots.setSlots(cb, "#TargetSlot.Slots", new ItemGridSlot[] { wireSlot(stack, false, false) });
         cb.set("#TargetName.TextSpans", stack.getDisplayName());
-        // Deliberately not a language key, unlike every other string this page paints.
-        // The card replicates what the client already draws, and the shipped tooltip draws
-        // this line as "ID: <item-id>". Making our copy translatable would let the preview
-        // drift from the tooltip it exists to predict, which is the one way this card must
-        // never be wrong.
-        cb.set("#PvId.Text", "ID: " + stack.getItemId());
 
         // Translated rather than composed in Java. Hardcoded English in a player-facing
         // string is already recorded as a defect against AlterationTransaction in this

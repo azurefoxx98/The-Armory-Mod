@@ -1143,6 +1143,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // panel instead, so no disabled field is ever drawn looking like a field.
         boolean editing = pickerHasMatches && selected && !sealed;
 
+        cb.set("#DeskNoMatches.Visible", !pickerHasMatches);
         cb.set("#DeskEmpty.Visible", pickerHasMatches && !selected);
         cb.set("#DeskEditor.Visible", editing);
         cb.set("#DeskSealed.Visible", pickerHasMatches && sealed);

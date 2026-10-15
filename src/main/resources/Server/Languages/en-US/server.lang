@@ -26,6 +26,10 @@ items.Fist.name = Iron Fist
 items.FireWhip.name = Fire Whip
 items.Zweihander.name = Zweihander
 items.LahatChereb.name = Lahat Chereb
+items.Dice_D6.name = D6 Die
+items.KanohiHau.name = Kanohi Hau
+items.KanohiHau.description = How did this get here?
+items.StandingArmorVerdan.name = Ruby Armor
 items.Hepta_Axe.name = Axe of Hepta
 items.Hepta_Axe.description = For my friend CrystalNightmare
 
@@ -608,3 +612,18 @@ customUI.scribingPage.searchPlaceholder = Search your items
 
 items.MekanichalKrafter_Arrow.name = Mekanichal Krafter
 items.MekanichalKrafter_Arrow.description = A curious contraption of gears and old craft, patiently shaping crude arrows for those willing to wait.
+customUI.scribingPage.errorTagUnclosed = You opened {open} but never closed it. Add {close}.
+customUI.scribingPage.errorTagStrayClose = There is a {close} with no {open} before it.
+customUI.scribingPage.errorColorNotAllowed = {color} is not one of the colours you can use. Pick one from the list.
+customUI.scribingPage.errorColorWithdrawn = {color} is on the list, but this server already uses it for an item rarity, so it cannot be inscribed here. Pick another.
+customUI.scribingPage.errorColorMalformed = A colour looks like {example}. Check the quotes and the #.
+customUI.scribingPage.errorRawTooLong = That is a lot of tags. Shorten it.
+customUI.scribingPage.errorNameTooLong = That name is {count} characters. The limit is {max}. Tags do not count.
+customUI.scribingPage.errorDescriptionTooLong = That description is {count} characters. The limit is {max}. Tags do not count.
+customUI.scribingPage.errorTooManyLines = That description is {count} lines. The limit is {max}.
+customUI.scribingPage.errorLineTooLong = Line {line} is {count} characters. The limit is {max}.
+customUI.scribingPage.nameCount = {count} / {max}
+customUI.scribingPage.nameCountBypass = {countText} {count, plural, one {character} other {characters}} • {raw} / {max} typed
+customUI.scribingPage.descriptionCount = {lines} / {maxLines} lines • {count} / {max}
+customUI.scribingPage.descriptionCountBypass = {linesText} {lines, plural, one {line} other {lines}} • {countText} {count, plural, one {character} other {characters}} • {raw} / {max} typed
+customUI.scribingPage.legendExample = <b>bold</b>\n<i>italic</i>\n<color is="#E8A93B">gold</color>

@@ -5,7 +5,6 @@ import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.protocol.InteractionState;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
@@ -14,9 +13,8 @@ import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.client.SimpleBlockInteraction;
 import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
-import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import me.ladypaladra.thearmorymod.blocks.BlockAccess;
 import org.joml.Vector3i;
 
 import javax.annotation.Nonnull;
@@ -40,14 +38,7 @@ public class MekanichalKrafterInteraction extends SimpleBlockInteraction {
             @Nonnull Vector3i targetBlock,
             @Nonnull CooldownHandler cooldownHandler
     ) {
-        WorldChunk chunk = getWorldChunk(world, targetBlock);
-
-        if (chunk == null) {
-            fail(context);
-            return;
-        }
-
-        BlockType blockType = chunk.getBlockType(targetBlock);
+        BlockType blockType = BlockAccess.getType(world, targetBlock.x, targetBlock.y, targetBlock.z);
 
         if (blockType == null || !MekanichalKrafterUtil.isKrafterBlock(blockType)) {
             fail(context);
@@ -88,7 +79,6 @@ public class MekanichalKrafterInteraction extends SimpleBlockInteraction {
 
             boolean restarted = MekanichalKrafterUtil.restartCooldown(
                     world,
-                    chunk,
                     targetBlock.x,
                     targetBlock.y,
                     targetBlock.z
@@ -108,26 +98,6 @@ public class MekanichalKrafterInteraction extends SimpleBlockInteraction {
             @Nonnull World world,
             @Nonnull Vector3i targetBlock
     ) {
-    }
-
-    private static WorldChunk getWorldChunk(@Nonnull World world, @Nonnull Vector3i block) {
-        return getWorldChunk(world, block.x, block.z);
-    }
-
-    @Nullable
-    private static WorldChunk getWorldChunk(@Nonnull World world, int blockX, int blockZ) {
-        ChunkStore chunkStore = world.getChunkStore();
-        long chunkIndex = ChunkUtil.indexChunkFromBlock(blockX, blockZ);
-        Ref<ChunkStore> chunkReference = chunkStore.getChunkReference(chunkIndex);
-
-        if (chunkReference == null || !chunkReference.isValid()) {
-            return null;
-        }
-
-        return chunkStore.getStore().getComponent(
-                chunkReference,
-                WorldChunk.getComponentType()
-        );
     }
 
     private static void fail(@Nonnull InteractionContext context) {

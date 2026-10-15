@@ -275,16 +275,23 @@ public final class AlterationTransaction {
         double inputMax = input.getMaxDurability();
 
         // Unbreakable on either side means there is no wear information to carry.
+        ItemStack output;
         if (outputBase <= 0 || inputBase <= 0 || inputMax <= 0) {
-            return new ItemStack(outputId, quantity, metadata);
+            output = new ItemStack(outputId, quantity, metadata);
+        } else {
+            double modificationFactor = inputMax / inputBase;
+            double newMax = outputBase * modificationFactor;
+            double wearFraction = input.getDurability() / inputMax;
+            double newDurability = Math.max(0.0, Math.min(newMax * wearFraction, newMax));
+            output = new ItemStack(outputId, quantity, newDurability, newMax, metadata);
         }
 
-        double modificationFactor = inputMax / inputBase;
-        double newMax = outputBase * modificationFactor;
-        double wearFraction = input.getDurability() / inputMax;
-        double newDurability = Math.max(0.0, Math.min(newMax * wearFraction, newMax));
-
-        return new ItemStack(outputId, quantity, newDurability, newMax, metadata);
+        int quality = input.toPacket().quality;
+        if (quality >= 0) {
+            output = output.withQuality(quality);
+        }
+        output.setOverrideDroppedItemAnimation(input.getOverrideDroppedItemAnimation());
+        return output;
     }
 
     /**
@@ -299,12 +306,8 @@ public final class AlterationTransaction {
             return null;
         }
 
-        // Clone before touching anything. getMetadata hands back the input stack's own
-        // document, so stripping keys straight off it would edit the item the player is
-        // still holding, and on a refusal after this point they would get their item
-        // back with data missing. The copy also stops the output and the input sharing
-        // one document, which matters on the refund path where both stacks stay alive.
-        BsonDocument transfer = metadata.clone();
+        // The engine returns an independent document, so exclusions cannot edit the input stack.
+        BsonDocument transfer = metadata;
 
         for (String excludedKey : AlterationConfig.EXCLUDED_METADATA_KEYS) {
             transfer.remove(excludedKey);

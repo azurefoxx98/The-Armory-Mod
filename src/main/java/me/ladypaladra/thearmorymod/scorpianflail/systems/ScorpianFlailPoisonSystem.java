@@ -37,7 +37,7 @@ public final class ScorpianFlailPoisonSystem extends DamageEventSystem {
     @Nullable
     @Override
     public SystemGroup<EntityStore> getGroup() {
-        return DamageModule.get().getFilterDamageGroup();
+        return DamageModule.get().getInspectDamageGroup();
     }
 
     @Nonnull
@@ -54,7 +54,7 @@ public final class ScorpianFlailPoisonSystem extends DamageEventSystem {
             @Nonnull CommandBuffer<EntityStore> commandBuffer,
             @Nonnull Damage damage
     ) {
-        if (damage.getAmount() <= 0.0F) {
+        if (!canApplyPoison(damage)) {
             return;
         }
 
@@ -97,6 +97,15 @@ public final class ScorpianFlailPoisonSystem extends DamageEventSystem {
         }
 
         return null;
+    }
+
+    static boolean canApplyPoison(@Nonnull Damage damage) {
+        Damage.Source source = damage.getSource();
+        return !damage.isCancelled()
+                && damage.getAmount() > 0.0F
+                && source instanceof Damage.EntitySource
+                && !(source instanceof Damage.ProjectileSource)
+                && !(source instanceof Damage.EntityEffectSource);
     }
 
     private static boolean isPlayer(

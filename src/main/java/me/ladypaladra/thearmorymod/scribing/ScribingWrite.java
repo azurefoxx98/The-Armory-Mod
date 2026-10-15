@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -25,9 +26,41 @@ public final class ScribingWrite {
     public record Existing(@Nullable String name, @Nullable String description, boolean foreign) {
     }
 
+    public record SealDraft(@Nullable Message name, @Nullable Message description, boolean textChanges) {
+    }
+
+    /** Keeps an unchanged inscription intact and charges ink only for a new display. */
+    @Nonnull
+    public static SealDraft prepareSeal(
+            @Nullable ItemDisplayMetadata display,
+            @Nonnull String draftName,
+            @Nonnull String draftDescription,
+            @Nullable Message name,
+            @Nullable Message description
+    ) {
+        Message storedName = display != null ? display.getName() : null;
+        Message storedDescription = display != null ? display.getDescription() : null;
+        Read existingName = read(storedName);
+        Read existingDescription = read(storedDescription);
+        boolean unchangedFields = !existingName.foreign() && !existingDescription.foreign()
+                && draftName.equals(existingName.markup() != null ? existingName.markup() : "")
+                && draftDescription.equals(existingDescription.markup() != null ? existingDescription.markup() : "");
+        boolean unchangedDisplay = sameMessage(storedName, name) && sameMessage(storedDescription, description);
+        return unchangedFields || unchangedDisplay
+                ? new SealDraft(storedName, storedDescription, false)
+                : new SealDraft(name, description, true);
+    }
+
+    private static boolean sameMessage(@Nullable Message first, @Nullable Message second) {
+        return Objects.equals(first != null ? first.getFormattedMessage() : null,
+                second != null ? second.getFormattedMessage() : null);
+    }
+
     /**
      * Do not call Message.parse on player input. It decodes JSON rather than parsing
      * markup, so this method keeps player text raw and builds the tree itself.
+     * Every run is a child of an unstyled parent, so the first run's colour or style
+     * cannot spread to later runs that did not request it.
      *
      * <p>Bold has no effect on the name. The tooltip's Label #Name declares
      * RenderBold: true, and instance metadata can add a style but cannot remove a
@@ -36,7 +69,10 @@ public final class ScribingWrite {
      */
     @Nullable
     public static Message toMessage(@Nonnull List<ScribingMarkup.StyledRun> runs) {
-        Message root = null;
+        if (runs.isEmpty()) {
+            return null;
+        }
+        Message root = Message.empty();
         for (ScribingMarkup.StyledRun run : runs) {
             Message message = Message.raw(run.text());
             if (run.color() != null) {
@@ -49,11 +85,7 @@ public final class ScribingWrite {
                 message = message.italic(true);
             }
 
-            if (root == null) {
-                root = message;
-            } else {
-                root = root.insert(message);
-            }
+            root.insert(message);
         }
         return root;
     }
@@ -77,7 +109,11 @@ public final class ScribingWrite {
      */
     @Nonnull
     public static Existing readExisting(@Nonnull ItemStack stack) {
-        ItemDisplayMetadata display = stack.getFromMetadataOrNull(ItemDisplayMetadata.KEYED_CODEC);
+        return readDisplay(stack.getFromMetadataOrNull(ItemDisplayMetadata.KEYED_CODEC));
+    }
+
+    @Nonnull
+    static Existing readDisplay(@Nullable ItemDisplayMetadata display) {
         if (display == null) {
             return new Existing(null, null, false);
         }
@@ -203,42 +239,17 @@ public final class ScribingWrite {
      * status strip. Enforce it at the commit, never in this builder.</p>
      */
     @Nonnull
-    @SuppressWarnings("deprecation")
     public static ItemStack apply(
             @Nonnull ItemStack original,
             @Nullable Message name,
             @Nullable Message description
     ) {
-        BsonDocument metadata = original.getMetadata();
-
-        // Clone the metadata before touching it. getMetadata returns the input stack's own
-        // document, so an in-place edit would mutate the item the player is still holding.
-        // This exact refusal-path bug shipped in commit 3e8bc91. Cloning also keeps the
-        // original and replacement stacks from sharing a live document.
-        BsonDocument replacementMetadata = metadata == null ? null : metadata.clone();
-        if (replacementMetadata != null) {
-            // Removing the record restores the vanilla fallback. Keeping a record with two
-            // null fields does not.
-            replacementMetadata.remove(ItemDisplayMetadata.KEY);
-            if (replacementMetadata.isEmpty()) {
-                replacementMetadata = null;
-            }
-        }
-
-        ItemStack base = new ItemStack(
-                original.getItemId(),
-                original.getQuantity(),
-                original.getDurability(),
-                original.getMaxDurability(),
-                replacementMetadata
-        );
-        if (name == null && description == null) {
-            return base;
-        }
-        return base.withMetadata(
+        ItemStack replacement = original.withMetadata(
                 ItemDisplayMetadata.KEYED_CODEC,
-                new ItemDisplayMetadata(name, description)
+                name == null && description == null ? null : new ItemDisplayMetadata(name, description)
         );
+        replacement.setOverrideDroppedItemAnimation(original.getOverrideDroppedItemAnimation());
+        return replacement;
     }
 
     /**

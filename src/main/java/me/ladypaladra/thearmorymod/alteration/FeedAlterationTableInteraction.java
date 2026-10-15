@@ -14,6 +14,7 @@ import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHa
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.client.SimpleBlockInteraction;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import me.ladypaladra.thearmorymod.blocks.BlockAccess;
 import org.joml.Vector3i;
 
 import javax.annotation.Nonnull;
@@ -46,7 +47,7 @@ public final class FeedAlterationTableInteraction extends SimpleBlockInteraction
             @Nonnull Vector3i targetBlock,
             @Nonnull CooldownHandler cooldownHandler
     ) {
-        BlockType blockType = world.getBlockType(targetBlock.x, targetBlock.y, targetBlock.z);
+        BlockType blockType = BlockAccess.getType(world, targetBlock.x, targetBlock.y, targetBlock.z);
 
         // Only alteration tables accept a feed. Anything else fails the interaction so
         // the chain falls through to the Failed branch in Alteration_Kit_Feed.json, which
@@ -78,15 +79,14 @@ public final class FeedAlterationTableInteraction extends SimpleBlockInteraction
         // Mirror ChangeBlockInteraction, which fails the client prediction when the
         // target block has no entry to act on. Failing here means the client predicts
         // no use animation when the kit is aimed at anything but an alteration table.
-        if (!isAlterationTable(world.getBlockType(targetBlock.x, targetBlock.y, targetBlock.z))) {
+        if (!isAlterationTable(BlockAccess.getType(world, targetBlock.x, targetBlock.y, targetBlock.z))) {
             context.getState().state = InteractionState.Failed;
         }
     }
 
     /**
-     * Whether the block is one of the mod's alteration tables. The mod owns ten table
-     * blocks whose item ids all share the same prefix, so a prefix match on the block's
-     * item id covers the base table and every color variant without listing them.
+     * Whether the block belongs to the mod's Alteration Table. The item-id prefix
+     * also covers a table variant added by the asset pack.
      */
     private static boolean isAlterationTable(@Nullable BlockType blockType) {
         if (blockType == null || blockType == BlockType.EMPTY || blockType == BlockType.UNKNOWN) {

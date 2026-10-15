@@ -43,7 +43,7 @@ $Sounds = "../../Sounds.ui";
 @TargetNameStyle = LabelStyle(
   FontSize: 15,
   TextColor: #b4c8c9,
-  Wrap: true
+  Wrap: false
 );
 
 @TargetCaptionStyle = LabelStyle(
@@ -208,28 +208,28 @@ $C.@PageOverlay {
           Anchor: (Height: 36, Top: 4, Bottom: 4);
 
           Group {
-            FlexWeight: 56;
+            FlexWeight: 80;
             LayoutMode: Top;
             Anchor: (Height: 36, Right: 4);
 
             $C.@SmallSecondaryTextButton #ChipAllButton {
               @Text = %server.customUI.scribingPage.chipAll;
 
-              Padding: (Horizontal: 6);
+              Padding: (Horizontal: 4);
             }
 
             @ChipMark #ChipAllMark {}
           }
 
           Group {
-            FlexWeight: 76;
+            FlexWeight: 110;
             LayoutMode: Top;
             Anchor: (Height: 36, Right: 4);
 
             $C.@SmallSecondaryTextButton #ChipArmorButton {
               @Text = %server.customUI.scribingPage.chipArmor;
 
-              Padding: (Horizontal: 6);
+              Padding: (Horizontal: 4);
             }
 
             @ChipMark #ChipArmorMark {}
@@ -243,49 +243,49 @@ $C.@PageOverlay {
             $C.@SmallSecondaryTextButton #ChipWeaponButton {
               @Text = %server.customUI.scribingPage.chipWeapon;
 
-              Padding: (Horizontal: 6);
+              Padding: (Horizontal: 4);
             }
 
             @ChipMark #ChipWeaponMark {}
           }
 
           Group {
-            FlexWeight: 64;
+            FlexWeight: 138;
             LayoutMode: Top;
             Anchor: (Height: 36, Right: 4);
 
             $C.@SmallSecondaryTextButton #ChipToolButton {
               @Text = %server.customUI.scribingPage.chipTool;
 
-              Padding: (Horizontal: 6);
+              Padding: (Horizontal: 4);
             }
 
             @ChipMark #ChipToolMark {}
           }
 
           Group {
-            FlexWeight: 88;
+            FlexWeight: 90;
             LayoutMode: Top;
             Anchor: (Height: 36, Right: 4);
 
             $C.@SmallSecondaryTextButton #ChipBlocksButton {
               @Text = %server.customUI.scribingPage.chipBlocks;
 
-              Padding: (Horizontal: 6);
+              Padding: (Horizontal: 4);
             }
 
             @ChipMark #ChipBlocksMark {}
           }
 
           Group {
-            FlexWeight: 120;
+            FlexWeight: 116;
             LayoutMode: Top;
             Anchor: (Height: 36);
 
             $C.@SmallSecondaryTextButton #ChipInscribedButton {
               @Text = %server.customUI.scribingPage.chipInscribed;
 
-              Padding: (Horizontal: 6);
+              Padding: (Horizontal: 4);
             }
 
             @ChipMark #ChipInscribedMark {}
@@ -436,6 +436,11 @@ $C.@PageOverlay {
             Style: @HeaderStyle;
             Text: %server.customUI.scribingPage.deskHeader;
           }
+        }
+
+        Group #DeskNoMatches {
+          FlexWeight: 1;
+          Visible: false;
         }
 
         Group #DeskEmpty {

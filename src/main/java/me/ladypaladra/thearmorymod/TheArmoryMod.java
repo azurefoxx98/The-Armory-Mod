@@ -6,7 +6,6 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.riprod.patchly.PatchManager;
 
 import me.ladypaladra.thearmorymod.alteration.AlterationModule;
-import me.ladypaladra.thearmorymod.armorstand.ArmorStandModule;
 import me.ladypaladra.thearmorymod.krafter.KrafterModule;
 import me.ladypaladra.thearmorymod.metrics.ArmoryMetrics;
 import me.ladypaladra.thearmorymod.parry.ParryModule;
@@ -30,6 +29,7 @@ public class TheArmoryMod extends JavaPlugin {
 
     public TheArmoryMod(@Nonnull JavaPluginInit init) {
         super(init);
+        PatchlyStartup.prepare(this);
         patchManager = new PatchManager(this);
     }
 
@@ -50,8 +50,6 @@ public class TheArmoryMod extends JavaPlugin {
             AlterationModule.register(this);
             ScribingModule.register(this);
             KrafterModule.register(this);
-
-            // ArmorStandModule.register(this);
 
             getEntityStoreRegistry().registerSystem(new ScorpianFlailPoisonSystem());
             // getEntityStoreRegistry().registerSystem(new EngineeringRigMobilitySystem());
@@ -90,9 +88,6 @@ public class TheArmoryMod extends JavaPlugin {
     protected void shutdown() {
         LOGGER.atInfo().log("Shutting down...");
 
-        // Disabled because the matching register call in setup is disabled. Re-enable
-        // both calls together.
-        // ArmorStandModule.shutdown(this);
         ArmoryTelemetry.shutdown();
     }
 }

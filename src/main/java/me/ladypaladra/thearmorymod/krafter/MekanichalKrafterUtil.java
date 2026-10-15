@@ -5,8 +5,9 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.modules.block.BlockModule;
 import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.chunk.BlockOperations;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
+import me.ladypaladra.thearmorymod.blocks.BlockAccess;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -30,13 +31,19 @@ public final class MekanichalKrafterUtil {
     }
 
     public static boolean setState(
-            @Nonnull WorldChunk chunk,
+            @Nonnull World world,
             int x,
             int y,
             int z,
             @Nonnull String state
     ) {
-        BlockType blockType = chunk.getBlockType(x, y, z);
+        ChunkStore chunkStore = world.getChunkStore();
+        Ref<ChunkStore> sectionRef = chunkStore.getChunkSectionReferenceAtBlock(x, y, z);
+        if (sectionRef == null || !sectionRef.isValid()) {
+            return false;
+        }
+
+        BlockType blockType = BlockAccess.getType(world, x, y, z);
 
         if (blockType == null || blockType.getData() == null) {
             return false;
@@ -48,7 +55,7 @@ public final class MekanichalKrafterUtil {
             return false;
         }
 
-        chunk.setBlockInteractionState(x, y, z, blockType, state, true);
+        BlockOperations.setBlockInteractionState(chunkStore, sectionRef, x, y, z, blockType, state, true);
         return true;
     }
 
@@ -70,7 +77,6 @@ public final class MekanichalKrafterUtil {
 
     public static boolean restartCooldown(
             @Nonnull World world,
-            @Nonnull WorldChunk chunk,
             int x,
             int y,
             int z
@@ -81,13 +87,15 @@ public final class MekanichalKrafterUtil {
             return false;
         }
 
-        component.restartCooldown();
+        if (!setState(world, x, y, z, STATE_CLOSED)) {
+            return false;
+        }
 
-        boolean stateChanged = setState(chunk, x, y, z, STATE_CLOSED);
+        component.restartCooldown();
 
         markBlockEntityNeedsSaving(world, x, y, z);
 
-        return stateChanged;
+        return true;
     }
 
     public static void markBlockEntityNeedsSaving(

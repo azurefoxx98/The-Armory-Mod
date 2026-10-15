@@ -63,24 +63,6 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
     private static final String LANG_PREFIX = "server.customUI.scribingPage.";
     private static final String BENCH_KEY = "scribing";
 
-    // What divides the parts of a field counter. The counters used to run their values
-    // together on a double space and nothing else, so "1 line  0  no limit" read as three
-    // unrelated fragments rather than one reading. During the 2026-08-09 play-test, a
-    // tester described it as "detached, weird spacing, no cap letter, hardly
-    // understandable".
-    //
-    // The U+2022 glyph is a compatibility choice, not a matter of taste. A middle dot
-    // U+00B7 is the usual typographic choice, but it appears zero times across the 24
-    // shipped en-US language files, 10972 lines, so nothing proves the game's font carries
-    // it and an absent glyph
-    // draws as a blank box. The bullet appears 213 times in that same corpus, in item
-    // descriptions the client renders in the tooltip, so it is attested in the font we are
-    // drawing with. Written as an escape rather than as a literal so the string cannot be
-    // damaged by whatever encoding a future build assumes for this source file. build.gradle
-    // sets no options.encoding, so javac takes the platform default and only happens to be
-    // right on this JDK. The escape does not care.
-    private static final String SEPARATOR = " \u2022 ";
-
     // Do not call this "no limit". That made the counter lie to every admin. During the
     // 2026-08-10 play-test, a tester reported that "it always say no limit ... while
     // there is limits indeed". Holding the bypass permission lifts the server's rendered
@@ -245,6 +227,10 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
     ) {
         ArmoryTelemetry.breadcrumb("ui", "scribing page opened");
         appendPage(commandBuilder);
+        String example = I18nModule.get().getMessage(playerRef.getLanguage(), LANG_PREFIX + "legendExample");
+        if (example != null) {
+            commandBuilder.set("#LegendCopyBox.Value", example);
+        }
 
         LastPicked.Pick pick = LastPicked.recall(playerRef.getUuid(), BENCH_KEY);
         if (pick != null) {
@@ -273,16 +259,18 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
             }
         }
 
-        // Both text bindings carry both selectors deliberately. No shipped
-        // ValueChanged binding targets a multiline field, so description events are not
-        // proven. If they do not fire, touching the name still refreshes the full
-        // preview, and Apply reads both fields again so the committed text stays exact.
+        // Both fields travel with each edit. A live value callback can capture earlier
+        // text, so completing the name field refreshes the whole preview.
+        // Apply reads both fields again to keep the committed text exact.
         EventData draftData = new EventData()
                 .append(PageEvent.KEY_TYPE, TYPE_DRAFT)
                 .append(PageEvent.KEY_NAME, "#NameInput.Value")
                 .append(PageEvent.KEY_DESC, "#DescriptionInput.Value");
         eventBuilder.addEventBinding(
                 CustomUIEventBindingType.ValueChanged, "#NameInput", draftData, false
+        );
+        eventBuilder.addEventBinding(
+                CustomUIEventBindingType.FocusLost, "#NameInput", draftData, false
         );
         eventBuilder.addEventBinding(
                 CustomUIEventBindingType.ValueChanged,
@@ -869,12 +857,15 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // Ink pays for a CHANGE of text, so sealing an inscription the player is not
         // editing costs the lock alone. Charging for a write that writes the same words
         // back would be a fee for nothing.
-        ScribingWrite.Existing existing = ScribingWrite.readExisting(stack);
-        boolean textChanges = !draftName.equals(existing.name() == null ? "" : existing.name())
-                || !draftDescription.equals(existing.description() == null ? "" : existing.description());
+        ScribingWrite.SealDraft sealDraft = ScribingWrite.prepareSeal(
+                stack.getFromMetadataOrNull(ItemDisplayMetadata.KEYED_CODEC),
+                draftName, draftDescription,
+                ScribingWrite.toMessage(validation.nameOk().runs()),
+                ScribingWrite.toMessage(validation.descriptionOk().runs())
+        );
 
         CombinedItemContainer inventory = paymentInventory(store, ref);
-        ItemStack inkCost = textChanges && charges(store, ref)
+        ItemStack inkCost = sealDraft.textChanges() && charges(store, ref)
                 ? new ItemStack(ScribingConfig.COST_ITEM_ID, ScribingConfig.COST_QUANTITY)
                 : null;
         boolean needLock = sealRequired(store, ref);
@@ -903,8 +894,8 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // One stack carrying both the inscription and the seal, committed in one slot
         // replacement, so an item can never end up inscribed but unsealed after the lock
         // has been taken.
-        Message name = ScribingWrite.toMessage(validation.nameOk().runs());
-        Message description = ScribingWrite.toMessage(validation.descriptionOk().runs());
+        Message name = sealDraft.name();
+        Message description = sealDraft.description();
         ItemStack replacement = ScribingWrite.applyAndSeal(
                 stack,
                 name,
@@ -1100,7 +1091,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
             }
         }
 
-        cb.set("#PickerGrid.Slots", slots.toArray(new ItemGridSlot[0]));
+        ItemSlots.setSlots(cb, "#PickerGrid.Slots", slots.toArray(new ItemGridSlot[0]));
 
         int shown = slots.size();
         cb.set("#PickerCount.Text", Integer.toString(shown));
@@ -1152,6 +1143,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // panel instead, so no disabled field is ever drawn looking like a field.
         boolean editing = pickerHasMatches && selected && !sealed;
 
+        cb.set("#DeskNoMatches.Visible", !pickerHasMatches);
         cb.set("#DeskEmpty.Visible", pickerHasMatches && !selected);
         cb.set("#DeskEditor.Visible", editing);
         cb.set("#DeskSealed.Visible", pickerHasMatches && sealed);
@@ -1159,6 +1151,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // sibling of the three panels now rather than a child of the editor.
         cb.set("#LegendPanel.Visible", editing);
         cb.set("#PreviewCard.Visible", pickerHasMatches && selected);
+        cb.set("#PvId.Visible", selected && creative(store, ref));
 
         boolean ink = charges(store, ref);
         boolean lock = sealRequired(store, ref);
@@ -1185,7 +1178,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // number in it. The count carries the refusal in its own colour because a server
         // command cannot rewrite a LabelStyle, which is also why the row needs no
         // separate error widget beside it.
-        cb.set("#CostSlot.Slots", new ItemGridSlot[] { wireSlot(
+        ItemSlots.setSlots(cb, "#CostSlot.Slots", new ItemGridSlot[] { wireSlot(
                 new ItemStack(ScribingConfig.COST_ITEM_ID, ScribingConfig.COST_QUANTITY),
                 false,
                 false
@@ -1196,7 +1189,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
 
         // The lock cell reads exactly like the ink cell beside it, because they are the
         // same kind of statement and the player should not have to learn two.
-        cb.set("#SealSlot.Slots", new ItemGridSlot[] { wireSlot(
+        ItemSlots.setSlots(cb, "#SealSlot.Slots", new ItemGridSlot[] { wireSlot(
                 new ItemStack(ScribingConfig.SEAL_ITEM_ID, ScribingConfig.SEAL_QUANTITY),
                 false,
                 false
@@ -1205,6 +1198,9 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
                 Message.translation("server.items." + ScribingConfig.SEAL_ITEM_ID + ".name"));
         cb.set("#SealAmount.TextSpans",
                 sealSpan(countCarried(store, ref, ScribingConfig.SEAL_ITEM_ID)));
+
+        // This identifier is separate from the editable display name.
+        cb.set("#PvId.Text", selected ? "ID: " + stack.getItemId() : "");
 
         if (!selected) {
             return;
@@ -1219,14 +1215,8 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
 
         // The real stack, metadata stripped for the wire, so hovering the desk shows this
         // item's own tooltip as the "before" against the preview column's "after".
-        cb.set("#TargetSlot.Slots", new ItemGridSlot[] { wireSlot(stack, false, false) });
+        ItemSlots.setSlots(cb, "#TargetSlot.Slots", new ItemGridSlot[] { wireSlot(stack, false, false) });
         cb.set("#TargetName.TextSpans", stack.getDisplayName());
-        // Deliberately not a language key, unlike every other string this page paints.
-        // The card replicates what the client already draws, and the shipped tooltip draws
-        // this line as "ID: <item-id>". Making our copy translatable would let the preview
-        // drift from the tooltip it exists to predict, which is the one way this card must
-        // never be wrong.
-        cb.set("#PvId.Text", "ID: " + stack.getItemId());
 
         // Translated rather than composed in Java. Hardcoded English in a player-facing
         // string is already recorded as a defect against AlterationTransaction in this
@@ -1304,8 +1294,11 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
 
         Message status;
         StatusTone tone;
-        if (!validation.ok()) {
-            status = Message.raw(firstProblem(validation));
+        if (stack != null && ScribingSeal.isSealed(stack)) {
+            status = Message.translation(LANG_PREFIX + "alreadySealed");
+            tone = StatusTone.Info;
+        } else if (!validation.ok()) {
+            status = firstProblem(validation);
             tone = StatusTone.Bad;
         } else if (!draftName.isEmpty() && validation.nameOk().empty()
                 || !draftDescription.isEmpty() && validation.descriptionOk().empty()) {
@@ -1408,8 +1401,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
             boolean clickable,
             boolean dimmed
     ) {
-        return ItemSlots.display(stack, clickable, dimmed,
-                ItemSlots.resolveDescriptionKey(stack, playerRef));
+        return ItemSlots.displayForPlayer(stack, clickable, dimmed, playerRef);
     }
 
     @Nullable
@@ -1417,11 +1409,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         if (stack == null) {
             return null;
         }
-        Item item = stack.getItem();
-        if (item == null) {
-            return null;
-        }
-        return ItemQuality.getAssetMap().getAsset(item.getQualityIndex());
+        return ItemQuality.getAssetMap().getAsset(stack.getQualityIndex());
     }
 
     @Nonnull
@@ -1555,11 +1543,13 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
     }
 
     @Nonnull
-    private static String firstProblem(@Nonnull Validation validation) {
-        if (validation.name() instanceof ScribingText.Result.Fail fail) {
-            return fail.problems().getFirst().message();
-        }
-        return ((ScribingText.Result.Fail) validation.description()).problems().getFirst().message();
+    private static Message firstProblem(@Nonnull Validation validation) {
+        ScribingMarkup.Problem problem = validation.name() instanceof ScribingText.Result.Fail fail
+                ? fail.problems().getFirst()
+                : ((ScribingText.Result.Fail) validation.description()).problems().getFirst();
+        Message message = Message.translation(LANG_PREFIX + problem.translationKey());
+        problem.parameters().forEach((name, value) -> message.param(name, Message.raw(value)));
+        return message;
     }
 
     /**
@@ -1696,7 +1686,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
      * The sealed panel: the item, who sealed it, and the way out if the player has one.
      */
     private void paintSealed(@Nonnull UICommandBuilder cb, @Nonnull ItemStack stack) {
-        cb.set("#SealedSlot.Slots", new ItemGridSlot[] { wireSlot(stack, false, false) });
+        ItemSlots.setSlots(cb, "#SealedSlot.Slots", new ItemGridSlot[] { wireSlot(stack, false, false) });
         cb.set("#SealedName.TextSpans", stack.getDisplayName());
         cb.set("#SealedCaption.TextSpans", stack.getQuantity() > 1
                 ? Message.translation(LANG_PREFIX + "captionStack")
@@ -1784,7 +1774,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
      */
     @Nonnull
     private static Message countSpan(
-            @Nonnull String text,
+            @Nonnull Message text,
             @Nonnull ScribingText.Result result,
             boolean bypass
     ) {
@@ -1794,16 +1784,21 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         } else if (result instanceof ScribingText.Result.Fail) {
             color = StatusTone.Bad.color;
         }
-        return Message.raw(text).color(color);
+        return text.color(color);
     }
 
     @Nonnull
-    private String formatNameCount(@Nonnull Validation validation) {
+    private Message formatNameCount(@Nonnull Validation validation) {
         int used = stats(validation.name(), draftName).renderedChars();
         return validation.bypass()
-                ? used + plural(used, " character", " characters")
-                        + SEPARATOR + draftName.length() + " / " + ScribingConfig.NAME_MAX_RAW_CHARS + " typed"
-                : used + " / " + ScribingConfig.NAME_MAX_CHARS;
+                ? Message.translation(LANG_PREFIX + "nameCountBypass")
+                        .param("count", used)
+                        .param("countText", Integer.toString(used))
+                        .param("raw", Integer.toString(draftName.length()))
+                        .param("max", Integer.toString(ScribingConfig.NAME_MAX_RAW_CHARS))
+                : Message.translation(LANG_PREFIX + "nameCount")
+                        .param("count", Integer.toString(used))
+                        .param("max", Integer.toString(ScribingConfig.NAME_MAX_CHARS));
     }
 
     /**
@@ -1819,25 +1814,27 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
      * actually bound the tooltip.</p>
      */
     @Nonnull
-    private String formatDescriptionCount(@Nonnull Validation validation) {
+    private Message formatDescriptionCount(@Nonnull Validation validation) {
         ScribingMarkup.Stats stats = stats(validation.description(), draftDescription);
         int lines = stats.lineCount();
         int used = stats.renderedChars();
         if (validation.bypass()) {
-            return lines + plural(lines, " line", " lines")
-                    + SEPARATOR + used + plural(used, " character", " characters")
-                    + SEPARATOR + draftDescription.length() + " / " + ScribingConfig.DESC_MAX_RAW_CHARS + " typed";
+            return Message.translation(LANG_PREFIX + "descriptionCountBypass")
+                    .param("lines", lines)
+                    .param("linesText", Integer.toString(lines))
+                    .param("count", used)
+                    .param("countText", Integer.toString(used))
+                    .param("raw", Integer.toString(draftDescription.length()))
+                    .param("max", Integer.toString(ScribingConfig.DESC_MAX_RAW_CHARS));
         }
         // "2 / 6 lines" then "41 / 300". The word rides on the first pair only: the second
         // repeats the same shape immediately after it, so naming the unit twice reads as
         // clutter rather than as clarity.
-        return lines + " / " + ScribingConfig.DESC_MAX_LINES + " lines"
-                + SEPARATOR + used + " / " + ScribingConfig.DESC_MAX_TOTAL_CHARS;
-    }
-
-    @Nonnull
-    private static String plural(int count, @Nonnull String one, @Nonnull String many) {
-        return count == 1 ? one : many;
+        return Message.translation(LANG_PREFIX + "descriptionCount")
+                .param("lines", Integer.toString(lines))
+                .param("maxLines", Integer.toString(ScribingConfig.DESC_MAX_LINES))
+                .param("count", Integer.toString(used))
+                .param("max", Integer.toString(ScribingConfig.DESC_MAX_TOTAL_CHARS));
     }
 
     @Nonnull

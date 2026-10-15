@@ -617,7 +617,10 @@ public class AlterationPage extends InteractiveCustomUIPage<AlterationPage.PageE
         }
 
         if (bench.getFuelStock() >= AlterationConfig.FUEL_STOCK_CAP) {
-            setStatus(cb, LANG_PREFIX + "stockFull", StatusTone.Bad);
+            cb.set("#Status.TextSpans", Message.translation(LANG_PREFIX + "stockFull")
+                    .param("stock", bench.getFuelStock())
+                    .param("max", AlterationConfig.FUEL_STOCK_CAP)
+                    .color(StatusTone.Bad.color));
             sendUpdate(cb, false);
             return;
         }
@@ -714,16 +717,16 @@ public class AlterationPage extends InteractiveCustomUIPage<AlterationPage.PageE
         // Message values only bind to TextSpans, plain strings to Text. Mixing the two
         // on one label across updates is untested, so this label always uses TextSpans.
         if (stack != null) {
-            cb.set("#SourceSlot.Slots", new ItemGridSlot[] { ItemSlots.display(
+            ItemSlots.setSlots(cb, "#SourceSlot.Slots", new ItemGridSlot[] { ItemSlots.displayForPlayer(
                     stack, false, false,
-                    ItemSlots.resolveDescriptionKey(stack, this.playerRef)
+                    this.playerRef
             ) });
             cb.set("#SourceSlotFill.Visible", true);
             cb.set("#SourceName.TextSpans", stack.getDisplayName());
             cb.set("#SourceDurability.Text", ItemText.formatDurability(stack));
         } else {
             cb.set("#SourceSlotFill.Visible", false);
-            cb.set("#SourceSlot.Slots", new ItemGridSlot[0]);
+            ItemSlots.setSlots(cb, "#SourceSlot.Slots", new ItemGridSlot[0]);
             cb.set("#SourceName.TextSpans", Message.translation(LANG_PREFIX + "noSource"));
             cb.set("#SourceDurability.Text", "");
         }
@@ -745,7 +748,7 @@ public class AlterationPage extends InteractiveCustomUIPage<AlterationPage.PageE
 
         if (source == null || selectedVariantId == null || selectedVariantId.equals(selectedItemId)) {
             cb.set("#ResultSlotFill.Visible", false);
-            cb.set("#ResultSlot.Slots", new ItemGridSlot[0]);
+            ItemSlots.setSlots(cb, "#ResultSlot.Slots", new ItemGridSlot[0]);
             cb.set("#ResultArmedFrame.Visible", false);
             cb.set("#ResultName.TextSpans", Message.translation(LANG_PREFIX + "noResult"));
             cb.set("#ResultDurability.Text", "");
@@ -755,9 +758,9 @@ public class AlterationPage extends InteractiveCustomUIPage<AlterationPage.PageE
         ItemStack projected = AlterationTransaction.buildOutput(source, selectedVariantId, source.getQuantity());
         String transition = formatDurabilityTransition(source, projected);
 
-        cb.set("#ResultSlot.Slots", new ItemGridSlot[] { ItemSlots.display(
+        ItemSlots.setSlots(cb, "#ResultSlot.Slots", new ItemGridSlot[] { ItemSlots.displayForPlayer(
                 projected, false, false,
-                ItemSlots.resolveDescriptionKey(projected, this.playerRef)
+                this.playerRef
         ) });
         cb.set("#ResultSlotFill.Visible", true);
         cb.set("#ResultArmedFrame.Visible", true);
@@ -828,17 +831,17 @@ public class AlterationPage extends InteractiveCustomUIPage<AlterationPage.PageE
                 //
                 // Nothing behavioural is lost. Altering a worn piece still returns it to
                 // the slot it was worn in, because the row remembers its section.
-                slots.add(ItemSlots.display(
+                slots.add(ItemSlots.displayForPlayer(
                         stack,
                         true,
                         dimmed,
-                        ItemSlots.resolveDescriptionKey(stack, playerRef)
+                        playerRef
                 ));
                 gearRows.add(new GearRow(section, slot, stack.getItemId()));
             }
         }
 
-        cb.set("#OwnedGrid.Slots", slots.toArray(new ItemGridSlot[0]));
+        ItemSlots.setSlots(cb, "#OwnedGrid.Slots", slots.toArray(new ItemGridSlot[0]));
         int shown = slots.size();
         cb.set("#GearCount.Text", Integer.toString(shown));
         cb.set("#OwnedGrid.Visible", shown > 0);

@@ -1294,7 +1294,10 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
 
         Message status;
         StatusTone tone;
-        if (!validation.ok()) {
+        if (stack != null && ScribingSeal.isSealed(stack)) {
+            status = Message.translation(LANG_PREFIX + "alreadySealed");
+            tone = StatusTone.Info;
+        } else if (!validation.ok()) {
             status = firstProblem(validation);
             tone = StatusTone.Bad;
         } else if (!draftName.isEmpty() && validation.nameOk().empty()

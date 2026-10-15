@@ -617,7 +617,10 @@ public class AlterationPage extends InteractiveCustomUIPage<AlterationPage.PageE
         }
 
         if (bench.getFuelStock() >= AlterationConfig.FUEL_STOCK_CAP) {
-            setStatus(cb, LANG_PREFIX + "stockFull", StatusTone.Bad);
+            cb.set("#Status.TextSpans", Message.translation(LANG_PREFIX + "stockFull")
+                    .param("stock", bench.getFuelStock())
+                    .param("max", AlterationConfig.FUEL_STOCK_CAP)
+                    .color(StatusTone.Bad.color));
             sendUpdate(cb, false);
             return;
         }

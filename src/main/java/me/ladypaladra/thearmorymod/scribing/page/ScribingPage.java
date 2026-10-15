@@ -1151,6 +1151,7 @@ public class ScribingPage extends InteractiveCustomUIPage<ScribingPage.PageEvent
         // sibling of the three panels now rather than a child of the editor.
         cb.set("#LegendPanel.Visible", editing);
         cb.set("#PreviewCard.Visible", pickerHasMatches && selected);
+        cb.set("#PvId.Visible", selected && creative(store, ref));
 
         boolean ink = charges(store, ref);
         boolean lock = sealRequired(store, ref);

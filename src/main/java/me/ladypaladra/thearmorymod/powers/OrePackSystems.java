@@ -71,7 +71,15 @@ public final class OrePackSystems {
     }
 
     /**
-     * Raises the damage each hit deals to stone and ore.
+     * Raises the damage each hit deals to stone and ore, so blocks break in fewer hits on average.
+     *
+     * <p>A block has a health of 1 and breaks after a whole number of hits, so a plain multiplier
+     * often saves nothing: an iron pickaxe deals 0.25 to iron ore, and 0.325 still needs four hits,
+     * since three only reach 0.975. Measured in game, a 30 percent stronger hit mined no faster on
+     * stone, copper, iron, silver or gold. So on the hit that would leave a sliver of health for
+     * one more hit, the block breaks early with the chance that makes the average hit count exactly
+     * the multiplied one: iron ore then takes three hits 92 percent of the time and four the rest,
+     * 3.08 on average, which is 30 percent faster.</p>
      */
     public static final class MiningSpeed extends EntityEventSystem<EntityStore, DamageBlockEvent> {
 
@@ -106,8 +114,23 @@ public final class OrePackSystems {
 
             float multiplier = StatMultiplier.forStat(chunk.getComponent(index, EntityStatMap.getComponentType()), miningSpeedIndex.get());
             if (multiplier > 1.0F + StatMultiplier.EPSILON) {
-                event.setDamage(event.getDamage() * multiplier);
+                // The engine passes the block's remaining health, 1 when undamaged, as current damage.
+                event.setDamage(boostedDamage(event.getCurrentDamage(), event.getDamage(), multiplier,
+                        ThreadLocalRandom.current().nextFloat()));
             }
+        }
+
+        /**
+         * The damage one boosted hit deals, given the block's remaining health, the hit's own damage,
+         * the multiplier and a roll from 0 to 1.
+         */
+        static float boostedDamage(float remaining, float damage, float multiplier, float roll) {
+            float boosted = damage * multiplier;
+            float left = remaining - boosted;
+            if (left > 0.0F && left < boosted && roll >= left / boosted) {
+                return remaining;
+            }
+            return boosted;
         }
     }
 

@@ -4,13 +4,18 @@ import com.hypixel.hytale.component.Archetype;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.component.SystemGroup;
+import com.hypixel.hytale.component.dependency.Dependency;
+import com.hypixel.hytale.component.dependency.Order;
+import com.hypixel.hytale.component.dependency.SystemDependency;
+import com.hypixel.hytale.component.dependency.SystemGroupDependency;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.inventory.InventoryComponent;
 import com.hypixel.hytale.server.core.modules.entity.damage.Damage;
+import com.hypixel.hytale.server.core.modules.entity.damage.DamageCalculatorSystems;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageEventSystem;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageModule;
+import com.hypixel.hytale.server.core.modules.entity.damage.DamageSystems;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatValue;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
@@ -19,8 +24,8 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,10 +33,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * Fires the Boom Shroom Pack's spore burst when a hit drops its wearer below a third of their
  * health.
  *
- * <p>It runs in the inspect phase, where each hit's amount is final but not yet taken from
- * health, so the health before and after the hit are both known. The burst fires on the hit that
- * crosses the line, then waits out its recharge. It pushes nearby creatures away and does
- * nothing else: no damage is cancelled and no health is given, so a lethal hit still kills.</p>
+ * <p>It runs after every filter and the engine's own sequence modifier, and before the hit is
+ * applied, so the hit's amount is final while health still holds its value from before the hit.
+ * The inspect phase would be too late: the engine applies damage before it, so health there is
+ * already the value after the hit, measured in game. The burst fires on the hit that crosses
+ * the line, then waits out its recharge. It pushes nearby creatures away and does nothing else:
+ * no damage is cancelled and no health is given, so a lethal hit still kills.</p>
  *
  * <p>The recharge is kept per player id rather than on the entity, so two hits landing in the
  * same tick cannot both fire it before a component would have been written.</p>
@@ -54,10 +61,17 @@ public final class SporeBurstSystem extends DamageEventSystem {
             InventoryComponent.Armor.getComponentType()
     );
 
-    @Nullable
+    private final Set<Dependency<EntityStore>> dependencies = Set.of(
+            new SystemGroupDependency<>(Order.AFTER, DamageModule.get().getGatherDamageGroup()),
+            new SystemGroupDependency<>(Order.AFTER, DamageModule.get().getFilterDamageGroup()),
+            new SystemDependency<>(Order.AFTER, DamageCalculatorSystems.SequenceModifier.class),
+            new SystemDependency<>(Order.BEFORE, DamageSystems.ApplyDamage.class)
+    );
+
+    @Nonnull
     @Override
-    public SystemGroup<EntityStore> getGroup() {
-        return DamageModule.get().getInspectDamageGroup();
+    public Set<Dependency<EntityStore>> getDependencies() {
+        return dependencies;
     }
 
     @Nonnull

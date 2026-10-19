@@ -82,5 +82,14 @@
       ]
     }
   },
-  "Scale": 1.5
+  "Scale": 1.5,
+  "Particles": [
+    {
+      "SystemId": "TA_Heat_Distortion",
+      "TargetEntityPart": "Self",
+      "TargetNodeName": "Shield",
+      "Scale": 1,
+      "DetachedFromModel": false
+    }
+  ]
 }

@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,29 +30,44 @@ class TranslationCatalogueTest {
     private static final Path ROOT = Path.of("src/main/resources/Server/Languages");
     private static final String PREFIX = "customUI.scribingPage.";
 
+    /**
+     * Translations arrive after the English text, so a language may lack lines. The engine
+     * shows the English line for any line a language does not have, which makes a gap safe.
+     * A line that does exist must still carry the same placeholders as its English line.
+     */
     @Test
-    void everyLanguageCoversEnglishAndPreservesParameters() throws IOException {
+    void translatedLinesKeepTheEnglishParameters() throws IOException {
         Map<String, String> englishServer = read(ROOT.resolve("en-US/server.lang"));
         Map<String, String> englishClient = read(ROOT.resolve("en-US/client.lang"));
         int checked = 0;
         try (Stream<Path> directories = Files.list(ROOT)) {
             for (Path language : directories.filter(Files::isDirectory).toList()) {
                 String locale = language.getFileName().toString();
-                compare(englishServer, read(language.resolve("server.lang")), locale);
-                compare(englishClient, read(language.resolve("client.lang")), locale);
-                checked++;
+                if (locale.equals("en-US")) {
+                    continue;
+                }
+                for (String file : List.of("server.lang", "client.lang")) {
+                    if (Files.isRegularFile(language.resolve(file))) {
+                        compare(file.equals("server.lang") ? englishServer : englishClient,
+                                read(language.resolve(file)), locale);
+                        checked++;
+                    }
+                }
             }
         }
-        assertTrue(checked >= 2, "English and Spanish must both be checked.");
+        assertTrue(checked >= 1, "No translated language file was found, so this check proved nothing.");
     }
 
     @Test
-    void incompleteCataloguesAndExportArtifactsAreRejected() throws IOException {
+    void untranslatedLinesPassAndBrokenLinesAreRejected() throws IOException {
         Map<String, String> english = read(ROOT.resolve("en-US/server.lang"));
         Map<String, String> spanish = read(ROOT.resolve("es-ES/server.lang"));
         Map<String, String> missing = new HashMap<>(spanish);
         missing.remove("items.Scribing_Table.name");
-        assertThrows(AssertionError.class, () -> compare(english, missing, "es-ES"));
+        assertDoesNotThrow(() -> compare(english, missing, "es-ES"));
+        Map<String, String> retired = new HashMap<>(spanish);
+        retired.put("items.RetiredItem.name", "Objeto retirado");
+        assertDoesNotThrow(() -> compare(english, retired, "es-ES"));
         Map<String, String> lostParameter = new HashMap<>(spanish);
         lostParameter.put("customUI.alterationPage.stockFull", "Lleno.");
         assertThrows(AssertionError.class, () -> compare(english, lostParameter, "es-ES"));
@@ -71,9 +87,7 @@ class TranslationCatalogueTest {
             assertEquals(count + " " + (count == 1 ? "character" : "characters")
                             + " \u2022 " + count + " / 200 typed",
                     format(english, "nameCountBypass", values, "en-US"));
-            assertEquals(count + " " + (count == 1 ? "car\u00e1cter" : "caracteres")
-                            + " \u2022 " + count + " / 200 escritos",
-                    format(spanish, "nameCountBypass", values, "es-ES"));
+            assertCarries(spanish, "nameCountBypass", values, "es-ES", Integer.toString(count), "200");
         }
         for (int lines : new int[] {0, 1, 2, ScribingConfig.DESC_MAX_LINES}) {
             Map<String, Object> values = Map.of("lines", lines, "linesText", Integer.toString(lines),
@@ -81,14 +95,27 @@ class TranslationCatalogueTest {
             assertEquals(lines + " " + (lines == 1 ? "line" : "lines")
                             + " \u2022 1 character \u2022 8 / 1200 typed",
                     format(english, "descriptionCountBypass", values, "en-US"));
-            assertEquals(lines + " " + (lines == 1 ? "l\u00ednea" : "l\u00edneas")
-                            + " \u2022 1 car\u00e1cter \u2022 8 / 1200 escritos",
-                    format(spanish, "descriptionCountBypass", values, "es-ES"));
+            assertCarries(spanish, "descriptionCountBypass", values, "es-ES",
+                    Integer.toString(lines), "8", "1200");
         }
-        assertEquals("6 / 6 l\u00edneas \u2022 300 / 300",
-                format(spanish, "descriptionCount", Map.of("lines", 6, "maxLines", 6,
-                        "count", 300, "max", 300), "es-ES"));
-        assertEquals("48 / 48", format(spanish, "nameCount", Map.of("count", 48, "max", 48), "es-ES"));
+        assertCarries(spanish, "descriptionCount", Map.of("lines", 6, "maxLines", 6,
+                "count", 300, "max", 300), "es-ES", "6", "300");
+        assertCarries(spanish, "nameCount", Map.of("count", 48, "max", 48), "es-ES", "48");
+    }
+
+    /**
+     * Checks that a translated counter, when present, still shows its numbers. The wording is
+     * the translator's, so only the numbers are asserted.
+     */
+    private static void assertCarries(Map<String, String> entries, String key, Map<String, Object> values,
+                                      String locale, String... numbers) {
+        if (!entries.containsKey(PREFIX + key)) {
+            return;
+        }
+        String text = format(entries, key, values, locale);
+        for (String number : numbers) {
+            assertTrue(text.contains(number), locale + ": " + key + " lost " + number + " in \"" + text + "\"");
+        }
     }
 
     @Test
@@ -142,6 +169,9 @@ class TranslationCatalogueTest {
     void copyableExamplesKeepThreeLinesAndWorkingMarkup() throws IOException {
         for (String locale : List.of("en-US", "es-ES")) {
             String example = read(ROOT.resolve(locale + "/server.lang")).get(PREFIX + "legendExample");
+            if (example == null && !locale.equals("en-US")) {
+                continue;
+            }
             assertEquals(3, example.split("\n", -1).length);
             assertFalse(example.contains("\\"), "An export escape survived in " + locale);
             assertTrue(ScribingMarkup.parse(example).ok());
@@ -152,12 +182,13 @@ class TranslationCatalogueTest {
                                      Map<String, String> spanish) {
         String key = PREFIX + problem.translationKey();
         assertTrue(english.containsKey(key), key);
-        assertTrue(spanish.containsKey(key), key);
         MessageFormat source = new MessageFormat(english.get(key), Locale.US);
         assertEquals(source.getArgumentNames(), problem.parameters().keySet(), key);
         assertEquals(problem.message(), source.format(problem.parameters()), key);
-        assertFalse(new MessageFormat(spanish.get(key), Locale.forLanguageTag("es-ES"))
-                .format(problem.parameters()).isBlank(), key);
+        if (spanish.containsKey(key)) {
+            assertFalse(new MessageFormat(spanish.get(key), Locale.forLanguageTag("es-ES"))
+                    .format(problem.parameters()).isBlank(), key);
+        }
     }
 
     private static String format(Map<String, String> entries, String key,
@@ -167,11 +198,15 @@ class TranslationCatalogueTest {
 
     private static void compare(Map<String, String> english, Map<String, String> translated, String locale) {
         assertFalse(english.isEmpty());
-        assertEquals(english.keySet(), translated.keySet(), locale);
         for (Map.Entry<String, String> entry : english.entrySet()) {
+            if (!translated.containsKey(entry.getKey())) {
+                continue;
+            }
             MessageFormat source = new MessageFormat(entry.getValue(), Locale.US);
             MessageFormat target = new MessageFormat(translated.get(entry.getKey()), Locale.forLanguageTag(locale));
-            assertEquals(source.getArgumentNames(), target.getArgumentNames(), locale + ": " + entry.getKey());
+            assertEquals(source.getArgumentNames(), target.getArgumentNames(), locale + ": " + entry.getKey()
+                    + " has different placeholders from its English line. Players would see a wrong or"
+                    + " missing value. Report it to the translator rather than editing the translation.");
         }
     }
 

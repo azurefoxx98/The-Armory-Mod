@@ -9,6 +9,7 @@ import me.ladypaladra.thearmorymod.alteration.AlterationModule;
 import me.ladypaladra.thearmorymod.krafter.KrafterModule;
 import me.ladypaladra.thearmorymod.metrics.ArmoryMetrics;
 import me.ladypaladra.thearmorymod.parry.ParryModule;
+import me.ladypaladra.thearmorymod.powers.PowersModule;
 import me.ladypaladra.thearmorymod.scorpianflail.systems.ScorpianFlailPoisonSystem;
 import me.ladypaladra.thearmorymod.scribing.ScribingModule;
 import me.ladypaladra.thearmorymod.stats.ArmoryStatsModule;
@@ -46,6 +47,7 @@ public class TheArmoryMod extends JavaPlugin {
 
             ParryModule.register(this);
             ArmoryStatsModule.register(this);
+            PowersModule.register(this);
             // ArmorTailoringModule.register(this);
             AlterationModule.register(this);
             ScribingModule.register(this);

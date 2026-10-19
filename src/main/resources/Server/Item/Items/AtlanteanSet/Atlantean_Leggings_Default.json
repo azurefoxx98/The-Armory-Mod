@@ -1,0 +1,139 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Atlantean_Leggings.name",
+    "Description": "server.items.Atlantean_Leggings.description"
+  },
+  "Quality": "Rare",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Atlantean_Leggings_Default.png",
+  "Model": "Items/Armors/Atlantean/Leggings.blockymodel",
+  "Texture": "Items/Armors/Atlantean/Blue.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Thorium",
+        "Quantity": 5
+      },
+      {
+        "ItemId": "Ingredient_Bar_Gold",
+        "Quantity": 4
+      },
+      {
+        "ItemId": "Rock_Aqua_Brick_Roof_Flat",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Water_Essence",
+        "Quantity": 10
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Legs"
+        ],
+        "RequiredTierLevel": 2
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 3
+  },
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "Pants",
+      "Overpants",
+      "Shoes"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.064,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.064,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Ice": [
+        {
+          "Amount": 0.15,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 12,
+          "CalculationType": "Additive"
+        }
+      ],
+      "TA_Swim_Speed": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 2.0
+        }
+      ]
+    }
+  },
+  "MaxDurability": 120,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -26
+    ]
+  },
+  "Light": {
+    "Color": "#165",
+    "Radius": 2
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Atlantean_Legs"
+    },
+    {
+      "Id": "Resource_AtlanteanSet"
+    }
+  ],
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "SubCategory": "Atlantean Set",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block"
+}

@@ -1,0 +1,93 @@
+{
+  "Parent": "Template_Weapon_Shield",
+  "TranslationProperties": {
+    "Name": "server.items.Mirror_Shield.name",
+    "Description": "server.items.Mirror_Shield.description"
+  },
+  "Model": "Items/Weapons/MirrorShield/MirrorShield.blockymodel",
+  "Texture": "Items/Weapons/MirrorShield/MirrorShield.png",
+  "Icon": "Icons/ItemsGenerated/Mirror_Shield.png",
+  "Quality": "Epic",
+  "ItemLevel": 20,
+  "InteractionVars": {
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Shield_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 5,
+            "CostType": "Damage"
+          },
+          "BlockedInteractions": {
+            "Interactions": [
+              {
+                "Type": "ArmoryReflectDamage",
+                "Fraction": 0.5,
+                "DamageCause": "TA_Reflected"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "TimeSeconds": 3.5,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Silver",
+        "Quantity": 20
+      },
+      {
+        "Quantity": 8,
+        "ItemId": "Ingredient_Rune_Shard"
+      },
+      {
+        "ItemId": "Ingredient_Water_Essence",
+        "Quantity": 8
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Shield"
+        ],
+        "Id": "Armor_Bench"
+      }
+    ],
+    "RequiredMemoriesLevel": 1
+  },
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      327,
+      297,
+      0
+    ],
+    "Translation": [
+      -14,
+      -24
+    ]
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryShields"
+  ],
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Mirror_Shield"
+    }
+  ],
+  "Scale": 1,
+  "Particles": [
+    {
+      "SystemId": "TA_Mirror_Glow",
+      "TargetNodeName": "Shield",
+      "PositionOffset": {
+        "Z": -0.01
+      },
+      "Scale": 1
+    }
+  ]
+}

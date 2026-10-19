@@ -1,0 +1,31 @@
+{
+  "Type": "ArmorySporeBurst",
+  "Config": {
+    "DamageEntities": true,
+    "DamageBlocks": false,
+    "DetonateExplosiveBlocks": false,
+    "EntityDamage": 0.0,
+    "EntityDamageRadius": 5,
+    "SoundEventId": "SFX_Explosion_Boomshroom",
+    "Particles": [
+      {
+        "SystemId": "Explosion_Shroom",
+        "Scale": 1
+      }
+    ],
+    "Knockback": {
+      "Type": "Point",
+      "VelocityConfig": {
+        "AirResistance": 0.99,
+        "AirResistanceMax": 0.3,
+        "GroundResistance": 0.9,
+        "GroundResistanceMax": 0.3,
+        "Threshold": 3.0,
+        "Style": "Exp"
+      },
+      "Force": 17.0,
+      "VelocityY": 6.0,
+      "VelocityType": "Add"
+    }
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Atlantean_Chest.name",
+    "Description": "server.items.Atlantean_Chest.description"
+  },
+  "Quality": "Rare",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Atlantean_Chest_Gold_Magenta.png",
+  "Model": "Items/Armors/Atlantean/Chest.blockymodel",
+  "Texture": "Items/Armors/Atlantean/Gold Magenta.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Atlantean_Chest"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "Undertop",
+      "Overtop"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.064,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.064,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Ice": [
+        {
+          "Amount": 0.15,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Drowning": [
+        {
+          "Amount": 0.6,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 12,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Oxygen": [
+        {
+          "Amount": 600,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 120,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -12
+    ]
+  },
+  "Light": {
+    "Color": "#301",
+    "Radius": 5
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Atlantean_Chest"
+    },
+    {
+      "Id": "Resource_AtlanteanSet"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "SubCategory": "Atlantean Set",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block"
+}

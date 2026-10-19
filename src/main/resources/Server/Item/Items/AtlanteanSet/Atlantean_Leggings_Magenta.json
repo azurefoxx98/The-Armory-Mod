@@ -1,0 +1,126 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Atlantean_Leggings.name",
+    "Description": "server.items.Atlantean_Leggings.description"
+  },
+  "Quality": "Rare",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Atlantean_Leggings_Magenta.png",
+  "Model": "Items/Armors/Atlantean/Leggings.blockymodel",
+  "Texture": "Items/Armors/Atlantean/Magenta.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Atlantean_Legs"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "Pants",
+      "Overpants",
+      "Shoes"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.064,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.064,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Ice": [
+        {
+          "Amount": 0.15,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 12,
+          "CalculationType": "Additive"
+        }
+      ],
+      "TA_Swim_Speed": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 2.0
+        }
+      ]
+    }
+  },
+  "MaxDurability": 120,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -26
+    ]
+  },
+  "Light": {
+    "Color": "#301",
+    "Radius": 5
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Atlantean_Legs"
+    },
+    {
+      "Id": "Resource_AtlanteanSet"
+    }
+  ],
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "SubCategory": "Atlantean Set",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block"
+}

@@ -1,0 +1,113 @@
+{
+  "Model": "Items/Armors/Halloween/Pumpkin_Helm_Lit.blockymodel",
+  "Texture": "Items/Armors/Halloween/Pumpkin_Helm_Unlit.png",
+  "Icon": "Icons/ItemsGenerated/Pumpkin_Helm_Unlit.png",
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      20,
+      22.5
+    ],
+    "Translation": [
+      2,
+      -11
+    ]
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "CosmeticsToHide": [
+      "Haircut",
+      "HeadAccessory",
+      "EarAccessory",
+      "Ear",
+      "FacialHair"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.13,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.13,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 30,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 90
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Pumpkin_Helm"
+      }
+    ],
+    "TimeSeconds": 1,
+    "KnowledgeRequired": false
+  },
+  "SubCategory": "Seasonal Armors",
+  "Quality": "Legendary",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Pumpkin_Helm"
+    }
+  ],
+  "ItemLevel": 50,
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "TranslationProperties": {
+    "Name": "server.items.PumpkinHelm.name",
+    "Description": "server.items.PumpkinHelm.description"
+  },
+  "Variant": true,
+  "DurabilityLossOnDeath": false,
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  }
+}

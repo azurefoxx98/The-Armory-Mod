@@ -1,0 +1,84 @@
+{
+  "Parent": "Template_Weapon_Shield",
+  "TranslationProperties": {
+    "Name": "server.items.Mirror_Shield.name",
+    "Description": "server.items.Mirror_Shield.description"
+  },
+  "Model": "Items/Weapons/MirrorShield/MirrorShieldHollow.blockymodel",
+  "Texture": "Items/Weapons/MirrorShield/Black.png",
+  "Icon": "Icons/ItemsGenerated/Mirror_Shield_Black_Hollow.png",
+  "Quality": "Epic",
+  "ItemLevel": 20,
+  "InteractionVars": {
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Shield_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 5,
+            "CostType": "Damage"
+          },
+          "BlockedInteractions": {
+            "Interactions": [
+              {
+                "Type": "ArmoryReflectDamage",
+                "Fraction": 0.5,
+                "DamageCause": "TA_Reflected"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Mirror_Shield"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      327,
+      297,
+      0
+    ],
+    "Translation": [
+      -14,
+      -24
+    ]
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryShields"
+  ],
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Mirror_Shield"
+    }
+  ],
+  "Scale": 1,
+  "Particles": [
+    {
+      "SystemId": "TA_Mirror_Glow",
+      "TargetNodeName": "Shield",
+      "PositionOffset": {
+        "Z": -0.01
+      },
+      "Scale": 1
+    }
+  ]
+}

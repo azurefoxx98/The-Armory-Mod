@@ -1,0 +1,113 @@
+{
+  "Model": "Items/Armors/Goblin/Goggles.blockymodel",
+  "Texture": "Items/Armors/Goblin/Green_Goggles.png",
+  "Icon": "Icons/ItemsGenerated/Goblin_Goggles_Green.png",
+  "IconProperties": {
+    "Scale": 0.6,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -3,
+      2
+    ]
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "CosmeticsToHide": [
+      "HeadAccessory"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.04,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.04,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 6,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 5
+        }
+      ]
+    },
+    "DamageEnhancement": {
+      "Projectile": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 5
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Goblin_Goggles"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Goblin_Goggles"
+    }
+  ],
+  "Quality": "Uncommon",
+  "SubCategory": "Goblin Armors",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "TranslationProperties": {
+    "Name": "server.items.Goblin_Goggles.name"
+  },
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  }
+}

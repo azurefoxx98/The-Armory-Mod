@@ -1,0 +1,123 @@
+{
+  "Model": "NPC/Intelligent/Goblin/Models/Attachments/Miner/Backpack.blockymodel",
+  "Texture": "NPC/Intelligent/Goblin/Models/Attachments/Miner/Backpack_Texture.png",
+  "Icon": "Icons/ItemsGenerated/Ore_Pack_Goblin.png",
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      12,
+      -3
+    ]
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "CosmeticsToHide": [
+      "Cape"
+    ],
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.04,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.04,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 6,
+          "CalculationType": "Additive"
+        }
+      ],
+      "TA_Mining_Speed": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.3
+        }
+      ],
+      "TA_Ore_Find": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.25
+        }
+      ]
+    }
+  },
+  "TranslationProperties": {
+    "Name": "server.items.Ore_Pack_Goblin.name",
+    "Description": "server.items.Ore_Pack_Goblin.description"
+  },
+  "Quality": "Uncommon",
+  "SubCategory": "Goblin Armors",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "Recipe": {
+    "BenchRequirement": [
+      {
+        "Id": "GoblinLab_Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "GoblinLab_Gadgets"
+        ],
+        "RequiredAugmentTags": [
+          "goblin_lab_power",
+          "goblin_lab_recipe_b"
+        ]
+      }
+    ],
+    "Input": [
+      {
+        "ItemId": "Ingredient_Scraps",
+        "Quantity": 10
+      },
+      {
+        "ItemId": "Ingredient_Leather_Heavy",
+        "Quantity": 5
+      },
+      {
+        "ItemId": "Ore_Iron",
+        "Quantity": 10
+      }
+    ],
+    "TimeSeconds": 1,
+    "KnowledgeRequired": false
+  },
+  "MaxDurability": 100,
+  "DurabilityLossOnHit": 0.5,
+  "ItemSoundSetId": "ISS_Armor_Leather",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  }
+}

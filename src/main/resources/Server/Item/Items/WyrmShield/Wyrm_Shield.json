@@ -1,0 +1,104 @@
+{
+  "Parent": "Template_Weapon_Shield",
+  "TranslationProperties": {
+    "Name": "server.items.Wyrm_Shield.name",
+    "Description": "server.items.Wyrm_Shield.description"
+  },
+  "Model": "Items/Weapons/FlameShield/FlameShield.blockymodel",
+  "Texture": "Items/Weapons/FlameShield/Flameshield.png",
+  "Icon": "Icons/ItemsGenerated/Wyrm_Shield.png",
+  "Quality": "Epic",
+  "ItemLevel": 20,
+  "InteractionVars": {
+    "Guard_Wield": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Shield_Secondary_Guard_Wield",
+          "StaminaCost": {
+            "Value": 5,
+            "CostType": "Damage"
+          }
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "TimeSeconds": 3.5,
+    "KnowledgeRequired": false,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 4
+      },
+      {
+        "Quantity": 8,
+        "ItemId": "Ingredient_Bar_Adamantite"
+      },
+      {
+        "ItemId": "Ingredient_Fire_Essence",
+        "Quantity": 30
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Categories": [
+          "Weapon_Shield"
+        ],
+        "Id": "Armor_Bench"
+      }
+    ],
+    "RequiredMemoriesLevel": 1
+  },
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      327,
+      297,
+      0
+    ],
+    "Translation": [
+      -14,
+      -24
+    ]
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryShields"
+  ],
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Wyrm_Shield"
+    }
+  ],
+  "Weapon": {
+    "StatModifiers": {
+      "TA_Fire_Resistance": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.25
+        }
+      ]
+    }
+  },
+  "Utility": {
+    "Usable": true,
+    "StatModifiers": {
+      "TA_Fire_Resistance": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.25
+        }
+      ]
+    }
+  },
+  "Scale": 1.5,
+  "Particles": [
+    {
+      "SystemId": "TA_Heat_Distortion",
+      "TargetEntityPart": "Self",
+      "TargetNodeName": "Shield",
+      "Scale": 1,
+      "DetachedFromModel": false
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "Model": "NPC/Intelligent/Goblin/Models/Attachments/Scientist/Backpack_BoomShroom.blockymodel",
+  "Texture": "NPC/Intelligent/Goblin/Models/Attachments/Scientist/Backpack_BoomShroom_Texture.png",
+  "Icon": "Icons/ItemsGenerated/Boom_Shroom_Pack_Goblin.png",
+  "IconProperties": {
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Scale": 0.2155,
+    "Translation": [
+      21.28,
+      -78.16
+    ]
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.04,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.04,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Poison": [
+        {
+          "Amount": 0.5,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 6,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "TranslationProperties": {
+    "Name": "server.items.Boom_Shroom_Pack_Goblin.name",
+    "Description": "server.items.Boom_Shroom_Pack_Goblin.description"
+  },
+  "Quality": "Uncommon",
+  "SubCategory": "Goblin Armors",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "Recipe": {
+    "BenchRequirement": [
+      {
+        "Id": "GoblinLab_Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "GoblinLab_Gadgets"
+        ],
+        "RequiredAugmentTags": [
+          "goblin_lab_power",
+          "goblin_lab_recipe_b"
+        ]
+      }
+    ],
+    "Input": [
+      {
+        "ItemId": "Ingredient_Scraps",
+        "Quantity": 10
+      },
+      {
+        "ItemId": "Ingredient_Leather_Heavy",
+        "Quantity": 5
+      },
+      {
+        "ItemId": "Plant_Crop_Mushroom_Boomshroom_Small",
+        "Quantity": 5
+      }
+    ],
+    "TimeSeconds": 1,
+    "KnowledgeRequired": false
+  },
+  "MaxDurability": 100,
+  "DurabilityLossOnHit": 0.5,
+  "ItemSoundSetId": "ISS_Armor_Leather",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "ArmorySporeBurst": []
+  }
+}

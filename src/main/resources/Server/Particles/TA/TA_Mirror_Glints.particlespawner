@@ -1,0 +1,78 @@
+{
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "LightInfluence": 0.0,
+  "MaxConcurrentParticles": 4,
+  "ParticleLifeSpan": {
+    "Min": 0.35,
+    "Max": 0.6
+  },
+  "SpawnRate": {
+    "Min": 2,
+    "Max": 4
+  },
+  "EmitOffset": {
+    "X": {
+      "Min": -0.35,
+      "Max": 0.35
+    },
+    "Y": {
+      "Min": -0.55,
+      "Max": 0.55
+    },
+    "Z": {
+      "Min": 0,
+      "Max": 0
+    }
+  },
+  "TrailSpawnerPositionMultiplier": 1,
+  "TrailSpawnerRotationMultiplier": 1,
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Spark2.png",
+    "ScaleRatioConstraint": "OneToOne",
+    "InitialAnimationFrame": {
+      "Opacity": 0,
+      "FrameIndex": {
+        "Min": 0,
+        "Max": 0
+      },
+      "Scale": {
+        "X": {
+          "Min": 0.03,
+          "Max": 0.06
+        }
+      },
+      "Rotation": {
+        "Z": {
+          "Min": 0,
+          "Max": 360
+        }
+      }
+    },
+    "Animation": {
+      "0": {
+        "Opacity": 0,
+        "Color": "#ffffff"
+      },
+      "40": {
+        "Opacity": 1,
+        "Scale": {
+          "X": {
+            "Min": 1.6,
+            "Max": 2.0
+          }
+        }
+      },
+      "100": {
+        "Opacity": 0,
+        "Scale": {
+          "X": {
+            "Min": 0.2,
+            "Max": 0.2
+          }
+        }
+      }
+    }
+  }
+}

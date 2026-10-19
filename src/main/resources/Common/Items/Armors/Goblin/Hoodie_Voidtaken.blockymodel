@@ -1,0 +1,468 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Head",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
+      "shape": {
+        "type": "none",
+        "offset": {"x": 0, "y": 0, "z": 0},
+        "stretch": {"x": 1, "y": 1, "z": 1},
+        "settings": {
+          "isPiece": true
+        },
+        "textureLayout": {},
+        "unwrapMode": "custom",
+        "visible": true,
+        "doubleSided": false,
+        "shadingMode": "flat"
+      },
+      "children": [
+        {
+          "id": "2",
+          "name": "bone",
+          "position": {"x": 0, "y": -23.8, "z": -2.4},
+          "orientation": {"x": -0.0654, "y": 0, "z": 0, "w": 0.99786},
+          "shape": {
+            "type": "none",
+            "offset": {"x": 0, "y": 0, "z": 0},
+            "stretch": {"x": 1, "y": 1, "z": 1},
+            "settings": {
+              "isPiece": false
+            },
+            "textureLayout": {},
+            "unwrapMode": "custom",
+            "visible": true,
+            "doubleSided": false,
+            "shadingMode": "flat"
+          },
+          "children": [
+            {
+              "id": "3",
+              "name": "Scarf",
+              "position": {"x": 0, "y": 0, "z": -3.5},
+              "orientation": {"x": 0.12807, "y": 0, "z": 0, "w": 0.99177},
+              "shape": {
+                "type": "box",
+                "offset": {"x": 0, "y": 16.92357, "z": 4.26962},
+                "stretch": {"x": 1.092, "y": 1, "z": 1.17347},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 32, "y": 15, "z": 28}
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 33, "y": 71},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 32, "y": 22},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 0, "y": 22},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 60, "y": 22},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": true,
+                "shadingMode": "flat"
+              },
+              "children": [
+                {
+                  "id": "4",
+                  "name": "HoodFlap--C1",
+                  "position": {"x": 16.77328, "y": -24.3249, "z": 13.41958},
+                  "orientation": {"x": -0.08688, "y": 0, "z": 0, "w": 0.99622},
+                  "shape": {
+                    "type": "quad",
+                    "offset": {"x": -17.32328, "y": -3.71194, "z": -0.49365},
+                    "stretch": {"x": 1.1, "y": 1, "z": 1},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 8, "y": 8},
+                      "normal": "+Z",
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "front": {
+                        "offset": {"x": 12, "y": 54},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 0
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": true,
+                    "shadingMode": "flat"
+                  }
+                },
+                {
+                  "id": "5",
+                  "name": "HoodBot--C2",
+                  "position": {"x": 16.9012, "y": -7.5, "z": 16.42858},
+                  "orientation": {"x": 0.10481, "y": 0, "z": 0, "w": 0.99449},
+                  "shape": {
+                    "type": "box",
+                    "offset": {"x": -16.9012, "y": -8.5, "z": -16.1},
+                    "stretch": {"x": 1.095, "y": 1, "z": 1.15},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 32, "y": 17, "z": 28},
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "back": {
+                        "offset": {"x": 33, "y": 79},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 0
+                      },
+                      "right": {
+                        "offset": {"x": 32, "y": 37},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 0
+                      },
+                      "front": {
+                        "offset": {"x": 0, "y": 37},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 0
+                      },
+                      "left": {
+                        "offset": {"x": 60, "y": 37},
+                        "mirror": {"x": true, "y": false},
+                        "angle": 0
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": true,
+                    "shadingMode": "flat"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "6",
+              "name": "HoodieEnd--C1",
+              "position": {"x": 0, "y": 36.08603, "z": -9.60425},
+              "orientation": {"x": 0.58142, "y": -0.24083, "z": 0.2974, "w": 0.71799},
+              "shape": {
+                "type": "box",
+                "offset": {"x": 0, "y": 0, "z": -1.5},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 21, "y": 21, "z": 13},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 92, "y": 0},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 90
+                  },
+                  "front": {
+                    "offset": {"x": 92, "y": 35},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 90
+                  },
+                  "left": {
+                    "offset": {"x": 71, "y": 21},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 270
+                  },
+                  "bottom": {
+                    "offset": {"x": 92, "y": 34},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "7",
+              "name": "Helmet--C2",
+              "position": {"x": 16.9012, "y": 18.36448, "z": 22.72351},
+              "orientation": {"x": 0.05017, "y": 0, "z": 0, "w": 0.99874},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -16.9012, "y": 9.99966, "z": -16.89505},
+                "stretch": {"x": 1.09, "y": 1, "z": 1.16518},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 32, "y": 20, "z": 29},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 33, "y": 56},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 94, "y": 3},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 0, "y": 2},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 61, "y": 2},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 0, "y": 66},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": true,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "8",
+              "name": "Helmet--C3",
+              "position": {"x": 16.9012, "y": 18.36448, "z": 22.72351},
+              "orientation": {"x": 0.05017, "y": 0, "z": 0, "w": 0.99874},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -16.9012, "y": 9.99966, "z": -16.89505},
+                "stretch": {"x": 1.09, "y": 1, "z": 1.16518},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 32, "y": 20, "z": 29},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 33, "y": 56},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 94, "y": 3},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 0, "y": 2},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 61, "y": 2},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 0, "y": 66},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": true,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "9",
+              "name": "Helmet--C4",
+              "position": {"x": 17.3536, "y": 40.06717, "z": 6.81824},
+              "orientation": {"x": 0.12404, "y": 0, "z": 0, "w": 0.99228},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -17.3536, "y": -10.22462, "z": -9.99203},
+                "stretch": {"x": 1.09, "y": 1, "z": 1.16518},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 28, "y": 20, "z": 15},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 35, "y": 54},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 111, "y": 1},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 64, "y": 0},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 2, "y": 63},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "bottom": {
+                    "offset": {"x": 67, "y": 41},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": true,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "10",
+              "name": "Crown",
+              "position": {"x": 0, "y": 33.16152, "z": 5.29918},
+              "orientation": {"x": -0.03595, "y": 0.00285, "z": -0.08777, "w": 0.99549},
+              "shape": {
+                "type": "none",
+                "offset": {"x": 0, "y": 0, "z": 0},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false
+                },
+                "textureLayout": {},
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              },
+              "children": [
+                {
+                  "id": "11",
+                  "name": "Trash-Flat",
+                  "position": {"x": 16.5325, "y": 1.20458, "z": -1.99567},
+                  "orientation": {"x": -0.03282, "y": -0.71918, "z": -0.03109, "w": 0.69336},
+                  "shape": {
+                    "type": "none",
+                    "offset": {"x": 0, "y": 10, "z": 0},
+                    "stretch": {"x": 1, "y": 1, "z": 1},
+                    "settings": {
+                      "isPiece": false
+                    },
+                    "textureLayout": {},
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "12",
+              "name": "HoodTeethL--C5",
+              "position": {"x": -8.87804, "y": 28.76347, "z": 20.89988},
+              "orientation": {"x": -0.04988, "y": -0.15277, "z": 0.06291, "w": 0.985},
+              "shape": {
+                "type": "quad",
+                "offset": {"x": 0.00341, "y": 1.79206, "z": 1.48886},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 8, "y": 14},
+                  "normal": "+Z",
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "front": {
+                    "offset": {"x": 66, "y": 57},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": true,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "13",
+              "name": "HoodTeethL--C6",
+              "position": {"x": 8.87804, "y": 28.76347, "z": 20.89988},
+              "orientation": {"x": -0.04988, "y": 0.15277, "z": -0.06291, "w": 0.985},
+              "shape": {
+                "type": "quad",
+                "offset": {"x": 0.4147, "y": 1.95511, "z": 1.94971},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 6, "y": 14},
+                  "normal": "+Z",
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "front": {
+                    "offset": {"x": 83, "y": 57},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": true,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "14",
+              "name": "HoodTeethL--C7",
+              "position": {"x": 0.90322, "y": 29.74033, "z": 22.50584},
+              "orientation": {"x": -0.09571, "y": 0.0533, "z": -0.00513, "w": 0.99397},
+              "shape": {
+                "type": "quad",
+                "offset": {"x": -0.09093, "y": 1.10184, "z": 0.90454},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 7, "y": 15},
+                  "normal": "+Z",
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "front": {
+                    "offset": {"x": 75, "y": 57},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": true,
+                "shadingMode": "flat"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "format": "character",
+  "lod": "auto"
+}

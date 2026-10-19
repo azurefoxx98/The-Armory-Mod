@@ -1,0 +1,99 @@
+{
+  "Model": "Items/Armors/Goblin/Boot_Hat.blockymodel",
+  "Texture": "NPC/Intelligent/Goblin/Models/Attachments/Merchant/Head_Boot_Texture.png",
+  "Icon": "Icons/ItemsGenerated/Boot_Helm_Goblin.png",
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -5,
+      -26
+    ]
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.05,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 8,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "Scale": 1,
+  "Quality": "Uncommon",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "SubCategory": "Goblin Armors",
+  "TranslationProperties": {
+    "Name": "server.items.Boot_Hat.name"
+  },
+  "Recipe": {
+    "BenchRequirement": [
+      {
+        "Id": "GoblinLab_Workbench",
+        "Categories": [
+          "GoblinLab_Gadgets"
+        ],
+        "RequiredAugmentTags": [
+          "goblin_lab_power",
+          "goblin_lab_recipe_b"
+        ]
+      }
+    ],
+    "Input": [
+      {
+        "ItemId": "Ingredient_Scraps",
+        "Quantity": 5
+      },
+      {
+        "ItemId": "Ingredient_Leather_Heavy",
+        "Quantity": 10
+      }
+    ],
+    "TimeSeconds": 1,
+    "KnowledgeRequired": false
+  },
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "Model": "Items/Armors/Goblin/Hardmode_Helm.blockymodel",
+  "Texture": "Blocks/Decorative_Sets/Goblin/Goblin_Hardmode_Buttons/Goblin_Hardmode_Button_Texture.png",
+  "Icon": "Icons/ItemsGenerated/Hardmode_Mask_Goblin.png",
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      18,
+      22.5
+    ],
+    "Translation": [
+      -1,
+      3
+    ]
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "CosmeticsToHide": [
+      "HeadAccessory"
+    ],
+    "StatModifiers": {
+      "Health": [
+        {
+          "CalculationType": "Multiplicative",
+          "Amount": 0.01
+        }
+      ]
+    }
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "SubCategory": "Goblin Armors",
+  "TranslationProperties": {
+    "Name": "server.items.Hardmode_Mask_Goblin.name",
+    "Description": "server.items.Hardmode_Mask_Goblin.description"
+  },
+  "Recipe": {
+    "BenchRequirement": [
+      {
+        "Id": "GoblinLab_Workbench",
+        "Categories": [
+          "GoblinLab_Gadgets"
+        ],
+        "RequiredAugmentTags": [
+          "goblin_lab_power",
+          "goblin_lab_recipe_b"
+        ]
+      }
+    ],
+    "Input": [
+      {
+        "ItemId": "Ingredient_Gobliterator_Core",
+        "Quantity": 1
+      }
+    ],
+    "TimeSeconds": 1,
+    "KnowledgeRequired": false
+  },
+  "Quality": "Legendary",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  }
+}

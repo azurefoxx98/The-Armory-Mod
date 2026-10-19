@@ -1,0 +1,102 @@
+{
+  "Model": "NPC/Intelligent/Goblin/Models/Attachments/Miner/ShoulderLid_PlankArmband.blockymodel",
+  "Texture": "NPC/Intelligent/Goblin/Models/Attachments/Miner/ShoulderLid_PlankArmband_Texture.png",
+  "Icon": "Icons/ItemsGenerated/Goblin_Pauldrons.png",
+  "IconProperties": {
+    "Scale": 0.7,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      4,
+      4
+    ]
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "CosmeticsToHide": [
+      "Undertop",
+      "Overtop"
+    ],
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 18,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Percent"
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "BenchRequirement": [
+      {
+        "Id": "GoblinLab_Workbench",
+        "Categories": [
+          "GoblinLab_Gadgets"
+        ],
+        "RequiredAugmentTags": [
+          "goblin_lab_power",
+          "goblin_lab_recipe_b"
+        ]
+      }
+    ],
+    "Input": [
+      {
+        "ItemId": "Metal_Goblin_Iron",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 5
+      }
+    ],
+    "TimeSeconds": 1,
+    "KnowledgeRequired": false
+  },
+  "Quality": "Uncommon",
+  "SubCategory": "Goblin Armors",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "TranslationProperties": {
+    "Name": "server.items.Goblin_Pauldrons.name"
+  },
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.DaemonPlushie.name"
+  },
+  "Icon": "Icons/ItemsGenerated/Deco_Daemon_Plushie.png",
+  "Categories": [
+    "ArmoryCategory.ArmoryProps"
+  ],
+  "Interactions": {
+    "Primary": "Block_Primary",
+    "Secondary": "Block_Secondary"
+  },
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Items/Blocks/Daemon_Plush.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Items/Blocks/Daemon_Plush.png",
+        "Weight": 1
+      }
+    ],
+    "Group": "Wood",
+    "HitboxType": "Plant_Full",
+    "VariantRotation": "NESW",
+    "Flags": {},
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Woods"
+      }
+    },
+    "BlockParticleSetId": "Stone",
+    "BlockSoundSetId": "Plushie",
+    "PhysicalMaterialId": "Wool",
+    "Interactions": {
+      "Use": {
+        "Interactions": [
+          {
+            "Type": "Simple",
+            "Effects": {
+              "WorldSoundEventId": "DaemonPlushSFX",
+              "CameraEffect": "Gobliterator_Arena_Horn"
+            }
+          }
+        ]
+      }
+    },
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "ParticleColor": "#75755b"
+  },
+  "PlayerAnimationsId": "Block",
+  "IconProperties": {
+    "Scale": 0.7,
+    "Rotation": [
+      9,
+      335,
+      359
+    ],
+    "Translation": [
+      1,
+      -16
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Deco"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Blocks_Wood",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Fabric_Scrap_Wool",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Plant_Petals_Black",
+        "Quantity": 3
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Id": "Furniture_Bench",
+        "Categories": [
+          "Furniture_Misc"
+        ]
+      }
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Decoration"
+    }
+  ]
+}

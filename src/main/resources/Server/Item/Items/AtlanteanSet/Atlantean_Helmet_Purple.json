@@ -1,0 +1,122 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Atlantean_Helm.name",
+    "Description": "server.items.Atlantean_Helm.description"
+  },
+  "Quality": "Rare",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Atlantean_Helmet_Purple.png",
+  "Model": "Items/Armors/Atlantean/Helmet.blockymodel",
+  "Texture": "Items/Armors/Atlantean/Purple.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Atlantean_Helm"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "EarAccessory",
+      "Ear",
+      "Haircut",
+      "HeadAccessory"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.064,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.064,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Ice": [
+        {
+          "Amount": 0.15,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 12,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 120,
+  "Tags": {
+    "ArmoryWaterBreathing": [],
+    "Type": [
+      "Armor"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "IconProperties": {
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Scale": 0.3261,
+    "Translation": [
+      -3.07,
+      -24.1
+    ]
+  },
+  "Light": {
+    "Color": "#103",
+    "Radius": 5
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Atlantean_Helm"
+    },
+    {
+      "Id": "Resource_AtlanteanSet"
+    }
+  ],
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "SubCategory": "Atlantean Set",
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block"
+}

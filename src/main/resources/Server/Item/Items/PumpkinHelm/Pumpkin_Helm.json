@@ -1,0 +1,125 @@
+{
+  "Model": "Items/Armors/Halloween/Pumpkin_Helm_Lit.blockymodel",
+  "Texture": "Items/Armors/Halloween/Pumpkin_Helm.png",
+  "Icon": "Icons/ItemsGenerated/Pumpkin_Helm.png",
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      20,
+      22.5
+    ],
+    "Translation": [
+      2,
+      -11
+    ]
+  },
+  "Armor": {
+    "ArmorSlot": "Head",
+    "CosmeticsToHide": [
+      "Haircut",
+      "HeadAccessory",
+      "EarAccessory",
+      "Ear",
+      "FacialHair"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.13,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.13,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 30,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 90
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [
+          "Armor_Head"
+        ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "Input": [
+      {
+        "ItemId": "Metal_Goblin_Iron",
+        "Quantity": 30
+      },
+      {
+        "ItemId": "Ingredient_Fire_Essence",
+        "Quantity": 90
+      },
+      {
+        "ItemId": "Plant_Crop_Pumpkin_Item",
+        "Quantity": 100
+      }
+    ],
+    "TimeSeconds": 1,
+    "KnowledgeRequired": false
+  },
+  "SubCategory": "Seasonal Armors",
+  "Quality": "Legendary",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Pumpkin_Helm"
+    }
+  ],
+  "Light": {
+    "Color": "#620",
+    "Radius": 0
+  },
+  "ItemLevel": 50,
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "TranslationProperties": {
+    "Name": "server.items.PumpkinHelm.name",
+    "Description": "server.items.PumpkinHelm.description"
+  },
+  "DurabilityLossOnDeath": false,
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  }
+}

@@ -1,0 +1,891 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Head",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
+      "shape": {
+        "type": "none",
+        "offset": {"x": 0, "y": 0, "z": 0},
+        "stretch": {"x": 1, "y": 1, "z": 1},
+        "settings": {
+          "isPiece": true
+        },
+        "textureLayout": {},
+        "unwrapMode": "custom",
+        "visible": true,
+        "doubleSided": false,
+        "shadingMode": "flat"
+      },
+      "children": [
+        {
+          "id": "2",
+          "name": "Bucket",
+          "position": {"x": -1.4, "y": 31.03, "z": 0.09},
+          "orientation": {"x": 0.03157, "y": -0.05138, "z": -0.99773, "w": 0.0301},
+          "shape": {
+            "type": "box",
+            "offset": {"x": 0, "y": 2, "z": 0},
+            "stretch": {"x": 1, "y": 1, "z": 1},
+            "settings": {
+              "isPiece": false,
+              "size": {"x": 28, "y": 4, "z": 28}
+            },
+            "textureLayout": {
+              "top": {
+                "offset": {"x": 94, "y": 51},
+                "mirror": {"x": false, "y": false},
+                "angle": 0
+              },
+              "bottom": {
+                "offset": {"x": 65, "y": 51},
+                "mirror": {"x": false, "y": false},
+                "angle": 0
+              }
+            },
+            "unwrapMode": "custom",
+            "visible": true,
+            "doubleSided": false,
+            "shadingMode": "flat"
+          },
+          "children": [
+            {
+              "id": "3",
+              "name": "strapping_geo--C1",
+              "position": {"x": 0.03599, "y": 10.59357, "z": -2.52013},
+              "orientation": {"x": -0.04103, "y": 0.01561, "z": 0.01067, "w": 0.99898},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.03599, "y": -0.79357, "z": 1.72013},
+                "stretch": {"x": 1, "y": 1, "z": 0.99},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 42, "y": 6, "z": 42},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 65, "y": 81},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 113, "y": 87},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  },
+                  "front": {
+                    "offset": {"x": 107, "y": 135},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 152, "y": 136},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 155, "y": 87},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 0
+                  },
+                  "bottom": {
+                    "offset": {"x": 107, "y": 129},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "4",
+              "name": "IronPlate--C2",
+              "position": {"x": -13.63846, "y": 8.63356, "z": 10.1136},
+              "orientation": {"x": 0.01114, "y": 0.03359, "z": 0.01004, "w": 0.99932},
+              "shape": {
+                "type": "box",
+                "offset": {"x": 0.5, "y": 0, "z": 0},
+                "stretch": {"x": 1, "y": 1, "z": 0.98},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 19, "y": 20, "z": 24},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 106, "y": 156},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 87, "y": 156},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 2, "y": 158},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 45, "y": 158},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 85, "y": 160},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "bottom": {
+                    "offset": {"x": 65, "y": 136},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "5",
+              "name": "IronPlate--C3",
+              "position": {"x": -0.83451, "y": 25.37603, "z": 12.67812},
+              "orientation": {"x": -0.06209, "y": 0.00309, "z": -0.12367, "w": 0.99037},
+              "shape": {
+                "type": "box",
+                "offset": {"x": 0.9, "y": -1.2, "z": -1.4},
+                "stretch": {"x": 1, "y": 1, "z": 0.98},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 33, "y": 17, "z": 4},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 143, "y": 49},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 90
+                  },
+                  "right": {
+                    "offset": {"x": 139, "y": 86},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "front": {
+                    "offset": {"x": 139, "y": 82},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "left": {
+                    "offset": {"x": 139, "y": 86},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "top": {
+                    "offset": {"x": 143, "y": 82},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "6",
+              "name": "Hair-F",
+              "position": {"x": 0.5396, "y": 28.81424, "z": 0.64361},
+              "orientation": {"x": -0.99619, "y": 0, "z": 0, "w": 0.08716},
+              "shape": {
+                "type": "quad",
+                "offset": {"x": -0.07188, "y": -12.09452, "z": -0.41826},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 48, "y": 28},
+                  "normal": "+Z"
+                },
+                "textureLayout": {
+                  "front": {
+                    "offset": {"x": 1, "y": 104},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": true,
+                "shadingMode": "flat"
+              },
+              "children": [
+                {
+                  "id": "7",
+                  "name": "hinge_L_geo--C1",
+                  "position": {"x": -22.71401, "y": 14.82835, "z": 0.17335},
+                  "orientation": {"x": -0.52434, "y": -0.05024, "z": -0.00663, "w": 0.85},
+                  "shape": {
+                    "type": "box",
+                    "offset": {"x": 0.46401, "y": 0.17165, "z": -0.17335},
+                    "stretch": {"x": 1, "y": 1, "z": 1},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 5, "y": 6, "z": 6},
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "back": {
+                        "offset": {"x": 57, "y": 120},
+                        "mirror": {"x": true, "y": false},
+                        "angle": 90
+                      },
+                      "front": {
+                        "offset": {"x": 57, "y": 109},
+                        "mirror": {"x": true, "y": false},
+                        "angle": 90
+                      },
+                      "left": {
+                        "offset": {"x": 51, "y": 109},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 0
+                      },
+                      "top": {
+                        "offset": {"x": 51, "y": 109},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 270
+                      },
+                      "bottom": {
+                        "offset": {"x": 57, "y": 120},
+                        "mirror": {"x": true, "y": false},
+                        "angle": 90
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  }
+                },
+                {
+                  "id": "8",
+                  "name": "hinge_R_geo--C2",
+                  "position": {"x": 22.10054, "y": 14.82835, "z": 0.17335},
+                  "orientation": {"x": -0.5705, "y": 0.08326, "z": 0.04859, "w": 0.81562},
+                  "shape": {
+                    "type": "box",
+                    "offset": {"x": -0.53599, "y": 0.17165, "z": -0.17335},
+                    "stretch": {"x": 1, "y": 1, "z": 1},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 5, "y": 6, "z": 6},
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "back": {
+                        "offset": {"x": 57, "y": 115},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 270
+                      },
+                      "right": {
+                        "offset": {"x": 57, "y": 109},
+                        "mirror": {"x": true, "y": false},
+                        "angle": 0
+                      },
+                      "front": {
+                        "offset": {"x": 57, "y": 104},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 270
+                      },
+                      "top": {
+                        "offset": {"x": 51, "y": 104},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 90
+                      },
+                      "bottom": {
+                        "offset": {"x": 57, "y": 115},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 270
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "9",
+              "name": "plank_L_geo--C4",
+              "position": {"x": -15.96401, "y": 8.79357, "z": -0.72013},
+              "orientation": {"x": 0, "y": 0, "z": 0.04362, "w": 0.99905},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.03599, "y": 0.20643, "z": 0.72013},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 6, "y": 28, "z": 32},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 1, "y": 73},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 1, "y": 102},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 22, "y": 73},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 34, "y": 37},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 34, "y": 37},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 90
+                  },
+                  "bottom": {
+                    "offset": {"x": 66, "y": 9},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "10",
+              "name": "support_L_geo--C5",
+              "position": {"x": -18.40437, "y": 36.68702, "z": -0.72013},
+              "orientation": {"x": 0, "y": 0, "z": 0.04362, "w": 0.99905},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.03599, "y": -8.79357, "z": 0.72013},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 6, "y": 10, "z": 12},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 56, "y": 60},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 56, "y": 60},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 56, "y": 60},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 44, "y": 47},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 44, "y": 60},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 90
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "11",
+              "name": "Screw--C6",
+              "position": {"x": 11.24779, "y": 21.7468, "z": 19.52642},
+              "orientation": {"x": -0.24732, "y": 0.72324, "z": -0.62819, "w": 0.14537},
+              "shape": {
+                "type": "box",
+                "offset": {"x": 0, "y": 0, "z": 0},
+                "stretch": {"x": 1.05, "y": 1.1, "z": 1.05},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 5, "y": 2, "z": 5},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 51, "y": 131},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 58, "y": 124},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  },
+                  "front": {
+                    "offset": {"x": 51, "y": 122},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 58, "y": 129},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 270
+                  },
+                  "bottom": {
+                    "offset": {"x": 51, "y": 124},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "12",
+              "name": "plank_R_geo--C7",
+              "position": {"x": 16.42091, "y": 5.51148, "z": -0.72013},
+              "orientation": {"x": 0, "y": 0, "z": -0.04362, "w": 0.99905},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.03599, "y": 0.20643, "z": -10.77987},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 6, "y": 28, "z": 9},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 28, "y": 73},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 77, "y": 37},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 141, "y": 36},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 64, "y": 99},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 77, "y": 43},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "bottom": {
+                    "offset": {"x": 77, "y": 3},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "13",
+              "name": "plank02_R_geo--C8",
+              "position": {"x": 16.42091, "y": 8.51148, "z": -0.72013},
+              "orientation": {"x": 0, "y": 0, "z": -0.04362, "w": 0.99905},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.03599, "y": 0.20643, "z": 5.22013},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 6, "y": 28, "z": 23},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 7, "y": 73},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 100, "y": 40},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 35, "y": 73},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 24, "y": 102},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 100, "y": 46},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "bottom": {
+                    "offset": {"x": 100, "y": 6},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "14",
+              "name": "support_R_geo--C9",
+              "position": {"x": 18.86127, "y": 36.40493, "z": -0.72013},
+              "orientation": {"x": 0, "y": 0, "z": -0.04362, "w": 0.99905},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.03599, "y": -8.79357, "z": 0.72013},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 6, "y": 10, "z": 12},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 62, "y": 60},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 90, "y": 50},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 62, "y": 60},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 44, "y": 60},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 44, "y": 66},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 270
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "15",
+              "name": "plank_front_geo--C10",
+              "position": {"x": 0.4666, "y": 8.73232, "z": 15.27226},
+              "orientation": {"x": 0.03084, "y": -0.70643, "z": -0.03084, "w": 0.70643},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.03599, "y": -0.29357, "z": 0.72013},
+                "stretch": {"x": 1, "y": 1.03797, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 6, "y": 27, "z": 14},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 141, "y": 35},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 124, "y": 37},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 141, "y": 35},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 49, "y": 101},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 110, "y": 43},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 270
+                  },
+                  "bottom": {
+                    "offset": {"x": 124, "y": 4},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "16",
+              "name": "plank02_front_geo--C11",
+              "position": {"x": 0.4666, "y": 11.73232, "z": 15.27226},
+              "orientation": {"x": 0.03084, "y": -0.70643, "z": -0.03084, "w": 0.70643},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.03599, "y": 0.20643, "z": -10.27987},
+                "stretch": {"x": 1, "y": 1.03797, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 6, "y": 28, "z": 8},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 14, "y": 73},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 110, "y": 41},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 141, "y": 36},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 42, "y": 102},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 110, "y": 47},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "bottom": {
+                    "offset": {"x": 110, "y": 7},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "17",
+              "name": "plank03_front_geo--C12",
+              "position": {"x": 0.4666, "y": 4.73232, "z": 15.27226},
+              "orientation": {"x": 0.03084, "y": -0.70643, "z": -0.03084, "w": 0.70643},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.03599, "y": 0.20643, "z": 11.72013},
+                "stretch": {"x": 1, "y": 1.03797, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 6, "y": 28, "z": 8},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 141, "y": 36},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 132, "y": 34},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 42, "y": 73},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 64, "y": 99},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 132, "y": 40},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "bottom": {
+                    "offset": {"x": 132, "y": 0},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "18",
+              "name": "plank_back_geo--C13",
+              "position": {"x": 0.4666, "y": 8.73232, "z": -16.71252},
+              "orientation": {"x": -0.03084, "y": 0.70643, "z": -0.03084, "w": 0.70643},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.03599, "y": 0.20643, "z": 7.72013},
+                "stretch": {"x": 1, "y": 1.01823, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 6, "y": 28, "z": 16},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 15, "y": 73},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 16, "y": 38},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 1, "y": 73},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 34, "y": 102},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 16, "y": 44},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 270
+                  },
+                  "bottom": {
+                    "offset": {"x": 16, "y": 4},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 90
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "19",
+              "name": "plank02_back_geo--C14",
+              "position": {"x": 0.4666, "y": 5.73232, "z": -16.71252},
+              "orientation": {"x": -0.03084, "y": 0.70643, "z": -0.03084, "w": 0.70643},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.03599, "y": 0.20643, "z": -7.27987},
+                "stretch": {"x": 1, "y": 1.01823, "z": 1},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 6, "y": 28, "z": 14},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 15, "y": 73},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 2, "y": 37},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 135, "y": 36},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 50, "y": 99},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 0
+                  },
+                  "top": {
+                    "offset": {"x": 2, "y": 43},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 270
+                  },
+                  "bottom": {
+                    "offset": {"x": 2, "y": 9},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 270
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "format": "character",
+  "lod": "auto"
+}

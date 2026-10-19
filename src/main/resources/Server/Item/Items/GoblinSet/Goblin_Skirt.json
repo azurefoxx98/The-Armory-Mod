@@ -1,0 +1,108 @@
+{
+  "Model": "NPC/Intelligent/Goblin/Models/Attachments/Scientist/Skirt_Lampshade.blockymodel",
+  "Texture": "NPC/Intelligent/Goblin/Models/Attachments/Scientist/Skirt_Lampshade.png",
+  "Icon": "Icons/ItemsGenerated/Goblin_Skirt.png",
+  "IconProperties": {
+    "Scale": 0.7,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      2,
+      -38
+    ]
+  },
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "CosmeticsToHide": [
+      "Overpants",
+      "Pants"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Fall": [
+        {
+          "CalculationType": "Percent",
+          "Amount": 0.03
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 5,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "BenchRequirement": [
+      {
+        "Id": "GoblinLab_Workbench",
+        "Categories": [
+          "GoblinLab_Gadgets"
+        ],
+        "RequiredAugmentTags": [
+          "goblin_lab_power",
+          "goblin_lab_recipe_b"
+        ]
+      }
+    ],
+    "Input": [
+      {
+        "ItemId": "Ingredient_Scraps",
+        "Quantity": 10
+      },
+      {
+        "ItemId": "Ingredient_Hide_Light",
+        "Quantity": 2
+      }
+    ],
+    "TimeSeconds": 1,
+    "KnowledgeRequired": false
+  },
+  "Quality": "Uncommon",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "SubCategory": "Goblin Armors",
+  "TranslationProperties": {
+    "Name": "server.items.Goblin_Skirt.name"
+  },
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  }
+}

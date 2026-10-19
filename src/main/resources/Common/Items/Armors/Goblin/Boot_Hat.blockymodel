@@ -1,0 +1,658 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Head",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "orientation": {"x": 0, "y": 0, "z": 0, "w": 1},
+      "shape": {
+        "type": "none",
+        "offset": {"x": 0, "y": 0, "z": 0},
+        "stretch": {"x": 1, "y": 1, "z": 1},
+        "settings": {
+          "isPiece": true
+        },
+        "textureLayout": {},
+        "unwrapMode": "custom",
+        "visible": true,
+        "doubleSided": false,
+        "shadingMode": "flat"
+      },
+      "children": [
+        {
+          "id": "2",
+          "name": "Hat",
+          "position": {"x": -0.57752, "y": 21.63386, "z": 3.79595},
+          "orientation": {"x": -0.01262, "y": -0.01386, "z": 0.00032, "w": 0.99982},
+          "shape": {
+            "type": "box",
+            "offset": {"x": -0.01896, "y": -5.22323, "z": -4.24766},
+            "stretch": {"x": 1.2, "y": 1.125, "z": 1.125},
+            "settings": {
+              "isPiece": false,
+              "size": {"x": 15, "y": 9, "z": 23}
+            },
+            "textureLayout": {
+              "back": {
+                "offset": {"x": 15, "y": 55},
+                "mirror": {"x": false, "y": true},
+                "angle": 180
+              },
+              "right": {
+                "offset": {"x": 38, "y": 55},
+                "mirror": {"x": false, "y": true},
+                "angle": 180
+              },
+              "front": {
+                "offset": {"x": 53, "y": 64},
+                "mirror": {"x": false, "y": false},
+                "angle": 180
+              },
+              "left": {
+                "offset": {"x": 15, "y": 55},
+                "mirror": {"x": true, "y": true},
+                "angle": 180
+              },
+              "top": {
+                "offset": {"x": 17, "y": 15},
+                "mirror": {"x": true, "y": true},
+                "angle": 90
+              },
+              "bottom": {
+                "offset": {"x": 64, "y": 15},
+                "mirror": {"x": true, "y": false},
+                "angle": 90
+              }
+            },
+            "unwrapMode": "custom",
+            "visible": true,
+            "doubleSided": false,
+            "shadingMode": "flat"
+          },
+          "children": [
+            {
+              "id": "3",
+              "name": "R-Boot--C1",
+              "position": {"x": 0, "y": -4.5, "z": 10.5},
+              "orientation": {"x": 0.05016, "y": 0, "z": 0, "w": 0.99874},
+              "shape": {
+                "type": "box",
+                "offset": {"x": 0, "y": 1.54893, "z": 5.47226},
+                "stretch": {"x": 1.2, "y": 1.125, "z": 1.125},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 17, "y": 3, "z": 12},
+                  "isStaticBox": true
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 13, "y": 17},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 90
+                  },
+                  "right": {
+                    "offset": {"x": 12, "y": 18},
+                    "mirror": {"x": false, "y": true},
+                    "angle": 180
+                  },
+                  "front": {
+                    "offset": {"x": 13, "y": 17},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 90
+                  },
+                  "left": {
+                    "offset": {"x": 0, "y": 18},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 180
+                  },
+                  "top": {
+                    "offset": {"x": 0, "y": 17},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 90
+                  },
+                  "bottom": {
+                    "offset": {"x": 12, "y": 17},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "4",
+              "name": "Hair-F",
+              "position": {"x": 0.22635, "y": 4.78892, "z": 6.97504},
+              "orientation": {"x": 0.03238, "y": 0.84646, "z": 0.52894, "w": 0.05177},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.625, "y": 7.3125, "z": -3.9375},
+                "stretch": {"x": 1.25, "y": 1.125, "z": 1.125},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 17, "y": 13, "z": 7}
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 84, "y": 24},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  },
+                  "right": {
+                    "offset": {"x": 84, "y": 50},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  },
+                  "front": {
+                    "offset": {"x": 84, "y": 33},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  },
+                  "left": {
+                    "offset": {"x": 84, "y": 26},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 90
+                  },
+                  "top": {
+                    "offset": {"x": 91, "y": 33},
+                    "mirror": {"x": true, "y": true},
+                    "angle": 270
+                  },
+                  "bottom": {
+                    "offset": {"x": 71, "y": 50},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 90
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              }
+            },
+            {
+              "id": "5",
+              "name": "R-Boot2",
+              "position": {"x": -0.06577, "y": 17.20114, "z": -0.90524},
+              "orientation": {"x": -0.04362, "y": 0, "z": 0, "w": 0.99905},
+              "shape": {
+                "type": "none",
+                "offset": {"x": 0, "y": 3.3, "z": -0.8},
+                "stretch": {"x": 1, "y": 1, "z": 1},
+                "settings": {
+                  "isPiece": false
+                },
+                "textureLayout": {},
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              },
+              "children": [
+                {
+                  "id": "6",
+                  "name": "R-Boot2--C1",
+                  "position": {"x": 0, "y": 1.8, "z": -0.8},
+                  "orientation": {"x": 0, "y": 0, "z": 0.07846, "w": 0.99692},
+                  "shape": {
+                    "type": "box",
+                    "offset": {"x": -0.08614, "y": 0.98971, "z": 0.11423},
+                    "stretch": {"x": 1.25, "y": 1.125, "z": 1.225},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 16, "y": 10, "z": 19},
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "back": {
+                        "offset": {"x": 0, "y": 32},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 0
+                      },
+                      "right": {
+                        "offset": {"x": 35, "y": 32},
+                        "mirror": {"x": true, "y": false},
+                        "angle": 0
+                      },
+                      "front": {
+                        "offset": {"x": 35, "y": 32},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 0
+                      },
+                      "left": {
+                        "offset": {"x": 16, "y": 32},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 0
+                      },
+                      "top": {
+                        "offset": {"x": 16, "y": 32},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      },
+                      "bottom": {
+                        "offset": {"x": 35, "y": 32},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  }
+                },
+                {
+                  "id": "7",
+                  "name": "L-Boot5--C2",
+                  "position": {"x": 0.00009, "y": 8.9541, "z": -13.82015},
+                  "orientation": {"x": 0, "y": 0.36244, "z": 0.93201, "w": 0},
+                  "shape": {
+                    "type": "box",
+                    "offset": {"x": 0.08614, "y": -0.65252, "z": 0.95286},
+                    "stretch": {"x": 1.2, "y": 1.125, "z": 1.125},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 6, "y": 7, "z": 3},
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "back": {
+                        "offset": {"x": 3, "y": 25},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 90
+                      },
+                      "right": {
+                        "offset": {"x": 3, "y": 25},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      },
+                      "front": {
+                        "offset": {"x": 3, "y": 31},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      },
+                      "left": {
+                        "offset": {"x": 3, "y": 25},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      },
+                      "bottom": {
+                        "offset": {"x": 0, "y": 31},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "8",
+              "name": "L-Boot3",
+              "position": {"x": -0.06577, "y": 7.63319, "z": -0.93139},
+              "orientation": {"x": 0, "y": 0, "z": -0.0349, "w": 0.99939},
+              "shape": {
+                "type": "box",
+                "offset": {"x": -0.08605, "y": 4.7959, "z": -0.47731},
+                "stretch": {"x": 1.201, "y": 1.25, "z": 1.21415},
+                "settings": {
+                  "isPiece": false,
+                  "size": {"x": 14, "y": 13, "z": 17}
+                },
+                "textureLayout": {
+                  "back": {
+                    "offset": {"x": 48, "y": 42},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 0
+                  },
+                  "right": {
+                    "offset": {"x": 17, "y": 42},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "front": {
+                    "offset": {"x": 3, "y": 42},
+                    "mirror": {"x": false, "y": false},
+                    "angle": 0
+                  },
+                  "left": {
+                    "offset": {"x": 34, "y": 42},
+                    "mirror": {"x": true, "y": false},
+                    "angle": 0
+                  }
+                },
+                "unwrapMode": "custom",
+                "visible": true,
+                "doubleSided": false,
+                "shadingMode": "flat"
+              },
+              "children": [
+                {
+                  "id": "9",
+                  "name": "R-Boot--C1",
+                  "position": {"x": -5.70013, "y": -4.13575, "z": 10.64487},
+                  "orientation": {"x": -0.02682, "y": -0.04955, "z": -0.11635, "w": 0.99161},
+                  "shape": {
+                    "type": "box",
+                    "offset": {"x": 0, "y": 0, "z": 0},
+                    "stretch": {"x": 1.2, "y": 1.125, "z": 1.125},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 3, "y": 3, "z": 2},
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "back": {
+                        "offset": {"x": 53, "y": 62},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      },
+                      "right": {
+                        "offset": {"x": 56, "y": 55},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 180
+                      },
+                      "front": {
+                        "offset": {"x": 53, "y": 62},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      },
+                      "left": {
+                        "offset": {"x": 58, "y": 59},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 180
+                      },
+                      "top": {
+                        "offset": {"x": 58, "y": 62},
+                        "mirror": {"x": true, "y": false},
+                        "angle": 90
+                      },
+                      "bottom": {
+                        "offset": {"x": 56, "y": 62},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  }
+                },
+                {
+                  "id": "10",
+                  "name": "R-Boot--C2",
+                  "position": {"x": -5.60013, "y": 0.06425, "z": 10.64487},
+                  "orientation": {"x": -0.03677, "y": -0.03586, "z": 0.01515, "w": 0.99857},
+                  "shape": {
+                    "type": "box",
+                    "offset": {"x": 0, "y": 0, "z": 0},
+                    "stretch": {"x": 1.2, "y": 1.125, "z": 1.125},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 3, "y": 3, "z": 2},
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "back": {
+                        "offset": {"x": 53, "y": 62},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      },
+                      "right": {
+                        "offset": {"x": 56, "y": 59},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 180
+                      },
+                      "front": {
+                        "offset": {"x": 53, "y": 58},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      },
+                      "left": {
+                        "offset": {"x": 58, "y": 59},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 180
+                      },
+                      "top": {
+                        "offset": {"x": 58, "y": 62},
+                        "mirror": {"x": true, "y": false},
+                        "angle": 90
+                      },
+                      "bottom": {
+                        "offset": {"x": 56, "y": 62},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  }
+                },
+                {
+                  "id": "11",
+                  "name": "L-Boot--C3",
+                  "position": {"x": 6.09665, "y": -2.83575, "z": 10.24487},
+                  "orientation": {"x": 0.01236, "y": 0.24471, "z": 0.01505, "w": 0.9694},
+                  "shape": {
+                    "type": "box",
+                    "offset": {"x": 0, "y": 0, "z": 0},
+                    "stretch": {"x": 1.2, "y": 1.125, "z": 1.125},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 3, "y": 3, "z": 2},
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "back": {
+                        "offset": {"x": 53, "y": 59},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 90
+                      },
+                      "right": {
+                        "offset": {"x": 56, "y": 59},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 180
+                      },
+                      "front": {
+                        "offset": {"x": 53, "y": 55},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 90
+                      },
+                      "left": {
+                        "offset": {"x": 58, "y": 55},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 180
+                      },
+                      "top": {
+                        "offset": {"x": 58, "y": 59},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 90
+                      },
+                      "bottom": {
+                        "offset": {"x": 56, "y": 59},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 90
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  }
+                },
+                {
+                  "id": "12",
+                  "name": "L-Boot--C4",
+                  "position": {"x": 5.99665, "y": 1.36425, "z": 10.24487},
+                  "orientation": {"x": -0.04034, "y": 0.25205, "z": -0.02715, "w": 0.96649},
+                  "shape": {
+                    "type": "box",
+                    "offset": {"x": 0, "y": 0, "z": 0},
+                    "stretch": {"x": 1.2, "y": 1.125, "z": 1.125},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 3, "y": 3, "z": 2},
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "back": {
+                        "offset": {"x": 53, "y": 59},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 90
+                      },
+                      "right": {
+                        "offset": {"x": 56, "y": 59},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 180
+                      },
+                      "front": {
+                        "offset": {"x": 56, "y": 59},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 90
+                      },
+                      "left": {
+                        "offset": {"x": 58, "y": 59},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 180
+                      },
+                      "top": {
+                        "offset": {"x": 58, "y": 59},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 90
+                      },
+                      "bottom": {
+                        "offset": {"x": 56, "y": 59},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 90
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  }
+                },
+                {
+                  "id": "13",
+                  "name": "L-Boot--C5",
+                  "position": {"x": 6.69665, "y": 5.46425, "z": 10.29846},
+                  "orientation": {"x": -0.19524, "y": 0.11661, "z": -0.10176, "w": 0.96847},
+                  "shape": {
+                    "type": "box",
+                    "offset": {"x": -0.73264, "y": -0.26354, "z": 0.06154},
+                    "stretch": {"x": 1.2, "y": 1.125, "z": 1.125},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 3, "y": 3, "z": 2},
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "back": {
+                        "offset": {"x": 53, "y": 59},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 90
+                      },
+                      "right": {
+                        "offset": {"x": 56, "y": 59},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 180
+                      },
+                      "front": {
+                        "offset": {"x": 53, "y": 55},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 90
+                      },
+                      "left": {
+                        "offset": {"x": 58, "y": 55},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 180
+                      },
+                      "top": {
+                        "offset": {"x": 58, "y": 59},
+                        "mirror": {"x": false, "y": false},
+                        "angle": 90
+                      },
+                      "bottom": {
+                        "offset": {"x": 56, "y": 59},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 90
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  }
+                },
+                {
+                  "id": "14",
+                  "name": "R-Boot--C6",
+                  "position": {"x": -6.70013, "y": 4.16425, "z": 10.29846},
+                  "orientation": {"x": -0.19426, "y": -0.01135, "z": 0.11199, "w": 0.97447},
+                  "shape": {
+                    "type": "box",
+                    "offset": {"x": 0.73264, "y": -0.26354, "z": 0.06154},
+                    "stretch": {"x": 1.2, "y": 1.125, "z": 1.125},
+                    "settings": {
+                      "isPiece": false,
+                      "size": {"x": 3, "y": 3, "z": 2},
+                      "isStaticBox": true
+                    },
+                    "textureLayout": {
+                      "back": {
+                        "offset": {"x": 53, "y": 62},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      },
+                      "right": {
+                        "offset": {"x": 56, "y": 55},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 180
+                      },
+                      "front": {
+                        "offset": {"x": 53, "y": 62},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      },
+                      "left": {
+                        "offset": {"x": 58, "y": 59},
+                        "mirror": {"x": false, "y": true},
+                        "angle": 180
+                      },
+                      "top": {
+                        "offset": {"x": 58, "y": 62},
+                        "mirror": {"x": true, "y": false},
+                        "angle": 90
+                      },
+                      "bottom": {
+                        "offset": {"x": 56, "y": 62},
+                        "mirror": {"x": true, "y": true},
+                        "angle": 90
+                      }
+                    },
+                    "unwrapMode": "custom",
+                    "visible": true,
+                    "doubleSided": false,
+                    "shadingMode": "flat"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "format": "character",
+  "lod": "auto"
+}

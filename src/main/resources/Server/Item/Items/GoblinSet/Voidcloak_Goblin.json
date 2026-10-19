@@ -1,0 +1,108 @@
+{
+  "Model": "NPC/Intelligent/Goblin/Models/Attachments/Voidtaken/Tunic_Voidtaken.blockymodel",
+  "Texture": "NPC/Intelligent/Goblin/Models/Attachments/Voidtaken/Tunic_Voidtaken_Texture.png",
+  "Icon": "Icons/ItemsGenerated/Voidcloak_Goblin.png",
+  "IconProperties": {
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Scale": 0.2531,
+    "Translation": [
+      -2,
+      -4.59
+    ]
+  },
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "CosmeticsToHide": [
+      "Undertop",
+      "Overtop"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 5,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 20
+        }
+      ]
+    }
+  },
+  "Recipe": {
+    "BenchRequirement": [
+      {
+        "Id": "GoblinLab_Workbench",
+        "Categories": [
+          "GoblinLab_Gadgets"
+        ],
+        "RequiredAugmentTags": [
+          "goblin_lab_power",
+          "goblin_lab_recipe_b"
+        ]
+      }
+    ],
+    "Input": [
+      {
+        "ItemId": "Ingredient_Voidtaken_Grizzly_Hide",
+        "Quantity": 6
+      },
+      {
+        "ItemId": "Ingredient_Leather_Light",
+        "Quantity": 5
+      }
+    ],
+    "TimeSeconds": 1,
+    "KnowledgeRequired": false
+  },
+  "SubCategory": "Goblin Armors",
+  "Quality": "Uncommon",
+  "TranslationProperties": {
+    "Name": "server.items.VoidCloak_Goblin.name"
+  },
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors"
+  ],
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "EquipItem"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Armor"
+    ]
+  }
+}

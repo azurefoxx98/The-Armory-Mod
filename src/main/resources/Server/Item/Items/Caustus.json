@@ -1,6 +1,7 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.Caustus.name"
+    "Name": "server.items.Caustus.name",
+    "Description": "server.items.Caustus.description"
   },
   "Quality": "Rare",
   "ItemLevel": 30,
@@ -60,6 +61,12 @@
         {
           "Amount": 15,
           "CalculationType": "Additive"
+        }
+      ],
+      "TA_Unarmed_Damage": [
+        {
+          "Amount": 9,
+          "CalculationType": "Multiplicative"
         }
       ]
     }

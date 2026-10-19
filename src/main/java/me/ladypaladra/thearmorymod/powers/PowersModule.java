@@ -8,8 +8,9 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import javax.annotation.Nonnull;
 
 /**
- * Item powers that the engine has no data field for: resistances carried by stats, a shield
- * that reflects, a pack that bursts, breathing underwater and the ore pack.
+ * Item powers that the engine has no data field for: resistances carried by stats, gloves that
+ * make a bare fist hit harder, a shield that reflects, a pack that bursts, breathing underwater
+ * and the ore pack.
  *
  * <p>Swim speed sits with the other movement stats in the stats module.</p>
  */
@@ -33,6 +34,7 @@ public final class PowersModule {
 
         ComponentRegistryProxy<EntityStore> registry = plugin.getEntityStoreRegistry();
         registry.registerSystem(new StatResistanceSystem());
+        registry.registerSystem(new UnarmedDamageSystem());
         registry.registerSystem(new SporeBurstSystem());
         registry.registerSystem(new WaterBreathingSystems.Check());
         registry.registerSystem(new WaterBreathingSystems.Recheck());

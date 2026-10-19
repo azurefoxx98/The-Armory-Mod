@@ -23,6 +23,8 @@ public final class ArmoryStatIds {
 
     public static final String ORE_FIND = "TA_Ore_Find";
 
+    public static final String UNARMED_DAMAGE = "TA_Unarmed_Damage";
+
     public static final List<String> ALL = List.of(
             ARROW_DAMAGE_BONUS,
             MOVE_SPEED,
@@ -31,6 +33,7 @@ public final class ArmoryStatIds {
             FIRE_RESISTANCE,
             BLAST_RESISTANCE,
             MINING_SPEED,
-            ORE_FIND
+            ORE_FIND,
+            UNARMED_DAMAGE
     );
 }

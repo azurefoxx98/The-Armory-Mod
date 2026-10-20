@@ -30,13 +30,13 @@ import javax.annotation.Nonnull;
  * <p>A reflected hit is never reflected again. Two players guarding with reflecting shields
  * would otherwise send one hit back and forth between them.</p>
  *
- * <p>Only a hit that would have hurt the holder is reflected. The guard runs its blocked
- * interactions for every hit from another entity before the damage filters have finished, and
- * those filters cancel many hits outright: from a player while the world has no PvP, which also
- * covers a spell's own caster stepping into it, on an invulnerable or Creative player, during
- * spawn protection, or by another mod's ward. Other mods also send zero damage hits to ask
- * whether a target may be harmed. The interaction is queued and runs after the filters, so it
- * reads the hit's final state and leaves those alone.</p>
+ * <p>Only a hit that would have hurt the holder is reflected. The guard queues its blocked
+ * interactions for any hit from another entity that reaches it, and no order is declared between
+ * the guard and the other damage filters, so a filter that runs after it, such as another mod's
+ * ward, can still cancel the hit. Other mods also send zero damage hits to ask whether a target
+ * may be harmed. The interaction is queued and runs after every filter, so it reads the hit's
+ * final state and leaves those alone. Hits cancelled for no PvP or an invulnerable holder were
+ * measured on 0.7.2 to be cancelled before the guard, so they never reach this at all.</p>
  */
 public final class ReflectDamageInteraction extends SimpleInstantInteraction {
 

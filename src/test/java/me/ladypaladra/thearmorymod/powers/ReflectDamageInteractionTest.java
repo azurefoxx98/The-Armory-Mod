@@ -30,7 +30,7 @@ class ReflectDamageInteractionTest {
 
     @Test
     void aHitTheGameCancelledIsNotSentBack() {
-        // PvP off, Creative, spawn protection or another mod's ward all cancel the hit.
+        // A filter that runs after the guard, such as another mod's ward, cancels the hit.
         Damage cancelled = hit(PHYSICAL, 10.0F);
         cancelled.setCancelled(true);
         assertEquals(0.0F, ReflectDamageInteraction.reflectedAmount(cancelled, REFLECTED, 0.5F), DELTA);

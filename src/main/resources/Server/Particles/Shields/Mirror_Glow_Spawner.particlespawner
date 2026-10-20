@@ -1,0 +1,22 @@
+{
+  "Particle": {
+    "Texture": "Particles/Textures/Circles/Portal_Blue.png",
+    "Animation": {
+      "1": {
+        "Opacity": 0.632
+      },
+      "100": {
+        "Rotation": {
+          "Z": {
+            "Max": 360,
+            "Min": 300
+          }
+        },
+        "Opacity": 0.632
+      }
+    },
+    "UseSpriteBlending": true
+  },
+  "RenderMode": "BlendAdd",
+  "ParticleRotateWithSpawner": true
+}

@@ -29,6 +29,14 @@ import javax.annotation.Nonnull;
  *
  * <p>A reflected hit is never reflected again. Two players guarding with reflecting shields
  * would otherwise send one hit back and forth between them.</p>
+ *
+ * <p>Only a hit that would have hurt the holder is reflected. The guard runs its blocked
+ * interactions for every hit from another entity before the damage filters have finished, and
+ * those filters cancel many hits outright: from a player while the world has no PvP, which also
+ * covers a spell's own caster stepping into it, on an invulnerable or Creative player, during
+ * spawn protection, or by another mod's ward. Other mods also send zero damage hits to ask
+ * whether a target may be harmed. The interaction is queued and runs after the filters, so it
+ * reads the hit's final state and leaves those alone.</p>
  */
 public final class ReflectDamageInteraction extends SimpleInstantInteraction {
 
@@ -86,15 +94,26 @@ public final class ReflectDamageInteraction extends SimpleInstantInteraction {
         }
 
         int causeIndex = DamageCause.getAssetMap().getIndex(damageCause);
-        if (causeIndex < 0 || blocked.getDamageCauseIndex() == causeIndex) {
-            return;
-        }
-
-        float amount = blocked.getInitialAmount() * fraction;
-        if (!(amount > 0.0F) || !Float.isFinite(amount)) {
+        float amount = reflectedAmount(blocked, causeIndex, fraction);
+        if (amount == 0.0F) {
             return;
         }
 
         DamageSystems.executeDamage(attacker, commandBuffer, new Damage(new Damage.EntitySource(defender), causeIndex, amount));
+    }
+
+    /**
+     * The amount to send back for a blocked hit, or 0 when nothing should be sent: the hit was
+     * cancelled, carried no damage, or was itself a reflection.
+     */
+    static float reflectedAmount(@Nonnull Damage blocked, int reflectedCauseIndex, float fraction) {
+        if (reflectedCauseIndex < 0
+                || blocked.isCancelled()
+                || blocked.getDamageCauseIndex() == reflectedCauseIndex) {
+            return 0.0F;
+        }
+
+        float amount = blocked.getInitialAmount() * fraction;
+        return amount > 0.0F && Float.isFinite(amount) ? amount : 0.0F;
     }
 }

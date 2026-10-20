@@ -47,7 +47,13 @@
       "Mana": [
         {
           "CalculationType": "Additive",
-          "Amount": 90
+          "Amount": 40
+        }
+      ],
+      "TA_Night_Mana": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 50
         }
       ]
     }
@@ -93,7 +99,8 @@
   },
   "ItemLevel": 50,
   "Categories": [
-    "ArmoryCategory.ArmoryArmors"
+    "ArmoryCategory.ArmoryArmors",
+    "Items.Armors"
   ],
   "TranslationProperties": {
     "Name": "server.items.PumpkinHelm.name",

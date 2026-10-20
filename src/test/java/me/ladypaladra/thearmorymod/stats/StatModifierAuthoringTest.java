@@ -19,17 +19,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Keeps the stat multiplier's asset assumptions enforceable as new items are authored.
+ * Keeps the stat readers' asset assumptions enforceable as new items are authored.
  *
  * <p>The runtime cannot report a missing stat asset because its index simply never resolves.
- * It also cannot distinguish additive amounts after the engine has folded every modifier into
- * one effective maximum. These checks fail at authoring time while the original JSON still
- * makes the cause visible.</p>
+ * It also cannot tell modifier types apart after the engine has folded every modifier into one
+ * effective maximum. A multiplier stat read with an additive modifier, or an amount stat read
+ * with a multiplicative one, silently applies the wrong number. These checks fail at authoring
+ * time while the original JSON still makes the cause visible.</p>
  */
 class StatModifierAuthoringTest {
 
     private static final Path RESOURCE_ROOT = Path.of("src", "main", "resources");
     private static final String MULTIPLICATIVE = "Multiplicative";
+    private static final String ADDITIVE = "Additive";
     private static final Gson GSON = new Gson();
 
     @Test
@@ -53,7 +55,7 @@ class StatModifierAuthoringTest {
     }
 
     @Test
-    void armoryStatsUseOnlyMultiplicativeModifiers() throws IOException {
+    void armoryStatsUseOnlyTheModifierTypeTheirReaderNeeds() throws IOException {
         List<Path> files = jsonFiles();
         assertTrue(
                 !files.isEmpty(),
@@ -78,7 +80,8 @@ class StatModifierAuthoringTest {
             );
         }
 
-        // There are currently 20 qualifying modifiers across 19 item files.
+        // Both kinds are authored: the multiplier stats from earlier deliveries, and the night
+        // amounts on 11 pumpkin helms and 2 void goblin pieces.
         assertTrue(
                 qualifyingModifiers > 0,
                 "Found no modifiers for the declared Armory stats, so this gate proved nothing."
@@ -87,13 +90,13 @@ class StatModifierAuthoringTest {
         assertEquals(
                 List.of(),
                 offenders,
-                "Armory stat modifiers must be arrays of objects whose CalculationType is "
-                        + "Multiplicative. The Java infers the authored amount by dividing the "
-                        + "stat's effective maximum by its base maximum. That only recovers the "
-                        + "authored amount while every modifier on the stat is multiplicative. "
-                        + "One additive modifier makes the division return roughly 1 + additive "
-                        + "/ baseMax too much, so a small intended bonus is applied as a very "
-                        + "large one. See StatMultiplier.fromMaxima."
+                "Armory stat modifiers must be arrays of objects whose CalculationType matches "
+                        + "the stat's reader. A stat in ArmoryStatIds.MULTIPLIERS is read by "
+                        + "dividing its effective maximum by its base maximum, which only recovers "
+                        + "the authored amount while every modifier is Multiplicative. A stat in "
+                        + "ArmoryStatIds.AMOUNTS is read by subtracting the base maximum, which "
+                        + "only recovers it while every modifier is Additive. See "
+                        + "StatMultiplier.fromMaxima and StatAddition.fromMaxima."
         );
     }
 
@@ -194,14 +197,15 @@ class StatModifierAuthoringTest {
                     continue;
                 }
 
+                String expected = ArmoryStatIds.AMOUNTS.contains(statId) ? ADDITIVE : MULTIPLICATIVE;
                 JsonElement calculationType = modifier.getAsJsonObject().get("CalculationType");
                 if (calculationType == null) {
                     offenders.add(file + ", " + statId + ", element " + index
                             + " had no CalculationType");
                 } else if (!calculationType.isJsonPrimitive()
-                        || !MULTIPLICATIVE.equals(calculationType.getAsString())) {
+                        || !expected.equals(calculationType.getAsString())) {
                     offenders.add(file + ", " + statId + ", element " + index
-                            + " had CalculationType " + calculationType);
+                            + " had CalculationType " + calculationType + ", expected " + expected);
                 }
                 index++;
             }

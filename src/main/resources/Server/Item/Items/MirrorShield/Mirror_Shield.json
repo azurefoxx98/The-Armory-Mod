@@ -72,7 +72,8 @@
     ]
   },
   "Categories": [
-    "ArmoryCategory.ArmoryShields"
+    "ArmoryCategory.ArmoryShields",
+    "Items.Weapons"
   ],
   "ResourceTypes": [
     {
@@ -82,12 +83,12 @@
   "Scale": 1,
   "Particles": [
     {
-      "SystemId": "TA_Mirror_Glow",
+      "SystemId": "Mirror_Distortion_System_Glow",
       "TargetNodeName": "Shield",
       "PositionOffset": {
         "Z": -0.01
       },
-      "Scale": 1
+      "Scale": 0.23
     }
   ]
 }

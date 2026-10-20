@@ -1,6 +1,7 @@
 package me.ladypaladra.thearmorymod.stats;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public final class ArmoryStatIds {
 
@@ -25,7 +26,15 @@ public final class ArmoryStatIds {
 
     public static final String UNARMED_DAMAGE = "TA_Unarmed_Damage";
 
-    public static final List<String> ALL = List.of(
+    public static final String NIGHT_MANA = "TA_Night_Mana";
+
+    public static final String NIGHT_HEALTH = "TA_Night_Health";
+
+    /**
+     * Stats read as a multiplier by {@link StatMultiplier}, so every modifier on them must be
+     * Multiplicative.
+     */
+    public static final List<String> MULTIPLIERS = List.of(
             ARROW_DAMAGE_BONUS,
             MOVE_SPEED,
             JUMP_HEIGHT,
@@ -36,4 +45,15 @@ public final class ArmoryStatIds {
             ORE_FIND,
             UNARMED_DAMAGE
     );
+
+    /**
+     * Stats read as a plain amount by {@link StatAddition}, so every modifier on them must be
+     * Additive.
+     */
+    public static final List<String> AMOUNTS = List.of(
+            NIGHT_MANA,
+            NIGHT_HEALTH
+    );
+
+    public static final List<String> ALL = Stream.concat(MULTIPLIERS.stream(), AMOUNTS.stream()).toList();
 }

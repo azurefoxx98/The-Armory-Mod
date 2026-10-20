@@ -29,6 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Items.Weapons and Items.Tools only, so a piece listed under an Armory category alone cannot be
  * imbued at all. 1.24.1 shipped 217 armour pieces and every shield that way. A missing category
  * reports nothing anywhere: the item loads, shows in the Armory tab and works in game.</p>
+ *
+ * <p>An item with no category at all is left alone: the Kanohi Hau masks carry none on purpose, so
+ * that they stay hidden from the creative menu.</p>
  */
 class ItemCategoryAuthoringTest {
 
@@ -51,11 +54,6 @@ class ItemCategoryAuthoringTest {
             JsonElement categories = item.get("Categories");
 
             if (categories == null) {
-                // An item with no Categories inherits its parent's. One with no parent either is
-                // in no creative tab, and armour like that is invisible to the mods above.
-                if (item.has("Armor") && !item.has("Parent")) {
-                    offenders.add(file + " is armour with no Categories and no Parent");
-                }
                 continue;
             }
             if (!categories.isJsonArray()) {

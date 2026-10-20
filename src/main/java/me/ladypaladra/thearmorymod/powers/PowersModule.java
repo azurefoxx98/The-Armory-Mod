@@ -9,8 +9,8 @@ import javax.annotation.Nonnull;
 
 /**
  * Item powers that the engine has no data field for: resistances carried by stats, gloves that
- * make a bare fist hit harder, a shield that reflects, a pack that bursts, breathing underwater
- * and the ore pack.
+ * make a bare fist hit harder, a shield that reflects, a pack that bursts, breathing underwater,
+ * the ore pack, and gear that gives more mana or health at night.
  *
  * <p>Swim speed sits with the other movement stats in the stats module.</p>
  */
@@ -40,5 +40,6 @@ public final class PowersModule {
         registry.registerSystem(new WaterBreathingSystems.Recheck());
         registry.registerSystem(new OrePackSystems.MiningSpeed());
         registry.registerSystem(new OrePackSystems.OreFind());
+        registry.registerSystem(new NightBonusSystem());
     }
 }

@@ -5,6 +5,7 @@ import com.hypixel.hytale.builtin.triggervolumes.effect.TriggerEffect;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
+import com.hypixel.hytale.codec.codecs.array.ArrayCodec;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -20,13 +21,17 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.math.vector.Rotation3f;
+import com.hypixel.hytale.protocol.ColorLight;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
+import com.hypixel.hytale.server.core.asset.type.blocktype.config.CustomModelTexture;
+import com.hypixel.hytale.server.core.asset.type.blocktype.config.Rotation;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.RotationTuple;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.StateData;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
 import com.hypixel.hytale.server.core.entity.Frozen;
 import com.hypixel.hytale.server.core.entity.entities.BlockEntity;
+import com.hypixel.hytale.server.core.modules.entity.component.DynamicLight;
 import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
@@ -59,9 +64,10 @@ import org.joml.Vector3d;
  *
  * <p>Hytale carries a player standing on a moving entity whose hard hitbox allows anchoring, and turns the player's facing
  * with it when the collision config asks for it. So the deck travels as entities: one model that draws it, a staircase of
- * invisible boxes that are its floor, a block entity for every piece standing on it, and the stands' figures, frozen so
- * their own gravity stays out of the way. The real blocks leave a few ticks after the moving pieces appear and come back a
- * few ticks before they go, so no frame shows a hole. Every number comes from the trigger effect that starts it.</p>
+ * invisible boxes that are its floor, a model or a block entity for every piece standing on it, each drawn at its block's
+ * own size and carrying its block's light, and the stands' figures, frozen so their own gravity stays out of the way. The
+ * real blocks leave a few ticks after the moving pieces appear and come back a few ticks before they go, so no frame shows
+ * a hole. Every number comes from the trigger effect that starts it.</p>
  */
 public final class ShowcasePlatform {
 
@@ -113,6 +119,7 @@ public final class ShowcasePlatform {
                 .append(new KeyedCodec<>("Collision", Codec.STRING, false), (e, v) -> e.collision = v, e -> e.collision).add()
                 .append(new KeyedCodec<>("RidingState", Codec.STRING, false), (e, v) -> e.ridingState = v, e -> e.ridingState).add()
                 .append(new KeyedCodec<>("SettleTicks", Codec.INTEGER, false), (e, v) -> e.settleTicks = v, e -> e.settleTicks).add()
+                .append(new KeyedCodec<>("Pieces", ArrayCodec.ofBuilderCodec(Piece.CODEC, Piece[]::new), false), (e, v) -> e.pieces = v, e -> e.pieces).add()
                 .build();
 
         private String phase = "Rise";
@@ -130,6 +137,7 @@ public final class ShowcasePlatform {
         private String collision = "";
         private String ridingState = "";
         private int settleTicks = 3;
+        private Piece[] pieces = new Piece[0];
 
         @Override
         public void execute(@Nonnull TriggerContext context) {
@@ -149,6 +157,39 @@ public final class ShowcasePlatform {
             });
         }
     }
+
+    /**
+     * One piece standing on the deck and the model that draws it while it rides. Hytale's block entity draws a block's model
+     * without the block's own CustomModelScale, so a trophy whose block draws its model at half size grew to twice its size
+     * the instant the ride began. A piece with a model rides as that model instead, at the block's own size and turn and
+     * standing where the block stood. A piece with no model rides as Hytale's block entity, which draws it truly when its
+     * block draws its model at full size.
+     */
+    public static final class Piece {
+
+        @Nonnull
+        public static final BuilderCodec<Piece> CODEC = BuilderCodec.builder(Piece.class, Piece::new)
+                .append(new KeyedCodec<>("X", Codec.INTEGER, false), (p, v) -> p.x = v, p -> p.x).add()
+                .append(new KeyedCodec<>("Y", Codec.INTEGER, false), (p, v) -> p.y = v, p -> p.y).add()
+                .append(new KeyedCodec<>("Z", Codec.INTEGER, false), (p, v) -> p.z = v, p -> p.z).add()
+                .append(new KeyedCodec<>("Block", Codec.STRING, false), (p, v) -> p.block = v, p -> p.block).add()
+                .append(new KeyedCodec<>("Model", Codec.STRING, false), (p, v) -> p.model = v, p -> p.model).add()
+                .append(new KeyedCodec<>("Scale", Codec.DOUBLE, false), (p, v) -> p.scale = v, p -> p.scale).add()
+                .append(new KeyedCodec<>("Yaw", Codec.DOUBLE, false), (p, v) -> p.yaw = v, p -> p.yaw).add()
+                .build();
+
+        private int x;
+        private int y;
+        private int z;
+        private String block = "";
+        private String model = "";
+        private double scale = 1.0;
+        private double yaw;
+    }
+
+    // A block's model is drawn at 32 units a block and an entity's at 64, so an entity drawing a block's model needs twice
+    // the block's own scale to show it at the same size.
+    private static final double BLOCK_TO_ENTITY = 2.0;
 
     private enum Phase { RISING, TOP, DESCENDING, SETTLING }
 
@@ -322,17 +363,87 @@ public final class ShowcasePlatform {
         float pitch = turn != null && turn.pitch() != null ? (float) turn.pitch().getRadians() : 0.0F;
         float yaw = turn != null && turn.yaw() != null ? (float) turn.yaw().getRadians() : 0.0F;
         float roll = turn != null && turn.roll() != null ? (float) turn.roll().getRadians() : 0.0F;
-        // A block entity is anchored at its block's centre.
-        Vector3d at = new Vector3d(cell.x() + 0.5, cell.y() + 0.5, cell.z() + 0.5);
+        Piece piece = pieceAt(ride.spec, cell);
+        ModelAsset drawing = piece != null ? drawing(piece, type, turn) : null;
         Holder<EntityStore> holder = store.getRegistry().newHolder();
-        holder.addComponent(BlockEntity.getComponentType(), new BlockEntity(type.getId()));
-        holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(at, new Rotation3f(pitch, yaw, roll)));
+        Vector3d at;
+
+        if (drawing != null) {
+            // A block's model stands on the bottom centre of its cell, and an entity's model on the entity's position.
+            at = new Vector3d(cell.x() + 0.5, cell.y(), cell.z() + 0.5);
+            yaw = (float) Math.toRadians(piece.yaw);
+            holder.addComponent(NetworkId.getComponentType(), new NetworkId(store.getExternalData().takeNextNetworkId()));
+            holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(at, new Rotation3f(0.0F, yaw, 0.0F)));
+            holder.addComponent(ModelComponent.getComponentType(), new ModelComponent(Model.createStaticScaledModel(drawing, (float) piece.scale)));
+        } else {
+            // A block entity is anchored at its block's centre.
+            at = new Vector3d(cell.x() + 0.5, cell.y() + 0.5, cell.z() + 0.5);
+            holder.addComponent(BlockEntity.getComponentType(), new BlockEntity(type.getId()));
+            holder.addComponent(TransformComponent.getComponentType(), new TransformComponent(at, new Rotation3f(pitch, yaw, roll)));
+        }
+
         holder.addComponent(EntityStore.REGISTRY.getNonSerializedComponentType(), NonSerialized.get());
+
+        // A block's light leaves with the block, so the moving piece carries it, as Hytale lights a dropped light block.
+        ColorLight light = type.getLight();
+
+        if (light != null) {
+            holder.addComponent(DynamicLight.getComponentType(), new DynamicLight(new ColorLight(light)));
+        }
+
         Ref<EntityStore> ref = store.addEntity(holder, AddReason.SPAWN);
 
         if (ref != null && ref.isValid()) {
             ride.riders.add(new Rider(ref, at.x - ride.spec.pivotX, at.y - ride.spec.pivotY, at.z - ride.spec.pivotZ, yaw, false));
         }
+    }
+
+    @Nullable
+    private static Piece pieceAt(@Nonnull Effect spec, @Nonnull Cell cell) {
+        for (Piece piece : spec.pieces) {
+            if (piece != null && piece.x == cell.x() && piece.y == cell.y() && piece.z == cell.z()) {
+                return piece;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The model asset that draws this piece while it rides, or null for Hytale's block entity. The piece's model must still
+     * draw the block standing in the world: the same block, turn, model, texture and size. When anything differs the
+     * world has changed since the showcase's tools wrote the piece, so the block entity draws it and the log names it.
+     */
+    @Nullable
+    private static ModelAsset drawing(@Nonnull Piece piece, @Nonnull BlockType type, @Nullable RotationTuple turn) {
+        if (piece.model.isEmpty()) {
+            return null;
+        }
+
+        ModelAsset asset = ModelAsset.getAssetMap().getAsset(piece.model);
+        CustomModelTexture[] textures = type.getCustomModelTexture();
+        String problem = null;
+
+        if (!type.getId().equals(piece.block)) {
+            problem = "the world holds " + type.getId();
+        } else if (asset == null) {
+            problem = "its model is not loaded";
+        } else if (turn == null || turn.pitch() != Rotation.None || turn.roll() != Rotation.None
+                || turn.yaw() == null || Math.floorMod(Math.round(piece.yaw) - turn.yaw().getDegrees(), 360) != 0) {
+            problem = "its turn differs from the block's";
+        } else if (!asset.getModel().equals(type.getCustomModel())) {
+            problem = "its model differs from the block's";
+        } else if (textures == null || textures.length != 1 || !asset.getTexture().equals(textures[0].getTexture())) {
+            problem = "its texture differs from the block's";
+        } else if (Math.abs(piece.scale - type.getCustomModelScale() * BLOCK_TO_ENTITY) > 1.0e-3) {
+            problem = "its scale differs from the block's";
+        }
+
+        if (problem != null) {
+            TheArmoryMod.LOGGER.atWarning().log("Showcase platform piece %s at %d %d %d rides as a block entity: %s",
+                    piece.block, piece.x, piece.y, piece.z, problem);
+            return null;
+        }
+        return asset;
     }
 
     @Nullable

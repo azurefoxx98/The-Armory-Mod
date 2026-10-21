@@ -1,0 +1,126 @@
+{
+  "$Comment": "Written by tools/showcase-world/ceremony.py: a gold firework, 28 blocks up in 1.5 s.",
+  "Spawners": [
+    {
+      "SpawnerId": "Fireworks_Trail",
+      "SpawnRate": {
+        "Min": 1,
+        "Max": 1
+      },
+      "MaxConcurrent": 1,
+      "TotalSpawners": 1,
+      "PositionOffset": {
+        "X": 0,
+        "Y": 0.5,
+        "Z": 0
+      },
+      "LifeSpan": {
+        "Min": 1.5,
+        "Max": 1.5
+      },
+      "InitialVelocity": {
+        "Speed": {
+          "Min": 37.333333333333336,
+          "Max": 37.333333333333336
+        },
+        "Pitch": {
+          "Min": 90,
+          "Max": 90
+        },
+        "Yaw": {
+          "Min": 0,
+          "Max": 0
+        }
+      },
+      "Attractors": [
+        {
+          "LinearAcceleration": {
+            "X": 0,
+            "Y": -24.88888888888889,
+            "Z": 0
+          }
+        }
+      ]
+    },
+    {
+      "SpawnerId": "Example_Fireworks_Hot_Trail",
+      "SpawnRate": {
+        "Min": 1,
+        "Max": 1
+      },
+      "MaxConcurrent": 1,
+      "TotalSpawners": 1,
+      "PositionOffset": {
+        "X": 0,
+        "Y": 0.5,
+        "Z": 0
+      },
+      "LifeSpan": {
+        "Min": 1.5,
+        "Max": 1.5
+      },
+      "InitialVelocity": {
+        "Speed": {
+          "Min": 37.333333333333336,
+          "Max": 37.333333333333336
+        },
+        "Pitch": {
+          "Min": 90,
+          "Max": 90
+        },
+        "Yaw": {
+          "Min": 0,
+          "Max": 0
+        }
+      },
+      "Attractors": [
+        {
+          "LinearAcceleration": {
+            "X": 0,
+            "Y": -24.88888888888889,
+            "Z": 0
+          }
+        }
+      ]
+    },
+    {
+      "SpawnerId": "Example_Star_Flash2",
+      "PositionOffset": {
+        "X": 0,
+        "Y": 28.5,
+        "Z": 0
+      },
+      "StartDelay": 1.5
+    },
+    {
+      "SpawnerId": "Example_Star_Flash",
+      "PositionOffset": {
+        "X": 0,
+        "Y": 28.5,
+        "Z": 0
+      },
+      "StartDelay": 1.5
+    },
+    {
+      "SpawnerId": "Showcase_Burst_Gold",
+      "PositionOffset": {
+        "X": 0,
+        "Y": 28.5,
+        "Z": 0
+      },
+      "StartDelay": 1.5
+    },
+    {
+      "SpawnerId": "Showcase_Glitter_Gold",
+      "PositionOffset": {
+        "X": 0,
+        "Y": 28.5,
+        "Z": 0
+      },
+      "StartDelay": 1.65
+    }
+  ],
+  "CullDistance": 320.0,
+  "BoundingRadius": 48.0,
+  "IsImportant": true
+}

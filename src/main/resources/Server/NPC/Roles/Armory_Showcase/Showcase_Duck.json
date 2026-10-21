@@ -1,0 +1,27 @@
+{
+ "Type": "Variant",
+ "Reference": "Template_Birds_Passive",
+ "Modify": {
+  "Appearance": "Duck",
+  "FlockArray": [
+   "Showcase_Duck"
+  ],
+  "DropList": "Drop_Duck",
+  "MaxHealth": 25,
+  "WanderRadius": 9,
+  "IsMemory": true,
+  "MemoriesCategory": "Avian",
+  "MemoriesNameOverride": "Duck",
+  "NameTranslationKey": {
+   "Compute": "NameTranslationKey"
+  },
+  "MinHeightOverGround": 3,
+  "MaxHeightOverGround": 12
+ },
+ "Parameters": {
+  "NameTranslationKey": {
+   "Value": "server.npcRoles.Duck.name",
+   "Description": "Translation key for NPC name display"
+  }
+ }
+}

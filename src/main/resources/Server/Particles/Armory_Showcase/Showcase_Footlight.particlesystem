@@ -1,0 +1,34 @@
+{
+  "$Comment": "Written by tools/showcase-world/ceremony.py: Server/Particles/Item/Candle/Candle_Fire.particlesystem's flame with a halo that carries across the bowl.",
+  "Spawners": [
+    {
+      "SpawnerId": "Candle_Fire_Center",
+      "FixedRotation": true,
+      "PositionOffset": {
+        "Y": 0.07
+      }
+    },
+    {
+      "SpawnerId": "Candle_Fire_White",
+      "FixedRotation": true,
+      "PositionOffset": {
+        "Y": 0.05
+      }
+    },
+    {
+      "SpawnerId": "Candle_Fire_Start",
+      "PositionOffset": {
+        "Y": 0.05
+      }
+    },
+    {
+      "SpawnerId": "Showcase_Footlight_Halo",
+      "PositionOffset": {
+        "Y": 0.15
+      }
+    }
+  ],
+  "CullDistance": 150.0,
+  "BoundingRadius": 1.5,
+  "IsImportant": false
+}

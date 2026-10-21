@@ -1,0 +1,52 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Footlight_Block.name"
+ },
+ "Categories": [
+  "Blocks.Deco"
+ ],
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "Material": "Empty",
+  "DrawType": "Model",
+  "Opacity": "Transparent",
+  "CustomModel": "Blocks/Decorative_Sets/Temple_Wind/Candle.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/Decorative_Sets/Temple_Wind/Candle_Texture.png",
+    "Weight": 1
+   }
+  ],
+  "HitboxType": "Plant_Full",
+  "Light": {
+   "Radius": 0,
+   "Color": "#baa"
+  },
+  "Flags": {},
+  "BlockParticleSetId": "Stone",
+  "BlockSoundSetId": "Stone",
+  "Gathering": {
+   "Breaking": {
+    "GatherType": "Unbreakable"
+   }
+  },
+  "Support": {},
+  "Particles": [
+   {
+    "SystemId": "Showcase_Footlight_Group_018",
+    "TargetNodeName": "Flame-Emitter",
+    "Color": "#ffcd10",
+    "Scale": 0.8
+   }
+  ],
+  "State": {
+   "Definitions": {
+    "Off": {
+     "Particles": null,
+     "Light": null
+    }
+   }
+  }
+ },
+ "Quality": "Developer"
+}

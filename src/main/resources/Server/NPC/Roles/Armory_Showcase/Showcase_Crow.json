@@ -1,0 +1,26 @@
+{
+ "Type": "Variant",
+ "Reference": "Template_Birds_Passive",
+ "Modify": {
+  "Appearance": "Crow",
+  "FlockArray": [
+   "Showcase_Crow"
+  ],
+  "DropList": "Drop_Crow",
+  "MaxHealth": 20,
+  "WanderRadius": 14,
+  "IsMemory": true,
+  "MemoriesCategory": "Avian",
+  "NameTranslationKey": {
+   "Compute": "NameTranslationKey"
+  },
+  "MinHeightOverGround": 6,
+  "MaxHeightOverGround": 30
+ },
+ "Parameters": {
+  "NameTranslationKey": {
+   "Value": "server.npcRoles.Crow.name",
+   "Description": "Translation key for NPC name display"
+  }
+ }
+}

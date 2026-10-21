@@ -1,0 +1,99 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Museum_Relic_Block.name"
+ },
+ "Categories": [
+  "Blocks.Deco"
+ ],
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "Material": "Solid",
+  "DrawType": "Model",
+  "Opacity": "Transparent",
+  "CustomModel": "Resources/Crystals/Crystal_Big.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Resources/Crystals/Crystal_Big_Textures/Yellow.png",
+    "Weight": 1
+   }
+  ],
+  "Flags": {},
+  "BlockParticleSetId": "Crystal",
+  "ParticleColor": "#ffc744",
+  "BlockSoundSetId": "Crystal",
+  "PhysicalMaterialId": "Stone",
+  "Light": {
+   "Color": "#fd8",
+   "Radius": 14
+  },
+  "Support": {},
+  "Gathering": {
+   "Breaking": {
+    "GatherType": "Unbreakable"
+   }
+  },
+  "Particles": [
+   {
+    "SystemId": "Showcase_Museum_Relic",
+    "TargetEntityPart": "Self",
+    "PositionOffset": {
+     "Y": 0
+    }
+   }
+  ],
+  "InteractionHint": "server.armoryShowcase.museum.relic.hint",
+  "Interactions": {
+   "Use": {
+    "Interactions": [
+     {
+      "Type": "SignalNearbyVolumes",
+      "MatchKey": "armory_relic",
+      "Radius": 4.0,
+      "SignalKeys": [
+       "relic_cue"
+      ]
+     }
+    ]
+   }
+  },
+  "State": {
+   "Definitions": {
+    "Off": {
+     "Particles": null,
+     "Light": null,
+     "InteractionHint": null,
+     "Interactions": {
+      "Use": null
+     }
+    },
+    "Woken": {
+     "Particles": [
+      {
+       "SystemId": "Showcase_Museum_Relic",
+       "TargetEntityPart": "Self",
+       "PositionOffset": {
+        "Y": 0
+       }
+      },
+      {
+       "SystemId": "Showcase_Relic_Beam",
+       "TargetEntityPart": "Self",
+       "PositionOffset": {
+        "Y": 0.5
+       }
+      }
+     ],
+     "Light": {
+      "Color": "#fe9",
+      "Radius": 18
+     },
+     "InteractionHint": null,
+     "Interactions": {
+      "Use": null
+     }
+    }
+   }
+  }
+ },
+ "Quality": "Developer"
+}

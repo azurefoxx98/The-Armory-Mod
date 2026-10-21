@@ -1,0 +1,40 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Marker_Temple_Frog.name"
+ },
+ "Categories": [
+  "Blocks.Deco"
+ ],
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "DrawType": "Model",
+  "Material": "Empty",
+  "Opacity": "Transparent",
+  "CustomModel": "Blocks/_Debug/Model.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/_Debug/TextureEmpty.png",
+    "Weight": 1
+   }
+  ],
+  "HitboxType": "Rubble",
+  "Flags": {},
+  "Support": {},
+  "BlockEntity": {
+   "Components": {
+    "SpawnMarkerBlock": {
+     "Config": {
+      "SpawnMarker": "Showcase_Temple_Frog",
+      "MarkerOffset": {
+       "X": 0,
+       "Y": 0,
+       "Z": 0
+      }
+     }
+    }
+   }
+  }
+ },
+ "SubCategory": "VFX Spawners",
+ "Quality": "Developer"
+}

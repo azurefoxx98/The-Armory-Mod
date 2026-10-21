@@ -1,0 +1,46 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Fireflies_Block.name"
+ },
+ "Categories": [
+  "Blocks.Deco"
+ ],
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "DrawType": "Model",
+  "Material": "Empty",
+  "Opacity": "Transparent",
+  "CustomModel": "Blocks/_Debug/Model.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/_Debug/TextureEmpty.png",
+    "Weight": 1
+   }
+  ],
+  "HitboxType": "Rubble",
+  "Flags": {},
+  "Support": {},
+  "Particles": [
+   {
+    "SystemId": "Showcase_Fireflies",
+    "TargetEntityPart": "Self",
+    "PositionOffset": {
+     "Y": -0.5
+    }
+   }
+  ],
+  "Light": {
+   "Color": "#9a6"
+  },
+  "State": {
+   "Definitions": {
+    "Off": {
+     "Particles": null,
+     "Light": null
+    }
+   }
+  }
+ },
+ "SubCategory": "VFX Spawners",
+ "Quality": "Developer"
+}

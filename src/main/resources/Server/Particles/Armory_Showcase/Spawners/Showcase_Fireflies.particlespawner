@@ -1,0 +1,205 @@
+{
+  "RenderMode": "Erosion",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "LightInfluence": 0,
+  "MaxConcurrentParticles": 24,
+  "ParticleLifeSpan": {
+    "Min": 2.0,
+    "Max": 4.0
+  },
+  "ParticleRotateWithSpawner": false,
+  "TrailSpawnerPositionMultiplier": 1,
+  "TrailSpawnerRotationMultiplier": 1,
+  "SpawnRate": {
+    "Min": 4.0,
+    "Max": 8.0
+  },
+  "InitialVelocity": {
+    "Speed": {
+      "Min": 0.06,
+      "Max": 0.2
+    },
+    "Yaw": {
+      "Max": 180.0,
+      "Min": 0.0
+    },
+    "Pitch": {
+      "Min": 0.0,
+      "Max": 180.0
+    }
+  },
+  "Attractors": [
+    {
+      "Position": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "RadialAxis": {
+        "Y": 0.5,
+        "Z": 0,
+        "X": 0.5
+      },
+      "RadialAcceleration": -0.036000000000000004,
+      "RadialTangentAcceleration": 0.1
+    }
+  ],
+  "Particle": {
+    "Texture": "Particles/Textures/Weather/Firefly.png",
+    "FrameSize": {
+      "Width": 32,
+      "Height": 32
+    },
+    "ScaleRatioConstraint": "OneToOne",
+    "Animation": {
+      "0": {
+        "Scale": {
+          "X": {
+            "Min": 1,
+            "Max": 1
+          },
+          "Y": {
+            "Min": 1,
+            "Max": 1
+          }
+        },
+        "Opacity": 0.0
+      },
+      "6": {
+        "FrameIndex": {
+          "Min": 1,
+          "Max": 1
+        }
+      },
+      "12": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        }
+      },
+      "18": {
+        "FrameIndex": {
+          "Min": 1,
+          "Max": 1
+        }
+      },
+      "24": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        }
+      },
+      "30": {
+        "FrameIndex": {
+          "Min": 1,
+          "Max": 1
+        }
+      },
+      "36": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        }
+      },
+      "42": {
+        "FrameIndex": {
+          "Min": 1,
+          "Max": 1
+        }
+      },
+      "48": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        },
+        "Opacity": 0.8
+      },
+      "54": {
+        "FrameIndex": {
+          "Min": 1,
+          "Max": 1
+        }
+      },
+      "60": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        }
+      },
+      "66": {
+        "FrameIndex": {
+          "Min": 1,
+          "Max": 1
+        }
+      },
+      "72": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        }
+      },
+      "78": {
+        "FrameIndex": {
+          "Min": 1,
+          "Max": 1
+        }
+      },
+      "84": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        }
+      },
+      "90": {
+        "FrameIndex": {
+          "Min": 1,
+          "Max": 1
+        }
+      },
+      "100": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        },
+        "Opacity": 0.0
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.12,
+          "Max": 0.18
+        },
+        "Y": {
+          "Min": 0.12,
+          "Max": 0.18
+        }
+      },
+      "Opacity": 0.844,
+      "Color": "#e6ff7c"
+    }
+  },
+  "UVMotion": {
+    "Texture": "Particles/Textures/UVMotion/FlowMapWave.png",
+    "Strength": 2.0,
+    "Scale": 1.0,
+    "SpeedY": 1.0,
+    "SpeedX": 0.1
+  },
+  "EmitOffset": {
+    "X": {
+      "Min": 0,
+      "Max": 3.5
+    },
+    "Y": {
+      "Min": 0.3,
+      "Max": 2.5
+    },
+    "Z": {
+      "Min": 0,
+      "Max": 3.5
+    }
+  },
+  "$Comment": "Written by tools/showcase-world/life.py from Server/Particles/_Test/Cinematic/Hedera/Spawners/Hedera_Tree_Fireflies2.particlespawner: warm, over a few blocks."
+}

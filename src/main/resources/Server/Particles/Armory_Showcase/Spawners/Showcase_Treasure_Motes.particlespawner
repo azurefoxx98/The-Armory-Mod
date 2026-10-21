@@ -1,0 +1,69 @@
+{
+  "$Comment": "Written by tools/showcase-world/ceremony.py.",
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "Billboard",
+  "ParticleLifeSpan": {
+    "Min": 2.0,
+    "Max": 3.0
+  },
+  "SpawnRate": {
+    "Min": 4.0,
+    "Max": 6.0
+  },
+  "MaxConcurrentParticles": 16,
+  "InitialVelocity": {
+    "Speed": {
+      "Min": 0.3,
+      "Max": 0.5
+    },
+    "Pitch": {
+      "Min": 90,
+      "Max": 90
+    }
+  },
+  "LinearFiltering": true,
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Star2.png",
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.08,
+          "Max": 0.16
+        },
+        "Y": {
+          "Min": 0.08,
+          "Max": 0.16
+        }
+      },
+      "Opacity": 0.9
+    },
+    "Animation": {
+      "0": {
+        "Opacity": 0,
+        "Color": "#ffffff"
+      },
+      "40": {
+        "Opacity": 0.9,
+        "Color": "#ffe6a0"
+      },
+      "100": {
+        "Opacity": 0,
+        "Color": "#ffbf4a"
+      }
+    }
+  },
+  "EmitOffset": {
+    "X": {
+      "Min": 0,
+      "Max": 1.1
+    },
+    "Y": {
+      "Min": 0,
+      "Max": 0.3
+    },
+    "Z": {
+      "Min": 0,
+      "Max": 0.6
+    }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "RenderMode": "Erosion",
+  "ParticleRotationInfluence": "BillboardVelocity",
+  "LinearFiltering": true,
+  "LightInfluence": 0,
+  "ParticleRotateWithSpawner": true,
+  "TrailSpawnerPositionMultiplier": 1,
+  "TrailSpawnerRotationMultiplier": 1,
+  "MaxConcurrentParticles": 220,
+  "ParticleLifeSpan": {
+    "Min": 1.0,
+    "Max": 1.6
+  },
+  "InitialVelocity": {
+    "Speed": {
+      "Min": 13.0,
+      "Max": 19.0
+    },
+    "Yaw": {
+      "Min": -180,
+      "Max": 180
+    },
+    "Pitch": {
+      "Min": -180,
+      "Max": 180
+    }
+  },
+  "Attractors": [
+    {
+      "Position": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      },
+      "Radius": 0,
+      "RadialAcceleration": 3,
+      "RadialTangentAcceleration": 0,
+      "LinearAcceleration": {
+        "X": 0,
+        "Y": -6,
+        "Z": 0
+      }
+    }
+  ],
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Glow_Direction.png",
+    "ScaleRatioConstraint": "None",
+    "UVOption": "None",
+    "Animation": {
+      "0": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        },
+        "Opacity": 1,
+        "Color": "#ffffff",
+        "Scale": {
+          "X": {
+            "Min": 1,
+            "Max": 1
+          },
+          "Y": {
+            "Min": 1,
+            "Max": 1
+          }
+        }
+      },
+      "20": {
+        "Scale": {
+          "X": {
+            "Min": 0.2,
+            "Max": 0.2
+          },
+          "Y": {
+            "Min": 1.5,
+            "Max": 1.5
+          }
+        },
+        "Color": "#fff0e0"
+      },
+      "40": {
+        "Color": "#ff6a3d"
+      },
+      "60": {
+        "Opacity": 0.6,
+        "Color": "#ff6a3d"
+      },
+      "100": {
+        "Opacity": 0,
+        "Scale": {
+          "X": {
+            "Min": 1,
+            "Max": 1
+          },
+          "Y": {
+            "Min": 1,
+            "Max": 1
+          }
+        },
+        "Color": "#c8213a"
+      }
+    },
+    "InitialAnimationFrame": {
+      "Opacity": 1,
+      "FrameIndex": {
+        "Min": 0,
+        "Max": 0
+      },
+      "Scale": {
+        "X": {
+          "Min": 0.6,
+          "Max": 0.8
+        },
+        "Y": {
+          "Min": 3.2,
+          "Max": 3.2
+        }
+      }
+    },
+    "SoftParticles": "Disable"
+  },
+  "SpawnBurst": true,
+  "SpawnRate": {
+    "Min": 100,
+    "Max": 100
+  },
+  "TotalParticles": {
+    "Min": 220,
+    "Max": 220
+  },
+  "$Comment": "Written by tools/showcase-world/ceremony.py from Server/Particles/_Test/Cinematic/Cinematic/Spawners/Cinematic_Fireworks_Red_Orange_XL.particlespawner: larger, longer and in its own colours."
+}

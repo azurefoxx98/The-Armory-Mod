@@ -1,0 +1,91 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.PortalKey_Armory_Showcase.name",
+  "Description": "server.items.PortalKey_Armory_Showcase.description"
+ },
+ "Icon": "Icons/ItemsGenerated/PortalKey_Armory_Showcase.png",
+ "Categories": [
+  "Blocks.Portals"
+ ],
+ "PortalKey": {
+  "PortalType": "Armory_Showcase"
+ },
+ "BlockType": {
+  "DrawType": "Model",
+  "Material": "Solid",
+  "Opacity": "Transparent",
+  "CustomModel": "Blocks/Armory_Showcase/Fragment_Drowned_Theatre.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/Armory_Showcase/Fragment_Drowned_Theatre_Texture.png",
+    "Weight": 1
+   }
+  ],
+  "TextureComputedColor": "#d8d2c2",
+  "Light": {
+   "Color": "#4cd",
+   "Radius": 2
+  }
+ },
+ "Recipe": {
+  "TimeSeconds": 5,
+  "KnowledgeRequired": false,
+  "Input": [
+   {
+    "ItemId": "Ingredient_Bar_Gold",
+    "Quantity": 25
+   },
+   {
+    "ItemId": "Ingredient_Bar_Mithril",
+    "Quantity": 10
+   },
+   {
+    "ItemId": "Ingredient_Bar_Adamantite",
+    "Quantity": 10
+   },
+   {
+    "ItemId": "Ingredient_Bar_Onyxium",
+    "Quantity": 10
+   },
+   {
+    "ItemId": "Ingredient_Bar_Prisma",
+    "Quantity": 10
+   },
+   {
+    "ItemId": "Ingredient_Voidheart",
+    "Quantity": 1
+   }
+  ],
+  "BenchRequirement": [
+   {
+    "Id": "Arcanebench",
+    "Type": "Crafting",
+    "Categories": [
+     "Arcane_Portals"
+    ]
+   }
+  ],
+  "RequiredMemoriesLevel": 5
+ },
+ "PlayerAnimationsId": "Item",
+ "Tags": {
+  "Type": [
+   "Portal",
+   "Temporary"
+  ]
+ },
+ "Quality": "Legendary",
+ "ItemLevel": 60,
+ "IconProperties": {
+  "Scale": 0.7,
+  "Rotation": [
+   -24,
+   225,
+   0
+  ],
+  "Translation": [
+   4,
+   -15
+  ]
+ }
+}

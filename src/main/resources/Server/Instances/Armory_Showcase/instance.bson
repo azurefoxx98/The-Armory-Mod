@@ -1,0 +1,68 @@
+{
+ "DisplayName": "The Drowned Theatre",
+ "RequiredPlugins": {},
+ "ChunkStorage": {
+  "Type": "Hytale"
+ },
+ "GameMode": "Adventure",
+ "IsPvpEnabled": false,
+ "IsFallDamageEnabled": true,
+ "IsSpawningNPC": true,
+ "IsBlockSpawnersEnabled": true,
+ "IsSpawnMarkersEnabled": true,
+ "GameTime": "0001-01-01T17:40:00Z",
+ "IsGameTimePaused": true,
+ "ForcedWeather": "Zone1_Sunny",
+ "ClientEffects": {
+  "SunHeightPercent": 100.0
+ },
+ "UUID": {
+  "$binary": "5B57CtNgUgK9x5lSBgAETg==",
+  "$type": "04"
+ },
+ "SpawnProvider": {
+  "Type": "Global",
+  "SpawnPoint": {
+   "X": 0.5,
+   "Y": 101,
+   "Z": -106.5,
+   "Pitch": 0.0,
+   "Yaw": 180.0,
+   "Roll": 0.0
+  }
+ },
+ "GameplayConfig": "Armory_Showcase",
+ "Plugin": {
+  "Instance": {
+   "Discovery": {
+    "TitleKey": "server.armoryShowcase.arrival.title",
+    "SubtitleKey": "server.armoryShowcase.arrival.subtitle",
+    "Display": true,
+    "AlwaysDisplay": true,
+    "Major": true
+   },
+   "RemovalConditions": [
+    {
+     "Type": "WorldEmpty",
+     "TimeoutSeconds": 20
+    }
+   ]
+  }
+ },
+ "IsCompassUpdating": true,
+ "IsTicking": true,
+ "IsBlockTicking": true,
+ "IsObjectiveMarkersEnabled": false,
+ "IsAllNPCFrozen": false,
+ "IsSavingPlayers": true,
+ "IsSavingChunks": false,
+ "SaveNewChunks": false,
+ "IsUnloadingChunks": true,
+ "Seed": 0,
+ "WorldGen": {
+  "Type": "HytaleGenerator",
+  "WorldStructure": "Armory_Showcase"
+ },
+ "DeleteOnRemove": true,
+ "Version": 2
+}

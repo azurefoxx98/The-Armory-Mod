@@ -1,0 +1,51 @@
+{
+  "Model": "NPC_Spawn_Marker",
+  "RealtimeRespawn": true,
+  "MaxDropHeight": 4,
+  "ExclusionRadius": 5,
+  "DeactivationDistance": 160,
+  "NPCs": [
+    {
+      "Name": "Clownfish",
+      "Weight": 14,
+      "RealtimeRespawnTime": 20,
+      "Flock": "One_Or_Two"
+    },
+    {
+      "Name": "Tang_Blue",
+      "Weight": 12,
+      "RealtimeRespawnTime": 20,
+      "Flock": "Group_Small"
+    },
+    {
+      "Name": "Tang_Lemon_Peel",
+      "Weight": 10,
+      "RealtimeRespawnTime": 20,
+      "Flock": "Group_Small"
+    },
+    {
+      "Name": "Tang_Sailfin",
+      "Weight": 8,
+      "RealtimeRespawnTime": 20,
+      "Flock": "Group_Small"
+    },
+    {
+      "Name": "Tang_Chevron",
+      "Weight": 8,
+      "RealtimeRespawnTime": 20,
+      "Flock": "Group_Small"
+    },
+    {
+      "Name": "Pufferfish",
+      "Weight": 6,
+      "RealtimeRespawnTime": 20,
+      "Flock": "One_Or_Two"
+    },
+    {
+      "Name": "Lobster",
+      "Weight": 4,
+      "RealtimeRespawnTime": 20,
+      "Flock": "One_Or_Two"
+    }
+  ]
+}

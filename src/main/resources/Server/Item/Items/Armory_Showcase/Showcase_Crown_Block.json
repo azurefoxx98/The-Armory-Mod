@@ -1,0 +1,47 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Crown_Block.name"
+ },
+ "Categories": [
+  "Blocks.Deco"
+ ],
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "DrawType": "Model",
+  "Material": "Empty",
+  "Opacity": "Transparent",
+  "CustomModel": "Blocks/_Debug/Model.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/_Debug/TextureEmpty.png",
+    "Weight": 1
+   }
+  ],
+  "HitboxType": "Rubble",
+  "Support": {},
+  "Particles": [
+   {
+    "SystemId": "Showcase_Crown",
+    "TargetEntityPart": "Self",
+    "PositionOffset": {
+     "Y": -0.5
+    },
+    "Scale": 2.2
+   }
+  ],
+  "Flags": {},
+  "State": {
+   "Definitions": {
+    "Off": {
+     "Particles": null,
+     "Light": null
+    }
+   }
+  },
+  "Light": {
+   "Color": "#fd8"
+  }
+ },
+ "Quality": "Developer",
+ "SubCategory": "VFX Spawners"
+}

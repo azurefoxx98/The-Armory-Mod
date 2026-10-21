@@ -1,0 +1,53 @@
+{
+ "Type": "NoiseRange",
+ "Biomes": [],
+ "DefaultBiome": "Showcase_Theatre",
+ "DefaultTransitionDistance": 32,
+ "MaxBiomeEdgeDistance": 32,
+ "Density": {
+  "Type": "Constant",
+  "Value": 0
+ },
+ "SpawnPositions": {
+  "Type": "Imported",
+  "Name": "Theatre_Spawn"
+ },
+ "Framework": [
+  {
+   "Type": "Positions",
+   "Entries": [
+    {
+     "Name": "Spawn",
+     "Positions": {
+      "Type": "List",
+      "ExportAs": "Theatre_Spawn",
+      "Positions": [
+       {
+        "X": 0.5,
+        "Y": 101,
+        "Z": -106.5
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "Type": "DecimalConstants",
+   "Entries": [
+    {
+     "Name": "Base",
+     "Value": 100
+    },
+    {
+     "Name": "Water",
+     "Value": 100
+    },
+    {
+     "Name": "Bedrock",
+     "Value": 0
+    }
+   ]
+  }
+ ]
+}

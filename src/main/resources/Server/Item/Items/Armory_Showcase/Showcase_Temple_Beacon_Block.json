@@ -1,0 +1,60 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Showcase_Temple_Beacon_Block.name"
+  },
+  "Categories": [
+    "Blocks.Deco"
+  ],
+  "PlayerAnimationsId": "Item",
+  "BlockType": {
+    "DrawType": "Model",
+    "Material": "Empty",
+    "Opacity": "Transparent",
+    "CustomModel": "Blocks/_Debug/Model.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Blocks/_Debug/TextureEmpty.png",
+        "Weight": 1
+      }
+    ],
+    "HitboxType": "Rubble",
+    "Support": {},
+    "Particles": [
+      {
+        "SystemId": "Showcase_Temple_Beacon",
+        "TargetEntityPart": "Self",
+        "PositionOffset": {
+          "Y": -0.5
+        }
+      }
+    ],
+    "Light": {
+      "Color": "#cde"
+    },
+    "Flags": {},
+    "State": {
+      "Definitions": {
+        "Off": {
+          "Particles": null,
+          "Light": null
+        },
+        "Gold": {
+          "Particles": [
+            {
+              "SystemId": "Showcase_Temple_Beacon_Gold",
+              "TargetEntityPart": "Self",
+              "PositionOffset": {
+                "Y": -0.5
+              }
+            }
+          ],
+          "Light": {
+            "Color": "#fd8"
+          }
+        }
+      }
+    }
+  },
+  "SubCategory": "VFX Spawners",
+  "Quality": "Developer"
+}

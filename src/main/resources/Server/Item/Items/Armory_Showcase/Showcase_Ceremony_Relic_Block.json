@@ -1,0 +1,76 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Ceremony_Relic_Block.name"
+ },
+ "Categories": [
+  "Blocks.Deco"
+ ],
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "Material": "Solid",
+  "DrawType": "Model",
+  "Opacity": "Transparent",
+  "CustomModel": "Resources/Crystals/Iridescent_Crystal_Big.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Resources/Crystals/Crystal_Big_Textures/Iridescent.png",
+    "Weight": 1
+   }
+  ],
+  "Flags": {},
+  "BlockParticleSetId": "Crystal",
+  "ParticleColor": "#93f4fd",
+  "BlockSoundSetId": "Crystal",
+  "PhysicalMaterialId": "Stone",
+  "Light": {
+   "Color": "#dff",
+   "Radius": 18
+  },
+  "Support": {},
+  "Gathering": {
+   "Breaking": {
+    "GatherType": "Unbreakable"
+   }
+  },
+  "Particles": [
+   {
+    "SystemId": "Showcase_Relic",
+    "TargetEntityPart": "Self",
+    "PositionOffset": {
+     "Y": 0
+    }
+   }
+  ],
+  "InteractionHint": "server.armoryShowcase.relic.hint",
+  "Interactions": {
+   "Use": {
+    "Interactions": [
+     {
+      "Type": "SignalNearbyVolumes",
+      "MatchKey": "armory_ceremony",
+      "Radius": 24.0,
+      "SignalKeys": [
+       "ceremony_cue"
+      ]
+     }
+    ]
+   }
+  },
+  "State": {
+   "Definitions": {
+    "Spent": {
+     "Particles": null,
+     "Light": {
+      "Color": "#467",
+      "Radius": 6
+     },
+     "InteractionHint": null,
+     "Interactions": {
+      "Use": null
+     }
+    }
+   }
+  }
+ },
+ "Quality": "Developer"
+}

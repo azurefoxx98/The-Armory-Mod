@@ -1,0 +1,86 @@
+{
+  "$Comment": "Written by tools/showcase-world/beacon.py: the veil's shimmering sheet.",
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "BillboardY",
+  "ParticleLifeSpan": {
+    "Min": 3.0,
+    "Max": 4.5
+  },
+  "SpawnRate": {
+    "Min": 0.6666666666666666,
+    "Max": 1.0
+  },
+  "MaxConcurrentParticles": 3,
+  "InitialVelocity": {
+    "Speed": {
+      "Min": 0.1,
+      "Max": 0.2
+    },
+    "Pitch": {
+      "Min": 90,
+      "Max": 90
+    }
+  },
+  "Shape": "Sphere",
+  "EmitOffset": {
+    "X": {
+      "Min": 0,
+      "Max": 0.45
+    },
+    "Y": {
+      "Min": 0,
+      "Max": 0.3
+    },
+    "Z": {
+      "Min": 0,
+      "Max": 0.05
+    }
+  },
+  "LinearFiltering": true,
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Gradient_Reflected.png",
+    "ScaleRatioConstraint": "None",
+    "SoftParticles": "Enable",
+    "SoftParticlesFadeFactor": 0.5,
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 1.1,
+          "Max": 1.3
+        },
+        "Y": {
+          "Min": 1.7,
+          "Max": 1.836
+        }
+      },
+      "Opacity": 0.5
+    },
+    "Animation": {
+      "0": {
+        "Opacity": 0,
+        "Color": "#eef7ff"
+      },
+      "35": {
+        "Opacity": 0.5,
+        "Color": "#d4e8ff"
+      },
+      "70": {
+        "Opacity": 0.5,
+        "Color": "#d4e8ff"
+      },
+      "100": {
+        "Opacity": 0,
+        "Color": "#b6d6ff"
+      }
+    }
+  },
+  "UVMotion": {
+    "Texture": "Particles/Textures/UVMotion/FlowMap3.png",
+    "Strength": 2,
+    "Scale": 1,
+    "StrengthCurveType": "IncreaseLinear",
+    "AddRandomUVOffset": true,
+    "SpeedX": 0.0,
+    "SpeedY": 0.08
+  }
+}

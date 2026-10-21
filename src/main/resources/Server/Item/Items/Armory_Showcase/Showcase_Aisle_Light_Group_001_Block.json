@@ -1,0 +1,46 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Aisle_Light_Block.name"
+ },
+ "Categories": [
+  "Blocks.Deco"
+ ],
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "DrawType": "Model",
+  "Material": "Empty",
+  "Opacity": "Transparent",
+  "CustomModel": "Blocks/_Debug/Model.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/_Debug/TextureEmpty.png",
+    "Weight": 1
+   }
+  ],
+  "HitboxType": "Rubble",
+  "Support": {},
+  "Particles": [
+   {
+    "SystemId": "Showcase_Aisle_Light_Group_001",
+    "TargetEntityPart": "Self",
+    "PositionOffset": {
+     "Y": -0.5
+    }
+   }
+  ],
+  "Flags": {},
+  "State": {
+   "Definitions": {
+    "Off": {
+     "Particles": null,
+     "Light": null
+    }
+   }
+  },
+  "Light": {
+   "Color": "#fc8"
+  }
+ },
+ "Quality": "Developer",
+ "SubCategory": "VFX Spawners"
+}

@@ -1,0 +1,46 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Temple_Spirit_Block.name"
+ },
+ "Categories": [
+  "Blocks.Deco"
+ ],
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "DrawType": "Model",
+  "Material": "Empty",
+  "Opacity": "Transparent",
+  "CustomModel": "Blocks/_Debug/Model.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/_Debug/TextureEmpty.png",
+    "Weight": 1
+   }
+  ],
+  "HitboxType": "Rubble",
+  "Flags": {},
+  "Support": {},
+  "Particles": [
+   {
+    "SystemId": "ForgottenTemple_Island_Spark",
+    "TargetEntityPart": "Self",
+    "PositionOffset": {
+     "Y": -0.5
+    }
+   }
+  ],
+  "Light": {
+   "Color": "#fd8"
+  },
+  "State": {
+   "Definitions": {
+    "Off": {
+     "Particles": null,
+     "Light": null
+    }
+   }
+  }
+ },
+ "SubCategory": "VFX Spawners",
+ "Quality": "Developer"
+}

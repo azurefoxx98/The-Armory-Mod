@@ -1,0 +1,51 @@
+{
+  "$Comment": "Written by tools/showcase-world/beacon.py: the beacon's foot.",
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "Billboard",
+  "ParticleLifeSpan": {
+    "Min": 2.5,
+    "Max": 3.5
+  },
+  "SpawnRate": {
+    "Min": 0.8,
+    "Max": 1.2
+  },
+  "MaxConcurrentParticles": 4,
+  "InitialVelocity": {
+    "Speed": {
+      "Min": 0.0,
+      "Max": 0.0
+    }
+  },
+  "LinearFiltering": true,
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Ball3.png",
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 5,
+          "Max": 6
+        },
+        "Y": {
+          "Min": 5,
+          "Max": 6
+        }
+      },
+      "Opacity": 0.6
+    },
+    "Animation": {
+      "0": {
+        "Opacity": 0,
+        "Color": "#ffd889"
+      },
+      "40": {
+        "Opacity": 0.6,
+        "Color": "#ffc463"
+      },
+      "100": {
+        "Opacity": 0,
+        "Color": "#ffae4a"
+      }
+    }
+  }
+}

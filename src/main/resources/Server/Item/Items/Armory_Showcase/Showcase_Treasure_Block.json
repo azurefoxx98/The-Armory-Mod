@@ -1,0 +1,100 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Treasure_Block.name"
+ },
+ "Categories": [
+  "Blocks.Deco"
+ ],
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "Material": "Solid",
+  "DrawType": "Model",
+  "Opacity": "Transparent",
+  "CustomModel": "Blocks/Dungeons/Chest_Legendary.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/Dungeons/Chest_Legendary_Texture.png",
+    "Weight": 1
+   }
+  ],
+  "HitboxType": "Chest_Large_Legendary",
+  "VariantRotation": "NESW",
+  "Flags": {},
+  "BlockParticleSetId": "Wood",
+  "BlockSoundSetId": "Wood",
+  "PhysicalMaterialId": "Wood",
+  "ParticleColor": "#7a3d27",
+  "Support": {},
+  "Gathering": {
+   "Breaking": {
+    "GatherType": "Unbreakable"
+   }
+  },
+  "Light": {
+   "Color": "#a74",
+   "Radius": 4
+  },
+  "State": {
+   "Definitions": {
+    "Awake": {
+     "Particles": [
+      {
+       "SystemId": "Showcase_Treasure",
+       "TargetEntityPart": "Self",
+       "PositionOffset": {
+        "Y": 0
+       }
+      }
+     ],
+     "Light": {
+      "Color": "#fd8",
+      "Radius": 12
+     },
+     "InteractionHint": "server.armoryShowcase.museum.treasure.hint",
+     "Interactions": {
+      "Use": {
+       "Interactions": [
+        {
+         "Type": "SignalNearbyVolumes",
+         "MatchKey": "armory_treasure",
+         "Radius": 4.0,
+         "SignalKeys": [
+          "treasure_cue"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "Open": {
+     "Particles": [
+      {
+       "SystemId": "Showcase_Treasure",
+       "TargetEntityPart": "Self",
+       "PositionOffset": {
+        "Y": 0
+       }
+      }
+     ],
+     "Light": {
+      "Color": "#fea",
+      "Radius": 15
+     },
+     "CustomModelAnimation": "Blocks/Animations/Chest/Chest_Open.blockyanim",
+     "Interactions": {
+      "Use": "Open_Container"
+     },
+     "BlockEntity": {
+      "Components": {
+       "ItemContainerBlock": {
+        "Capacity": 9,
+        "Droplist": "Armory_Showcase_Treasure"
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "Quality": "Developer"
+}

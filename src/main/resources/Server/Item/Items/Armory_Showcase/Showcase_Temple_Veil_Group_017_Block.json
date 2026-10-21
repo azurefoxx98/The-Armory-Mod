@@ -1,0 +1,41 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Temple_Veil_Block.name"
+ },
+ "Categories": [
+  "Blocks.Deco"
+ ],
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "Material": "Solid",
+  "DrawType": "Model",
+  "Opacity": "Transparent",
+  "CustomModel": "Blocks/_Debug/Model.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/_Debug/TextureEmpty.png",
+    "Weight": 1
+   }
+  ],
+  "Flags": {},
+  "Support": {},
+  "Gathering": {
+   "Breaking": {
+    "GatherType": "Unbreakable"
+   }
+  },
+  "Light": {
+   "Color": "#9bd"
+  },
+  "Particles": [
+   {
+    "SystemId": "Showcase_Temple_Veil_Group_017",
+    "TargetEntityPart": "Self",
+    "PositionOffset": {
+     "Y": -0.5
+    }
+   }
+  ]
+ },
+ "Quality": "Developer"
+}

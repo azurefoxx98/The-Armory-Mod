@@ -1,0 +1,35 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Bubbles_Block.name"
+ },
+ "Categories": [
+  "Blocks.Deco"
+ ],
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "DrawType": "Model",
+  "Material": "Empty",
+  "Opacity": "Transparent",
+  "CustomModel": "Blocks/_Debug/Model.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/_Debug/TextureEmpty.png",
+    "Weight": 1
+   }
+  ],
+  "HitboxType": "Rubble",
+  "Flags": {},
+  "Support": {},
+  "Particles": [
+   {
+    "SystemId": "Water_Bubble_Stream",
+    "TargetEntityPart": "Self",
+    "PositionOffset": {
+     "Y": -0.5
+    }
+   }
+  ]
+ },
+ "SubCategory": "VFX Spawners",
+ "Quality": "Developer"
+}

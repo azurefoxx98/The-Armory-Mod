@@ -32,5 +32,6 @@ public final class ShowcaseModule {
         chunks.registerSystem(new ShowcaseFigureSystems.Remove());
         entities.registerSystem(new ShowcaseFigureSystems.Shield());
         entities.registerSystem(new HiddenItemGuard());
+        ShowcasePlatform.register(entities);
     }
 }

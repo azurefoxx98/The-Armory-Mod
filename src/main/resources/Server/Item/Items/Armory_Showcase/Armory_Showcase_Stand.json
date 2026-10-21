@@ -45,6 +45,27 @@
     }
    ]
   },
+  "State": {
+   "Definitions": {
+    "Riding": {
+     "Material": "Empty",
+     "DrawType": "Model",
+     "CustomModel": "Blocks/_Debug/Model.blockymodel",
+     "CustomModelTexture": [
+      {
+       "Texture": "Blocks/_Debug/TextureEmpty.png",
+       "Weight": 1
+      }
+     ],
+     "HitboxType": "Full",
+     "Support": {},
+     "Interactions": {
+      "Use": null
+     },
+     "InteractionHint": null
+    }
+   }
+  },
   "BlockParticleSetId": "Wood",
   "BlockSoundSetId": "Wood",
   "PhysicalMaterialId": "Wood"

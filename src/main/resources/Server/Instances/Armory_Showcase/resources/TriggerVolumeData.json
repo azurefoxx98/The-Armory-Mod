@@ -26788,6 +26788,550 @@
      "X": 0.5,
      "Y": 0.5,
      "Z": 0.5
+    },
+    {
+     "Type": "ArmoryShowcasePlatform",
+     "Event": "SIGNAL_RECEIVED",
+     "PivotX": 0.5,
+     "PivotY": 101.0,
+     "PivotZ": 0.5,
+     "Height": 12.0,
+     "DurationSeconds": 15.0,
+     "Turns": 1.0,
+     "LayerY": [
+      100,
+      99,
+      98
+     ],
+     "LayerRadius": [
+      12.0,
+      11.0,
+      10.0
+     ],
+     "RiderTop": 104,
+     "DeckModel": "Armory_Showcase_Platform",
+     "FloorModels": [
+      "Armory_Showcase_Platform_Floor_0",
+      "Armory_Showcase_Platform_Floor_1",
+      "Armory_Showcase_Platform_Floor_2",
+      "Armory_Showcase_Platform_Floor_3",
+      "Armory_Showcase_Platform_Floor_4",
+      "Armory_Showcase_Platform_Floor_5",
+      "Armory_Showcase_Platform_Floor_6"
+     ],
+     "Collision": "Armory_Showcase_Platform",
+     "RidingState": "Riding",
+     "SettleTicks": 3,
+     "Delay": 16.0,
+     "Phase": "Rise"
+    },
+    {
+     "Type": "ArmoryShowcasePlatform",
+     "Event": "SIGNAL_RECEIVED",
+     "PivotX": 0.5,
+     "PivotY": 101.0,
+     "PivotZ": 0.5,
+     "Height": 12.0,
+     "DurationSeconds": 15.0,
+     "Turns": 1.0,
+     "LayerY": [
+      100,
+      99,
+      98
+     ],
+     "LayerRadius": [
+      12.0,
+      11.0,
+      10.0
+     ],
+     "RiderTop": 104,
+     "DeckModel": "Armory_Showcase_Platform",
+     "FloorModels": [
+      "Armory_Showcase_Platform_Floor_0",
+      "Armory_Showcase_Platform_Floor_1",
+      "Armory_Showcase_Platform_Floor_2",
+      "Armory_Showcase_Platform_Floor_3",
+      "Armory_Showcase_Platform_Floor_4",
+      "Armory_Showcase_Platform_Floor_5",
+      "Armory_Showcase_Platform_Floor_6"
+     ],
+     "Collision": "Armory_Showcase_Platform",
+     "RidingState": "Riding",
+     "SettleTicks": 3,
+     "Delay": 83.5,
+     "Phase": "Descend"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -2.5,
+      "Z": 11.5
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -2.5,
+      "Z": 11.5
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 4.400859472198532,
+      "Y": -2.5,
+      "Z": 10.624614623879797
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 4.400859472198532,
+      "Y": -2.5,
+      "Z": 10.624614623879797
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 8.131727983645296,
+      "Y": -2.5,
+      "Z": 8.131727983645296
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 8.131727983645296,
+      "Y": -2.5,
+      "Z": 8.131727983645296
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 10.624614623879797,
+      "Y": -2.5,
+      "Z": 4.400859472198533
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 10.624614623879797,
+      "Y": -2.5,
+      "Z": 4.400859472198533
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 11.5,
+      "Y": -2.5,
+      "Z": 6.661338147750939e-16
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 11.5,
+      "Y": -2.5,
+      "Z": 6.661338147750939e-16
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 10.624614623879797,
+      "Y": -2.5,
+      "Z": -4.4008594721985315
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 10.624614623879797,
+      "Y": -2.5,
+      "Z": -4.4008594721985315
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 8.131727983645296,
+      "Y": -2.5,
+      "Z": -8.131727983645296
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 8.131727983645296,
+      "Y": -2.5,
+      "Z": -8.131727983645296
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 4.400859472198534,
+      "Y": -2.5,
+      "Z": -10.624614623879797
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 4.400859472198534,
+      "Y": -2.5,
+      "Z": -10.624614623879797
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 1.4432899320127035e-15,
+      "Y": -2.5,
+      "Z": -11.5
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 1.4432899320127035e-15,
+      "Y": -2.5,
+      "Z": -11.5
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -4.4008594721985315,
+      "Y": -2.5,
+      "Z": -10.624614623879799
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -4.4008594721985315,
+      "Y": -2.5,
+      "Z": -10.624614623879799
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -8.131727983645296,
+      "Y": -2.5,
+      "Z": -8.131727983645298
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -8.131727983645296,
+      "Y": -2.5,
+      "Z": -8.131727983645298
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -10.624614623879795,
+      "Y": -2.5,
+      "Z": -4.400859472198539
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -10.624614623879795,
+      "Y": -2.5,
+      "Z": -4.400859472198539
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -11.5,
+      "Y": -2.5,
+      "Z": -2.1094237467877974e-15
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -11.5,
+      "Y": -2.5,
+      "Z": -2.1094237467877974e-15
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -10.624614623879797,
+      "Y": -2.5,
+      "Z": 4.400859472198535
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -10.624614623879797,
+      "Y": -2.5,
+      "Z": 4.400859472198535
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -8.131727983645298,
+      "Y": -2.5,
+      "Z": 8.131727983645295
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -8.131727983645298,
+      "Y": -2.5,
+      "Z": 8.131727983645295
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -4.4008594721985395,
+      "Y": -2.5,
+      "Z": 10.624614623879795
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "ParticleSystem": "Block_Land_Hard_Dust",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": -4.4008594721985395,
+      "Y": -2.5,
+      "Z": 10.624614623879795
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 16.0,
+     "SoundEvent": "SFX_Golem_Earth_Wake",
+     "Location": "VolumeCenter",
+     "Offset": {
+      "X": 0.0,
+      "Y": -2.5,
+      "Z": 0.0
+     }
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 98.5,
+     "SoundEvent": "SFX_Golem_Earth_Stomp_Impact",
+     "Location": "VolumeCenter",
+     "Offset": {
+      "X": 0.0,
+      "Y": -2.5,
+      "Z": 0.0
+     }
     }
    ],
    "TargetTypes": [

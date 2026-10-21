@@ -1,0 +1,39 @@
+{
+ "Type": "Generic",
+ "Appearance": "Armory_Showcase_Figure",
+ "NameTranslationKey": "server.npcRoles.Armory_Showcase_Figure.name",
+ "DefaultPlayerAttitude": "Ignore",
+ "Invulnerable": true,
+ "KnockbackScale": 0,
+ "MaxHealth": 100000,
+ "HiddenUIComponents": [
+  "Healthbar",
+  "CombatText"
+ ],
+ "DisableDamageGroups": [
+  "Player"
+ ],
+ "MotionControllerList": [
+  {
+   "Type": "Walk",
+   "Gravity": 10,
+   "MaxFallSpeed": 8
+  }
+ ],
+ "HotbarSize": 3,
+ "OffHandSlots": 1,
+ "DefaultOffHandSlot": 0,
+ "Instructions": [
+  {
+   "Sensor": {
+    "Type": "Any"
+   },
+   "BodyMotion": {
+    "Type": "Nothing"
+   },
+   "HeadMotion": {
+    "Type": "Nothing"
+   }
+  }
+ ]
+}

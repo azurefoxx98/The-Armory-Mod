@@ -1,0 +1,54 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Armory_Showcase_Stand.name"
+ },
+ "PlayerAnimationsId": "Block",
+ "BlockType": {
+  "Material": "Solid",
+  "DrawType": "Model",
+  "CustomModel": "Blocks/Armory_Showcase/Showcase_Stand.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/Armory_Showcase/Showcase_Stand_Texture.png",
+    "Weight": 1
+   }
+  ],
+  "Opacity": "Transparent",
+  "HitboxType": "Plant_Tall_Full",
+  "VariantRotation": "NESW",
+  "BlockEntity": {
+   "Components": {
+    "ArmoryShowcaseFigureStand": {}
+   }
+  },
+  "Interactions": {
+   "Use": {
+    "Interactions": [
+     {
+      "Type": "SignalNearbyVolumes",
+      "MatchKey": "armory_placard",
+      "Radius": 0.5
+     }
+    ]
+   }
+  },
+  "InteractionHint": "server.interactionHints.examine",
+  "Gathering": {
+   "Breaking": {
+    "GatherType": "Unbreakable"
+   }
+  },
+  "Support": {
+   "Down": [
+    {
+     "FaceType": "Full"
+    }
+   ]
+  },
+  "BlockParticleSetId": "Wood",
+  "BlockSoundSetId": "Wood",
+  "PhysicalMaterialId": "Wood"
+ },
+ "ItemSoundSetId": "ISS_Blocks_Wood",
+ "Quality": "Armory_Showcase_Hidden"
+}

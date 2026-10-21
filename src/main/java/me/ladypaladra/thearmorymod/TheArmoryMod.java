@@ -12,6 +12,7 @@ import me.ladypaladra.thearmorymod.parry.ParryModule;
 import me.ladypaladra.thearmorymod.powers.PowersModule;
 import me.ladypaladra.thearmorymod.scorpianflail.systems.ScorpianFlailPoisonSystem;
 import me.ladypaladra.thearmorymod.scribing.ScribingModule;
+import me.ladypaladra.thearmorymod.showcase.ShowcaseModule;
 import me.ladypaladra.thearmorymod.stats.ArmoryStatsModule;
 import me.ladypaladra.thearmorymod.telemetry.ArmoryTelemetry;
 
@@ -52,6 +53,7 @@ public class TheArmoryMod extends JavaPlugin {
             AlterationModule.register(this);
             ScribingModule.register(this);
             KrafterModule.register(this);
+            ShowcaseModule.register(this);
 
             getEntityStoreRegistry().registerSystem(new ScorpianFlailPoisonSystem());
             // getEntityStoreRegistry().registerSystem(new EngineeringRigMobilitySystem());

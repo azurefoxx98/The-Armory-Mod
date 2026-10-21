@@ -62,8 +62,7 @@ public final class ShowcaseFigureSystems {
             BlockModule.BlockStateInfo blockStateInfo =
                     archetypeChunk.getComponent(index, BlockModule.BlockStateInfo.getComponentType());
 
-            if (stand == null || blockStateInfo == null || stand.spawnPending || stand.isEmpty()
-                    || ShowcaseFigure.isAlive(stand.figure)) {
+            if (stand == null || blockStateInfo == null || !stand.wantsFigure()) {
                 return;
             }
 
@@ -98,18 +97,14 @@ public final class ShowcaseFigureSystems {
 
             // Entities cannot be added while the chunk store is ticking, so the figure is built on the
             // world queue. The generation number lets a stand removed meanwhile cancel it.
-            stand.figure = null;
-            stand.spawnPending = true;
-            int generation = ++stand.spawnGeneration;
+            int generation = stand.beginSpawn();
             int x = position.x;
             int y = position.y;
             int z = position.z;
             float blockYaw = yaw;
 
             world.execute(() -> {
-                stand.spawnPending = false;
-
-                if (stand.removed || generation != stand.spawnGeneration) {
+                if (!stand.finishSpawn(generation)) {
                     return;
                 }
 
@@ -136,6 +131,12 @@ public final class ShowcaseFigureSystems {
                 @Nonnull Store<ChunkStore> store,
                 @Nonnull CommandBuffer<ChunkStore> commandBuffer
         ) {
+            // A stand returning from a parked chunk arrives here as the same component it left as.
+            ShowcaseFigureStand stand = commandBuffer.getComponent(ref, ShowcaseFigureStand.getComponentType());
+
+            if (stand != null) {
+                stand.attach();
+            }
         }
 
         @Override
@@ -151,10 +152,9 @@ public final class ShowcaseFigureSystems {
                 return;
             }
 
-            stand.removed = true;
-            stand.spawnGeneration++;
+            stand.detach();
 
-            // An unloading chunk takes its figure with it, and the figure is never saved.
+            // An unloading or parked chunk takes its figure with it, because the figure is never saved.
             if (reason == RemoveReason.UNLOAD || !ShowcaseFigure.isAlive(stand.figure)) {
                 return;
             }

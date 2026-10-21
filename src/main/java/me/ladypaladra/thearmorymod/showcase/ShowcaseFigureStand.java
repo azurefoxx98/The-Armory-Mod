@@ -94,6 +94,58 @@ public class ShowcaseFigureStand implements Component<ChunkStore> {
         return (mainHand == null || mainHand.isEmpty()) && (offHand == null || offHand.isEmpty());
     }
 
+    /**
+     * Whether the stand should start building its figure now: it names something to wear, no build is
+     * already waiting, and its figure is gone or was never built.
+     */
+    boolean wantsFigure() {
+        return !removed && !spawnPending && !isEmpty() && !ShowcaseFigure.isAlive(figure);
+    }
+
+    /**
+     * Marks a build as waiting on the world queue.
+     *
+     * @return the build's number, which {@link #finishSpawn(int)} checks
+     */
+    int beginSpawn() {
+        figure = null;
+        spawnPending = true;
+        return ++spawnGeneration;
+    }
+
+    /**
+     * Called when a waiting build runs.
+     *
+     * @return true when the build may go ahead, false when the stand left the world or a newer build
+     * replaced this one while it waited
+     */
+    boolean finishSpawn(int generation) {
+        spawnPending = false;
+        return !removed && generation == spawnGeneration;
+    }
+
+    /**
+     * The stand's block left the world. Any build still waiting is cancelled.
+     */
+    void detach() {
+        removed = true;
+        spawnGeneration++;
+    }
+
+    /**
+     * The stand's block joined the world. This also runs when the engine puts back a stand it had
+     * parked, because a chunk with no player near it stops ticking and its blocks are held aside with
+     * this same component until the chunk ticks again. The figure is never saved, so it did not come
+     * back with the stand, and the stand has to be free to build it again. Without this the stand
+     * would keep the cancellation from the moment it was parked and stay empty for good.
+     */
+    void attach() {
+        removed = false;
+        spawnPending = false;
+        retryDelaySeconds = 0.0F;
+        spawnGeneration++;
+    }
+
     @Nonnull
     @Override
     public Component<ChunkStore> clone() {

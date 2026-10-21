@@ -434,7 +434,7 @@ public final class ShowcasePlatform {
             problem = "its model differs from the block's";
         } else if (textures == null || textures.length != 1 || !asset.getTexture().equals(textures[0].getTexture())) {
             problem = "its texture differs from the block's";
-        } else if (Math.abs(piece.scale - type.getCustomModelScale() * BLOCK_TO_ENTITY) > 1.0e-3) {
+        } else if (piece.scale <= 0.0 || Math.abs(piece.scale - type.getCustomModelScale() * BLOCK_TO_ENTITY) > 1.0e-3) {
             problem = "its scale differs from the block's";
         }
 

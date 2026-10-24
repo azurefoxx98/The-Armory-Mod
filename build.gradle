@@ -198,6 +198,65 @@ tasks.register('verifyBundledRuntime') {
     }
 }
 
+// The jar a release ships. Test builds and deploys never run this. It takes the built jar,
+// rearranges every model texture so that each picture a face shows is stored once and nothing
+// else is, proves that every face of every model still shows exactly the same texels, and
+// stamps the result. A player sees no difference and the jar is smaller, 54 MB down to 44 MB
+// on 1.25.0. The source is never touched, so the art stays exactly as it was made.
+//
+// The optimiser lives outside this repository. Its location is read from the per-user
+// ~/.gradle/gradle.properties (texopt.python, texopt.pythonpath, texopt.tools), so this public
+// file names no local path. A machine without them gets a clear failure from this task alone,
+// and every other task works as before.
+def texoptPython = providers.gradleProperty('texopt.python')
+def texoptPythonPath = providers.gradleProperty('texopt.pythonpath')
+def texoptTools = providers.gradleProperty('texopt.tools')
+def releaseJarFile = layout.buildDirectory.file(shadowJar.archiveFile.map { "release/${it.asFile.name}" })
+
+tasks.register('releaseJar') {
+    group = 'build'
+    description = 'Builds the release jar in build/release with every model texture optimised, proved and stamped.'
+    dependsOn shadowJar, 'verifyBundledRuntime'
+    inputs.file(shadowJar.archiveFile)
+    outputs.file(releaseJarFile)
+    // The optimiser changes outside this build. It keeps its own record of past results, so a
+    // rerun with unchanged art takes seconds.
+    outputs.upToDateWhen { false }
+    doLast {
+        def required = { provider, key ->
+            if (!provider.present) {
+                throw new GradleException("releaseJar needs ${key} in ~/.gradle/gradle.properties.")
+            }
+            provider.get()
+        }
+        def python = required(texoptPython, 'texopt.python')
+        def pythonPath = required(texoptPythonPath, 'texopt.pythonpath')
+        def tools = required(texoptTools, 'texopt.tools')
+        def vanilla = file("${System.getenv('APPDATA')}/Hytale/install/release/package/game/latest/Assets.zip")
+        if (!vanilla.isFile()) {
+            throw new GradleException("releaseJar found no release Assets.zip at ${vanilla}.")
+        }
+        def output = releaseJarFile.get().asFile
+        output.parentFile.mkdirs()
+        def memory = new File(System.getProperty('user.home'), '.cache/texopt').path
+        def run = { List arguments ->
+            def builder = new ProcessBuilder(([python] + arguments)*.toString()).redirectErrorStream(true)
+            builder.environment().put('PYTHONPATH', pythonPath)
+            def process = builder.start()
+            def text = process.inputStream.getText('UTF-8')
+            def code = process.waitFor()
+            if (code != 0) {
+                throw new GradleException("releaseJar: ${new File(arguments[0].toString()).name} failed with exit ${code}.\n${text.takeRight(3000)}")
+            }
+            text.readLines().findAll { it.trim() && !it.startsWith('EXIT=') }.takeRight(2).each { println it }
+        }
+        run(["${tools}/optimize_jar.py", shadowJar.archiveFile.get().asFile.path, output.path,
+             '--cache', memory, '--vanilla', vanilla.path])
+        run(["${tools}/texopt_stamp.py", 'check', output.path])
+        println "Release jar: ${output}"
+    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 

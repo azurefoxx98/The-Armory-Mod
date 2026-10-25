@@ -191,11 +191,11 @@ if (-not $checksReady) {
 if ($checksReady) {
     git -C $repo config armory.python ($python -replace '\\', '/')
     & $python (Join-Path $repo 'Studio\Tools\Checks\check.py') --spawn
-    Write-Host 'The checks are installed. They run after every commit and every pull, and HyCreator shows what they find.'
+    Write-Host 'The checks are installed. They run after every commit and every update, and HyCreator shows what they find.'
 }
 
 Write-Host ''
-Write-Host 'Done. Each time you pull in HyCreator, the code and the plugin update by themselves.'
+Write-Host 'Done. Each time you run Studio\Update.cmd, or pull in HyCreator, the code and the plugin update by themselves.'
 $blockbench = Join-Path $repo 'Studio\Tools\Blockbench\armory.js'
 if (Test-Path -LiteralPath $blockbench) {
     Write-Host 'One step left, once, in Blockbench: File, Plugins, Load Plugin from File, and pick'

@@ -22,14 +22,14 @@ This is the same guide as the panel in HyCreator. Edit it in Studio/Tools/HyCrea
 ## Each time you work
 
 - Open your copy of the mod in HyCreator.
-- Before you start: Commit changes... if anything is left, then Pull. Pull brings our fixes and any new code.
-- After a pull, restart your world, so the game runs the newest code.
-- When you finish: Commit changes..., write one line saying what you did, then Push right away. A commit left unpushed can cross with one of ours.
-- If Pull or Push says your branch has diverged, or talks about a conflict, stop there and tell Larsonix. Nothing is lost, and do not try to fix it.
+- Before you start: Commit changes... if anything is left, then double-click Studio\Update.cmd. It brings in our latest fixes and code beside your work, and sends both to GitHub.
+- After an update, restart your world, so the game runs the newest code.
+- When you finish: Commit changes..., write one line saying what you did, then Push.
+- If Update, Pull or Push says your branch has diverged, run Update. If Update says your work and ours changed the same lines, it has changed nothing: tell Larsonix which files and keep working.
 
 ## Our checks
 
-- After every commit and every pull, our checks look at your work by themselves, in the background. You never wait for them.
+- After every commit and every update, our checks look at your work by themselves, in the background. You never wait for them.
 - When they find something, HyCreator shows a notice. Open The Armory checks panel with the ! button at the top to see which item and what is wrong. Click a file name to open it.
 - Fix what you can, then commit again. If you are not sure, push anyway and tell Larsonix. Nothing is ever blocked.
 - To run them any time, double-click Studio\Check.cmd.

@@ -38,7 +38,9 @@ This is the same guide as the panel in HyCreator. Edit it in Studio/Tools/HyCrea
 - Model the whole set as one Blockbench file on the player model, which shows the scale.
 - Turn on Copy-Paste with Magenta Alpha in the Hytale plugin settings, so transparency survives the trip to Photoshop.
 - Make the texture layout tight while the set is still one file: Resize UV Canvas cuts the empty canvas without moving the paint. Every piece of a set shares its colour sheets, so do it before the split.
-- Then save each group as its own piece: helmet, chest, gloves, boots.
+- Then save each group as its own piece: File, Export, Save Each Group as a Piece. Untick the groups that are not a piece, name each file, pick the folder.
+- A group hidden in Blockbench would be hidden in the game too. The dialog offers to show its parts in the piece. Leave that ticked unless a part should stay hidden.
+- The first time, Blockbench asks whether The Armory may use files. Choose Always allow for this plugin.
 
 ## Make the default piece
 

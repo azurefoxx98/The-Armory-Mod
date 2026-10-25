@@ -1,0 +1,3 @@
+#!/bin/sh
+# Keeps the game's copy of the Armory code and the HyCreator plugin in step with this branch.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File Studio/Tools/sync.ps1 -Quiet || true

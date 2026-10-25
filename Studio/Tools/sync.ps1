@@ -1,0 +1,54 @@
+# Copies the code-only jar and the HyCreator plugin from this repository to where the game and
+# HyCreator read them, when they changed. Setup runs it once, and git runs it after every pull
+# and every branch switch, so both always match the files of the branch that is checked out.
+#
+# The two places are stored in this repository's git settings by setup (armory.mods and
+# armory.plugins), so this script needs no arguments.
+param(
+    [switch] $Quiet
+)
+$ErrorActionPreference = 'Stop'
+$repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+
+function Say([string] $text) {
+    if (-not $Quiet) { Write-Host $text }
+}
+
+function Same-File([string] $a, [string] $b) {
+    if (-not (Test-Path -LiteralPath $b)) { return $false }
+    return (Get-FileHash -LiteralPath $a).Hash -eq (Get-FileHash -LiteralPath $b).Hash
+}
+
+function Copy-IfChanged([string] $from, [string] $to, [string] $what) {
+    if (Same-File $from $to) { return $true }
+    try {
+        Copy-Item -LiteralPath $from -Destination $to -Force
+        Say "Updated $what."
+        return $true
+    } catch {
+        # The game holds the jar open while a world runs, so a copy can fail until it closes.
+        Write-Host "Could not update $what. Close Hytale and HyCreator, then run Studio\Setup.cmd again."
+        return $false
+    }
+}
+
+$mods = (git -C $repo config --get armory.mods) 2>$null
+$plugins = (git -C $repo config --get armory.plugins) 2>$null
+$ok = $true
+
+if ($mods) {
+    if (-not (Copy-IfChanged (Join-Path $PSScriptRoot 'TheArmory-code.jar') (Join-Path $mods 'TheArmory-code.jar') 'the Armory code for the game')) {
+        $ok = $false
+    }
+}
+
+$pluginSource = Join-Path $PSScriptRoot 'HyCreator'
+if ($plugins -and (Test-Path -LiteralPath $pluginSource) -and (Test-Path -LiteralPath $plugins)) {
+    Get-ChildItem -LiteralPath $pluginSource -File | Where-Object { $_.Extension -in '.js', '.hcplugin' } | ForEach-Object {
+        if (-not (Copy-IfChanged $_.FullName (Join-Path $plugins $_.Name) "the HyCreator plugin $($_.Name) (restart HyCreator to use it)")) {
+            $ok = $false
+        }
+    }
+}
+
+if ($ok) { exit 0 } else { exit 1 }

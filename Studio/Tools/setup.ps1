@@ -116,7 +116,10 @@ if ($others.Count -gt 0) {
     }
     New-Item -ItemType Directory -Force -Path $setAside | Out-Null
     foreach ($entry in $others) {
-        $place = Join-Path $setAside ((Split-Path -Leaf (Split-Path -Parent $entry.FullName)) + ' - ' + $entry.Name)
+        # Named after where it came from: the shared mods folder, or the world that held it.
+        $parent = Split-Path -Parent $entry.FullName
+        $from = if ($parent -eq $mods) { 'Mods' } else { 'World ' + (Split-Path -Leaf (Split-Path -Parent $parent)) }
+        $place = Join-Path $setAside ($from + ' - ' + $entry.Name)
         if (Test-Path -LiteralPath $place) { $place += ' (' + (Get-Date -Format 'yyyy-MM-dd HH-mm-ss') + ')' }
         Move-Item -LiteralPath $entry.FullName -Destination $place
         Write-Host "  Moved to $place"

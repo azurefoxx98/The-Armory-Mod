@@ -257,6 +257,64 @@ tasks.register('releaseJar') {
     }
 }
 
+// The plugin without its asset pack, for working on the mod's files in the game directly.
+//
+// The game loads Java only from a jar in a mods folder, and it refuses two packs with the same
+// name, so the normal jar and a folder of the mod's files cannot sit side by side. This jar
+// declares IncludesAssetPack false, so the game loads the plugin from it and takes every item,
+// model and texture from the folder instead, and a file saved there reaches the game without a
+// build. It keeps the one asset the Java reads from its own jar, the Alteration Table page.
+//
+// It is committed under Studio/Tools so that pulling the repository always brings the code that
+// matches the files beside it. Timestamps and entry order are fixed, so the file only changes
+// when the code does, and the build rewrites it every time so it can never fall behind. It
+// carries no HStats key, because it lives in a public repository and a working copy has
+// nothing to report.
+def studioDirectory = layout.buildDirectory.dir('generated/studio')
+
+def generateStudioCodeFiles = tasks.register('generateStudioCodeFiles') {
+    def manifestSource = file('src/main/resources/manifest.json')
+    inputs.file(manifestSource)
+    inputs.property('version', resolvedArmoryVersion)
+    outputs.dir(studioDirectory)
+    doLast {
+        def manifest = new groovy.json.JsonSlurper().parse(manifestSource, 'UTF-8')
+        if (manifest.IncludesAssetPack != true) {
+            throw new GradleException('manifest.json no longer declares IncludesAssetPack true, so the code-only jar cannot be derived from it.')
+        }
+        manifest.IncludesAssetPack = false
+        def root = studioDirectory.get().asFile
+        new File(root, 'manifest.json').setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifest)) + '\n', 'UTF-8')
+        def metrics = new File(root, 'me/ladypaladra/thearmorymod/metrics/hstats.properties')
+        metrics.parentFile.mkdirs()
+        metrics.setText("key=\nversion=${resolvedArmoryVersion}\n", 'UTF-8')
+    }
+}
+
+def studioCodeJar = tasks.register('studioCodeJar', Jar) {
+    group = 'build'
+    description = 'Builds Studio/Tools/TheArmory-code.jar, the plugin without its asset pack.'
+    dependsOn shadowJar, generateStudioCodeFiles
+    from({ zipTree(shadowJar.archiveFile) }) {
+        exclude 'Common/**', 'Server/**', 'manifest.json', 'icon-256.png', 'META-INF/MANIFEST.MF'
+        exclude 'me/ladypaladra/thearmorymod/metrics/hstats.properties'
+    }
+    from({ zipTree(shadowJar.archiveFile) }) {
+        include 'Common/UI/Custom/Pages/TheArmory/AlterationPage.ui'
+    }
+    from(file('src/main/resources/icon-256.png'))
+    from(studioDirectory)
+    destinationDirectory = layout.projectDirectory.dir('Studio/Tools')
+    archiveFileName = 'TheArmory-code.jar'
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+
+tasks.named('build') {
+    dependsOn studioCodeJar
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 

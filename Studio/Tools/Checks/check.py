@@ -131,6 +131,8 @@ def run_gate(name: str, game: str) -> dict:
         code, output = r.returncode, r.stdout + r.stderr
     except subprocess.TimeoutExpired:
         code, output = None, "it did not finish within 15 minutes"
+    except OSError as exc:
+        code, output = None, f"it could not be started: {exc}"
     seconds = round(time.monotonic() - start, 1)
     problems = problems_in(name, output) if code in (0, 1) else []
     if code == 0 and not problems:
@@ -334,7 +336,15 @@ def main(argv: list[str]) -> int:
         return 2
     write_json(RUNNING, {"format": FORMAT, "started": now(), "pid": os.getpid(), "commit": git("rev-parse", "HEAD")})
     try:
-        result = run_all()
+        try:
+            result = run_all()
+        except Exception as exc:  # noqa: BLE001
+            # Whatever stopped the run, a result saying so replaces the last one, so the panel never
+            # goes on showing an older pass as if it were this run's.
+            result = {"format": FORMAT, "started": None, "finished": now(), "seconds": None,
+                      "commit": git("rev-parse", "HEAD"), "branch": git("rev-parse", "--abbrev-ref", "HEAD"),
+                      "uncommitted": None, "python": sys.version.split()[0], "game": None, "checks": [],
+                      "error": f"The checks stopped on something unexpected ({type(exc).__name__}: {exc}). Tell Larsonix."}
         write_json(RESULT, result)
     finally:
         # Only this run's own marker is removed: a later run that started meanwhile keeps its own.

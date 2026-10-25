@@ -137,6 +137,15 @@ def main() -> int:
                all(checks[k]["status"] == "pass" for k in ("recipecheck", "familycheck", "assetcheck", "branch")),
                {k: checks[k]["status"] for k in checks})
 
+        # Something no check expects, a language file that is not text, must still leave a result
+        # saying the run stopped, never the last one standing in for it.
+        with open(lang, "ab") as fh:
+            fh.write(b"\xff\xfe broken\n")
+        code, result = run(clone)
+        expect("an unexpected failure still writes a result that says so",
+               code == 1 and bool(result["error"]) and "unexpected" in result["error"], result.get("error"))
+        git(clone, "checkout", "-q", "--", "src/main/resources/Server/Languages")
+
         git(clone, "checkout", "-q", "-f", "main")
         # Main does not carry the checks yet, so they are put back by hand, and the last result
         # is removed so an old one can never pass for this run.

@@ -1,0 +1,590 @@
+// The Armory Studio, a HyCreator plugin for working on The Armory.
+//
+// It adds a Colours page beside every item. From the piece that is open it finds the whole
+// colour set: the default piece, every colour sheet and alternate model in its model folder,
+// and every colour version that already exists. It shows them as a grid, checks each version
+// for the faults that used to stop a set from working, makes the missing versions and their
+// icons, and fixes what is wrong, all with one button.
+//
+// A new colour version is a small file that names the default piece as its Parent and states
+// only what differs: its texture, its model when it is an alternate shape, its light, its icon,
+// its quality and its Alteration Table recipe. The engine does not inherit Recipe or Quality, so
+// those two are always written. Everything else, stats included, comes from the default piece,
+// so a stat changed there reaches every colour.
+//
+// The analysis below takes its file access as an argument, so it runs the same inside HyCreator
+// and in a test under Node. Only the page at the bottom touches HyCreator itself.
+
+export const ALTERATION_BENCH = 'ArmoryAlteration';
+const ICON_FOLDER = 'Icons/ItemsGenerated/';
+// Item fields the engine does not hand from a Parent to a child.
+const NOT_INHERITED = new Set(['Recipe', 'Quality', 'Reticle', 'Ability', 'HudUI', 'BlockType', 'Parent']);
+
+// ---- small helpers ----------------------------------------------------------------------------
+
+export function fileName(path) {
+  return path.slice(path.lastIndexOf('/') + 1);
+}
+
+export function stem(path) {
+  const name = fileName(path);
+  const dot = name.lastIndexOf('.');
+  return dot > 0 ? name.slice(0, dot) : name;
+}
+
+export function folder(path) {
+  return path.slice(0, path.lastIndexOf('/') + 1);
+}
+
+// "Deep orange.png" becomes "Deep_Orange", the way the mod's item ids spell a colour.
+export function colourKey(sheet) {
+  return stem(sheet).split(/[\s_]+/).filter(Boolean)
+    .map(word => word[0].toUpperCase() + word.slice(1)).join('_');
+}
+
+export function canonical(value) {
+  if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
+  if (value && typeof value === 'object') {
+    return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + canonical(value[k])).join(',') + '}';
+  }
+  return JSON.stringify(value);
+}
+
+export function isAlterationRecipe(recipe) {
+  if (!recipe || typeof recipe !== 'object') return false;
+  return (recipe.BenchRequirement || []).some(row => row && row.Id === ALTERATION_BENCH
+    && Array.isArray(row.Categories) && row.Categories.includes(ALTERATION_BENCH));
+}
+
+// Some recipe names the Alteration Table bench without its category, which the bench never
+// shows. That is how 39 Atlantean pieces of the October delivery were lost.
+function namesAlterationBench(recipe) {
+  return !!recipe && (recipe.BenchRequirement || []).some(row => row && row.Id === ALTERATION_BENCH);
+}
+
+export function alterationRecipe(family) {
+  return {
+    Input: [{ Quantity: 1, ResourceTypeId: family }],
+    BenchRequirement: [{ Id: ALTERATION_BENCH, Type: 'StructuralCrafting', Categories: [ALTERATION_BENCH] }],
+    KnowledgeRequired: false,
+    TimeSeconds: 0,
+  };
+}
+
+function alterationInput(recipe) {
+  const row = recipe && (recipe.Input || [])[0];
+  return row && typeof row.ResourceTypeId === 'string' ? row.ResourceTypeId : null;
+}
+
+function families(doc) {
+  return (doc && Array.isArray(doc.ResourceTypes) ? doc.ResourceTypes : [])
+    .map(row => row && row.Id).filter(id => typeof id === 'string');
+}
+
+export function toJson(value) {
+  return JSON.stringify(value, null, 2) + '\n';
+}
+
+// ---- reading the mod ----------------------------------------------------------------------------
+
+// io: { list(prefix, exts) -> paths, read(path) -> text or null, listVanilla(prefix, exts) -> paths }
+// Server paths are relative to the Server folder. Common paths are given as "../Common/...".
+export function makeReader(io) {
+  const docs = new Map();
+  let modItems = null;
+  let vanillaItems = null;
+
+  async function itemIndex() {
+    if (!modItems) {
+      modItems = new Map();
+      for (const rel of await io.list('Item/Items/', ['json'])) modItems.set(stem(rel), rel);
+    }
+    return modItems;
+  }
+
+  async function relOf(id) {
+    const mod = (await itemIndex()).get(id);
+    if (mod) return mod;
+    if (!vanillaItems) {
+      vanillaItems = new Map();
+      for (const rel of await io.listVanilla('Item/Items/', ['json'])) vanillaItems.set(stem(rel), rel);
+    }
+    return vanillaItems.get(id) || null;
+  }
+
+  async function docAt(rel) {
+    if (!docs.has(rel)) {
+      const text = await io.read(rel);
+      let doc = null;
+      try { doc = text == null ? null : JSON.parse(text); } catch { doc = null; }
+      docs.set(rel, doc);
+    }
+    return docs.get(rel);
+  }
+
+  async function effective(id, seen = []) {
+    if (seen.includes(id)) throw new Error('Parent loop: ' + [...seen, id].join(' > '));
+    const rel = await relOf(id);
+    const doc = rel ? await docAt(rel) : null;
+    if (!doc) return null;
+    if (typeof doc.Parent !== 'string') return doc;
+    const parent = await effective(doc.Parent, [...seen, id]);
+    const out = {};
+    if (parent) for (const key of Object.keys(parent)) if (!NOT_INHERITED.has(key)) out[key] = parent[key];
+    for (const key of Object.keys(doc)) out[key] = doc[key];
+    return out;
+  }
+
+  return { itemIndex, relOf, docAt, effective, list: io.list, read: io.read };
+}
+
+// ---- the analysis -------------------------------------------------------------------------------
+
+// Two ways the mod spells a version's id. A: Atlantean_Chest_Red_Alt. B: Atlantean_Chest_Alt_Red.
+function idFor(set, sheet, shape, order) {
+  if (sheet === set.defaultSheet && shape === set.baseShape) return set.defaultId;
+  const colour = sheet === set.defaultSheet ? '' : '_' + colourKey(sheet);
+  const suffix = shape === set.baseShape ? '' : stem(shape).slice(stem(set.baseShape).length);
+  return set.base + (order === 'A' ? colour + suffix : suffix + colour);
+}
+
+export async function analyse(reader, openRel) {
+  const index = await reader.itemIndex();
+  const openId = stem(openRel);
+  const open = await reader.effective(openId);
+  if (!open) return { error: 'This file could not be read as an item.' };
+  if (typeof open.Model !== 'string' || typeof open.Texture !== 'string') {
+    return { error: 'This item has no model and texture of its own, so it has no colour set.' };
+  }
+
+  // The folder of items this set lives in, read once.
+  const itemFolder = folder(openRel);
+  const folderRels = [...index.values()].filter(rel => rel.startsWith(itemFolder));
+  const folderDocs = new Map();
+  for (const rel of folderRels) folderDocs.set(stem(rel), { rel, own: await reader.docAt(rel), eff: await reader.effective(stem(rel)) });
+
+  // The default piece: the open item, unless it is itself a colour version.
+  let defaultId = openId;
+  const openOwn = await reader.docAt(openRel);
+  if (isAlterationRecipe(openOwn && openOwn.Recipe) || namesAlterationBench(openOwn && openOwn.Recipe)) {
+    const family = alterationInput(openOwn.Recipe);
+    const candidates = [...folderDocs.entries()].filter(([, d]) => d.eff && families(d.eff).includes(family)
+      && !isAlterationRecipe(d.own && d.own.Recipe) && !namesAlterationBench(d.own && d.own.Recipe));
+    if (candidates.length !== 1) {
+      return { error: candidates.length === 0
+        ? 'This is a colour version, and no default piece for its family was found in this folder. Open the default piece instead.'
+        : 'This is a colour version, and several pieces could be its default: ' + candidates.map(([id]) => id).join(', ') + '. Open the default piece instead.' };
+    }
+    defaultId = candidates[0][0];
+  }
+  const def = folderDocs.get(defaultId) || { rel: await reader.relOf(defaultId), own: await reader.docAt(await reader.relOf(defaultId)), eff: await reader.effective(defaultId) };
+
+  // The model folder: its colour sheets and the alternate shapes of the default's model.
+  const baseShape = def.eff.Model;
+  const modelFolder = folder(baseShape);
+  const inFolder = path => folder(path) === modelFolder;
+  const common = p => p.replace(/^\.\.\/Common\//, '');
+  const sheets = (await reader.list('../Common/' + modelFolder, ['png'])).map(common).filter(inFolder);
+  const shapes = (await reader.list('../Common/' + modelFolder, ['blockymodel'])).map(common).filter(inFolder)
+    .filter(path => stem(path) === stem(baseShape) || stem(path).startsWith(stem(baseShape) + '_'));
+  const defaultSheet = def.eff.Texture;
+  const orderedSheets = [defaultSheet, ...sheets.filter(s => s !== defaultSheet).sort()];
+  const orderedShapes = [baseShape, ...shapes.filter(s => s !== baseShape).sort()];
+
+  // Items of the folder wearing one of these sheets on one of these shapes. A model folder can
+  // hold several families (Rook and Rook Elite share their sheets), so wearing the same art is
+  // only a candidate: belonging to the set is decided by family below.
+  const candidates = [];
+  for (const [id, d] of folderDocs) {
+    if (!d.eff || id === defaultId) continue;
+    if (orderedShapes.includes(d.eff.Model) && orderedSheets.includes(d.eff.Texture)) candidates.push({ id, ...d });
+  }
+  const consumes = m => alterationInput(m.own && m.own.Recipe);
+
+  // The piece family: one of the default's own families, the one colour versions are made from,
+  // and among equals the most specific. Only a default with no family at all takes its family
+  // from the versions around it.
+  const defaultFamilies = families(def.eff);
+  const madeFrom = f => candidates.filter(m => consumes(m) === f).length;
+  const owners = f => [...folderDocs.values()].filter(d => d.eff && families(d.eff).includes(f)).length;
+  let pieceFamily = null;
+  if (defaultFamilies.length) {
+    pieceFamily = [...defaultFamilies].sort((a, b) => (madeFrom(b) - madeFrom(a)) || (owners(a) - owners(b)))[0];
+  } else {
+    const used = new Map();
+    for (const m of candidates) { const f = consumes(m); if (f) used.set(f, (used.get(f) || 0) + 1); }
+    pieceFamily = [...used.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  }
+  const members = pieceFamily
+    ? candidates.filter(m => consumes(m) === pieceFamily || families(m.eff).includes(pieceFamily))
+    : [];
+  const familyIsNew = !pieceFamily;
+  const set = {
+    defaultId, defaultRel: def.rel, base: defaultId.endsWith('_Default') ? defaultId.slice(0, -'_Default'.length) : defaultId,
+    baseShape, defaultSheet, sheets: orderedSheets, shapes: orderedShapes,
+    pieceFamily: pieceFamily || 'Resource_' + (defaultId.endsWith('_Default') ? defaultId.slice(0, -8) : defaultId),
+    familyIsNew,
+    defaultQuality: def.eff.Quality, defaultLight: def.eff.Light || null,
+    familyFileMissing: false,
+  };
+  const familyFiles = new Set((await reader.list('Item/ResourceTypes/', ['json'])).map(stem));
+  set.familyFileMissing = !familyFiles.has(set.pieceFamily);
+
+  // How this set spells its ids, read from the versions it already has.
+  let a = 0, b = 0;
+  for (const m of members) {
+    if (m.id === idFor(set, m.eff.Texture, m.eff.Model, 'A')) a++;
+    if (m.id === idFor(set, m.eff.Texture, m.eff.Model, 'B')) b++;
+  }
+  set.order = b > a ? 'B' : 'A';
+
+  const icons = new Set((await reader.list('../Common/' + ICON_FOLDER, ['png'])).map(common));
+  const expected = new Map();
+  for (const sheet of orderedSheets) for (const shape of orderedShapes) expected.set(idFor(set, sheet, shape, set.order), { sheet, shape });
+
+  // The grid, and every fault in it.
+  const cells = new Map();
+  const key = (sheet, shape) => sheet + '|' + shape;
+  for (const sheet of orderedSheets) for (const shape of orderedShapes) {
+    cells.set(key(sheet, shape), { sheet, shape, id: idFor(set, sheet, shape, set.order), items: [] });
+  }
+  // Items that look exactly alike may share one icon: it is the same picture.
+  const everyone = [{ id: defaultId, ...def }, ...members];
+  const twinsOf = m => new Set(everyone.filter(o => o.id !== m.id && o.eff.Model === m.eff.Model && o.eff.Texture === m.eff.Texture).map(o => o.id));
+  cells.get(key(defaultSheet, baseShape)).items.push({ id: defaultId, rel: def.rel, isDefault: true, slot: statsOf(def.eff.Armor).slot, faults: defaultFaults(set, def, icons, twinsOf({ id: defaultId, ...def })) });
+
+  for (const m of members) {
+    const cell = cells.get(key(m.eff.Texture, m.eff.Model));
+    cell.items.push({ id: m.id, rel: m.rel, slot: statsOf(m.eff.Armor).slot, faults: memberFaults(set, def, m, icons, expected, twinsOf(m)) });
+  }
+  for (const cell of cells.values()) {
+    // Two items with the same look worn on different slots (an amulet at the neck or on the head)
+    // are two versions, not a clash. Two on the same slot are worth a look.
+    for (const item of cell.items) {
+      const alike = cell.items.filter(i => i !== item && i.slot === item.slot);
+      if (alike.length) item.faults.push({ kind: 'shared', text: 'Looks exactly like ' + alike.map(i => i.id).join(', ') + ' and is worn on the same slot.', fix: null });
+    }
+    cell.missing = cell.items.length === 0;
+    cell.clash = cell.missing && index.has(cell.id) ? index.get(cell.id) : null;
+  }
+
+  // A light per colour: the one its versions already use, otherwise the default's.
+  const lights = {};
+  for (const sheet of orderedSheets) {
+    const wearer = members.find(m => m.eff.Texture === sheet && m.eff.Light);
+    lights[sheet] = sheet === defaultSheet ? set.defaultLight : (wearer ? wearer.eff.Light : set.defaultLight);
+  }
+  return { set, cells: [...cells.values()], lights, memberCount: members.length };
+}
+
+function iconFaults(id, doc, icons, twins) {
+  const own = ICON_FOLDER + id + '.png';
+  const faults = [];
+  const twinIcon = typeof doc.Icon === 'string' && doc.Icon.startsWith(ICON_FOLDER) && twins.has(stem(doc.Icon)) && icons.has(doc.Icon);
+  if (twinIcon) return faults;
+  if (doc.Icon !== own) {
+    faults.push({ kind: 'iconField', text: doc.Icon ? 'Shows the icon ' + fileName(doc.Icon) + ', not its own.' : 'Names no icon.', fix: { ops: [[['Icon'], own]], icon: true }, byDefault: true });
+  } else if (!icons.has(own)) {
+    faults.push({ kind: 'iconMissing', text: 'Its icon picture does not exist yet.', fix: { ops: [], icon: true }, byDefault: true });
+  }
+  return faults;
+}
+
+function defaultFaults(set, def, icons, twins) {
+  const faults = iconFaults(set.defaultId, def.own, icons, twins);
+  if (!families(def.eff).includes(set.pieceFamily)) {
+    faults.push({ kind: 'notInFamily', text: 'Is not in the family ' + set.pieceFamily + ', so the Alteration Table cannot turn it into a colour.', fix: { ops: [[['ResourceTypes'], [...(def.eff.ResourceTypes || []), { Id: set.pieceFamily }]]] }, byDefault: true });
+  }
+  return faults;
+}
+
+function memberFaults(set, def, m, icons, expected, twins) {
+  const own = m.own || {};
+  const faults = [];
+  const recipe = own.Recipe;
+  if (!isAlterationRecipe(recipe)) {
+    // Crafted means a real bench is named, so the version is a way into the set and replacing its
+    // recipe would take that away. Such a fault is shown but left for her to tick.
+    const benches = recipe ? (recipe.BenchRequirement || []).map(r => r && r.Id).filter(b => typeof b === 'string' && b !== ALTERATION_BENCH) : [];
+    const crafted = benches.length > 0;
+    faults.push({
+      kind: 'noTable',
+      text: crafted
+        ? 'Is crafted at ' + benches.join(', ') + ', not made at the Alteration Table. Tick this only if it should become a colour version.'
+        : 'Never appears at the Alteration Table: its recipe names no Alteration Table bench and category.',
+      fix: { ops: [[['Recipe'], alterationRecipe(set.pieceFamily)]] },
+      byDefault: !crafted,
+    });
+  } else if (alterationInput(recipe) !== set.pieceFamily) {
+    faults.push({ kind: 'wrongFamily', text: 'Is made from ' + alterationInput(recipe) + ' instead of ' + set.pieceFamily + '.', fix: { ops: [[['Recipe'], alterationRecipe(set.pieceFamily)]] }, byDefault: true });
+  }
+  if (!families(m.eff).includes(set.pieceFamily)) {
+    faults.push({ kind: 'notInFamily', text: 'Is not in the family ' + set.pieceFamily + ', so the table cannot turn it back into another colour.', fix: { ops: [[['ResourceTypes'], def.eff.ResourceTypes || [{ Id: set.pieceFamily }]]] }, byDefault: true });
+  }
+  if (set.defaultQuality !== undefined && own.Quality !== set.defaultQuality && m.eff.Quality !== set.defaultQuality) {
+    faults.push({ kind: 'quality', text: 'Has quality ' + (m.eff.Quality || 'none') + ', the default piece has ' + set.defaultQuality + '.', fix: { ops: [[['Quality'], set.defaultQuality]] }, byDefault: true });
+  }
+  faults.push(...iconFaults(m.id, own, icons, twins));
+  const named = expected.get(m.id);
+  if (named && named.sheet !== m.eff.Texture) {
+    faults.push({ kind: 'sheetMismatch', text: 'Its name says ' + stem(named.sheet) + ', but it wears ' + stem(m.eff.Texture) + '.', fix: { ops: [[['Texture'], named.sheet]] }, byDefault: false });
+  }
+  // The same rule as the mod's family check: the slot is judged on its own, and the cosmetics an
+  // armour piece hides may differ on purpose (an open helmet shows the hair).
+  const mine = statsOf(m.eff.Armor), theirs = statsOf(def.eff.Armor);
+  if (canonical(mine.stats) !== canonical(theirs.stats)) {
+    const inheritsFromDefault = own.Parent === set.defaultId;
+    faults.push({ kind: 'stats', text: 'Its armour stats differ from the default piece, so changing colour at the table changes its stats.', fix: { ops: [[['Armor'], inheritsFromDefault ? undefined : def.eff.Armor]] }, byDefault: false });
+  }
+  if (mine.slot !== theirs.slot) {
+    faults.push({ kind: 'slot', text: 'Is worn on ' + (mine.slot || 'no slot') + ', the default piece on ' + (theirs.slot || 'no slot') + '.', fix: null });
+  }
+  return faults;
+}
+
+function statsOf(armor) {
+  if (!armor || typeof armor !== 'object') return { stats: null, slot: null };
+  const stats = {};
+  for (const key of Object.keys(armor)) if (key !== 'ArmorSlot' && key !== 'CosmeticsToHide') stats[key] = armor[key];
+  return { stats, slot: armor.ArmorSlot || null };
+}
+
+// ---- the plan ---------------------------------------------------------------------------------
+
+// What one press of the button writes, as plain data: new files, edits to existing files, icons.
+export function plan(analysis, choice) {
+  const { set } = analysis;
+  const create = [];
+  const edit = new Map();
+  const icons = [];
+  const addEdit = (rel, ops) => { if (!edit.has(rel)) edit.set(rel, []); edit.get(rel).push(...ops); };
+
+  if (set.familyFileMissing) create.push({ rel: 'Item/ResourceTypes/' + set.pieceFamily + '.json', text: '{}\n' });
+
+  for (const cell of analysis.cells) {
+    if (cell.missing) {
+      if (!choice.make.has(cell.id) || cell.clash) continue;
+      const doc = { Parent: set.defaultId };
+      if (set.defaultQuality !== undefined) doc.Quality = set.defaultQuality;
+      doc.Icon = ICON_FOLDER + cell.id + '.png';
+      if (cell.shape !== set.baseShape) doc.Model = cell.shape;
+      if (cell.sheet !== set.defaultSheet) doc.Texture = cell.sheet;
+      const light = choice.lights[cell.sheet];
+      if (light && canonical(light) !== canonical(set.defaultLight)) doc.Light = light;
+      doc.Recipe = alterationRecipe(set.pieceFamily);
+      create.push({ rel: folder(set.defaultRel) + cell.id + '.json', text: toJson(doc) });
+      icons.push(cell.id);
+      continue;
+    }
+    for (const item of cell.items) {
+      for (const fault of item.faults) {
+        if (!fault.fix || !choice.fix.has(item.id + '|' + fault.kind)) continue;
+        if (fault.fix.ops.length) addEdit(item.rel, fault.fix.ops);
+        if (fault.fix.icon && !icons.includes(item.id)) icons.push(item.id);
+      }
+    }
+  }
+  return { create, edit: [...edit.entries()].map(([rel, ops]) => ({ rel, ops })), icons };
+}
+
+// The choices the page starts with: every fault with a clear fix is ticked, the two that may be
+// deliberate are not, and missing versions are ticked only for a set that has none yet, because
+// an existing set may leave a colour out on purpose.
+export function defaultChoice(analysis) {
+  const make = new Set();
+  const fix = new Set();
+  for (const cell of analysis.cells) {
+    if (cell.missing && analysis.memberCount === 0 && !cell.clash) make.add(cell.id);
+    for (const item of cell.items) for (const f of item.faults) if (f.fix && f.byDefault) fix.add(item.id + '|' + f.kind);
+  }
+  return { make, fix, lights: { ...analysis.lights } };
+}
+
+// ---- inside HyCreator --------------------------------------------------------------------------
+
+let host = null;
+
+function hyCreatorReader(api) {
+  return makeReader({
+    list: (prefix, exts) => api.workspace.listByExt(prefix, exts),
+    listVanilla: (prefix, exts) => api.workspace.listVanillaByExt(prefix, exts),
+    read: async rel => { try { return await api.workspace.readText(rel); } catch { return null; } },
+  });
+}
+
+// Writes one edit to an existing file through HyCreator's own serializer, so every line the edit
+// does not touch stays byte for byte as it was.
+async function applyEdit(api, rel, ops) {
+  const { serializer } = await api.modules.core();
+  const text = await api.workspace.readText(rel);
+  const { doc, layout } = serializer.parseAsset(text);
+  for (const [path, value] of ops) {
+    serializer.layoutForWrite(layout, doc, path, value);
+    let target = doc;
+    for (const step of path.slice(0, -1)) target = target[step];
+    const last = path[path.length - 1];
+    if (value === undefined) delete target[last]; else target[last] = value;
+  }
+  await api.workspace.writeText(rel, serializer.serializeAsset(doc, layout));
+}
+
+// Bakes an item's icon with HyCreator's own icon pipeline and writes the picture beside the
+// mod's other icons. Writing a picture is not part of the plugin contract, so this goes through
+// the app's own file writer, and a failure is reported rather than thrown.
+async function bakeIcon(api, reader, id) {
+  const [models, render, core, store] = await Promise.all([api.modules.models(), api.modules.render(), api.modules.core(), api.modules.store()]);
+  const rel = await reader.relOf(id);
+  const doc = await reader.effective(id);
+  // The app's state hook is named useStudio in 1.3.8. The other names are guesses for a rename.
+  const hook = [store.useStudio, store, store.u, store.useStore, store.default].find(s => s && typeof s.getState === 'function');
+  if (!hook) throw new Error('this HyCreator version keeps its state where the plugin does not look');
+  const state = hook.getState();
+  const entry = state.workspace.byRel.get(rel) || { kind: 'Item', rel, name: id };
+  const ctx = models.modelCtx();
+  const parts = await models.loadPartsFor(ctx, entry, doc);
+  try {
+    if (!parts.length) throw new Error('its model could not be loaded');
+    const inputs = await render.icons.resolveIconInputs(ctx, doc);
+    let look = null;
+    try {
+      const url = performance.getEntriesByType('resource').map(r => r.name).find(n => /\/assets\/iconLook-[^/]+\.js$/.test(n));
+      if (url) { const lk = (await import(url)).a; look = lk.loadLook(lk.lookKeyOf(state.workspace.source.root, rel)); }
+    } catch { look = null; }
+    const png = await render.icons.bakeIcon(parts, inputs.props, 64, { look, fx: null });
+    const bytes = png instanceof Uint8Array ? png : new Uint8Array(png);
+    const source = state.workspace.source;
+    await core.wsfs.writeServerBytes({ ...source, serverRoot: core.wsfs.commonRootOf(source) }, ICON_FOLDER + id + '.png', bytes);
+  } finally {
+    for (const p of parts) { try { p.geometry.dispose(); p.texture.dispose(); } catch { /* already gone */ } }
+  }
+}
+
+async function apply(api, analysis, choice, progress) {
+  const steps = plan(analysis, choice);
+  const reader = hyCreatorReader(api);
+  const done = { created: 0, edited: 0, icons: 0, failed: [] };
+  for (const file of steps.create) {
+    try { await api.workspace.writeText(file.rel, file.text); done.created++; } catch (e) { done.failed.push(file.rel + ': ' + (e && e.message || e)); }
+  }
+  for (const file of steps.edit) {
+    try { await applyEdit(api, file.rel, file.ops); done.edited++; } catch (e) { done.failed.push(file.rel + ': ' + (e && e.message || e)); }
+  }
+  for (const id of steps.icons) {
+    progress('Icon ' + (done.icons + 1) + ' of ' + steps.icons.length + ': ' + id);
+    try { await bakeIcon(api, reader, id); done.icons++; } catch (e) { done.failed.push('icon of ' + id + ': ' + (e && e.message || e) + '. Use Generate icon on that item.'); }
+  }
+  return done;
+}
+
+function ColoursPage({ rel }) {
+  const api = host;
+  const h = api.React.createElement;
+  const { useState, useEffect, useCallback } = api.React;
+  const [analysis, setAnalysis] = useState(null);
+  const [choice, setChoice] = useState(null);
+  const [status, setStatus] = useState('Reading the set...');
+  const [busy, setBusy] = useState(false);
+  const [report, setReport] = useState(null);
+
+  const load = useCallback(async () => {
+    setStatus('Reading the set...');
+    try {
+      const result = await analyse(hyCreatorReader(api), rel);
+      setAnalysis(result);
+      setChoice(result.error ? null : defaultChoice(result));
+      setStatus(result.error || '');
+    } catch (e) {
+      setAnalysis(null);
+      setStatus('The set could not be read: ' + (e && e.message || e));
+    }
+  }, [rel]);
+  useEffect(() => { load(); }, [load]);
+
+  if (!analysis || analysis.error || !choice) {
+    return h('div', { style: { padding: 16 } }, h('h3', null, 'Colours'), h('p', null, status));
+  }
+  const { set, cells } = analysis;
+  const steps = plan(analysis, choice);
+  const toggle = (setName, value) => {
+    const next = new Set(choice[setName]);
+    next.has(value) ? next.delete(value) : next.add(value);
+    setChoice({ ...choice, [setName]: next });
+  };
+  const tickAllMissing = on => {
+    const make = new Set(on ? cells.filter(c => c.missing && !c.clash).map(c => c.id) : []);
+    setChoice({ ...choice, make });
+  };
+  const press = async () => {
+    const words = steps.create.length + ' new files, ' + steps.edit.length + ' fixed files and ' + steps.icons.length + ' icons.';
+    const ok = await api.ui.confirmDanger({ title: 'Make the colours', body: 'This writes ' + words + ' Git keeps the previous version of every file.', items: [...steps.create.map(f => f.rel), ...steps.edit.map(f => f.rel)], confirmLabel: 'Write' });
+    if (!ok) return;
+    setBusy(true);
+    const done = await apply(api, analysis, choice, setStatus);
+    setReport(done);
+    setBusy(false);
+    api.ui.notify((done.failed.length ? 'Colours: ' + done.failed.length + ' failed. ' : '\u2713 ') + done.created + ' made, ' + done.edited + ' fixed, ' + done.icons + ' icons.');
+    await load();
+  };
+
+  const cellView = cell => {
+    if (cell.missing) {
+      if (cell.clash) return h('div', { title: cell.clash }, 'Missing, but the id ' + cell.id + ' is already used');
+      return h('label', null, h('input', { type: 'checkbox', checked: choice.make.has(cell.id), onChange: () => toggle('make', cell.id) }), ' Make ', h('span', { style: { opacity: 0.6 } }, cell.id));
+    }
+    return h('div', null, cell.items.map(item => h('div', { key: item.id },
+      h('a', { href: '#', onClick: e => { e.preventDefault(); api.session.openFile(item.rel); } }, item.id + (item.isDefault ? ' (default)' : '')),
+      item.faults.length === 0 ? h('span', { style: { opacity: 0.6 } }, '  ok') : null,
+      item.faults.map(f => h('div', { key: f.kind, style: { fontSize: 12, marginLeft: 8 } },
+        f.fix ? h('label', null, h('input', { type: 'checkbox', checked: choice.fix.has(item.id + '|' + f.kind), onChange: () => toggle('fix', item.id + '|' + f.kind) }), ' Fix: ') : 'Note: ',
+        f.text)))));
+  };
+
+  const lightOf = sheet => choice.lights[sheet];
+  const setLight = (sheet, colour) => {
+    const base = lightOf(sheet) || set.defaultLight || { Radius: 5 };
+    setChoice({ ...choice, lights: { ...choice.lights, [sheet]: colour ? { ...base, Color: colour } : null } });
+  };
+
+  return h('div', { style: { padding: 16, overflow: 'auto', height: '100%' } },
+    h('h3', null, 'Colours of ' + set.defaultId),
+    h('p', null, 'Model folder ', h('code', null, folder(set.baseShape)), '. Family ', h('code', null, set.pieceFamily),
+      set.familyFileMissing ? ' (its file is missing and will be made)' : '', '.'),
+    h('p', null, h('button', { onClick: () => tickAllMissing(true), disabled: busy }, 'Tick every missing version'), ' ',
+      h('button', { onClick: () => tickAllMissing(false), disabled: busy }, 'Untick them')),
+    h('table', { style: { borderCollapse: 'collapse' } },
+      h('thead', null, h('tr', null, h('th', null, 'Colour'), h('th', null, 'Light'),
+        set.shapes.map(shape => h('th', { key: shape, style: { textAlign: 'left', padding: 4 } }, stem(shape))))),
+      h('tbody', null, set.sheets.map(sheet => h('tr', { key: sheet, style: { borderTop: '1px solid rgba(128,128,128,0.3)' } },
+        h('td', { style: { padding: 4, whiteSpace: 'nowrap' } }, stem(sheet)),
+        h('td', { style: { padding: 4 } }, h('input', { style: { width: 70 }, value: (lightOf(sheet) && lightOf(sheet).Color) || '', placeholder: 'same as default', title: 'The colour of the light this version gives off, such as #300', onChange: e => setLight(sheet, e.target.value) })),
+        set.shapes.map(shape => h('td', { key: shape, style: { padding: 4, verticalAlign: 'top' } }, cellView(cells.find(c => c.sheet === sheet && c.shape === shape)))))))),
+    h('p', null, h('button', { onClick: press, disabled: busy || (steps.create.length + steps.edit.length + steps.icons.length === 0) },
+      'Make ' + steps.create.filter(f => f.rel.startsWith('Item/Items/')).length + ' versions, fix ' + steps.edit.length + ' files, make ' + steps.icons.length + ' icons')),
+    status ? h('p', null, status) : null,
+    report && report.failed.length ? h('div', null, h('p', null, 'These did not work:'), h('ul', null, report.failed.map(f => h('li', { key: f }, f)))) : null);
+}
+
+let unregister = null;
+
+export default {
+  id: 'armory.studio',
+  name: 'The Armory Studio',
+  version: '0.1.0',
+  minApi: 2,
+  author: 'The Armory',
+  description: 'Colour versions of an armour or weapon piece, made and checked from one page.',
+  activate(api) {
+    host = api;
+    unregister = api.editors.registerPage({
+      id: 'plugin:armory.colours',
+      label: 'Colours',
+      title: 'Every colour version of this piece, made and checked in one place',
+      matches: (rel, doc) => rel.startsWith('Item/Items/') && !!doc && typeof doc === 'object' && (typeof doc.Model === 'string' || typeof doc.Parent === 'string'),
+      component: ColoursPage,
+    });
+  },
+  deactivate() {
+    if (unregister) unregister();
+    unregister = null;
+  },
+};

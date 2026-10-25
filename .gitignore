@@ -16,6 +16,10 @@ pom.xml.versionsBackup
 !.idea/runConfigurations/
 *.iml
 
+# HyCreator keeps the previous version of every file it saves as <file>.bak. They are
+# editor backups, never part of the mod, and the build already leaves them out of the jar.
+*.bak
+
 # Hytale
 libs/HytaleServer.jar
 server/Assets.zip

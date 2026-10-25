@@ -564,7 +564,124 @@ function ColoursPage({ rel }) {
     report && report.failed.length ? h('div', null, h('p', null, 'These did not work:'), h('ul', null, report.failed.map(f => h('li', { key: f }, f)))) : null);
 }
 
-let unregister = null;
+// ---- files made by a tool --------------------------------------------------------------------
+
+// Files the mod's own tools write whole from a list of their own: the chest loot tables and the
+// patches that add them to vanilla chests, and the showcase world. An edit made in one of these
+// is erased the next time its tool runs, so HyCreator opens them on a warning first. The rule
+// follows the folders those tools own; a new generated folder belongs here too.
+export function madeByTool(rel) {
+  const path = rel.replace(/^\.\.\//, '');
+  if (/(^|[/_])(Armory_Showcase|Showcase_Theatre)([_./]|$)/.test(path)) return 'the showcase world';
+  if (path.startsWith('Drops/TheArmory/')) return 'the chest loot list';
+  if (/^Drops\/Prefabs\/[^/]+\.patch$/.test(path)) return 'the chest loot list';
+  return null;
+}
+
+function MadeByToolPage({ rel }) {
+  const h = host.React.createElement;
+  return h('div', { style: { padding: 16, maxWidth: 640 } },
+    h('h3', null, 'This file is made by a tool'),
+    h('p', null, 'It is written whole from ' + madeByTool(rel) + '. A change made here is erased the next time that tool runs.'),
+    h('p', null, 'If something in it should change, tell Larsonix what and why. The other pages above still show the file.'));
+}
+
+// ---- the guide -------------------------------------------------------------------------------
+
+// Every section is one job: what it is for, then the steps. The same text is saved as
+// Studio/GUIDE.md for reading in a browser, and a test fails when the two differ.
+export const GUIDE = [
+  { title: 'Your tools', steps: [
+    'Blockbench, with the Hytale plugin: models, the texture layout, painting.',
+    'Photoshop: patterns and textures.',
+    'HyCreator, with this plugin: every item, its colours and icons, and sending your work.',
+    'The game, in a solo world: how it looks when worn.',
+    'Nothing else. The asset editor in the game is no longer needed.',
+  ] },
+  { title: 'Set up, once', steps: [
+    'Install Git for Windows from https://git-scm.com/download/win. Keep its default choices.',
+    'In HyCreator, use Clone repository... with https://github.com/azurefoxx98/The-Armory-Mod, into any folder you like.',
+    'Switch to your own branch: in the git menu at the top, Branches..., then lady. All your work goes there, and we bring it into the mod.',
+    'In the cloned folder, double-click Studio\\Setup.cmd. It sets old copies of The Armory aside, links the game to your copy, and installs this plugin. Restart HyCreator afterwards.',
+    'The first time you push, a GitHub sign-in window opens. Sign in once and it is remembered.',
+    'Setup prints any step left for Blockbench. Do it once.',
+  ] },
+  { title: 'Each time you work', steps: [
+    'Open your copy of the mod in HyCreator.',
+    'Before you start: Commit changes... if anything is left, then Pull. Pull brings our fixes and any new code.',
+    'After a pull, restart your world, so the game runs the newest code.',
+    'When you finish: Commit changes..., write one line saying what you did, then Push.',
+    'If Pull or Push talks about a conflict, stop there and tell Larsonix. Do not try to fix it.',
+  ] },
+  { title: 'Where your files go', steps: [
+    'Everything the game uses stays in src/main/resources, as today.',
+    'Photoshop files, helper textures and whole-set Blockbench files go in Studio/Work. They are shared with us but never go into the mod.',
+    'HyCreator keeps a .bak copy of every file it saves. Git ignores them. You can leave them.',
+  ] },
+  { title: 'Make the model', steps: [
+    'Model the whole set as one Blockbench file on the player model, which shows the scale.',
+    'Turn on Copy-Paste with Magenta Alpha in the Hytale plugin settings, so transparency survives the trip to Photoshop.',
+    'Make the texture layout tight while the set is still one file: Resize UV Canvas cuts the empty canvas without moving the paint. Every piece of a set shares its colour sheets, so do it before the split.',
+    'Then save each group as its own piece: helmet, chest, gloves, boots.',
+  ] },
+  { title: 'Make the default piece', steps: [
+    'Make one item for each piece in HyCreator: stats, quality, recipe and name.',
+    'Watch the Problems panel while you type. It names a wrong value before the game sees it.',
+    'Write the name in English in HyCreator\'s language editor. Coralys does the translations.',
+  ] },
+  { title: 'Make the colours', steps: [
+    'Put one colour sheet per colour next to the model, and each alternate shape next to it named after the model, such as Chest_Alt.blockymodel beside Chest.blockymodel.',
+    'Open the default piece and click Colours above the editor.',
+    'Tick the versions you want, type a light colour on a row if that colour glows, and press the button.',
+    'It makes each version, its Alteration Table recipe, its family and its icon. Pressing it again only fixes what is missing or wrong.',
+    'A version takes its stats from the default piece. Change stats on the default piece only.',
+  ] },
+  { title: 'Icons', steps: [
+    'The Colours page makes the icons of the versions it makes.',
+    'For one item, use Generate icon on its page.',
+    'Never use the batch icon baker: it rewrites every icon in the mod.',
+  ] },
+  { title: 'Look at it in the game', steps: [
+    'Start a solo world with The Armory turned on in its mods list.',
+    'A file you save in HyCreator is reloaded by the running world. If a piece still looks unchanged, take it off and put it on again, or rejoin the world.',
+  ] },
+  { title: 'Effects and powers', steps: [
+    'Item files alone can give resistance to any kind of damage, extra breath, and a shield\'s reaction when it blocks.',
+    'The Armory adds stats you can put on armour. Speed and bonus stats are multipliers, written Multiplicative with the bonus as a fraction: 0.5 is 50 % more. They are Move_Speed, Jump_Height, Arrow_Damage_Bonus, TA_Swim_Speed, TA_Fire_Resistance, TA_Blast_Resistance, TA_Mining_Speed, TA_Ore_Find and TA_Unarmed_Damage.',
+    'TA_Night_Mana and TA_Night_Health are amounts, written Additive with the number: 50 is 50 more at night.',
+    'Anything else needs our code. Tell Larsonix what it should do.',
+    'Use only particle and sound names HyCreator suggests. A name that does not exist shows nothing, and nothing warns you.',
+    'Effectly tags are no longer used.',
+  ] },
+  { title: 'Files made by a tool', steps: [
+    'The chest loot tables and the showcase world are made by our tools from lists of their own. A change made in one of those files is erased the next time the tool runs.',
+    'HyCreator opens such a file on a warning first. If something in it should change, tell Larsonix.',
+  ] },
+  { title: 'When something goes wrong', steps: [
+    'Tell Larsonix what you did and what you saw. A picture helps.',
+  ] },
+];
+
+export function guideMarkdown() {
+  const lines = ['# The Armory: how to work on the mod', '',
+    'This is the same guide as the panel in HyCreator. Edit it in Studio/Tools/HyCreator/armory-studio.js, never here.', ''];
+  for (const section of GUIDE) {
+    lines.push('## ' + section.title, '');
+    for (const step of section.steps) lines.push('- ' + step);
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+
+function GuidePanel() {
+  const h = host.React.createElement;
+  return h('div', { style: { padding: 12, overflow: 'auto', height: '100%', lineHeight: 1.45 } },
+    GUIDE.map(section => h('section', { key: section.title, style: { marginBottom: 14 } },
+      h('h4', { style: { margin: '6px 0' } }, section.title),
+      h('ul', { style: { margin: 0, paddingLeft: 18 } }, section.steps.map((step, i) => h('li', { key: i }, step))))));
+}
+
+let unregister = [];
 
 export default {
   id: 'armory.studio',
@@ -575,16 +692,43 @@ export default {
   description: 'Colour versions of an armour or weapon piece, made and checked from one page.',
   activate(api) {
     host = api;
-    unregister = api.editors.registerPage({
+    unregister.push(api.editors.registerPage({
+      id: 'plugin:armory.madebytool',
+      label: 'Made by a tool',
+      title: 'This file is written by one of the mod\'s tools',
+      matches: rel => madeByTool(rel) !== null,
+      defaultFor: rel => madeByTool(rel) !== null,
+      component: MadeByToolPage,
+    }));
+    unregister.push(api.editors.registerPage({
       id: 'plugin:armory.colours',
       label: 'Colours',
       title: 'Every colour version of this piece, made and checked in one place',
       matches: (rel, doc) => rel.startsWith('Item/Items/') && !!doc && typeof doc === 'object' && (typeof doc.Model === 'string' || typeof doc.Parent === 'string'),
       component: ColoursPage,
-    });
+    }));
+    if (api.ui.registerSidePanel) {
+      api.ui.registerSidePanel({ id: 'armory.studio.guide', title: 'The Armory guide', glyph: '?', component: GuidePanel, defaultWidth: 440 });
+    }
+    // The warning page above only reaches editors that offer plugin pages, and HyCreator's own
+    // drop list and patch editors do not open on it. So the first edit of such a file, in any
+    // editor, also raises a notice. HyCreator reports an edit without naming the file, so the
+    // file is the one shown at that moment.
+    api.modules.store().then(store => {
+      const state = [store.useStudio, store.u].find(s => s && typeof s.getState === 'function');
+      if (!state) return;
+      const warned = new Set();
+      unregister.push(api.session.subscribeDocs(() => {
+        const rel = state.getState().activeRel;
+        const tool = typeof rel === 'string' ? madeByTool(rel) : null;
+        if (!tool || warned.has(rel)) return;
+        warned.add(rel);
+        api.ui.notify(fileName(rel) + ' is made by a tool from ' + tool + '. A change here is erased the next time the tool runs. Tell Larsonix what should change.');
+      }));
+    }).catch(() => { /* the page warning still stands */ });
   },
   deactivate() {
-    if (unregister) unregister();
-    unregister = null;
+    for (const off of unregister) { try { off(); } catch { /* already gone */ } }
+    unregister = [];
   },
 };

@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey } from './armory-studio.js';
+import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown } from './armory-studio.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const resources = path.resolve(here, '..', '..', '..', 'src', 'main', 'resources');
@@ -162,6 +162,29 @@ const readJson = rel => JSON.parse(fs.readFileSync(path.join(resources, 'Server'
 }
 
 check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && colourKey('Gold Blue.png') === 'Gold_Blue');
+
+// Files made by a tool: the 52 chest loot files and every showcase file, and nothing of Lady's.
+{
+  const server = diskFiles.filter(p => p.startsWith('Server/')).map(p => p.slice('Server/'.length));
+  const common = diskFiles.filter(p => p.startsWith('Common/')).map(p => '../' + p);
+  const loot = server.filter(p => madeByTool(p) === 'the chest loot list').length;
+  check('made by a tool: the 52 chest loot files', loot === 52, String(loot));
+  const showcase = [...server, ...common].filter(p => madeByTool(p) === 'the showcase world');
+  const named = diskFiles.filter(p => /Showcase/.test(p)).length;
+  check('made by a tool: every file named for the showcase', showcase.length === named && named > 0, showcase.length + ' of ' + named);
+  check('made by a tool: no Atlantean file', !server.some(p => p.includes('Atlantean') && madeByTool(p)));
+  check('made by a tool: the other patches stay hers', server.filter(p => p.endsWith('.patch') && !madeByTool(p)).length === 41);
+}
+
+// The guide in the repository is the panel's text, word for word.
+{
+  const file = path.resolve(here, '..', '..', 'GUIDE.md');
+  if (process.argv.includes('--write-guide')) fs.writeFileSync(file, guideMarkdown());
+  const same = fs.existsSync(file) && fs.readFileSync(file, 'utf8') === guideMarkdown();
+  check('Studio/GUIDE.md is the panel\'s text (node armory-studio.test.mjs --write-guide rewrites it)', same);
+  const text = guideMarkdown();
+  check('the guide is plain text', !/[^\x00-\x7F]/.test(text));
+}
 
 // 5. Every default piece of the mod, reported, never changed.
 if (process.argv.includes('--sweep')) {

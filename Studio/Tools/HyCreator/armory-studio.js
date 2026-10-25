@@ -623,17 +623,25 @@ export function fileIn(text) {
   return m ? m[1] : null;
 }
 
-// The notice for a new result, or null when there is nothing to say. A pass is announced only
-// after a run that was not a pass, so a clean commit stays quiet.
+// The notice for a new result, or null when there is nothing to say. Only a change is announced:
+// a pass after something else, or a list of problems that differs from the last one, so a pull
+// that leaves the same problem in place does not repeat it.
 export function noticeFor(previous, next) {
   if (!next || !next.finished || (previous && previous.finished === next.finished)) return null;
   const view = checkView(next, null);
-  const before = previous ? checkView(previous, null).state : null;
-  if (view.state === 'error') return 'The Armory checks could not run. Open The Armory checks panel to see why.';
-  if (view.state === 'problems') {
-    return 'The Armory checks found ' + view.problems + ' problem' + (view.problems === 1 ? '' : 's') + ' in your last commit. Open The Armory checks panel to see them.';
+  const before = previous ? checkView(previous, null) : null;
+  if (view.state === 'error') {
+    return before && before.state === 'error' && before.error === view.error ? null : 'The Armory checks could not run. Open The Armory checks panel to see why.';
   }
-  return before && before !== 'pass' ? '\u2713 The Armory checks pass again.' : null;
+  if (view.state === 'problems') {
+    if (before && before.state === 'problems' && problemList(before) === problemList(view)) return null;
+    return 'The Armory checks found ' + view.problems + ' problem' + (view.problems === 1 ? '' : 's') + '. Open The Armory checks panel to see them.';
+  }
+  return before && before.state !== 'pass' ? '\u2713 The Armory checks pass again.' : null;
+}
+
+function problemList(view) {
+  return JSON.stringify(view.checks.filter(c => c.status !== 'pass').map(c => [c.id, c.status, c.problems.map(p => p.text)]));
 }
 
 async function readRepoText(api, rel) {
@@ -767,8 +775,8 @@ export const GUIDE = [
     'Open your copy of the mod in HyCreator.',
     'Before you start: Commit changes... if anything is left, then Pull. Pull brings our fixes and any new code.',
     'After a pull, restart your world, so the game runs the newest code.',
-    'When you finish: Commit changes..., write one line saying what you did, then Push.',
-    'If Pull or Push talks about a conflict, stop there and tell Larsonix. Do not try to fix it.',
+    'When you finish: Commit changes..., write one line saying what you did, then Push right away. A commit left unpushed can cross with one of ours.',
+    'If Pull or Push says your branch has diverged, or talks about a conflict, stop there and tell Larsonix. Nothing is lost, and do not try to fix it.',
   ] },
   { title: 'Our checks', steps: [
     'After every commit and every pull, our checks look at your work by themselves, in the background. You never wait for them.',

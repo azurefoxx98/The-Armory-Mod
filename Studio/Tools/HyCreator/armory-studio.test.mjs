@@ -207,12 +207,15 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
     && checkView(pass, { started: '2026-10-25T20:59:00+01:00' }).busy === false);
   check('panel: no result yet, with a run going', checkView(null, { started: 'x' }).state === 'running' && checkView(null, null).state === 'none');
   check('notice: a first result with problems is announced', /found 3 problems/.test(noticeFor(null, fail) || ''));
+  check('notice: the same problems in a later run stay quiet', noticeFor(fail, { ...fail, finished: 'later' }) === null);
+  const another = { ...fail, finished: 'later', checks: [{ ...fail.checks[0], problems: [...fail.checks[0].problems, 'Server/Item/Items/A/D.json: y'] }, fail.checks[1]] };
+  check('notice: a changed list of problems is announced', /found 4 problems/.test(noticeFor(fail, another) || ''));
   check('notice: a first clean result stays quiet', noticeFor(null, pass) === null);
   check('notice: the same result twice is announced once', noticeFor(fail, fail) === null);
   check('notice: a pass after problems is announced as a success', (noticeFor(fail, { ...pass, finished: 'z' }) || '').startsWith('\u2713 '));
   check('notice: a pass after a pass stays quiet', noticeFor(pass, { ...pass, finished: 'z' }) === null);
   check('notice: a run that could not complete is announced', /could not run/.test(noticeFor(pass, broke) || ''));
-  check('notice: one problem is spelt singular', /found 1 problem in/.test(noticeFor(null, { ...fail, checks: [fail.checks[0]].map(c => ({ ...c, problems: [c.problems[0]] })) }) || ''));
+  check('notice: one problem is spelt singular', /found 1 problem\./.test(noticeFor(null, { ...fail, checks: [fail.checks[0]].map(c => ({ ...c, problems: [c.problems[0]] })) }) || ''));
 }
 
 // The guide in the repository is the panel's text, word for word.

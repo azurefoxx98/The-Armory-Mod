@@ -24,8 +24,8 @@ This is the same guide as the panel in HyCreator. Edit it in Studio/Tools/HyCrea
 - Open your copy of the mod in HyCreator.
 - Before you start: Commit changes... if anything is left, then Pull. Pull brings our fixes and any new code.
 - After a pull, restart your world, so the game runs the newest code.
-- When you finish: Commit changes..., write one line saying what you did, then Push.
-- If Pull or Push talks about a conflict, stop there and tell Larsonix. Do not try to fix it.
+- When you finish: Commit changes..., write one line saying what you did, then Push right away. A commit left unpushed can cross with one of ours.
+- If Pull or Push says your branch has diverged, or talks about a conflict, stop there and tell Larsonix. Nothing is lost, and do not try to fix it.
 
 ## Our checks
 

@@ -8,6 +8,8 @@
 #      mod's files from here and a saved file shows in the game.
 #   4. Copies the code-only jar beside that link, so the benches and powers run too.
 #   5. Installs the HyCreator plugin, and tells git to repeat steps 4 and 5 after every pull.
+#   6. Installs the Python the mod's checks run on, and runs them once. Git then runs them after
+#      every commit, pull and branch switch, and HyCreator shows what they found.
 #
 # Running it again is safe: anything already in place is left as it is.
 param(
@@ -15,6 +17,10 @@ param(
     [string] $UserData = (Join-Path $env:APPDATA 'Hytale\UserData'),
     # Where HyCreator loads its plugins from.
     [string] $Plugins = (Join-Path $env:LOCALAPPDATA 'HyCreator\Plugins'),
+    # Where the checks' Python is installed.
+    [string] $PythonHome = (Join-Path $env:LOCALAPPDATA 'TheArmory\Python-3.15.1'),
+    # A copy of the Python download already on this computer, used instead of downloading it. Only tests use it.
+    [string] $PythonZip = '',
     # Answer yes to every question. Only tests use it.
     [switch] $Yes
 )
@@ -146,6 +152,47 @@ if (-not (Test-Path -LiteralPath $Plugins)) {
 }
 & (Join-Path $PSScriptRoot 'sync.ps1')
 if ($LASTEXITCODE -ne 0) { exit 1 }
+
+# 6. The checks' Python: the official embeddable build from python.org, which needs no install and
+# changes nothing else on this computer. Its fingerprint is the one python.org publishes for it, so a
+# damaged or altered download is refused.
+$pythonUrl = 'https://www.python.org/ftp/python/3.15.1/python-3.15.1-embed-amd64.zip'
+$pythonSha256 = '352E232F25B5120508F11A6DFC1BD9076D3E70C30977D552A63338838C2AE8FB'
+$python = Join-Path $PythonHome 'python.exe'
+$checksReady = Test-Path -LiteralPath $python
+if (-not $checksReady) {
+    $zip = $PythonZip
+    try {
+        if (-not $zip) {
+            $zip = Join-Path ([IO.Path]::GetTempPath()) 'TheArmory-python-3.15.1-embed-amd64.zip'
+            Write-Host 'Downloading the Python the checks run on (14 MB)...'
+            $ProgressPreference = 'SilentlyContinue'
+            # Windows PowerShell 5.1 may still offer old encryption that python.org refuses.
+            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+            Invoke-WebRequest -Uri $pythonUrl -OutFile $zip -UseBasicParsing
+        }
+        if ((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash -ne $pythonSha256) {
+            throw 'the download does not match the fingerprint python.org publishes for it'
+        }
+        # Unpacked beside its place and moved in whole, so an interrupted run never leaves half of it.
+        $staging = "$PythonHome.partial"
+        if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
+        if (Test-Path -LiteralPath $PythonHome) { Stop-Setup "$PythonHome exists without Python in it. Delete that folder, then run Setup again." }
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $PythonHome) | Out-Null
+        [IO.Compression.ZipFile]::ExtractToDirectory($zip, $staging)
+        Move-Item -LiteralPath $staging -Destination $PythonHome
+        $checksReady = Test-Path -LiteralPath $python
+    } catch {
+        Write-Host "The checks could not be installed: $($_.Exception.Message). Everything else is set up. Run Setup again later to add them."
+    } finally {
+        if (-not $PythonZip -and $zip -and (Test-Path -LiteralPath $zip)) { Remove-Item -LiteralPath $zip -Force }
+    }
+}
+if ($checksReady) {
+    git -C $repo config armory.python ($python -replace '\\', '/')
+    & $python (Join-Path $repo 'Studio\Tools\Checks\check.py') --spawn
+    Write-Host 'The checks are installed. They run after every commit and every pull, and HyCreator shows what they find.'
+}
 
 Write-Host ''
 Write-Host 'Done. Each time you pull in HyCreator, the code and the plugin update by themselves.'

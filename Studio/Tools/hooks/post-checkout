@@ -1,3 +1,13 @@
 #!/bin/sh
 # Keeps the game's copy of the Armory code and the HyCreator plugin in step with this branch.
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File Studio/Tools/sync.ps1 -Quiet || true
+# Git also runs this hook when single files are restored. The checks run only on a branch switch,
+# which git marks with a third argument of 1.
+[ "$3" = "1" ] || exit 0
+# Then runs the mod's checks on the result, in the background, so nothing waits for them. The
+# result shows in HyCreator's The Armory checks panel. Before setup installs the checks this does nothing.
+py=$(git config --get armory.python)
+if [ -n "$py" ] && [ -f "$py" ] && [ -f Studio/Tools/Checks/check.py ]; then
+    "$py" Studio/Tools/Checks/check.py --spawn
+fi
+exit 0

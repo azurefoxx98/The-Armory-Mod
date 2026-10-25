@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown } from './armory-studio.js';
+import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn } from './armory-studio.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const resources = path.resolve(here, '..', '..', '..', 'src', 'main', 'resources');
@@ -174,6 +174,45 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   check('made by a tool: every file named for the showcase', showcase.length === named && named > 0, showcase.length + ' of ' + named);
   check('made by a tool: no Atlantean file', !server.some(p => p.includes('Atlantean') && madeByTool(p)));
   check('made by a tool: the other patches stay hers', server.filter(p => p.endsWith('.patch') && !madeByTool(p)).length === 41);
+}
+
+// The plugin and the checks agree on every file a tool makes. The checks name a file by its path in
+// the resources folder, the plugin by its path in Server or "../Common/", so both are asked about
+// every file of the mod and their answers compared.
+{
+  const asked = diskFiles.filter(p => p.startsWith('Server/') || p.startsWith('Common/'));
+  const answers = execFileSync('python', ['-B', '-c',
+    'import json,sys; sys.path.insert(0, sys.argv[1]); import check; print(json.dumps([check.made_by(p) for p in json.load(sys.stdin)]))',
+    path.resolve(here, '..', 'Checks')], { input: JSON.stringify(asked), maxBuffer: 1 << 26 }).toString();
+  const theirs = JSON.parse(answers);
+  const differ = asked.filter((p, i) => (madeByTool(p.startsWith('Server/') ? p.slice('Server/'.length) : '../' + p) || null) !== theirs[i]);
+  check('made by a tool: the plugin and the checks agree on all ' + asked.length + ' files', differ.length === 0, differ.slice(0, 3).join(', '));
+}
+
+// The checks panel and its notices, from results shaped as check.py writes them.
+{
+  const pass = { finished: '2026-10-25T21:00:00+01:00', commit: 'abcdef1234', branch: 'lady', error: null,
+    checks: [{ id: 'itemcheck', title: 'T', status: 'pass', problems: [] }, { id: 'languages', title: 'L', status: 'pass', problems: [] }] };
+  const fail = { ...pass, finished: '2026-10-25T21:05:00+01:00', checks: [
+    { id: 'itemcheck', title: 'T', status: 'fail', problems: ['Server/Item/Items/A/B.json: its quality Ghostly does not exist', 'Server/Item/Items/A/C.json: x'] },
+    { id: 'recipecheck', title: 'R', status: 'error', problems: [], output_tail: ['boom'] }] };
+  const broke = { ...pass, finished: '2026-10-25T21:06:00+01:00', error: 'The game files were not found.', checks: [] };
+  check('panel: a clean result is a pass', checkView(pass, null).state === 'pass' && checkView(pass, null).problems === 0);
+  const v = checkView(fail, null);
+  check('panel: two problems and a check that could not run count three', v.state === 'problems' && v.problems === 3, String(v.problems));
+  check('panel: a problem naming an item file opens it', v.checks[0].problems[0].open === 'Item/Items/A/B.json');
+  check('panel: a problem naming no file opens nothing', fileIn('item X: input family Y has no member item') === null);
+  check('panel: an error result says so', checkView(broke, null).state === 'error');
+  check('panel: a newer run in progress shows as busy', checkView(pass, { started: '2026-10-25T21:01:00+01:00' }).busy === true
+    && checkView(pass, { started: '2026-10-25T20:59:00+01:00' }).busy === false);
+  check('panel: no result yet, with a run going', checkView(null, { started: 'x' }).state === 'running' && checkView(null, null).state === 'none');
+  check('notice: a first result with problems is announced', /found 3 problems/.test(noticeFor(null, fail) || ''));
+  check('notice: a first clean result stays quiet', noticeFor(null, pass) === null);
+  check('notice: the same result twice is announced once', noticeFor(fail, fail) === null);
+  check('notice: a pass after problems is announced as a success', (noticeFor(fail, { ...pass, finished: 'z' }) || '').startsWith('\u2713 '));
+  check('notice: a pass after a pass stays quiet', noticeFor(pass, { ...pass, finished: 'z' }) === null);
+  check('notice: a run that could not complete is announced', /could not run/.test(noticeFor(pass, broke) || ''));
+  check('notice: one problem is spelt singular', /found 1 problem in/.test(noticeFor(null, { ...fail, checks: [fail.checks[0]].map(c => ({ ...c, problems: [c.problems[0]] })) }) || ''));
 }
 
 // The guide in the repository is the panel's text, word for word.

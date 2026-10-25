@@ -586,6 +586,163 @@ function MadeByToolPage({ rel }) {
     h('p', null, 'If something in it should change, tell Larsonix what and why. The other pages above still show the file.'));
 }
 
+// ---- the checks -------------------------------------------------------------------------------
+
+// Git runs the mod's checks after every commit, pull and branch switch (Studio/Tools/Checks), and
+// they write their result beside themselves. This panel shows the latest one, and a notice says so
+// when a new result arrives with something wrong. The files sit outside the mod's Server and
+// Common folders, which is all the plugin contract can read, so they are read through the app's
+// own file access, the same route HyCreator uses for its own files.
+export const CHECK_RESULT = 'Studio/Tools/Checks/last-check.json';
+export const CHECK_RUNNING = 'Studio/Tools/Checks/last-check.running.json';
+
+// What the panel shows, from the result and the running marker, as plain data.
+export function checkView(result, running) {
+  if (!result || typeof result !== 'object') {
+    return { state: running ? 'running' : 'none', checks: [], problems: 0 };
+  }
+  const checks = (Array.isArray(result.checks) ? result.checks : []).map(c => ({
+    id: c.id, title: c.title, meaning: c.meaning, status: c.status,
+    problems: (c.problems || []).map(text => ({ text, open: fileIn(text) })),
+    tail: c.status === 'error' ? (c.output_tail || []) : [],
+  }));
+  const problems = checks.reduce((n, c) => n + (c.status === 'pass' ? 0 : Math.max(c.problems.length, 1)), 0);
+  const state = result.error ? 'error' : problems ? 'problems' : 'pass';
+  // A marker newer than the result means a later run is still going.
+  const busy = !!running && (!result.finished || String(running.started || '') > String(result.finished));
+  return {
+    state, busy, checks, problems, error: result.error || null,
+    finished: result.finished || null, commit: typeof result.commit === 'string' ? result.commit.slice(0, 7) : null,
+    branch: result.branch || null, uncommitted: !!result.uncommitted,
+  };
+}
+
+// The item file a problem names, as HyCreator opens it: relative to the Server folder.
+export function fileIn(text) {
+  const m = /^Server\/([^:]+\.json):/.exec(text);
+  return m ? m[1] : null;
+}
+
+// The notice for a new result, or null when there is nothing to say. A pass is announced only
+// after a run that was not a pass, so a clean commit stays quiet.
+export function noticeFor(previous, next) {
+  if (!next || !next.finished || (previous && previous.finished === next.finished)) return null;
+  const view = checkView(next, null);
+  const before = previous ? checkView(previous, null).state : null;
+  if (view.state === 'error') return 'The Armory checks could not run. Open The Armory checks panel to see why.';
+  if (view.state === 'problems') {
+    return 'The Armory checks found ' + view.problems + ' problem' + (view.problems === 1 ? '' : 's') + ' in your last commit. Open The Armory checks panel to see them.';
+  }
+  return before && before !== 'pass' ? '\u2713 The Armory checks pass again.' : null;
+}
+
+async function readRepoText(api, rel) {
+  const current = api.workspace.current();
+  if (!current || current.kind !== 'folder') return { missing: true };
+  const root = String(current.root).replace(/\\/g, '/').replace(/\/$/, '');
+  const path = root + '/' + rel;
+  const tauri = globalThis.__TAURI_INTERNALS__;
+  if (!tauri || typeof tauri.invoke !== 'function') return { unreadable: true };
+  try {
+    if (!(await tauri.invoke('plugin:fs|exists', { path }))) return { missing: true };
+    const raw = await tauri.invoke('plugin:fs|read_text_file', { path });
+    return { text: typeof raw === 'string' ? raw : new TextDecoder().decode(new Uint8Array(raw)) };
+  } catch {
+    // HyCreator's own reader, the route its asset search uses.
+    try {
+      const [text] = await tauri.invoke('read_texts_tiered', { tiers: [{ kind: 'folder', root, serverRoot: root }], rels: [rel] });
+      return typeof text === 'string' ? { text } : { missing: true };
+    } catch {
+      return { unreadable: true };
+    }
+  }
+}
+
+async function readJson(api, rel) {
+  const r = await readRepoText(api, rel);
+  if (r.text === undefined) return r;
+  try { return { value: JSON.parse(r.text) }; } catch { return { missing: true }; }
+}
+
+async function hasStudio(api) {
+  const r = await readRepoText(api, 'Studio/Tools/Checks/check.py');
+  return r.text !== undefined ? true : r.unreadable ? null : false;
+}
+
+function ChecksPanel() {
+  const api = host;
+  const h = api.React.createElement;
+  const { useState, useEffect } = api.React;
+  const [data, setData] = useState({ loading: true });
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      const [result, running, studio] = await Promise.all([readJson(api, CHECK_RESULT), readJson(api, CHECK_RUNNING), hasStudio(api)]);
+      if (alive) setData({ result: result.value || null, running: running.value || null, studio, unreadable: !!result.unreadable });
+    };
+    load();
+    const timer = setInterval(load, 4000);
+    return () => { alive = false; clearInterval(timer); };
+  }, []);
+
+  const box = children => h('div', { style: { padding: 12, overflow: 'auto', height: '100%', lineHeight: 1.45 } }, children);
+  const foot = h('p', { style: { fontSize: 12, opacity: 0.75 } },
+    'The checks run by themselves after every commit and every pull. Nothing is ever blocked: you can always push. To run them now, double-click Studio\\Check.cmd.');
+  if (data.loading) return box([h('p', { key: 'l' }, 'Reading the last result...')]);
+  if (data.unreadable) return box([h('p', { key: 'u' }, 'This HyCreator version does not let the plugin read the result. Double-click Studio\\Check.cmd to see it.'), foot]);
+  if (data.studio === false) return box([h('p', { key: 's' }, 'Open the whole folder of your copy of the mod in HyCreator, the one holding Studio, to see the checks.')]);
+  const view = checkView(data.result, data.running);
+  const items = [];
+  if (view.state === 'none' || view.state === 'running') {
+    items.push(h('p', { key: 'n' }, view.state === 'running' ? 'The first check is running...' : 'No check has run yet. They run after your next commit, or double-click Studio\\Check.cmd.'));
+  } else {
+    if (view.busy) items.push(h('p', { key: 'b', style: { fontStyle: 'italic' } }, 'Checking your latest commit...'));
+    items.push(h('p', { key: 'w' }, 'Last checked ' + (view.finished || '') + ' on ' + (view.branch || '?') + ' at commit ' + (view.commit || '?')
+      + (view.uncommitted ? ', with uncommitted changes included.' : '.')));
+    if (view.error) items.push(h('p', { key: 'e', style: { color: '#e5534b' } }, view.error));
+    items.push(h('p', { key: 's', style: { fontWeight: 600 } }, view.state === 'pass' ? '\u2713 Everything passes.' : view.state === 'problems' ? view.problems + ' to look at:' : ''));
+    for (const c of view.checks) {
+      const mark = c.status === 'pass' ? '\u2713' : c.status === 'fail' ? '\u2717' : '?';
+      items.push(h('section', { key: c.id, style: { marginBottom: 10 } },
+        h('div', { style: { fontWeight: c.status === 'pass' ? 400 : 600 } }, mark + ' ' + c.title),
+        c.status === 'pass' ? null : h('div', { style: { fontSize: 12, opacity: 0.8, margin: '2px 0 4px' } },
+          c.status === 'error' ? 'This check could not run, so it says nothing about your work. Tell Larsonix.' : c.meaning),
+        c.problems.length ? h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12 } }, c.problems.map((p, i) => h('li', { key: i },
+          p.open ? h('a', { href: '#', onClick: e => { e.preventDefault(); api.session.openFile(p.open); } }, p.text) : p.text))) : null,
+        c.tail.length ? h('pre', { style: { fontSize: 11, whiteSpace: 'pre-wrap', opacity: 0.7 } }, c.tail.join('\n')) : null));
+    }
+  }
+  items.push(h('div', { key: 'f' }, foot));
+  return box(items);
+}
+
+// Watches for new results while HyCreator runs, and raises a notice for one that needs a look.
+// The first reading of a folder is the starting point and raises nothing, so opening HyCreator
+// never repeats an old notice. Every result after it is new, the very first one included.
+function watchChecks(api) {
+  let root = null;
+  let primed = false;
+  let last = null;
+  let stopped = false;
+  const tick = async () => {
+    if (stopped) return;
+    const current = api.workspace.current();
+    const now = current ? String(current.root) : null;
+    if (now !== root) { root = now; primed = false; last = null; }
+    if (!now) return;
+    const r = await readJson(api, CHECK_RESULT);
+    if (!primed) { primed = true; last = r.value || null; return; }
+    if (r.value && (!last || r.value.finished !== last.finished)) {
+      const text = noticeFor(last, r.value);
+      if (text) api.ui.notify(text);
+      last = r.value;
+    }
+  };
+  tick();
+  const timer = setInterval(tick, 4000);
+  return () => { stopped = true; clearInterval(timer); };
+}
+
 // ---- the guide -------------------------------------------------------------------------------
 
 // Every section is one job: what it is for, then the steps. The same text is saved as
@@ -602,7 +759,7 @@ export const GUIDE = [
     'Install Git for Windows from https://git-scm.com/download/win. Keep its default choices.',
     'In HyCreator, use Clone repository... with https://github.com/azurefoxx98/The-Armory-Mod, into any folder you like.',
     'Switch to your own branch: in the git menu at the top, Branches..., then lady. All your work goes there, and we bring it into the mod.',
-    'In the cloned folder, double-click Studio\\Setup.cmd. It sets old copies of The Armory aside, links the game to your copy, and installs this plugin. Restart HyCreator afterwards.',
+    'In the cloned folder, double-click Studio\\Setup.cmd. It sets old copies of The Armory aside, links the game to your copy, installs this plugin and installs our checks. Restart HyCreator afterwards.',
     'The first time you push, a GitHub sign-in window opens. Sign in once and it is remembered.',
     'Setup prints any step left for Blockbench. Do it once.',
   ] },
@@ -612,6 +769,12 @@ export const GUIDE = [
     'After a pull, restart your world, so the game runs the newest code.',
     'When you finish: Commit changes..., write one line saying what you did, then Push.',
     'If Pull or Push talks about a conflict, stop there and tell Larsonix. Do not try to fix it.',
+  ] },
+  { title: 'Our checks', steps: [
+    'After every commit and every pull, our checks look at your work by themselves, in the background. You never wait for them.',
+    'When they find something, HyCreator shows a notice. Open The Armory checks panel with the ! button at the top to see which item and what is wrong. Click a file name to open it.',
+    'Fix what you can, then commit again. If you are not sure, push anyway and tell Larsonix. Nothing is ever blocked.',
+    'To run them any time, double-click Studio\\Check.cmd.',
   ] },
   { title: 'Where your files go', steps: [
     'Everything the game uses stays in src/main/resources, as today.',
@@ -688,10 +851,10 @@ let unregister = [];
 export default {
   id: 'armory.studio',
   name: 'The Armory Studio',
-  version: '0.1.0',
+  version: '0.2.0',
   minApi: 2,
   author: 'The Armory',
-  description: 'Colour versions of an armour or weapon piece, made and checked from one page.',
+  description: 'Colour versions made and checked from one page, the working guide, and what the checks of the mod found.',
   activate(api) {
     host = api;
     unregister.push(api.editors.registerPage({
@@ -711,7 +874,9 @@ export default {
     }));
     if (api.ui.registerSidePanel) {
       api.ui.registerSidePanel({ id: 'armory.studio.guide', title: 'The Armory guide', glyph: '?', component: GuidePanel, defaultWidth: 440 });
+      api.ui.registerSidePanel({ id: 'armory.studio.checks', title: 'The Armory checks', glyph: '!', component: ChecksPanel, defaultWidth: 480 });
     }
+    unregister.push(watchChecks(api));
     // The warning page above only reaches editors that offer plugin pages, and HyCreator's own
     // drop list and patch editors do not open on it. So the first edit of such a file, in any
     // editor, also raises a notice. HyCreator reports an edit without naming the file, so the

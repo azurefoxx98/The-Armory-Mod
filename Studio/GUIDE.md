@@ -15,7 +15,7 @@ This is the same guide as the panel in HyCreator. Edit it in Studio/Tools/HyCrea
 - Install Git for Windows from https://git-scm.com/download/win. Keep its default choices.
 - In HyCreator, use Clone repository... with https://github.com/azurefoxx98/The-Armory-Mod, into any folder you like.
 - Switch to your own branch: in the git menu at the top, Branches..., then lady. All your work goes there, and we bring it into the mod.
-- In the cloned folder, double-click Studio\Setup.cmd. It sets old copies of The Armory aside, links the game to your copy, and installs this plugin. Restart HyCreator afterwards.
+- In the cloned folder, double-click Studio\Setup.cmd. It sets old copies of The Armory aside, links the game to your copy, installs this plugin and installs our checks. Restart HyCreator afterwards.
 - The first time you push, a GitHub sign-in window opens. Sign in once and it is remembered.
 - Setup prints any step left for Blockbench. Do it once.
 
@@ -26,6 +26,13 @@ This is the same guide as the panel in HyCreator. Edit it in Studio/Tools/HyCrea
 - After a pull, restart your world, so the game runs the newest code.
 - When you finish: Commit changes..., write one line saying what you did, then Push.
 - If Pull or Push talks about a conflict, stop there and tell Larsonix. Do not try to fix it.
+
+## Our checks
+
+- After every commit and every pull, our checks look at your work by themselves, in the background. You never wait for them.
+- When they find something, HyCreator shows a notice. Open The Armory checks panel with the ! button at the top to see which item and what is wrong. Click a file name to open it.
+- Fix what you can, then commit again. If you are not sure, push anyway and tell Larsonix. Nothing is ever blocked.
+- To run them any time, double-click Studio\Check.cmd.
 
 ## Where your files go
 

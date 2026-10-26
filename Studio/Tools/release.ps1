@@ -200,6 +200,12 @@ function Get-GitHub {
     $answer = "protocol=https`nhost=github.com`n`n" | & git credential fill 2>$null
     $ErrorActionPreference = 'Stop'
     $token = ($answer | Where-Object { $_ -like 'password=*' } | Select-Object -First 1) -replace '^password=', ''
+    # GitHub's own command line keeps a sign-in too, when it is installed.
+    if (-not $token -and (Get-Command gh -ErrorAction SilentlyContinue)) {
+        $ErrorActionPreference = 'Continue'
+        $token = (& gh auth token 2>$null | Select-Object -First 1)
+        $ErrorActionPreference = 'Stop'
+    }
     if (-not $token) { Stop-Release 'GitHub has no sign-in on this computer yet. Push once in HyCreator, then try again.' }
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     return @{ Api = "https://api.github.com/repos/$owner/$name"; Upload = "https://uploads.github.com/repos/$owner/$name"
@@ -340,7 +346,10 @@ $push = Invoke-Git (@('push', 'origin') + $refs)
 if ($push.Code -ne 0) { Stop-Release "The release is built here, but sending it failed: $($push.Text)`nTell Larsonix." }
 $gh = Get-GitHub
 try {
-$body = @{ tag_name = "v$Version"; target_commitish = $releaseCommit; name = "The Armory $Version"; body = $notes; draft = ($Choice -ne 'publish') } | ConvertTo-Json
+# The message goes in with the changelog when the draft is made: editing a draft afterwards makes
+# GitHub forget the tag it names, and publishing it would then make no tag.
+$text = if ($Choice -eq 'message') { "$notes`r`n`r`n---`r`nMessage for us:`r`n$message" } else { $notes }
+$body = @{ tag_name = "v$Version"; target_commitish = $releaseCommit; name = "The Armory $Version"; body = $text; draft = ($Choice -ne 'publish') } | ConvertTo-Json
 $release = Invoke-RestMethod -Method Post -Uri "$($gh.Api)/releases" -Headers $gh.Headers -Body ([Text.Encoding]::UTF8.GetBytes($body)) -ContentType 'application/json'
 $asset = Invoke-RestMethod -Method Post -Uri "$($gh.Upload)/releases/$($release.id)/assets?name=TheArmoryMod-$Version.jar" -Headers $gh.Headers -InFile $built -ContentType 'application/java-archive'
 
@@ -355,8 +364,6 @@ if (-not $same) { Stop-Release "GitHub holds a different jar than the one built.
 if ($Choice -eq 'message') {
     $issue = @{ title = "A release draft from $branch is waiting: $Version"; body = "@$reviewer A release draft with a message for you is on GitHub, under Releases. The message is in the draft." } | ConvertTo-Json
     [void](Invoke-RestMethod -Method Post -Uri "$($gh.Api)/issues" -Headers $gh.Headers -Body ([Text.Encoding]::UTF8.GetBytes($issue)) -ContentType 'application/json')
-    $withMessage = @{ body = "$notes`r`n`r`n---`r`nMessage for us:`r`n$message" } | ConvertTo-Json
-    [void](Invoke-RestMethod -Method Patch -Uri "$($gh.Api)/releases/$($release.id)" -Headers $gh.Headers -Body ([Text.Encoding]::UTF8.GetBytes($withMessage)) -ContentType 'application/json')
 }
 if ($Choice -eq 'publish') {
     # Main always equals the latest release. This branch holds main already (Update joined it), so

@@ -1,9 +1,9 @@
 // The Armory, a Blockbench plugin for working on The Armory's armour.
 //
-// Save Each Group as a Piece: a whole set is modelled as one file, then saved as one
-// .blockymodel per piece (helmet, chest, gloves, boots). Each top group of the model becomes
-// its own piece file, written by the official Hytale plugin's own export, so a piece is exactly
-// the file that exporting that group alone would give. Nothing in a group is renamed or moved.
+// Save Each Group as a Model: a whole set is modelled as one file (Lady calls it the Full model),
+// then saved as one .blockymodel per item (helmet, chest, gauntlets, leggings). Each top group of
+// the model becomes its own file, written by the official Hytale plugin's own export, so each is
+// exactly the file that exporting that group alone would give. Nothing in a group is renamed or moved.
 //
 // It needs the official Hytale plugin, whose export it uses.
 (function () {
@@ -67,14 +67,14 @@
   function savePieces() {
     const codec = Codecs.blockymodel;
     if (!codec) {
-      Blockbench.showMessageBox({ title: 'The Armory', message: 'The official Hytale plugin is needed. Install it from File, Plugins.' });
+      Blockbench.showMessageBox({ title: 'The Armory', message: 'This needs the Hytale plugin. Install it from File > Plugins..., then try again.' });
       return;
     }
     const model = codec.compile({ raw: true });
     // The export's top nodes, in its own order, matched to the model's top groups.
     const roots = Outliner.root.filter(n => (n instanceof Group || n instanceof Cube) && n.export);
     if (roots.length !== model.nodes.length) {
-      Blockbench.showMessageBox({ title: 'The Armory', message: 'This model\'s top groups could not be matched to the export. Nothing was saved.' });
+      Blockbench.showMessageBox({ title: 'The Armory', message: 'The groups of this model could not be read, so nothing was saved. Send Larsonix a screenshot and the model.' });
       return;
     }
     if (!model.nodes.length) {
@@ -87,7 +87,7 @@
     const anyHidden = rows.some(r => r.hidden);
     const dialog = new Dialog({
       id: 'armory_save_pieces',
-      title: 'Save Each Group as a Piece',
+      title: 'Save Each Group as a Model',
       width: 680,
       form_first: true,
       form: {
@@ -96,11 +96,11 @@
       component: {
         data: () => ({ rows, anyHidden }),
         template: `<div style="padding: 4px 0 0">
-          <p style="margin: 0 0 8px">Each ticked group is saved as its own piece file.<span v-if="anyHidden"> Parts hidden here would be hidden in the game too, so they are shown in the piece unless you untick them.</span></p>
+          <p style="margin: 0 0 8px">Each ticked group is saved as its own model.<span v-if="anyHidden"> Cubes you hid here would stay hidden in Hytale, so they are shown again unless you untick show.</span></p>
           <table style="width: 100%; border-collapse: collapse">
             <tr style="text-align: left; opacity: 0.7">
-              <th style="padding: 4px; width: 40px">Save</th><th style="padding: 4px">Group</th><th style="padding: 4px; width: 60px">Boxes</th>
-              <th style="padding: 4px; width: 200px">File name</th><th v-if="anyHidden" style="padding: 4px; width: 150px">Hidden parts</th>
+              <th style="padding: 4px; width: 40px">Save</th><th style="padding: 4px">Group</th><th style="padding: 4px; width: 60px">Cubes</th>
+              <th style="padding: 4px; width: 200px">File name</th><th v-if="anyHidden" style="padding: 4px; width: 150px">Hidden cubes</th>
             </tr>
             <tr v-for="(row, i) in rows" :key="i" style="border-top: 1px solid var(--color-border)">
               <td style="padding: 4px"><input type="checkbox" v-model="row.take"></td>
@@ -114,7 +114,7 @@
       },
       onConfirm(result) {
         if (!result.folder) {
-          Blockbench.showQuickMessage('Pick a folder first');
+          Blockbench.showQuickMessage('Pick the folder to save in first');
           return false;
         }
         const pieces = [];
@@ -131,17 +131,17 @@
           return false;
         }
         // Blockbench hands a plugin the file system through its own permission check.
-        const fs = requireNativeModule('fs', { message: 'The Armory checks whether a piece file already exists, so it never replaces one without asking.' });
+        const fs = requireNativeModule('fs', { message: 'The Armory needs this to save your models, and to ask before it replaces one.' });
         const existing = pieces.filter(p => fs.existsSync(p.path)).map(p => PathModule.basename(p.path));
         const write = () => {
           fs.mkdirSync(result.folder, { recursive: true });
           for (const p of pieces) Blockbench.writeFile(p.path, { content: p.content, savetype: 'text' });
-          Blockbench.showQuickMessage('Saved ' + pieces.length + ' pieces');
+          Blockbench.showQuickMessage('Saved ' + pieces.length + (pieces.length === 1 ? ' model' : ' models'));
         };
         if (existing.length) {
           Blockbench.showMessageBox({
-            title: 'Replace files?',
-            message: 'These files exist and will be replaced: ' + existing.join(', '),
+            title: 'Replace them?',
+            message: 'These models are already in that folder. Replace them? ' + existing.join(', '),
             buttons: ['Replace', 'Cancel'],
           }, button => { if (button === 0) write(); });
         } else {
@@ -155,15 +155,15 @@
   BBPlugin.register('armory', {
     title: 'The Armory',
     author: 'The Armory',
-    description: 'Saves each group of a whole armour set as its own piece file.',
+    description: 'Saves each group of a Full model as its own model.',
     icon: 'call_split',
-    version: '0.2.0',
+    version: '0.3.0',
     min_version: '5.2.0',
     variant: 'desktop',
     onload() {
       action = new Action('armory_save_pieces', {
-        name: 'Save Each Group as a Piece',
-        description: 'Save every top group of this model as its own .blockymodel, such as helmet, chest, gloves and boots',
+        name: 'Save Each Group as a Model',
+        description: 'Save each group of this Full model as its own model: helmet, chest, gauntlets, leggings',
         icon: 'call_split',
         condition: () => !!Codecs.blockymodel && !!Format && /^hytale_/.test(Format.id),
         click: savePieces,

@@ -4,7 +4,7 @@ rem They also run by themselves after every commit and pull, and HyCreator shows
 set "PY="
 for /f "delims=" %%p in ('git -C "%~dp0.." config --get armory.python') do set "PY=%%p"
 if not defined PY (
-    echo The checks are not installed yet. Double-click Studio\Setup.cmd once.
+    echo The checks are not installed. Double-click Setup.cmd first.
     pause
     exit /b 1
 )

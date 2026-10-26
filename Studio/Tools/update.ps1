@@ -35,25 +35,26 @@ function Invoke-Git([string[]] $arguments) {
     return @{ Code = $process.ExitCode; Text = ($out.Result + $err.Result).Trim() }
 }
 
-function Stop-Update([string] $text) {
+function Stop-Update([string] $text, [string] $detail = '') {
     Write-Host ''
     Write-Host $text
+    if ($detail) { Write-Host "For Larsonix: $detail" }
     exit 1
 }
 
-Write-Host 'The Armory: bringing in the latest work.'
-if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Stop-Update 'Git is not installed. Install Git for Windows, then try again.' }
+Write-Host 'Updating your copy of The Armory.'
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Stop-Update 'Git is not installed. Install it from https://git-scm.com/download/win with its default choices, then try again.' }
 
 $branch = (Invoke-Git @('rev-parse', '--abbrev-ref', 'HEAD')).Text
-if ($branch -eq 'HEAD' -or -not $branch) { Stop-Update 'This copy is on no branch. Tell Larsonix. Nothing was changed.' }
-if ($branch -eq $Main) { Stop-Update "This copy is on $Main. Switch to your own branch in HyCreator's git menu, Branches..., then try again. Nothing was changed." }
-if (Test-Path -LiteralPath (Join-Path $repo '.git\MERGE_HEAD')) { Stop-Update 'An earlier join was left unfinished. Tell Larsonix. Nothing was changed.' }
+if ($branch -eq 'HEAD' -or -not $branch) { Stop-Update 'Your copy is on no branch. Send Larsonix a screenshot of this window.' }
+if ($branch -eq $Main) { Stop-Update "Your copy is on $Main. In HyCreator, click $Main at the top, then Branches..., then lady. Then double-click Update.cmd again." }
+if (Test-Path -LiteralPath (Join-Path $repo '.git\MERGE_HEAD')) { Stop-Update 'An earlier update did not finish. Send Larsonix a screenshot of this window.' }
 $dirty = (Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Text
-if ($dirty) { Stop-Update 'Some work is not committed yet. Commit it in HyCreator first (Commit changes...), then run Update again. Nothing was changed.' }
+if ($dirty) { Stop-Update "Some of your changes are not committed. In HyCreator, click $branch at the top, then Commit changes... and commit them. Then double-click Update.cmd again." }
 
 Write-Host 'Getting the latest from GitHub...'
 $fetch = Invoke-Git @('fetch', 'origin')
-if ($fetch.Code -ne 0) { Stop-Update "GitHub could not be reached: $($fetch.Text). Nothing was changed." }
+if ($fetch.Code -ne 0) { Stop-Update 'GitHub could not be reached. Check your internet, then try again.' $fetch.Text }
 
 $start = (Invoke-Git @('rev-parse', 'HEAD')).Text
 $brought = 0
@@ -67,23 +68,27 @@ foreach ($source in @("origin/$branch", "origin/$Main")) {
         [void](Invoke-Git @('merge', '--abort'))
         [void](Invoke-Git @('reset', '--hard', '-q', $start))
         $list = if ($both) { ($both | ForEach-Object { "  $_" }) -join "`n" } else { "  $($merge.Text)" }
-        Stop-Update "Your work and ours changed the same lines here:`n$list`nNothing was changed. Tell Larsonix which files, and keep working: your work is safe."
+        Stop-Update "Your work and ours changed the same lines in these files:`n$list`nNothing was changed, and you can keep working. Send Larsonix a screenshot of this window."
     }
     $brought += $new
 }
 
-if ($brought -eq 0) { Write-Host 'Nothing new to bring in.' } else { Write-Host "Brought in $brought new change(s). Your work is kept beside them." }
+if ($brought -eq 0) { Write-Host 'Nothing new.' } else { Write-Host "Brought in $brought new change(s)." }
 
 if (-not $NoPush) {
     $ahead = (Invoke-Git @('rev-list', '--count', "origin/$branch..HEAD")).Text
     $hasRemote = (Invoke-Git @('rev-parse', '--verify', '--quiet', "origin/$branch^{commit}")).Code -eq 0
     if (-not $hasRemote -or [int]$ahead -gt 0) {
-        Write-Host 'Sending your branch to GitHub...'
+        Write-Host 'Sending your work to GitHub...'
         $push = Invoke-Git @('push', '-u', 'origin', "HEAD:$branch")
-        if ($push.Code -ne 0) { Stop-Update "Everything is joined here, but sending it failed: $($push.Text)`nPush in HyCreator, or tell Larsonix." }
+        if ($push.Code -ne 0) { Stop-Update "Your copy is updated, but sending it to GitHub failed. In HyCreator, click $branch at the top, then Push. If that fails too, send Larsonix a screenshot of this window." $push.Text }
         Write-Host 'Sent.'
     }
 }
-Write-Host ''
-Write-Host 'Done. If a world is open, restart it so the game runs the newest code. The checks run by themselves now.'
+
+# Git copies the code and the pages after a pull without a word, so a copy that fails while a world
+# holds the code open would go unseen. Doing it here says so. A failed copy is not a failed update,
+# so a release that runs this goes on: its line already says what to do.
+& (Join-Path $PSScriptRoot 'sync.ps1')
+if ($LASTEXITCODE -eq 0) { Write-Host ''; Write-Host 'Done.' }
 exit 0

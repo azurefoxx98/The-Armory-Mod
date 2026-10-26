@@ -1,8 +1,9 @@
 """Test check.py the way Lady meets it, in a throwaway clone of this repository.
 
-  python check_test.py
+  python check_test.py            everything, needs the installed game
+  python check_test.py --words    only what Lady reads: the gates' strings and their translation
 
-The clone gets a branch of its own made from this one, the way her branch is made, and must pass
+First, what Lady reads (the words test below). Then the clone gets a branch of its own made from this one, the way her branch is made, and must pass
 every check. Then one mistake per check is committed there, each the kind the mod has really
 received, and every check must name its own. Then the branch is switched to main, which must be
 named too. Last, a run started the way the git hooks start one must leave its result behind.
@@ -12,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -52,16 +54,307 @@ def edit(path: str, change) -> None:
         fh.write(change(text))
 
 
-def main() -> int:
-    if not check.find_game():
-        print("check_test: cannot run, the installed game was not found")
-        return 2
+# ---- what Lady reads ------------------------------------------------------------------------------
+#
+# The gates are byte copies of ours and print for us. check.py translates every line they print into
+# what she reads. These two lists keep that true: every string the gates hold, as it stood when the
+# translator was written, and one real line of each kind they print as a problem. A gate that changes
+# fails here until its new lines have a rule in check.py and a sample below.
+
+def gate_strings() -> list[str]:
+    """Every string of three words or more in the copied gates, each value written as {}."""
+    import ast
+    out = []
+    for gate, _title in check.GATES:
+        tree = ast.parse(open(os.path.join(HERE, gate + ".py"), encoding="utf-8").read())
+        docs, inner = set(), set()
+        for n in ast.walk(tree):
+            if isinstance(n, (ast.Module, ast.FunctionDef, ast.ClassDef)) and n.body and isinstance(n.body[0], ast.Expr):
+                docs.add(id(n.body[0].value))
+            if isinstance(n, ast.JoinedStr):
+                inner.update(id(v) for v in n.values)
+            if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Mod):
+                inner.add(id(n.left))
+        for n in ast.walk(tree):
+            if id(n) in docs or id(n) in inner:
+                continue
+            if isinstance(n, ast.Constant) and isinstance(n.value, str):
+                s = n.value
+            elif isinstance(n, ast.JoinedStr):
+                s = "".join(v.value if isinstance(v, ast.Constant) else "{}" for v in n.values)
+            elif isinstance(n, ast.BinOp) and isinstance(n.op, ast.Mod) and isinstance(n.left, ast.Constant) and isinstance(n.left.value, str):
+                s = re.sub(r"%[-0-9.]*[sdfr]", "{}", n.left.value)
+            else:
+                continue
+            if len(s.split()) >= 3 and f"{gate}\t{s}" not in out:
+                out.append(f"{gate}\t{s}")
+    return sorted(out)
+
+
+GATE_STRINGS = [
+    'assetcheck\t\n== does every modelled prop actually have collision ==',
+    'assetcheck\t\n== every hitbox id referenced by our items resolves ==',
+    'assetcheck\t\n== every tooltip line our items produce has a name ==',
+    'assetcheck\t\n== hitboxes we added ==',
+    'assetcheck\t   {} texture {}x{}',
+    'assetcheck\t== models and their textures ==',
+    'assetcheck\tFAILED, {} problem(s):',
+    'assetcheck\tScribe_Lock (held, shipped)',
+    'assetcheck\tall checks passed',
+    'assetcheck\tnot a png',
+    'assetcheck\tper-part coverage skipped, hitbox-fit not importable ({})',
+    'assetcheck\tstat {} is defined neither by us nor by the game',
+    "assetcheck\ttooltip names: the installed game's client.lang or Assets.zip is unreadable",
+    'assetcheck\ttooltip names: we ship no en-US client.lang',
+    'assetcheck\ttooltip names: {} item files, {} distinct tooltip lines, {} languages',
+    'assetcheck\t{} client.lang lacks {}, needed by {} and others',
+    'assetcheck\t{} client.lang lacks {}, which en-US has',
+    'assetcheck\t{} client.lang: {} has no {value} slot, so its amount never shows',
+    "assetcheck\t{} references {} '{}' which we do not ship",
+    'assetcheck\t{}: Ymin is {}, it dips below its own floor and the block will not place',
+    'assetcheck\t{}: all {} parts at 95%% collision coverage or better',
+    'assetcheck\t{}: box {} has a non-positive {} extent, Box.CODEC will reject it',
+    'assetcheck\t{}: model or texture missing',
+    'assetcheck\t{}: no boxes, the codec requires a non-empty array',
+    'assetcheck\t{}: {} boxes, footprint {}x{}x{} = {} cells, Y from {}',
+    'assetcheck\t{}: {} face(s) fall outside the {}x{} sheet (worst {} px). REPORT ONLY, this formula still disagrees with 14 of 64 shipped pairs',
+    'assetcheck\t{}: {} of {} parts under 95%% collision coverage: {}',
+    'dupkeycheck\tDelete the EARLIER block. The engine keeps the last one, so the survivor is the',
+    'dupkeycheck\tREPEATS DIFFER, a value is being dropped',
+    'dupkeycheck\tcontrol failed: a clean document was reported as duplicated',
+    'dupkeycheck\tcontrol failed: a planted duplicate was not detected, results are worthless',
+    'dupkeycheck\tcontrol failed: identical repeats were reported as differing',
+    'dupkeycheck\tdupkeycheck: no duplicate keys',
+    'dupkeycheck\tdupkeycheck: {} json and patch files scanned under {}',
+    'dupkeycheck\tdupkeycheck: {} problem(s)',
+    'dupkeycheck\tidentical repeat, silent edit trap',
+    'dupkeycheck\tno such directory: {}',
+    'dupkeycheck\tone already in effect, and the parsed result of the file does not change.',
+    'dupkeycheck\t{"Armor": {"StatModifiers": {"Mana": [{"Amount": 25}], "Health": [{"Amount": 1}]}}}',
+    'dupkeycheck\t{"Armor": {"StatModifiers": {"Mana": [{"Amount": 25}], "Mana": [{"Amount": 25}]}}}',
+    'dupkeycheck\t{}: does not parse, {}',
+    'dupkeycheck\t{}: duplicate key {} ({})',
+    'dupkeycheck\t{}: unreadable, {}',
+    'familycheck\t    owning items: {}',
+    'familycheck\t    profile {}: {}',
+    'familycheck\tACCEPTED: {}: {}: {}',
+    'familycheck\tCyclops, Demon and Glutton are deliberate stat identities; splitting would orphan 12 helms until the mod owner supplies recipes.',
+    'familycheck\tFAIL: stale accepted violation: {}: {}: {}',
+    'familycheck\tFAIL: {}: {}: {}',
+    'familycheck\tThe same amulet model is worn at the neck or on the head; splitting would orphan 4 items until the mod owner supplies recipes.',
+    'familycheck\tThe same robe is worn hood-up as Head or hood-down as Chest; splitting would orphan 34 items until the mod owner supplies recipes.',
+    'familycheck\tcannot append non-list patch field {}',
+    'familycheck\tdrop directory not found at {}',
+    'familycheck\tduplicate mod item id {} in {} and {}',
+    'familycheck\tduplicate vanilla item id {}',
+    'familycheck\tfamilycheck: FAILED: {} failure(s), {} live accepted violation(s)',
+    'familycheck\tfamilycheck: PASS: all families closed and reachable; {} live accepted violation(s)',
+    'familycheck\tfamilycheck: cannot complete scan: {}',
+    'familycheck\tfamilycheck: {} alteration families, {} reachable item links, {} dropped item ids',
+    'familycheck\tfamilycheck: {} vanilla items, {} mod items, {} item patches',
+    'familycheck\titem directory not found at {}',
+    'familycheck\titem document is not an object: {}',
+    'familycheck\titem patch target does not exist: {}',
+    'familycheck\tmissing parent item {} in chain {}',
+    'familycheck\tno owning item has a non-alteration recipe or appears in Server/Drops',
+    'familycheck\tparent cycle: {}',
+    'familycheck\tresource tree to scan (defaults to the mod resource tree)',
+    'familycheck\tshipped Assets.zip not found at {}',
+    'familycheck\tthe family no longer violates this check',
+    'familycheck\tunknown check name',
+    'familycheck\t{} distinct profiles across {} reachable items',
+    'familycheck\t{} distinct slots across {} reachable items',
+    'familycheck\t{}: Armor is not an object',
+    'familycheck\t{}: Parent is not a string',
+    'itemcheck\tCustomModel {} exists in neither the mod nor the game',
+    'itemcheck\tCustomModelTexture {} exists in neither the mod nor the game',
+    'itemcheck\tit belongs to the family {}, which has no family file',
+    'itemcheck\tit is in {} but not {}, so other mods cannot find it',
+    'itemcheck\tit plays the {} {}, which exists in neither the mod nor the game',
+    'itemcheck\titem directory not found at {}',
+    'itemcheck\titem sound set',
+    'itemcheck\titemcheck: FAILED: {} problem(s), {} note(s)',
+    'itemcheck\titemcheck: PASS: everything every item names exists, {} note(s), {} model(s) with faces partly off their picture',
+    'itemcheck\titemcheck: cannot complete scan: {}',
+    'itemcheck\titemcheck: {} item files, {} model and picture pairs',
+    'itemcheck\tits Categories is not a list',
+    'itemcheck\tits item sound set {} does not exist',
+    'itemcheck\tits quality {} does not exist',
+    'itemcheck\tits recipe asks for the family {}, which has no family file',
+    'itemcheck\tits recipe asks for the item {}, which does not exist',
+    'itemcheck\tits {} changes the stat {}, which does not exist',
+    'itemcheck\tnot a png',
+    "itemcheck\tthe game's Assets.zip not found at {}",
+    'itemcheck\t{} {} exists in neither the mod nor the game',
+    'itemcheck\t{}: cannot be read as JSON, so the game never loads it ({})',
+    'itemcheck\t{}: is not a JSON object, so the game never loads it',
+    'itemcheck\t{}: its model {} cannot be read ({})',
+    'itemcheck\t{}: its texture {} is not a PNG picture',
+    'itemcheck\t{}: {} face(s) partly outside {} ({}x{})',
+    'recipecheck\t (another bench route works)',
+    'recipecheck\t and no family file',
+    'recipecheck\t vanilla recipes, for scale: ',
+    "recipecheck\tDeveloper quality test item since 1.15.0, borrowing the iron sword's name and model. Its recipe names no bench, so nobody can craft it, which is right for a test item.",
+    'recipecheck\ta StructuralCrafting recipe must have exactly one input, it has {}',
+    "recipecheck\tbench '{}' is declared by no item",
+    'recipecheck\tbench {} declares no category {}',
+    'recipecheck\tbench {} has {} tier(s), the recipe needs tier {}',
+    'recipecheck\tbench {} is a {} bench, the recipe asks for {}',
+    'recipecheck\tbench, the recipe asks',
+    'recipecheck\tdeclared by no item',
+    'recipecheck\tdeclares no category',
+    'recipecheck\tdirectory not found: {}',
+    'recipecheck\tduplicate mod item id {}',
+    'recipecheck\tduplicate vanilla item id {}',
+    'recipecheck\texactly one input',
+    'recipecheck\tinput family {} has no English name, the bench shows server.resourceType.{}.name',
+    'recipecheck\tinput family {} has no member item',
+    'recipecheck\tinput family {} holds only {} armour, the recipe makes {} armour',
+    'recipecheck\tinput item {} does not exist',
+    'recipecheck\tinput {} names no item, family or tag',
+    'recipecheck\titem patch target does not exist: {}',
+    'recipecheck\tno block grants the augment tag {}',
+    'recipecheck\toutput item {} does not exist',
+    'recipecheck\tpatched recipe {}',
+    'recipecheck\trecipe patch target does not exist: {}',
+    'recipecheck\trecipecheck: FAILED: {} problem(s), {} note(s)',
+    'recipecheck\trecipecheck: PASS: every mod recipe resolves, {} note(s)',
+    'recipecheck\trecipecheck: bench rules over ',
+    'recipecheck\trecipecheck: cannot complete scan: {}',
+    'recipecheck\trecipecheck: {} mod recipes, {} items ({} mod), {} families with members, {} benches',
+    'recipecheck\tresource tree to scan (defaults to the mod resource tree)',
+    'recipecheck\tvanilla item {}',
+    'recipecheck\tvanilla recipe {}',
+    'recipecheck\t{}: ACCEPTED: {}',
+    'recipecheck\t{}: operator {} on a non-list field {}',
+    'recipecheck\t{}: operator {} on {} is not modelled by this check',
+    'recipecheck\t{}: stale accepted entry, the recipe no longer fails (reason was: {})',
+]
+
+# One line of each kind the gates print as a problem, as problems_in hands it over, and what Lady
+# reads for it. Most come from her branch's real result of 2026-10-26.
+SAMPLES = [
+    ("itemcheck", "Server/Item/Items/A/B.json: cannot be read as JSON, so the game never loads it (Expecting value: line 1 column 1 (char 0))", "typing mistake"),
+    ("itemcheck", "Server/Item/Items/A/B.json: is not a JSON object, so the game never loads it", "typing mistake"),
+    ("itemcheck", "Server/Item/Items/A/B.json: Model Items/Armors/X/Chest.blockymodel exists in neither the mod nor the game", "Its model Items/Armors/X/Chest.blockymodel does not exist."),
+    ("itemcheck", "Server/Item/Items/A/B.json: Texture Items/Armors/X/Red.png exists in neither the mod nor the game", "Its texture Items/Armors/X/Red.png does not exist."),
+    ("itemcheck", "Server/Item/Items/A/B.json: Icon Icons/ItemsGenerated/B.png exists in neither the mod nor the game", "Generate icon"),
+    ("itemcheck", "Server/Item/Items/A/B.json: CustomModel Blocks/X.blockymodel exists in neither the mod nor the game", "block model"),
+    ("itemcheck", "Server/Item/Items/A/B.json: CustomModelTexture Blocks/X.png exists in neither the mod nor the game", "block texture"),
+    ("itemcheck", "Server/Item/Items/A/B.json: its recipe asks for the item Ingredient_Bar_Ghost, which does not exist", "needs the item Ingredient_Bar_Ghost"),
+    ("itemcheck", "Server/Item/Items/A/B.json: its recipe asks for the family Resource_Ghost, which has no family file", "resource type Resource_Ghost"),
+    ("itemcheck", "Server/Item/Items/A/B.json: it belongs to the family Resource_Ghost, which has no family file", "ResourceTypes names Resource_Ghost"),
+    ("itemcheck", "Server/Item/Items/A/B.json: it plays the sound SFX_Ghost, which exists in neither the mod nor the game", "so it plays nothing"),
+    ("itemcheck", "Server/Item/Items/A/B.json: it plays the particle Ghost_Puff, which exists in neither the mod nor the game", "so it shows nothing"),
+    ("itemcheck", "Server/Item/Items/A/B.json: it plays the camera effect Ghost_Shake, which exists in neither the mod nor the game", "so it does nothing"),
+    ("itemcheck", "Server/Item/Items/A/B.json: its item sound set ISS_Ghost does not exist", "ISS_Ghost does not exist, so it makes no sound"),
+    ("itemcheck", "Server/Item/Items/A/B.json: its quality Ghostly does not exist", "quality Ghostly"),
+    ("itemcheck", "Server/Item/Items/Praetorian_Boots.json: its Armor changes the stat Volatility, which does not exist", "Uses the stat Volatility"),
+    ("itemcheck", "Server/Item/Items/Praetorian_Boots.json: it is in ArmoryCategory.ArmoryArmors but not Items.Armors, so other mods cannot find it", "Missing the category Items.Armors"),
+    ("itemcheck", "Server/Item/Items/A/B.json: its Categories is not a list", "not a list"),
+    ("itemcheck", "Server/Item/Items/A/B.json: its texture Items/X.png is not a PNG picture", "not a PNG"),
+    ("itemcheck", "Server/Item/Items/A/B.json: its model Items/X.blockymodel cannot be read (Expecting value)", "cannot be read"),
+    ("recipecheck", "item X: no inputs", "takes no ingredient"),
+    ("recipecheck", "item X: input item Y does not exist", "needs the item Y"),
+    ("recipecheck", "item X: input family Resource_Y has no English name, the bench shows server.resourceType.Resource_Y.name", "no English name"),
+    ("recipecheck", "item X: input family Resource_Y has no member item", "no item has that resource type"),
+    ("recipecheck", "item X: input family Resource_Y has no member item and no family file", "no item has that resource type"),
+    ("recipecheck", "item Armor_Thorium_Head_Black: input family Resource_Thorium_Hands holds only Hands armour, the recipe makes Head armour", "Its recipe takes Hands armor (Resource_Thorium_Hands), but this is Head armor."),
+    ("recipecheck", "item X: input {'Quantity': 1} names no item, family or tag", "an ingredient with no item"),
+    ("recipecheck", "recipe X: output item Y does not exist", "makes the item Y"),
+    ("recipecheck", "item X: bench 'Ghost_Bench' is declared by no item", "the bench Ghost_Bench"),
+    ("recipecheck", "item X: bench Workbench is a Crafting bench, the recipe asks for StructuralCrafting", "but it is a Crafting bench"),
+    ("recipecheck", "item X: bench Workbench has 3 tier(s), the recipe needs tier 5", "tier 5 of Workbench"),
+    ("recipecheck", "item X: no block grants the augment tag Ghost", "bench upgrade Ghost"),
+    ("recipecheck", "item X: a StructuralCrafting recipe must have exactly one input, it has 2", "takes 2 ingredients"),
+    ("recipecheck", "item Weapon_Dualswords_Iron: stale accepted entry, the recipe no longer fails (reason was: test)", "needs updating"),
+    ("recipecheck", "patched recipe X: input item Y does not exist", "needs the item Y"),
+    ("familycheck", "Resource_Thorium_Hands: STAT CLOSURE: 2 distinct profiles across 18 reachable items profile 1: {\"BaseDamageResistance\":0} items: A_1, A_2 profile 2: {\"BaseDamageResistance\":1} items: B_1", "2 different armor stats"),
+    ("familycheck", "Resource_Thorium_Hands: SLOT CLOSURE: 2 distinct slots across 18 reachable items profile 1: \"Hands\" items: A_1, A_2 profile 2: \"Head\" items: B_1", "2 different slots"),
+    ("familycheck", "Resource_PraetorianBoots: REACHABILITY: no owning item has a non-alteration recipe or appears in Server/Drops owning items: Praetorian_Boots, Praetorian_Boots_Gray", "No player can get these items"),
+    ("familycheck", "stale accepted violation: DemonHelm: STAT CLOSURE: the family no longer violates this check reason: x", "needs updating"),
+    ("dupkeycheck", "Server\\Item\\Items\\A\\B.json: duplicate key Armor.StatModifiers.Mana (identical repeat, silent edit trap)", "an edit to the first does nothing"),
+    ("dupkeycheck", "Server\\Item\\Items\\A\\B.json: duplicate key Quality (REPEATS DIFFER, a value is being dropped)", "with different values"),
+    ("dupkeycheck", "Server\\Item\\Items\\A\\B.json: does not parse, Expecting ',' delimiter", "typing mistake"),
+    ("dupkeycheck", "Server\\Item\\Items\\A\\B.json: unreadable, [Errno 13] Permission denied", "cannot be opened"),
+    ("assetcheck", "stat Volatility is defined neither by us nor by the game", "raw name"),
+    ("assetcheck", "es-ES client.lang lacks itemTooltip.stats.TA_Swim_Speed, needed by X.json and others", "no es-ES name"),
+    ("assetcheck", "es-ES client.lang lacks itemTooltip.stats.X, which en-US has", "no es-ES name"),
+    ("assetcheck", "en-US client.lang: itemTooltip.stats.X has no {value} slot, so its amount never shows", "never shows its amount"),
+    ("assetcheck", "Bench_X.json references HitboxType 'ArmoryGhost' which we do not ship", "hitbox ArmoryGhost"),
+    ("assetcheck", "AlterationTable: model or texture missing", "A bench or tooltip of the mod is broken."),
+]
+
+
+def words(expect) -> None:
+    now = gate_strings()
+    added = sorted(set(now) - set(GATE_STRINGS))
+    gone = sorted(set(GATE_STRINGS) - set(now))
+    expect(f"the gates print the {len(GATE_STRINGS)} strings the translation was written against", not added and not gone,
+           "new: " + " | ".join(added[:5]) + "  gone: " + " | ".join(gone[:5]))
+    wrong = []
+    for gate, line, part in SAMPLES:
+        e = check.for_lady(gate, line)
+        if not e["known"] or part not in e["says"] + " " + e["do"]:
+            wrong.append(f"{gate}: {line[:70]} -> {e['says']} / {e['do']}")
+    expect(f"each of the {len(SAMPLES)} kinds of problem line reads as Lady's words", not wrong, "\n      ".join(wrong))
+    planted = check.for_lady("itemcheck", "Server/Item/Items/A/B.json: a sentence no rule knows")
+    expect("a line no rule knows is kept whole for Larsonix, never dropped",
+           not planted["known"] and planted["detail"].endswith("a sentence no rule knows") and planted["do"] == check.SEND, planted)
+    item = check.for_lady("itemcheck", SAMPLES[13][1])
+    expect("an item named by its file opens it", item["items"] == [{"label": "B", "open": "Item/Items/A/B.json"}], item["items"])
+    dup = check.for_lady("dupkeycheck", SAMPLES[40][1])
+    expect("a file named with Windows separators opens it", dup["items"] == [{"label": "B", "open": "Item/Items/A/B.json"}], dup["items"])
+    reach = check.for_lady("familycheck", SAMPLES[37][1])
+    expect("an unreachable resource type lists its items, not itself",
+           [i["label"] for i in reach["items"]] == ["Praetorian_Boots", "Praetorian_Boots_Gray"], reach["items"])
+    stat = check.for_lady("familycheck", SAMPLES[35][1])
+    expect("a resource type with two stat profiles lists the items of both", [i["label"] for i in stat["items"]] == ["A_1", "A_2", "B_1"], stat["items"])
+
+    # Her branch's shape: a stat named by two gates, and a recipe making helmets from gloves.
+    checks = [
+        {"id": "itemcheck", "title": "Item files", "status": "fail", "problems": [SAMPLES[15][1]]},
+        {"id": "recipecheck", "title": "Recipes", "status": "fail", "problems": [SAMPLES[25][1]]},
+        {"id": "familycheck", "title": "Alteration Table", "status": "fail", "problems": [SAMPLES[35][1], SAMPLES[36][1]]},
+        {"id": "dupkeycheck", "title": "Fields written twice", "status": "pass", "problems": []},
+        {"id": "assetcheck", "title": "Benches and tooltips", "status": "fail", "problems": [SAMPLES[43][1]]},
+        {"id": "branch", "title": "Your branch", "status": "error", "problems": [], "output_tail": ["boom"]},
+    ]
+    check.lady_view(checks)
+    by = {c["id"]: c["lady"] for c in checks}
+    expect("a stat the item check names is not named again by the tooltip check", by["assetcheck"] == [], by["assetcheck"])
+    expect("a resource type mixed up by a recipe asks only for the recipe fix, never for equal stats",
+           by["familycheck"] == [] and len(by["recipecheck"]) == 1, by["familycheck"])
+    expect("a check that could not run says so and hands off", len(by["branch"]) == 1 and by["branch"][0]["do"] == check.SEND
+           and by["branch"][0]["detail"] == "boom", by["branch"])
+    thrice = [{"id": "dupkeycheck", "title": "Fields written twice", "status": "fail", "problems": [
+        "Server\\Item\\Items\\A\\B.json: duplicate key ItemSoundSetId (REPEATS DIFFER, a value is being dropped)",
+        "Server\\Item\\Items\\A\\B.json: duplicate key ItemSoundSetId (identical repeat, silent edit trap)",
+        "Server\\Item\\Items\\A\\C.json: duplicate key Quality (identical repeat, silent edit trap)"]}]
+    check.lady_view(thrice)
+    says = [e["says"] for e in thrice[0]["lady"]]
+    expect("a field written three times is one message, not two", len(says) == 2 and "written 3 times, with different values" in says[0]
+           and "written twice" in says[1], says)
+    text, ok = check.summary({"finished": "2026-10-26T12:40:00+01:00", "error": None, "checks": checks})
+    expect("the window counts things to fix, not lines", not ok and "3 things to fix." in text, text)
+    expect("the window never shows a gate's own words", not any(w in text for w in ("CLOSURE", "REACHABILITY", "family", "armour")), text)
+
+
+def main(argv: list[str]) -> int:
     failures = []
 
     def expect(label: str, ok: bool, detail="") -> None:
         print(("ok    " if ok else "WRONG ") + label + ("" if ok else f"\n      {detail}"))
         if not ok:
             failures.append(label)
+
+    words(expect)
+    if argv == ["--words"]:
+        print(f"check_test: {len(failures)} failure(s)")
+        return 1 if failures else 0
+    if not check.find_game():
+        print("check_test: cannot run, the installed game was not found")
+        return 2
 
     with tempfile.TemporaryDirectory() as tmp:
         clone = os.path.join(tmp, "mod")
@@ -173,4 +466,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))

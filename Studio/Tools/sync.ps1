@@ -16,10 +16,12 @@ function Say([string] $text) {
 
 function Same-File([string] $a, [string] $b) {
     if (-not (Test-Path -LiteralPath $b)) { return $false }
-    return (Get-FileHash -LiteralPath $a).Hash -eq (Get-FileHash -LiteralPath $b).Hash
+    # A file another program holds open may not even be readable. It counts as different, so the copy
+    # is tried and its own message says what to do.
+    try { return (Get-FileHash -LiteralPath $a).Hash -eq (Get-FileHash -LiteralPath $b).Hash } catch { return $false }
 }
 
-function Copy-IfChanged([string] $from, [string] $to, [string] $what) {
+function Copy-IfChanged([string] $from, [string] $to, [string] $what, [string] $fix) {
     if (Same-File $from $to) { return $true }
     try {
         Copy-Item -LiteralPath $from -Destination $to -Force
@@ -27,7 +29,7 @@ function Copy-IfChanged([string] $from, [string] $to, [string] $what) {
         return $true
     } catch {
         # The game holds the jar open while a world runs, so a copy can fail until it closes.
-        Write-Host "Could not update $what. Close Hytale and HyCreator, then run Studio\Setup.cmd again."
+        Write-Host "Could not update $what. $fix"
         return $false
     }
 }
@@ -37,7 +39,7 @@ $plugins = (git -C $repo config --get armory.plugins) 2>$null
 $ok = $true
 
 if ($mods) {
-    if (-not (Copy-IfChanged (Join-Path $PSScriptRoot 'TheArmory-code.jar') (Join-Path $mods 'TheArmory-code.jar') 'the Armory code for the game')) {
+    if (-not (Copy-IfChanged (Join-Path $PSScriptRoot 'TheArmory-code.jar') (Join-Path $mods 'TheArmory-code.jar') 'The Armory''s code in Hytale' 'Leave your Hytale world, then double-click Update.cmd.')) {
         $ok = $false
     }
 }
@@ -45,7 +47,7 @@ if ($mods) {
 $pluginSource = Join-Path $PSScriptRoot 'HyCreator'
 if ($plugins -and (Test-Path -LiteralPath $pluginSource) -and (Test-Path -LiteralPath $plugins)) {
     Get-ChildItem -LiteralPath $pluginSource -File | Where-Object { $_.Extension -in '.js', '.hcplugin' } | ForEach-Object {
-        if (-not (Copy-IfChanged $_.FullName (Join-Path $plugins $_.Name) "the HyCreator plugin $($_.Name) (restart HyCreator to use it)")) {
+        if (-not (Copy-IfChanged $_.FullName (Join-Path $plugins $_.Name) 'The Armory''s pages in HyCreator (restart HyCreator to see them)' 'Close HyCreator, then double-click Update.cmd.')) {
             $ok = $false
         }
     }

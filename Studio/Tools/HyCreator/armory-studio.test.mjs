@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, problemGroups } from './armory-studio.js';
+import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups } from './armory-studio.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const resources = path.resolve(here, '..', '..', '..', 'src', 'main', 'resources');
@@ -255,51 +255,44 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
 // The checks panel and its notices, from results shaped as check.py writes them.
 {
   const pass = { finished: '2026-10-25T21:00:00+01:00', commit: 'abcdef1234', branch: 'lady', error: null,
-    checks: [{ id: 'itemcheck', title: 'T', status: 'pass', problems: [] }, { id: 'languages', title: 'L', status: 'pass', problems: [] }] };
+    checks: [{ id: 'itemcheck', title: 'T', status: 'pass', problems: [], lady: [] }, { id: 'languages', title: 'L', status: 'pass', problems: [], lady: [] }] };
+  const quality = { says: 'Its quality Ghostly does not exist.', do: 'Pick a quality HyCreator suggests.', known: true };
   const fail = { ...pass, finished: '2026-10-25T21:05:00+01:00', checks: [
-    { id: 'itemcheck', title: 'T', status: 'fail', problems: ['Server/Item/Items/A/B.json: its quality Ghostly does not exist', 'Server/Item/Items/A/C.json: x'] },
-    { id: 'recipecheck', title: 'R', status: 'error', problems: [], output_tail: ['boom'] }] };
-  const broke = { ...pass, finished: '2026-10-25T21:06:00+01:00', error: 'The game files were not found.', checks: [] };
+    { id: 'itemcheck', title: 'T', status: 'fail', problems: ['x', 'y'], lady: [
+      { ...quality, items: [{ label: 'B', open: 'Item/Items/A/B.json' }] },
+      { ...quality, items: [{ label: 'C', open: 'Item/Items/A/C.json' }] }] },
+    { id: 'recipecheck', title: 'R', status: 'error', problems: [], output_tail: ['boom'], lady: [
+      { says: 'The check "R" could not run, so it says nothing about your work.', do: 'Send Larsonix a screenshot.', items: [], known: true, detail: 'boom' }] }] };
+  const broke = { ...pass, finished: '2026-10-25T21:06:00+01:00', error: 'Hytale\'s files were not found. Start Hytale once, then commit again.', checks: [] };
   check('panel: a clean result is a pass', checkView(pass, null).state === 'pass' && checkView(pass, null).problems === 0);
   const v = checkView(fail, null);
-  check('panel: two problems and a check that could not run count three', v.state === 'problems' && v.problems === 3, String(v.problems));
-  check('panel: a problem naming an item file opens it', v.checks[0].problems[0].open === 'Item/Items/A/B.json');
-  check('panel: a problem naming no file opens nothing', fileIn('item X: input family Y has no member item') === null);
-  check('panel: an error result says so', checkView(broke, null).state === 'error');
+  check('panel: one fix on two items and a check that could not run are two things to fix', v.state === 'problems' && v.problems === 2, String(v.problems));
+  const q = v.groups.find(g => g.says === quality.says);
+  check('panel: the same fix on two items is one card with both items', q && q.items.length === 2 && q.do === quality.do, JSON.stringify(q));
+  check('panel: an item opens from its card', q && q.items[0].open === 'Item/Items/A/B.json');
+  check('panel: the largest group comes first', v.groups[0] === q);
+  check('panel: what only Larsonix needs is kept apart', v.groups[1].details[0] === 'boom');
+  check('panel: an error result says so', checkView(broke, null).state === 'error' && checkView(broke, null).error === broke.error);
   check('panel: a newer run in progress shows as busy', checkView(pass, { started: '2026-10-25T21:01:00+01:00' }).busy === true
     && checkView(pass, { started: '2026-10-25T20:59:00+01:00' }).busy === false);
   check('panel: no result yet, with a run going', checkView(null, { started: 'x' }).state === 'running' && checkView(null, null).state === 'none');
-  check('notice: a first result with problems is announced', /found 3 problems/.test(noticeFor(null, fail) || ''));
+  // A result written before the translation shows its lines whole, so an update never blanks the panel.
+  const old = { ...pass, finished: 'old', checks: [{ id: 'itemcheck', title: 'T', status: 'fail', problems: ['Server/Item/Items/A/B.json: its quality Ghostly does not exist'] }] };
+  const ov = checkView(old, null);
+  check('panel: a result from before the translation still shows each line and opens its file', ov.problems === 1 && ov.groups[0].items[0].open === 'Item/Items/A/B.json');
+  check('panel: a problem naming no file opens nothing', fileIn('item X: input family Y has no member item') === null);
+  check('notice: a first result with problems is announced', /found 2 things to fix/.test(noticeFor(null, fail) || ''));
   check('notice: the same problems in a later run stay quiet', noticeFor(fail, { ...fail, finished: 'later' }) === null);
-  const another = { ...fail, finished: 'later', checks: [{ ...fail.checks[0], problems: [...fail.checks[0].problems, 'Server/Item/Items/A/D.json: y'] }, fail.checks[1]] };
-  check('notice: a changed list of problems is announced', /found 4 problems/.test(noticeFor(fail, another) || ''));
+  const another = { ...fail, finished: 'later', checks: [{ ...fail.checks[0], lady: [...fail.checks[0].lady, { says: 'New.', do: 'Fix it.', items: [], known: true }] }, fail.checks[1]] };
+  check('notice: a changed list of problems is announced', /found 3 things to fix/.test(noticeFor(fail, another) || ''));
   check('notice: a first clean result stays quiet', noticeFor(null, pass) === null);
   check('notice: the same result twice is announced once', noticeFor(fail, fail) === null);
-  check('notice: a pass after problems is announced as a success', (noticeFor(fail, { ...pass, finished: 'z' }) || '').startsWith('\u2713 '));
+  check('notice: a pass after problems is announced as a success', (noticeFor(fail, { ...pass, finished: 'z' }) || '').startsWith('✓ '));
   check('notice: a pass after a pass stays quiet', noticeFor(pass, { ...pass, finished: 'z' }) === null);
   check('notice: a run that could not complete is announced', /could not run/.test(noticeFor(pass, broke) || ''));
-  check('notice: one problem is spelt singular', /found 1 problem\./.test(noticeFor(null, { ...fail, checks: [fail.checks[0]].map(c => ({ ...c, problems: [c.problems[0]] })) }) || ''));
-  // The panel groups the lines that say the same thing, the shapes of her branch's real result.
-  const lines = [
-    'Server/Item/Items/Praetorian_Boots.json: its Armor changes the stat Volatility, which does not exist',
-    'Server/Item/Items/Praetorian_Chest.json: its Armor changes the stat Volatility, which does not exist',
-    'Server/Item/Items/Praetorian_Boots.json: it is in ArmoryCategory.ArmoryArmors but not Items.Armors, so other mods cannot find it',
-    'item Armor_Thorium_Head_Black: input family Resource_Thorium_Hands holds only Hands armour, the recipe makes Head armour',
-    'Resource_PraetorianBoots: REACHABILITY: no owning item has a non-alteration recipe or appears in Server/Drops owning items: Praetorian_Boots, Praetorian_Boots_Gray',
-    'Resource_PraetorianChest: REACHABILITY: no owning item has a non-alteration recipe or appears in Server/Drops owning items: Praetorian_Chest',
-    'stat Volatility is defined neither by us nor by the game',
-    'a line naming nothing'];
-  const groups = problemGroups(lines);
-  const stat = groups.find(g => /Volatility, which/.test(g.message));
-  check('panel: the same sentence on two items is one group of two', groups.length === 6 && stat && stat.subjects.length === 2 && stat.kind === 'item', groups.map(g => g.subjects.length + ' ' + g.message).join(' | '));
-  check('panel: the largest group comes first', groups[0] === stat);
-  check('panel: an item file opens from its group', stat.subjects[0].label === 'Praetorian_Boots' && stat.subjects[0].open === 'Item/Items/Praetorian_Boots.json');
-  const reach = groups.find(g => g.kind === 'family');
-  check('panel: a gate\'s rule name is dropped and each family keeps its own items', reach && reach.subjects.length === 2 && /^No owning item/.test(reach.message)
-    && reach.subjects[0].detail === 'owning items: Praetorian_Boots, Praetorian_Boots_Gray', reach && JSON.stringify(reach));
-  check('panel: an item named by id and a stat are read as such', groups.some(g => g.kind === 'item' && g.subjects[0].label === 'Armor_Thorium_Head_Black' && !g.subjects[0].open)
-    && groups.some(g => g.kind === 'stat' && g.subjects[0].label === 'Volatility'));
-  check('panel: a line naming nothing is kept whole', groups.some(g => g.kind === null && g.message === 'A line naming nothing'));
+  check('notice: one thing is spelt singular', /found 1 thing to fix\./.test(noticeFor(null, { ...fail, checks: [fail.checks[0]] }) || ''));
+  check('ladyGroups: entries with the same words and fix merge, others stay apart',
+    ladyGroups([{ says: 'a', do: 'b', items: [{ label: 'X' }] }, { says: 'a', do: 'b', items: [{ label: 'X' }, { label: 'Y' }] }, { says: 'a', do: 'c', items: [] }]).map(g => g.items.length).join() === '2,0');
 }
 
 // The guide in the repository is the panel's text, word for word.

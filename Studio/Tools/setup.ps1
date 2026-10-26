@@ -1,7 +1,8 @@
 # One-time setup for working on The Armory in the game directly. Run it through Studio\Setup.cmd.
 #
 # What it does, in order:
-#   1. Checks that git is installed and that this folder is the mod's repository.
+#   1. Checks that git is installed and that this folder is the mod's repository, and moves a fresh
+#      copy from main to her branch.
 #   2. Finds every other copy of The Armory in the game's mods folders and, with a yes, moves it
 #      to a folder beside them. The game refuses to start a world that holds two copies.
 #   3. Links the game's mods folder to this repository's src\main\resources, so the game reads the
@@ -22,7 +23,9 @@ param(
     # A copy of the Python download already on this computer, used instead of downloading it. Only tests use it.
     [string] $PythonZip = '',
     # Answer yes to every question. Only tests use it.
-    [switch] $Yes
+    [switch] $Yes,
+    # Her branch, which a fresh copy on main is moved to.
+    [string] $Branch = 'lady'
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -32,10 +35,10 @@ $resources = Join-Path $repo 'src\main\resources'
 $mods = Join-Path $UserData 'Mods'
 $setAside = Join-Path $UserData 'Armory set aside'
 
-function Stop-Setup([string] $text) {
+function Stop-Setup([string] $text, [string] $detail = '') {
     Write-Host ''
     Write-Host $text
-    Write-Host 'Nothing else was changed.'
+    if ($detail) { Write-Host "For Larsonix: $detail" }
     exit 1
 }
 
@@ -74,26 +77,45 @@ function Read-Identity([string] $path) {
     }
 }
 
+# Runs git and returns its exit code and what it printed. Windows PowerShell would stop the script on
+# anything git writes to its error stream, which it does in ordinary work.
+function Invoke-GitQuiet([string[]] $arguments) {
+    $ErrorActionPreference = 'Continue'
+    $out = & git -C $repo @arguments 2>&1
+    return @{ Code = $LASTEXITCODE; Text = (($out | ForEach-Object { "$_" }) -join "`n").Trim() }
+}
+
 function Link-Target([string] $path) {
     $item = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
     if (-not $item -or -not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $null }
     return [string]($item.Target | Select-Object -First 1)
 }
 
-Write-Host 'The Armory: setting up this computer to work on the mod in the game.'
-Write-Host "Repository: $repo"
+Write-Host 'Setting up The Armory on this computer.'
 Write-Host ''
 
 # 1. The tools and the folders this needs.
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Stop-Setup 'Git is not installed. Install Git for Windows from https://git-scm.com/download/win, then run Setup again.'
+    Stop-Setup 'Git is not installed. Install it from https://git-scm.com/download/win with its default choices, then double-click Setup.cmd again.'
 }
 if (-not (Test-Path -LiteralPath (Join-Path $resources 'manifest.json')) -or -not (Test-Path -LiteralPath (Join-Path $repo '.git'))) {
-    Stop-Setup "This Setup is not inside a copy of the mod's repository. Clone the repository in HyCreator, then run Studio\Setup.cmd from it."
+    Stop-Setup 'This Setup.cmd is not in a copy of the mod. Double-click Get The Armory.cmd instead.' $repo
 }
 if (-not (Test-Path -LiteralPath $UserData)) {
-    Stop-Setup "Hytale's user folder was not found at $UserData. Start Hytale once, then run Setup again."
+    Stop-Setup 'Hytale was not found. Start Hytale once, then double-click Setup.cmd again.' $UserData
 }
+# 1b. Her branch. A fresh clone holds main alone, and HyCreator's Branches list shows only the
+# branches a copy holds, so her branch would not be there to pick. Setup moves a copy on main to it.
+$onBranch = (Invoke-GitQuiet @('rev-parse', '--abbrev-ref', 'HEAD')).Text
+if ($onBranch -eq 'main' -and (Invoke-GitQuiet @('rev-parse', '--verify', '--quiet', "origin/$Branch")).Code -eq 0) {
+    if ((Invoke-GitQuiet @('status', '--porcelain', '--untracked-files=no')).Text) {
+        Stop-Setup "Your copy has changes on main. Send Larsonix a screenshot of this window."
+    }
+    $switch = Invoke-GitQuiet @('switch', '-q', $Branch)
+    if ($switch.Code -ne 0) { Stop-Setup "Your copy could not be moved to your branch, $Branch. Send Larsonix a screenshot of this window." $switch.Text }
+    Write-Host "Your copy is now on your branch, $Branch."
+}
+
 New-Item -ItemType Directory -Force -Path $mods | Out-Null
 $identity = Read-Identity $resources
 $ourLink = Join-Path $mods 'TheArmory'
@@ -115,10 +137,12 @@ foreach ($folder in $folders) {
     }
 }
 if ($others.Count -gt 0) {
-    Write-Host 'These copies of The Armory are in the game''s mods folders. The game refuses a world that holds two:'
+    Write-Host 'Hytale can load only one copy of The Armory, and these are in your mods folders:'
     $others | ForEach-Object { Write-Host "  $($_.FullName)" }
-    if (-not (Ask "Move them to `"$setAside`"? Nothing is deleted.")) {
-        Stop-Setup 'They were left where they are, so the setup cannot continue.'
+    Write-Host "Yes moves them to $setAside, where you can find them again. Nothing is deleted."
+    Write-Host 'No stops the setup and leaves everything as it is.'
+    if (-not (Ask 'Move them?')) {
+        Stop-Setup 'Setup stopped, and nothing was moved.'
     }
     New-Item -ItemType Directory -Force -Path $setAside | Out-Null
     foreach ($entry in $others) {
@@ -135,12 +159,12 @@ if ($others.Count -gt 0) {
 # 3. The link from the game's mods folder to the mod's files.
 $current = Link-Target $ourLink
 if ($current -eq $resources) {
-    Write-Host 'The game already reads the mod''s files from this repository.'
+    Write-Host 'Hytale already loads The Armory from this copy.'
 } elseif (Test-Path -LiteralPath $ourLink) {
-    Stop-Setup "$ourLink exists and is not The Armory. Rename or move it, then run Setup again."
+    Stop-Setup "A folder named TheArmory is already in your mods folder: $ourLink. Rename it or move it away, then double-click Setup.cmd again."
 } else {
     New-Item -ItemType Junction -Path $ourLink -Target $resources | Out-Null
-    Write-Host "The game now reads the mod's files from $resources"
+    Write-Host 'Hytale now loads The Armory from this copy.'
 }
 
 # 4 and 5. Where the jar and the plugin go, remembered for every later pull.
@@ -148,7 +172,7 @@ git -C $repo config armory.mods $mods
 git -C $repo config armory.plugins $Plugins
 git -C $repo config core.hooksPath Studio/Tools/hooks
 if (-not (Test-Path -LiteralPath $Plugins)) {
-    Write-Host "HyCreator's plugin folder was not found at $Plugins. Start HyCreator once, then run Setup again to install the Armory plugin."
+    Write-Host 'HyCreator was not found, so its Armory pages are not added yet. Start HyCreator once, then double-click Setup.cmd again.'
 }
 & (Join-Path $PSScriptRoot 'sync.ps1')
 if ($LASTEXITCODE -ne 0) { exit 1 }
@@ -165,25 +189,26 @@ if (-not $checksReady) {
     try {
         if (-not $zip) {
             $zip = Join-Path ([IO.Path]::GetTempPath()) 'TheArmory-python-3.15.1-embed-amd64.zip'
-            Write-Host 'Downloading the Python the checks run on (14 MB)...'
+            Write-Host 'Downloading the checks (14 MB)...'
             $ProgressPreference = 'SilentlyContinue'
             # Windows PowerShell 5.1 may still offer old encryption that python.org refuses.
             [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
             Invoke-WebRequest -Uri $pythonUrl -OutFile $zip -UseBasicParsing
         }
         if ((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash -ne $pythonSha256) {
-            throw 'the download does not match the fingerprint python.org publishes for it'
+            throw 'the download does not match its published checksum'
         }
         # Unpacked beside its place and moved in whole, so an interrupted run never leaves half of it.
         $staging = "$PythonHome.partial"
         if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
-        if (Test-Path -LiteralPath $PythonHome) { Stop-Setup "$PythonHome exists without Python in it. Delete that folder, then run Setup again." }
+        if (Test-Path -LiteralPath $PythonHome) { Stop-Setup "The checks could not be installed. Delete this folder, then double-click Setup.cmd again: $PythonHome" }
         New-Item -ItemType Directory -Force -Path (Split-Path -Parent $PythonHome) | Out-Null
         [IO.Compression.ZipFile]::ExtractToDirectory($zip, $staging)
         Move-Item -LiteralPath $staging -Destination $PythonHome
         $checksReady = Test-Path -LiteralPath $python
     } catch {
-        Write-Host "The checks could not be installed: $($_.Exception.Message). Everything else is set up. Run Setup again later to add them."
+        Write-Host 'The checks could not be installed. Everything else is ready. Double-click Setup.cmd again later to add them.'
+        Write-Host "For Larsonix: $($_.Exception.Message)"
     } finally {
         if (-not $PythonZip -and $zip -and (Test-Path -LiteralPath $zip)) { Remove-Item -LiteralPath $zip -Force }
     }
@@ -191,14 +216,15 @@ if (-not $checksReady) {
 if ($checksReady) {
     git -C $repo config armory.python ($python -replace '\\', '/')
     & $python (Join-Path $repo 'Studio\Tools\Checks\check.py') --spawn
-    Write-Host 'The checks are installed. They run after every commit and every update, and HyCreator shows what they find.'
+    Write-Host 'The checks are installed. They run by themselves each time you commit.'
 }
 
 Write-Host ''
-Write-Host 'Done. Each time you run Studio\Update.cmd, or pull in HyCreator, the code and the plugin update by themselves.'
+Write-Host 'Done. Restart HyCreator to see The Armory''s pages.'
 $blockbench = Join-Path $repo 'Studio\Tools\Blockbench\armory.js'
 if (Test-Path -LiteralPath $blockbench) {
-    Write-Host 'One step left, once, in Blockbench: File, Plugins, Load Plugin from File, and pick'
+    Write-Host ''
+    Write-Host 'Last step, only once: in Blockbench, click File > Plugins... > Load Plugin from File, and pick this file:'
     Write-Host "  $blockbench"
 }
 exit 0

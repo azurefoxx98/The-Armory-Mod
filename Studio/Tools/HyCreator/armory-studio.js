@@ -341,7 +341,7 @@ export async function analyse(reader, openRel, options = {}) {
   const open = await reader.effective(openId);
   if (!open) return { error: 'This file could not be read as an item.' };
   if (typeof open.Model !== 'string' || typeof open.Texture !== 'string') {
-    return { error: 'This item has no model and texture of its own, so it has no colour set.' };
+    return { error: 'This item has no model and texture, so it has no colors.' };
   }
 
   // A family of the game's own is never a colour family: a piece inheriting from a game item
@@ -395,15 +395,15 @@ export async function analyse(reader, openRel, options = {}) {
     }
     if (candidates.length !== 1) {
       return { error: candidates.length === 0
-        ? 'This is a colour version, and no default piece for its family was found, in the mod or among the game\'s items. Open the default piece instead.'
-        : 'This is a colour version, and several pieces could be its default: ' + candidates.map(([id]) => id).join(', ') + '. Open the default piece instead.' };
+        ? 'This is a color, and its base item was not found. Open the base item instead.'
+        : 'This is a color, and several items could be its base: ' + candidates.map(([id]) => id).join(', ') + '. Open the base item instead.' };
     }
     defaultId = candidates[0][0];
   }
   const gameDefault = !index.has(defaultId);
   const def = { id: defaultId, rel: await reader.relOf(defaultId), own: await reader.ownDoc(defaultId), eff: await reader.effective(defaultId) };
   if (!def.eff || typeof def.eff.Model !== 'string' || typeof def.eff.Texture !== 'string') {
-    return { error: 'The default piece ' + defaultId + ' has no model and texture, so it has no colour set.' };
+    return { error: 'Its base item ' + defaultId + ' has no model and texture, so it has no colors.' };
   }
 
   // The items its versions may be among: the default's folder for a piece of the mod (as before),
@@ -583,7 +583,7 @@ export async function analyse(reader, openRel, options = {}) {
     // are two versions, not a clash. Two on the same slot are worth a look.
     for (const item of cell.items) {
       const alike = cell.items.filter(i => i !== item && i.slot === item.slot);
-      if (alike.length) item.faults.push({ kind: 'shared', text: 'Looks exactly like ' + alike.map(i => i.id).join(', ') + ' and is worn on the same slot.', fix: null });
+      if (alike.length) item.faults.push({ kind: 'shared', text: 'Looks exactly like ' + alike.map(i => i.id).join(', ') + ', on the same slot.', fix: null });
     }
     cell.missing = cell.items.length === 0;
     cell.clash = cell.missing && index.has(cell.id) ? index.get(cell.id) : null;
@@ -604,9 +604,9 @@ function iconFaults(id, doc, icons, twins) {
   const twinIcon = typeof doc.Icon === 'string' && doc.Icon.startsWith(ICON_FOLDER) && twins.has(stem(doc.Icon)) && icons.has(doc.Icon);
   if (twinIcon) return faults;
   if (doc.Icon !== own) {
-    faults.push({ kind: 'iconField', text: doc.Icon ? 'Shows the icon ' + fileName(doc.Icon) + ', not its own.' : 'Names no icon.', fix: { ops: [[['Icon'], own]], icon: true }, byDefault: true });
+    faults.push({ kind: 'iconField', text: doc.Icon ? 'Shows the icon ' + fileName(doc.Icon) + ' instead of its own.' : 'Has no icon.', fix: { ops: [[['Icon'], own]], icon: true }, byDefault: true });
   } else if (!icons.has(own)) {
-    faults.push({ kind: 'iconMissing', text: 'Its icon picture does not exist yet.', fix: { ops: [], icon: true }, byDefault: true });
+    faults.push({ kind: 'iconMissing', text: 'Its icon is not made yet.', fix: { ops: [], icon: true }, byDefault: true });
   }
   return faults;
 }
@@ -616,7 +616,7 @@ function categoryFault(id, eff, withArmory) {
   const want = wantedCategories(id, eff, withArmory);
   if (!want || canonical(want) === canonical(eff.Categories || null)) return [];
   const missing = want.filter(c => !(eff.Categories || []).includes(c));
-  return [{ kind: 'category', text: 'Is not in ' + missing.join(' and ') + ', so ' + (missing.some(c => c.startsWith('ArmoryCategory.')) ? 'the Armory tab does not show it' : 'other mods cannot find it') + '.', fix: { ops: [[['Categories'], want]] }, byDefault: true }];
+  return [{ kind: 'category', text: 'Missing the category ' + missing.join(' and ') + ', so ' + (missing.some(c => c.startsWith('ArmoryCategory.')) ? 'the Armory tab does not show it' : 'other mods cannot find it') + '.', fix: { ops: [[['Categories'], want]] }, byDefault: true }];
 }
 
 function defaultFaults(set, def, icons, twins) {
@@ -625,17 +625,17 @@ function defaultFaults(set, def, icons, twins) {
     // mod's patch on it gives.
     const faults = [];
     if (!def.declared.includes(set.pieceFamily)) {
-      faults.push({ kind: 'notInFamily', text: 'Is not in the family ' + set.pieceFamily + ', so the Alteration Table cannot turn it into a colour. A patch of the mod adds it.', fix: { ops: [], patch: true }, byDefault: true });
+      faults.push({ kind: 'notInFamily', text: 'Does not have the resource type ' + set.pieceFamily + ' yet, so the Alteration Table cannot turn it into a color.', fix: { ops: [], patch: true }, byDefault: true });
     }
     faults.push(...coOwnerNote(set));
     if (set.inheritors.length) {
-      faults.push({ kind: 'inheritors', text: set.inheritors.length + ' game items inherit from it with no family of their own, so they are in its family too and the table turns them into its colours: ' + set.inheritors.slice(0, 6).join(', ') + (set.inheritors.length > 6 ? '...' : '') + '. Tell Larsonix before making colours of it.', fix: null });
+      faults.push({ kind: 'inheritors', text: set.inheritors.length + ' vanilla items are built on it, so the Alteration Table would turn them into its colors too: ' + set.inheritors.slice(0, 6).join(', ') + (set.inheritors.length > 6 ? '...' : '') + '. Send Larsonix a screenshot before making colors of it.', fix: null });
     }
     return faults;
   }
   const faults = iconFaults(set.defaultId, def.own, icons, twins);
   if (!def.declared.includes(set.pieceFamily)) {
-    faults.push({ kind: 'notInFamily', text: 'Is not in the family ' + set.pieceFamily + ', so the Alteration Table cannot turn it into a colour.', fix: { ops: [[['ResourceTypes'], [...(def.own.ResourceTypes || []), { Id: set.pieceFamily }]]] }, byDefault: true });
+    faults.push({ kind: 'notInFamily', text: 'Does not have the resource type ' + set.pieceFamily + ', so the Alteration Table cannot turn it into a color.', fix: { ops: [[['ResourceTypes'], [...(def.own.ResourceTypes || []), { Id: set.pieceFamily }]]] }, byDefault: true });
   }
   faults.push(...categoryFault(set.defaultId, def.eff, false));
   faults.push(...coOwnerNote(set));
@@ -644,7 +644,8 @@ function defaultFaults(set, def, icons, twins) {
 
 function coOwnerNote(set) {
   if (!set.coOwners.length) return [];
-  return [{ kind: 'coOwners', text: 'Its family ' + set.pieceFamily + ' is also the family of ' + set.coOwners.slice(0, 4).join(', ') + (set.coOwners.length > 4 ? '...' : '') + ', so these colours are that piece\'s too. Nothing is ticked for you: check with Larsonix which piece is the default.', fix: null }];
+  const many = set.coOwners.length > 1;
+  return [{ kind: 'coOwners', text: set.coOwners.slice(0, 4).join(', ') + (set.coOwners.length > 4 ? '...' : '') + (many ? ' also have' : ' also has') + ' the resource type ' + set.pieceFamily + ', so these colors are ' + (many ? 'theirs' : 'its') + ' too. Nothing is ticked: send Larsonix a screenshot to know which one is the base.', fix: null }];
 }
 
 function memberFaults(set, def, m, icons, expected, twins) {
@@ -659,36 +660,36 @@ function memberFaults(set, def, m, icons, expected, twins) {
     faults.push({
       kind: 'noTable',
       text: crafted
-        ? 'Is crafted at ' + benches.join(', ') + ', not made at the Alteration Table. Tick this only if it should become a colour version.'
-        : 'Never appears at the Alteration Table: its recipe names no Alteration Table bench and category.',
+        ? 'Crafted at ' + benches.join(', ') + ', not at the Alteration Table. Tick this only if it should be a color of this set.'
+        : 'Not at the Alteration Table: its Recipe does not name it.',
       fix: { ops: [[['Recipe'], alterationRecipe(set.pieceFamily)]] },
       byDefault: !crafted,
     });
   } else if (alterationInput(recipe) !== set.pieceFamily) {
-    faults.push({ kind: 'wrongFamily', text: 'Is made from ' + alterationInput(recipe) + ' instead of ' + set.pieceFamily + '.', fix: { ops: [[['Recipe'], alterationRecipe(set.pieceFamily)]] }, byDefault: true });
+    faults.push({ kind: 'wrongFamily', text: 'Made at the Alteration Table from ' + alterationInput(recipe) + ' instead of ' + set.pieceFamily + '.', fix: { ops: [[['Recipe'], alterationRecipe(set.pieceFamily)]] }, byDefault: true });
   }
   if (!families(m.eff).includes(set.pieceFamily)) {
     const into = set.gameDefault ? [{ Id: set.pieceFamily }] : (def.eff.ResourceTypes || [{ Id: set.pieceFamily }]);
-    faults.push({ kind: 'notInFamily', text: 'Is not in the family ' + set.pieceFamily + ', so the table cannot turn it back into another colour.', fix: { ops: [[['ResourceTypes'], into]] }, byDefault: true });
+    faults.push({ kind: 'notInFamily', text: 'Does not have the resource type ' + set.pieceFamily + ', so the Alteration Table cannot turn it into another color.', fix: { ops: [[['ResourceTypes'], into]] }, byDefault: true });
   }
   if (set.defaultQuality !== undefined && own.Quality !== set.defaultQuality && m.eff.Quality !== set.defaultQuality) {
-    faults.push({ kind: 'quality', text: 'Has quality ' + (m.eff.Quality || 'none') + ', the default piece has ' + set.defaultQuality + '.', fix: { ops: [[['Quality'], set.defaultQuality]] }, byDefault: true });
+    faults.push({ kind: 'quality', text: 'Has the quality ' + (m.eff.Quality || 'none') + ', but its base has ' + set.defaultQuality + '.', fix: { ops: [[['Quality'], set.defaultQuality]] }, byDefault: true });
   }
   faults.push(...iconFaults(m.id, own, icons, twins));
   faults.push(...categoryFault(m.id, m.eff, set.gameDefault));
   const named = expected.get(m.id);
   if (named && named.sheet !== m.eff.Texture) {
-    faults.push({ kind: 'sheetMismatch', text: 'Its name says ' + stem(named.sheet) + ', but it wears ' + stem(m.eff.Texture) + '.', fix: { ops: [[['Texture'], named.sheet]] }, byDefault: false });
+    faults.push({ kind: 'sheetMismatch', text: 'Its name says ' + stem(named.sheet) + ', but it wears the texture ' + stem(m.eff.Texture) + '.', fix: { ops: [[['Texture'], named.sheet]] }, byDefault: false });
   }
   // The same rule as the mod's family check: the slot is judged on its own, and the cosmetics an
   // armour piece hides may differ on purpose (an open helmet shows the hair).
   const mine = statsOf(m.eff.Armor), theirs = statsOf(def.eff.Armor);
   if (canonical(mine.stats) !== canonical(theirs.stats)) {
     const inheritsFromDefault = own.Parent === set.defaultId;
-    faults.push({ kind: 'stats', text: 'Its armour stats differ from the default piece, so changing colour at the table changes its stats.', fix: { ops: [[['Armor'], inheritsFromDefault ? undefined : def.eff.Armor]] }, byDefault: false });
+    faults.push({ kind: 'stats', text: 'Its armor stats differ from its base, so changing its color at the Alteration Table changes its stats.', fix: { ops: [[['Armor'], inheritsFromDefault ? undefined : def.eff.Armor]] }, byDefault: false });
   }
   if (mine.slot !== theirs.slot) {
-    faults.push({ kind: 'slot', text: 'Is worn on ' + (mine.slot || 'no slot') + ', the default piece on ' + (theirs.slot || 'no slot') + '.', fix: null });
+    faults.push({ kind: 'slot', text: 'Worn on ' + (mine.slot || 'no slot') + ', but its base is worn on ' + (theirs.slot || 'no slot') + '.', fix: null });
   }
   return faults;
 }
@@ -872,15 +873,17 @@ async function apply(api, analysis, choice, progress) {
   const steps = plan(analysis, choice);
   const reader = hyCreatorReader(api);
   const done = { created: 0, edited: 0, icons: 0, failed: [] };
+  // Each failure: what she reads, and the error itself for the screenshot.
+  const failed = (text, e) => done.failed.push({ text, detail: String(e && e.message || e) });
   for (const file of steps.create) {
-    try { await api.workspace.writeText(file.rel, file.text); done.created++; } catch (e) { done.failed.push(file.rel + ': ' + (e && e.message || e)); }
+    try { await api.workspace.writeText(file.rel, file.text); done.created++; } catch (e) { failed(stem(file.rel) + ' could not be written. Send Larsonix a screenshot of this page.', e); }
   }
   for (const file of steps.edit) {
-    try { await applyEdit(api, file.rel, file.ops); done.edited++; } catch (e) { done.failed.push(file.rel + ': ' + (e && e.message || e)); }
+    try { await applyEdit(api, file.rel, file.ops); done.edited++; } catch (e) { failed(stem(file.rel) + ' could not be fixed. Send Larsonix a screenshot of this page.', e); }
   }
   for (const id of steps.icons) {
-    progress('Icon ' + (done.icons + 1) + ' of ' + steps.icons.length + ': ' + id);
-    try { await bakeIcon(api, reader, id); done.icons++; } catch (e) { done.failed.push('icon of ' + id + ': ' + (e && e.message || e) + '. Use Generate icon on that item.'); }
+    progress('Making icon ' + (done.icons + 1) + ' of ' + steps.icons.length + ': ' + id);
+    try { await bakeIcon(api, reader, id); done.icons++; } catch (e) { failed('The icon of ' + id + ' could not be made. Open ' + id + ' and click Generate icon.', e); }
   }
   return done;
 }
@@ -903,9 +906,9 @@ const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
 // A short name for each kind of fault, for the tag beside a piece. The full sentence is in the
 // list at the top of the page and in the tag's tooltip.
 const FAULT_TAG = {
-  iconField: 'icon', iconMissing: 'icon', category: 'category', notInFamily: 'family', noTable: 'table recipe',
-  wrongFamily: 'recipe family', quality: 'quality', sheetMismatch: 'picture', stats: 'stats', slot: 'slot',
-  coOwners: 'shared family', inheritors: 'game items',
+  iconField: 'icon', iconMissing: 'icon', category: 'category', notInFamily: 'resource type', noTable: 'Alteration Table',
+  wrongFamily: 'recipe', quality: 'quality', sheetMismatch: 'texture', stats: 'stats', slot: 'slot',
+  coOwners: 'shared resource type', inheritors: 'vanilla items', shared: 'same look',
 };
 
 function ColoursPage({ rel }) {
@@ -914,14 +917,16 @@ function ColoursPage({ rel }) {
   const { useState, useEffect, useCallback } = api.React;
   const [analysis, setAnalysis] = useState(null);
   const [choice, setChoice] = useState(null);
-  const [status, setStatus] = useState('Reading the set...');
+  const [status, setStatus] = useState('Reading the colors...');
+  const [detail, setDetail] = useState('');
   const [busy, setBusy] = useState(false);
   const [report, setReport] = useState(null);
   const [sheetFolder, setSheetFolder] = useState('');
   const [typedFolder, setTypedFolder] = useState('');
 
   const load = useCallback(async () => {
-    setStatus('Reading the set...');
+    setStatus('Reading the colors...');
+    setDetail('');
     try {
       const result = await analyse(hyCreatorReader(api), rel, { sheetFolder });
       setAnalysis(result);
@@ -929,13 +934,15 @@ function ColoursPage({ rel }) {
       setStatus(result.error || '');
     } catch (e) {
       setAnalysis(null);
-      setStatus('The set could not be read: ' + (e && e.message || e));
+      setStatus('The colors could not be read. Send Larsonix a screenshot of this page.');
+      setDetail(String(e && e.message || e));
     }
   }, [rel, sheetFolder]);
   useEffect(() => { load(); }, [load]);
 
   if (!analysis || analysis.error || !choice) {
-    return h('div', { style: { padding: 16, color: LOOK.text } }, h('h3', { style: { marginTop: 0 } }, 'Colours'), h('p', null, status));
+    return h('div', { style: { padding: 16, color: LOOK.text } }, h('h3', { style: { marginTop: 0 } }, 'Colors'), h('p', null, status),
+      detail ? h('p', { style: { fontSize: 12, color: LOOK.dim } }, 'For Larsonix: ' + detail) : null);
   }
   const { set, cells } = analysis;
   const steps = plan(analysis, choice);
@@ -954,14 +961,16 @@ function ColoursPage({ rel }) {
     setChoice({ ...choice, make });
   };
   const press = async () => {
-    const words = steps.create.length + ' new files, ' + steps.edit.length + ' fixed files and ' + steps.icons.length + ' icons.';
-    const ok = await api.ui.confirmDanger({ title: 'Make the colours', body: 'This writes ' + words + ' Git keeps the previous version of every file.', items: [...steps.create.map(f => f.rel), ...steps.edit.map(f => f.rel)], confirmLabel: 'Write' });
+    const words = 'This writes ' + plural(steps.create.length, 'new file', 'new files') + ', changes ' + plural(steps.edit.length, 'file', 'files') + ' and makes ' + plural(steps.icons.length, 'icon', 'icons') + '.';
+    const ok = await api.ui.confirmDanger({ title: 'Make the colors', body: words, items: [...steps.create.map(f => f.rel), ...steps.edit.map(f => f.rel)], confirmLabel: 'Make them' });
     if (!ok) return;
     setBusy(true);
     const done = await apply(api, analysis, choice, setStatus);
     setReport(done);
     setBusy(false);
-    api.ui.notify((done.failed.length ? 'Colours: ' + done.failed.length + ' failed. ' : '✓ ') + done.created + ' made, ' + done.edited + ' fixed, ' + done.icons + ' icons.');
+    api.ui.notify(done.failed.length
+      ? 'Colors: ' + plural(done.failed.length, 'thing', 'things') + ' could not be made. The Colors page says which.'
+      : '✓ Colors: ' + done.created + ' made, ' + done.edited + ' fixed, ' + plural(done.icons, 'icon', 'icons') + '.');
     await load();
   };
 
@@ -986,14 +995,14 @@ function ColoursPage({ rel }) {
   const versions = steps.create.filter(f => f.rel.startsWith('Item/Items/') && f.rel.endsWith('.json')).length;
   const fixedFiles = steps.edit.length + steps.create.filter(f => f.rel.endsWith('.patch')).length;
   const parts = [];
-  if (versions) parts.push('make ' + plural(versions, 'colour', 'colours'));
+  if (versions) parts.push('make ' + plural(versions, 'color', 'colors'));
   if (fixedFiles) parts.push('fix ' + plural(fixedFiles, 'file', 'files'));
   if (steps.icons.length) parts.push('make ' + plural(steps.icons.length, 'icon', 'icons'));
   const action = parts.length ? parts.join(', ').replace(/, ([^,]*)$/, ' and $1') : '';
   const summary = missing.length === 0 && fixes.size === 0
-    ? 'Every colour is made and correct.'
-    : [plural(made, 'colour made', 'colours made'), missing.length ? plural(missing.length, 'colour missing', 'colours missing') : null,
-        fixes.size ? plural(new Set([...fixes.values()].flatMap(g => g.items)).size, 'piece to fix', 'pieces to fix') : null].filter(Boolean).join(', ') + '.';
+    ? 'Every color is made, and nothing needs fixing.'
+    : [plural(made, 'color made', 'colors made'), missing.length ? missing.length + ' missing' : null,
+        fixes.size ? plural(new Set([...fixes.values()].flatMap(g => g.items)).size, 'item to fix', 'items to fix') : null].filter(Boolean).join(', ') + '.';
 
   const fixTag = (item, f) => {
     const key = item.id + '|' + f.kind;
@@ -1006,7 +1015,7 @@ function ColoursPage({ rel }) {
   const cellView = cell => {
     if (!cell) return null;
     if (cell.missing) {
-      if (cell.clash) return h('span', { title: cell.clash, style: tagStyle(LOOK.danger) }, 'missing, its name ' + cell.id + ' is taken');
+      if (cell.clash) return h('span', { title: cell.clash, style: tagStyle(LOOK.danger) }, 'missing, but the name ' + cell.id + ' is taken');
       const on = choice.make.has(cell.id);
       return h('label', { style: { cursor: 'pointer' } },
         h('input', { type: 'checkbox', checked: on, onChange: () => toggle('make', cell.id), style: { marginRight: 6, verticalAlign: 'middle' } }),
@@ -1015,7 +1024,7 @@ function ColoursPage({ rel }) {
     }
     return h('div', null, cell.items.map(item => h('div', { key: item.id, style: { marginBottom: 2 } },
       h('a', { href: '#', style: { color: LOOK.strong, marginRight: 6 }, onClick: e => { e.preventDefault(); api.session.openFile(item.rel); } }, item.id),
-      item.isDefault ? h('span', { style: tagStyle(LOOK.accent) }, 'default') : null,
+      item.isDefault ? h('span', { style: tagStyle(LOOK.accent) }, 'base') : null,
       item.faults.length === 0 ? h('span', { style: tagStyle(LOOK.ok) }, 'ok') : null,
       h('div', null,
         item.faults.filter(f => f.fix).map(f => fixTag(item, f)),
@@ -1032,54 +1041,55 @@ function ColoursPage({ rel }) {
 
   return h('div', { style: { padding: '0 16px 16px', overflow: 'auto', height: '100%', color: LOOK.text, lineHeight: 1.45 } },
     h('div', { style: { margin: '16px 0 10px' } },
-      h('h3', { style: { margin: '0 0 2px', color: LOOK.strong } }, 'Colours of ' + set.defaultId, ' ', set.gameDefault ? h('span', { style: tagStyle(LOOK.accent) }, 'a piece of the game') : null),
-      h('div', { style: { color: LOOK.dim, fontSize: 12 } }, 'Family ' + set.pieceFamily + (set.familyFileMissing ? ' (its file will be made)' : '')
-        + ', ' + plural(set.sheets.length, 'colour', 'colours') + ', ' + plural(set.shapes.length, 'shape', 'shapes') + '.'),
-      set.gameDefault ? h('div', { style: { color: LOOK.dim, fontSize: 12 } }, 'Its colours are pieces of the mod that name it as their Parent. A small patch puts the game\'s own piece in their family, so the Alteration Table takes it too.') : null),
+      h('h3', { style: { margin: '0 0 2px', color: LOOK.strong } }, 'Colors of ' + set.defaultId, ' ', set.gameDefault ? h('span', { style: tagStyle(LOOK.accent) }, 'vanilla item') : null),
+      h('div', { style: { color: LOOK.dim, fontSize: 12 } }, 'Resource type ' + set.pieceFamily + (set.familyFileMissing ? ' (new)' : '')
+        + ', ' + plural(set.sheets.length, 'texture', 'textures') + ', ' + plural(set.shapes.length, 'style', 'styles') + '.'),
+      set.gameDefault ? h('div', { style: { color: LOOK.dim, fontSize: 12 } }, 'The vanilla item gets the resource type ' + set.pieceFamily + ' too, so the Alteration Table takes it.') : null),
 
     h('div', { style: cardStyle({ position: 'sticky', top: 0, zIndex: 1, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }) },
       h('div', { style: { flex: '1 1 220px', color: LOOK.strong, fontWeight: 600 } }, summary),
-      missing.length ? h('button', { className: 'btn slim', onClick: () => tickAllMissing(true), disabled: busy }, 'Tick every missing colour') : null,
+      missing.length ? h('button', { className: 'btn slim', onClick: () => tickAllMissing(true), disabled: busy }, 'Tick every missing color') : null,
       missing.length ? h('button', { className: 'btn slim', onClick: () => tickAllMissing(false), disabled: busy }, 'Untick them') : null,
       h('button', { className: 'btn primary', style: { fontWeight: 600 }, onClick: press, disabled: busy || !action },
         busy ? 'Working...' : action ? action.charAt(0).toUpperCase() + action.slice(1) : 'Nothing to do')),
 
     notes.size ? h('div', { style: cardStyle({ borderColor: tint(LOOK.warn, 50) }) },
-      h('div', { style: { fontWeight: 600, color: LOOK.warn, marginBottom: 4 } }, 'Worth knowing'),
+      h('div', { style: { fontWeight: 600, color: LOOK.warn, marginBottom: 4 } }, 'Read before you press'),
       [...notes.values()].map(n => h('div', { key: n.kind + n.text, style: { marginBottom: 4 } }, n.text,
         h('span', { style: { color: LOOK.dim, fontSize: 12 } }, ' (' + names(n.items) + ')')))) : null,
 
     fixes.size ? h('div', { style: cardStyle() },
-      h('div', { style: { fontWeight: 600, color: LOOK.strong, marginBottom: 4 } }, 'What can be fixed. Ticked fixes are made when you press the button.'),
+      h('div', { style: { fontWeight: 600, color: LOOK.strong, marginBottom: 4 } }, 'To fix. The ticked ones are fixed when you press the button.'),
       [...fixes.values()].map(g => {
         const all = g.keys.every(k => choice.fix.has(k));
         const some = !all && g.keys.some(k => choice.fix.has(k));
         return h('label', { key: g.kind + g.text, style: { display: 'block', cursor: 'pointer', marginBottom: 3 } },
           h('input', { type: 'checkbox', checked: all, ref: el => { if (el) el.indeterminate = some; }, onChange: () => toggleAll(g.keys, !all), style: { marginRight: 6, verticalAlign: 'middle' } }),
-          h('span', { style: tagStyle(LOOK.warn) }, plural(g.items.length, 'piece', 'pieces')),
+          h('span', { style: tagStyle(LOOK.warn) }, plural(g.items.length, 'item', 'items')),
           g.text,
           h('span', { style: { color: LOOK.dim, fontSize: 12 } }, ' (' + names(g.items) + ')'));
       })) : null,
 
     h('div', { style: cardStyle({ padding: 0, overflow: 'auto' }) },
       h('table', { style: { borderCollapse: 'collapse', width: '100%' } },
-        h('thead', null, h('tr', null, th('Colour'), th('Light'), set.shapes.map(shape => th(stem(shape))))),
+        h('thead', null, h('tr', null, th('Texture'), th('Light'), set.shapes.map(shape => th(stem(shape))))),
         h('tbody', null, set.sheets.map((sheet, i) => h('tr', { key: sheet, style: { borderTop: '1px solid ' + LOOK.border, background: i % 2 ? tint(LOOK.strong, 3) : 'transparent' } },
           h('td', { style: { padding: '6px 8px', whiteSpace: 'nowrap', color: LOOK.strong, verticalAlign: 'top' } }, stem(sheet)),
           h('td', { style: { padding: '5px 8px', verticalAlign: 'top' } }, h('input', {
-            className: 'tree-search', style: { width: 96, padding: '2px 8px', fontSize: 12 }, value: (lightOf(sheet) && lightOf(sheet).Color) || '', placeholder: 'default',
-            title: 'The colour of the light this version gives off, such as #300. Empty: the default piece\'s light.', onChange: e => setLight(sheet, e.target.value),
+            className: 'tree-search', style: { width: 96, padding: '2px 8px', fontSize: 12 }, value: (lightOf(sheet) && lightOf(sheet).Color) || '', placeholder: 'as base',
+            title: 'The color of the light this color gives off, such as #300. Empty: the same light as the base.', onChange: e => setLight(sheet, e.target.value),
           })),
           set.shapes.map(shape => h('td', { key: shape, style: { padding: '6px 8px', verticalAlign: 'top' } }, cellView(cells.find(c => c.sheet === sheet && c.shape === shape))))))))),
 
     h('div', { style: cardStyle({ fontSize: 12, color: LOOK.dim }) },
-      'Colour pictures are read from ', set.sheetFolders.map((dir, i) => h('span', { key: dir }, i ? ', ' : '', h('code', null, dir))), '.',
+      'Textures are read from ', set.sheetFolders.map((dir, i) => h('span', { key: dir }, i ? ', ' : '', h('code', null, dir))), '.',
       h('div', { style: { display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' } },
-        h('input', { className: 'tree-search', style: { flex: '1 1 260px' }, value: typedFolder, placeholder: 'Another folder of colour pictures, such as Items/Weapons/CobaltLongSwordRecolors', onChange: e => setTypedFolder(e.target.value) }),
+        h('input', { className: 'tree-search', style: { flex: '1 1 260px' }, value: typedFolder, placeholder: 'Another folder of textures, such as Items/Weapons/CobaltLongSwordRecolors', onChange: e => setTypedFolder(e.target.value) }),
         h('button', { className: 'btn slim', onClick: () => setSheetFolder(typedFolder), disabled: busy || !typedFolder.trim() }, 'Look there'))),
     status ? h('p', null, status) : null,
-    report && report.failed.length ? h('div', { style: cardStyle({ borderColor: tint(LOOK.danger, 50) }) }, h('div', { style: { color: LOOK.danger, fontWeight: 600 } }, 'These did not work:'),
-      h('ul', { style: { margin: '4px 0 0', paddingLeft: 18 } }, report.failed.map(f => h('li', { key: f }, f)))) : null);
+    report && report.failed.length ? h('div', { style: cardStyle({ borderColor: tint(LOOK.danger, 50) }) }, h('div', { style: { color: LOOK.danger, fontWeight: 600 } }, 'These could not be made:'),
+      h('ul', { style: { margin: '4px 0 0', paddingLeft: 18 } }, report.failed.map((f, i) => h('li', { key: i }, f.text,
+        h('div', { style: { fontSize: 11.5, color: LOOK.dim } }, 'For Larsonix: ' + f.detail))))) : null);
 }
 
 // ---- files made by a tool --------------------------------------------------------------------
@@ -1099,9 +1109,9 @@ export function madeByTool(rel) {
 function MadeByToolPage({ rel }) {
   const h = host.React.createElement;
   return h('div', { style: { padding: 16, maxWidth: 640 } },
-    h('h3', null, 'This file is made by a tool'),
-    h('p', null, 'It is written whole from ' + madeByTool(rel) + '. A change made here is erased the next time that tool runs.'),
-    h('p', null, 'If something in it should change, tell Larsonix what and why. The other pages above still show the file.'));
+    h('h3', null, 'Do not edit this file'),
+    h('p', null, 'Our tools rewrite it from ' + madeByTool(rel) + ', so a change made here would be lost.'),
+    h('p', null, 'If something in it should change, send Larsonix a screenshot and say what. The tabs above still show the file.'));
 }
 
 // ---- the checks -------------------------------------------------------------------------------
@@ -1114,28 +1124,52 @@ function MadeByToolPage({ rel }) {
 export const CHECK_RESULT = 'Studio/Tools/Checks/last-check.json';
 export const CHECK_RUNNING = 'Studio/Tools/Checks/last-check.running.json';
 
-// What the panel shows, from the result and the running marker, as plain data.
+// What the panel shows, from the result and the running marker, as plain data. Every problem comes
+// as check.py translated it for Lady: what is wrong, the one thing to change, the items it is about.
+// A result written before that translation existed shows each line whole until the next check.
 export function checkView(result, running) {
   if (!result || typeof result !== 'object') {
-    return { state: running ? 'running' : 'none', checks: [], problems: 0 };
+    return { state: running ? 'running' : 'none', groups: [], problems: 0 };
   }
-  const checks = (Array.isArray(result.checks) ? result.checks : []).map(c => ({
-    id: c.id, title: c.title, meaning: c.meaning, status: c.status,
-    problems: (c.problems || []).map(text => ({ text, open: fileIn(text) })),
-    tail: c.status === 'error' ? (c.output_tail || []) : [],
-  }));
-  const problems = checks.reduce((n, c) => n + (c.status === 'pass' ? 0 : Math.max(c.problems.length, 1)), 0);
-  const state = result.error ? 'error' : problems ? 'problems' : 'pass';
+  const entries = [];
+  for (const c of Array.isArray(result.checks) ? result.checks : []) {
+    if (c.status === 'pass') continue;
+    if (Array.isArray(c.lady)) {
+      entries.push(...c.lady);
+      continue;
+    }
+    for (const line of c.problems || []) {
+      const open = fileIn(line);
+      entries.push({ says: line, do: '', items: open ? [{ label: stem(open), open }] : [] });
+    }
+    if (c.status === 'error') entries.push({ says: 'The check "' + c.title + '" could not run.', do: 'Send Larsonix a screenshot of this panel.', items: [] });
+  }
+  const groups = ladyGroups(entries);
+  const state = result.error ? 'error' : groups.length ? 'problems' : 'pass';
   // A marker newer than the result means a later run is still going.
   const busy = !!running && (!result.finished || String(running.started || '') > String(result.finished));
   return {
-    state, busy, checks, problems, error: result.error || null,
-    finished: result.finished || null, commit: typeof result.commit === 'string' ? result.commit.slice(0, 7) : null,
-    branch: result.branch || null, uncommitted: !!result.uncommitted,
+    state, busy, groups, problems: groups.length, error: result.error || null, errorDetail: result.error_detail || null,
+    finished: result.finished || null, branch: result.branch || null,
   };
 }
 
-// The item file a problem names, as HyCreator opens it: relative to the Server folder.
+// The problems that say the same thing and ask for the same fix, as one, the largest first. The same
+// grouping as check.py's own window.
+export function ladyGroups(entries) {
+  const groups = new Map();
+  for (const e of entries) {
+    const key = e.says + '|' + (e.do || '');
+    if (!groups.has(key)) groups.set(key, { key, says: e.says, do: e.do || '', items: [], details: [], count: 0 });
+    const g = groups.get(key);
+    g.count++;
+    for (const i of e.items || []) if (!g.items.some(x => x.label === i.label)) g.items.push(i);
+    if (e.detail) g.details.push(e.detail);
+  }
+  return [...groups.values()].sort((a, b) => Math.max(b.count, b.items.length) - Math.max(a.count, a.items.length));
+}
+
+// The item file a check line names, as HyCreator opens it: relative to the Server folder.
 export function fileIn(text) {
   const m = /^Server\/([^:]+\.json):/.exec(text);
   return m ? m[1] : null;
@@ -1149,17 +1183,17 @@ export function noticeFor(previous, next) {
   const view = checkView(next, null);
   const before = previous ? checkView(previous, null) : null;
   if (view.state === 'error') {
-    return before && before.state === 'error' && before.error === view.error ? null : 'The Armory checks could not run. Open The Armory checks panel to see why.';
+    return before && before.state === 'error' && before.error === view.error ? null : 'The Armory checks could not run. Click ! at the top to see why.';
   }
   if (view.state === 'problems') {
     if (before && before.state === 'problems' && problemList(before) === problemList(view)) return null;
-    return 'The Armory checks found ' + view.problems + ' problem' + (view.problems === 1 ? '' : 's') + '. Open The Armory checks panel to see them.';
+    return 'The Armory checks found ' + plural(view.problems, 'thing', 'things') + ' to fix. Click ! at the top to see them.';
   }
-  return before && before.state !== 'pass' ? '\u2713 The Armory checks pass again.' : null;
+  return before && before.state !== 'pass' ? '✓ The Armory checks: everything is fine again.' : null;
 }
 
 function problemList(view) {
-  return JSON.stringify(view.checks.filter(c => c.status !== 'pass').map(c => [c.id, c.status, c.problems.map(p => p.text)]));
+  return JSON.stringify(view.groups.map(g => [g.says, g.do, g.items.map(i => i.label)]));
 }
 
 async function readRepoText(api, rel) {
@@ -1195,55 +1229,6 @@ async function hasStudio(api) {
   return r.text !== undefined ? true : r.unreadable ? null : false;
 }
 
-// A line of a check, read as what it is about and what it says. The gates print one line per
-// item, so one sentence can repeat for dozens of items.
-export function readProblem(text) {
-  const line = String(text);
-  let subject = null;
-  let message = line;
-  let m = /^Server\/([^:]+\.json):\s*([\s\S]*)$/.exec(line);
-  if (m) {
-    subject = { kind: 'item', label: stem(m[1]), open: m[1] };
-    message = m[2];
-  } else if ((m = /^item (\S+):\s*([\s\S]*)$/.exec(line))) {
-    subject = { kind: 'item', label: m[1] };
-    message = m[2];
-  } else if ((m = /^(Resource_\S+):\s*([\s\S]*)$/.exec(line))) {
-    subject = { kind: 'family', label: m[1] };
-    message = m[2];
-  } else if ((m = /^stat (\S+)\s+([\s\S]*)$/.exec(line))) {
-    subject = { kind: 'stat', label: m[1] };
-    message = m[2];
-  }
-  // A gate's own name for its rule, such as REACHABILITY, means nothing to the reader.
-  message = message.replace(/^[A-Z][A-Z ]+:\s*/, '');
-  // The list after the sentence belongs to its one subject, not to the group.
-  let detail = '';
-  const cut = /\s+(owning items:|profile \d+:)/.exec(message);
-  if (cut) {
-    detail = message.slice(cut.index).trim();
-    message = message.slice(0, cut.index);
-  }
-  message = message.trim();
-  return { subject, message: message.charAt(0).toUpperCase() + message.slice(1), detail };
-}
-
-// The lines of one check grouped by what they say, the largest group first.
-export function problemGroups(lines) {
-  const groups = new Map();
-  for (const line of lines) {
-    const p = readProblem(line);
-    const key = (p.subject ? p.subject.kind : '') + '|' + p.message;
-    if (!groups.has(key)) groups.set(key, { key, kind: p.subject ? p.subject.kind : null, message: p.message, subjects: [], details: [] });
-    const g = groups.get(key);
-    if (p.subject) g.subjects.push({ ...p.subject, detail: p.detail });
-    else if (p.detail) g.details.push(p.detail);
-  }
-  return [...groups.values()].sort((a, b) => Math.max(b.subjects.length, 1) - Math.max(a.subjects.length, 1));
-}
-
-const SUBJECT_WORDS = { item: ['item', 'items'], family: ['family', 'families'], stat: ['stat', 'stats'] };
-
 function ChecksPanel() {
   const api = host;
   const h = api.React.createElement;
@@ -1261,13 +1246,12 @@ function ChecksPanel() {
     return () => { alive = false; clearInterval(timer); };
   }, []);
 
-  // An item or a family named by its id alone is found among the mod's files when clicked.
+  // An item named by its id alone is found among the mod's files when clicked.
   const openSubject = async s => {
     if (s.open) return api.session.openFile(s.open);
-    const folder = s.kind === 'family' ? 'Item/ResourceTypes/' : 'Item/Items/';
-    const rel = (await api.workspace.listByExt(folder, ['json'])).find(r => stem(r) === s.label);
+    const rel = (await api.workspace.listByExt(s.find || 'Item/Items/', ['json'])).find(r => stem(r) === s.label);
     if (rel) api.session.openFile(rel);
-    else api.ui.notify(s.label + ' is not a file of the mod: it is one of the game\'s.');
+    else api.ui.notify(s.label + ' is not in your files: it is a vanilla one.');
   };
   const when = text => {
     const date = new Date(text);
@@ -1276,54 +1260,39 @@ function ChecksPanel() {
 
   const box = children => h('div', { style: { padding: 12, overflow: 'auto', height: '100%', lineHeight: 1.45, color: LOOK.text } }, children);
   const foot = h('p', { key: 'f', style: { fontSize: 12, color: LOOK.dim } },
-    'The checks run by themselves after every commit and every update. Nothing is ever blocked: you can always push. To run them now, double-click Studio\\Check.cmd.');
-  if (data.loading) return box([h('p', { key: 'l' }, 'Reading the last result...')]);
-  if (data.unreadable) return box([h('p', { key: 'u' }, 'This HyCreator version does not let the plugin read the result. Double-click Studio\\Check.cmd to see it.'), foot]);
-  if (data.studio === false) return box([h('p', { key: 's' }, 'Open the whole folder of your copy of the mod in HyCreator, the one holding Studio, to see the checks.')]);
+    'The checks run by themselves each time you commit or update. You can always push, even with things to fix. To check now, double-click Check.cmd in the Studio folder.');
+  if (data.loading) return box([h('p', { key: 'l' }, 'Reading the last check...')]);
+  if (data.unreadable) return box([h('p', { key: 'u' }, 'This HyCreator cannot show the checks. Double-click Check.cmd in the Studio folder to see them.'), foot]);
+  if (data.studio === false) return box([h('p', { key: 's' }, 'Open your whole copy of the mod in HyCreator, the folder that holds Studio, to see the checks.')]);
   const view = checkView(data.result, data.running);
   if (view.state === 'none' || view.state === 'running') {
-    return box([h('p', { key: 'n' }, view.state === 'running' ? 'The first check is running...' : 'No check has run yet. They run after your next commit, or double-click Studio\\Check.cmd.'), foot]);
+    return box([h('p', { key: 'n' }, view.state === 'running' ? 'Checking...' : 'No check yet. The first one runs when you commit, or double-click Check.cmd in the Studio folder.'), foot]);
   }
 
-  const failing = view.checks.filter(c => c.status !== 'pass');
-  const passing = view.checks.filter(c => c.status === 'pass');
-  const headline = view.state === 'pass' ? '✓ Everything passes'
+  const headline = view.state === 'pass' ? '✓ Everything is fine'
     : view.state === 'error' ? 'The checks could not run'
-    : '✗ ' + view.problems + ' to look at, in ' + plural(failing.length, 'check', 'checks');
+    : plural(view.problems, 'thing', 'things') + ' to fix';
   const items = [h('div', { key: 'head', style: cardStyle() },
     h('div', { style: { fontSize: 15, fontWeight: 600, color: view.state === 'pass' ? LOOK.ok : LOOK.danger } }, headline),
-    h('div', { style: { fontSize: 12, color: LOOK.dim } }, 'Checked ' + when(view.finished) + ', branch ' + (view.branch || '?') + ', commit ' + (view.commit || '?')
-      + (view.uncommitted ? ', with uncommitted changes' : '') + '.'),
-    view.busy ? h('div', { style: { fontSize: 12, color: LOOK.accent, fontStyle: 'italic' } }, 'Checking your latest commit...') : null,
-    view.error ? h('div', { style: { color: LOOK.danger } }, view.error) : null)];
+    h('div', { style: { fontSize: 12, color: LOOK.dim } }, 'Checked ' + when(view.finished) + '.'),
+    view.busy ? h('div', { style: { fontSize: 12, color: LOOK.accent, fontStyle: 'italic' } }, 'Checking your latest changes...') : null,
+    view.error ? h('div', { style: { color: LOOK.danger, marginTop: 4 } }, view.error) : null,
+    view.errorDetail ? h('div', { style: { fontSize: 11.5, color: LOOK.dim } }, 'For Larsonix: ' + view.errorDetail) : null)];
 
-  for (const c of failing) {
-    const groups = problemGroups(c.problems.map(p => p.text));
-    items.push(h('div', { key: c.id, style: cardStyle({ borderColor: tint(LOOK.danger, 45) }) },
-      h('div', { style: { fontWeight: 600, color: LOOK.strong } }, c.title),
-      h('div', { style: { fontSize: 12, color: LOOK.dim, marginBottom: 4 } },
-        c.status === 'error' ? 'This check could not run, so it says nothing about your work. Tell Larsonix.' : c.meaning),
-      groups.map(g => {
-        const words = SUBJECT_WORDS[g.kind];
-        const all = opened[c.id + g.key];
-        const shown = all ? g.subjects : g.subjects.slice(0, 12);
-        return h('div', { key: g.key, style: { marginTop: 8 } },
-          h('div', null, words ? h('span', { style: tagStyle(LOOK.warn) }, plural(g.subjects.length, words[0], words[1])) : null, g.message),
-          shown.length ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 } },
-            shown.map((s, i) => s.kind === 'stat'
-              ? h('span', { key: i, style: tagStyle(LOOK.dim) }, s.label)
-              : h('button', { key: i, className: 'btn slim', style: { padding: '0 8px', fontSize: 11.5 }, title: s.detail || ('Open ' + s.label), onClick: () => openSubject(s) }, s.label)),
-            g.subjects.length > 12 ? h('button', { className: 'btn slim', style: { padding: '0 8px', fontSize: 11.5, color: LOOK.accent }, onClick: () => setOpened({ ...opened, [c.id + g.key]: !all }) },
-              all ? 'Show fewer' : '+' + (g.subjects.length - 12) + ' more') : null) : null,
-          g.details.map((d, i) => h('div', { key: i, style: { fontSize: 11.5, color: LOOK.dim, wordBreak: 'break-word' } }, d)));
-      }),
-      c.tail.length ? h('pre', { style: { fontSize: 11, whiteSpace: 'pre-wrap', color: LOOK.dim } }, c.tail.join('\n')) : null));
+  for (const g of view.groups) {
+    const all = opened[g.key];
+    const shown = all ? g.items : g.items.slice(0, 12);
+    items.push(h('div', { key: g.key, style: cardStyle({ borderColor: tint(LOOK.danger, 45) }) },
+      h('div', { style: { fontWeight: 600, color: LOOK.strong } },
+        g.items.length > 1 ? h('span', { style: tagStyle(LOOK.warn) }, plural(g.items.length, 'item', 'items')) : null, g.says),
+      g.do ? h('div', { style: { marginTop: 4 } }, h('span', { style: { color: LOOK.dim } }, 'To fix: '), g.do) : null,
+      shown.length ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 } },
+        shown.map((s, i) => h('button', { key: i, className: 'btn slim', style: { padding: '0 8px', fontSize: 11.5 }, title: 'Open ' + s.label, onClick: () => openSubject(s) }, s.label)),
+        g.items.length > 12 ? h('button', { className: 'btn slim', style: { padding: '0 8px', fontSize: 11.5, color: LOOK.accent }, onClick: () => setOpened({ ...opened, [g.key]: !all }) },
+          all ? 'Show fewer' : '+' + (g.items.length - 12) + ' more') : null) : null,
+      g.details.map((d, i) => h('div', { key: i, style: { fontSize: 11.5, color: LOOK.dim, wordBreak: 'break-word', whiteSpace: 'pre-wrap', marginTop: 4 } }, 'For Larsonix: ' + d))));
   }
-  if (passing.length) {
-    items.push(h('div', { key: 'pass', style: cardStyle() },
-      h('div', { style: { fontWeight: 600, color: LOOK.ok } }, '✓ ' + plural(passing.length, 'check passes', 'checks pass')),
-      passing.map(c => h('div', { key: c.id, style: { fontSize: 12, color: LOOK.dim } }, c.title))));
-  }
+  if (view.state === 'problems') items.push(h('p', { key: 'rest', style: { fontSize: 12, color: LOOK.ok } }, 'Everything else is fine.'));
   items.push(foot);
   return box(items);
 }
@@ -1360,98 +1329,90 @@ function watchChecks(api) {
 // Every section is one job: what it is for, then the steps. The same text is saved as
 // Studio/GUIDE.md for reading in a browser, and a test fails when the two differ.
 export const GUIDE = [
-  { title: 'Your tools', steps: [
-    'Blockbench, with the Hytale plugin: models, the texture layout, painting.',
-    'Photoshop: patterns and textures.',
-    'HyCreator, with this plugin: every item, its colours and icons, and sending your work.',
-    'The game, in a solo world: how it looks when worn.',
-    'Nothing else. The asset editor in the game is no longer needed.',
-  ] },
   { title: 'Set up, once', steps: [
-    'Install Git for Windows from https://git-scm.com/download/win. Keep its default choices.',
-    'In HyCreator, use Clone repository... with https://github.com/azurefoxx98/The-Armory-Mod, into any folder you like.',
-    'Switch to your own branch: in the git menu at the top, Branches..., then lady. All your work goes there, and we bring it into the mod.',
-    'In the cloned folder, double-click Studio\\Setup.cmd. It sets old copies of The Armory aside, links the game to your copy, installs this plugin and installs our checks. Restart HyCreator afterwards.',
-    'The first time you push, a GitHub sign-in window opens. Sign in once and it is remembered.',
-    'Setup prints any step left for Blockbench. Do it once.',
+    'Install Git for Windows from https://git-scm.com/download/win, with its default choices.',
+    'Put Get The Armory.cmd, the file Larsonix sends you, in the folder where you want the mod, such as Documents.',
+    'Double-click it. Answer its question, then do the last step it shows, in Blockbench.',
+    'Restart HyCreator. Click Workspace at the top left, then Open mod folder..., and pick the The-Armory-Mod folder it made.',
+    'The button at the top now says lady: your branch. All your work goes there.',
+    'The first time you push, GitHub asks you to sign in. Sign in once.',
   ] },
   { title: 'Each time you work', steps: [
-    'Open your copy of the mod in HyCreator.',
-    'Before you start: Commit changes... if anything is left, then double-click Studio\\Update.cmd. It brings in our latest fixes and code beside your work, and sends both to GitHub.',
-    'After an update, restart your world, so the game runs the newest code.',
-    'When you finish: Commit changes..., write one line saying what you did, then Push.',
-    'If Update, Pull or Push says your branch has diverged, run Update. If Update says your work and ours changed the same lines, it has changed nothing: tell Larsonix which files and keep working.',
+    'Before you start, double-click Studio\\Update.cmd. It brings in Larsonix\'s latest work and sends yours to GitHub.',
+    'When you finish, click lady at the top, then Commit changes... Write what you did in one line, then click Commit.',
+    'Then click lady at the top, then Push.',
+    'If Pull or Push says your branch has diverged, double-click Update.cmd instead.',
+    'If Update says your work and ours changed the same files, send Larsonix a screenshot and keep working.',
   ] },
-  { title: 'Make a release', steps: [
-    'Commit your work in HyCreator first, then double-click Studio\\Release.cmd.',
-    'Type the version, or press Enter for the one it suggests. Write the changelog for players in the window that opens. The list beside it is only a reminder of what changed.',
-    'Choose 1 to save the release as a draft nobody sees yet, 2 to save it as a draft with a message for us (an effect you want added, anything), or 3 to publish it to players at once.',
-    'A publish waits when our checks find a problem, when the branch holds work not to be released yet, or when our code changed since the last release. It says which, and offers to save a draft with a message for us instead.',
-    'The first release downloads Java and two picture libraries once. Every release builds the mod, shrinks its textures without changing a pixel anyone sees, and checks the jar on GitHub is the one built.',
-  ] },
-  { title: 'Our checks', steps: [
-    'After every commit and every update, our checks look at your work by themselves, in the background. You never wait for them.',
-    'When they find something, HyCreator shows a notice. Open The Armory checks panel with the ! button at the top to see which item and what is wrong. Click a file name to open it.',
-    'Fix what you can, then commit again. If you are not sure, push anyway and tell Larsonix. Nothing is ever blocked.',
-    'To run them any time, double-click Studio\\Check.cmd.',
+  { title: 'The checks', steps: [
+    'The checks run by themselves each time you commit. When they find something, a notice appears.',
+    'Click ! at the top to see what to fix. Click an item to open it.',
+    'You can always push, even with things to fix.',
   ] },
   { title: 'Where your files go', steps: [
-    'Everything the game uses stays in src/main/resources, as today.',
-    'Photoshop files, helper textures and whole-set Blockbench files go in Studio/Work. They are shared with us but never go into the mod.',
-    'HyCreator keeps a .bak copy of every file it saves. Git ignores them. You can leave them.',
+    'Save models and textures from Blockbench and Photoshop in src\\main\\resources\\Common, inside your copy, as before.',
+    'Photoshop files, helper textures and Full models go in Studio\\Work. Hytale never loads them.',
   ] },
-  { title: 'Make the model', steps: [
-    'Model the whole set as one Blockbench file on the player model, which shows the scale.',
-    'Turn on Copy-Paste with Magenta Alpha in the Hytale plugin settings, so transparency survives the trip to Photoshop.',
-    'Make the texture layout tight while the set is still one file: Resize UV Canvas cuts the empty canvas without moving the paint. Every piece of a set shares its colour sheets, so do it before the split.',
-    'Then save each group as its own piece: File, Export, Save Each Group as a Piece. Untick the groups that are not a piece, name each file, pick the folder.',
-    'A group hidden in Blockbench would be hidden in the game too. The dialog offers to show its parts in the piece. Leave that ticked unless a part should stay hidden.',
-    'The first time, Blockbench asks whether The Armory may use files. Choose Always allow for this plugin.',
+  { title: 'Split a Full model', steps: [
+    'Open the Full model in Blockbench, then click File > Export > Save Each Group as a Model.',
+    'Untick the groups that are not an item, check the file names and the folder, then click Confirm.',
+    'A group you hid in Blockbench would stay hidden in Hytale too. The window shows it again unless you untick show.',
+    'The first time, Blockbench asks whether The Armory may use files. Click Always allow for this plugin.',
   ] },
-  { title: 'Make the default piece', steps: [
-    'Make one item for each piece in HyCreator: stats, quality, recipe and name.',
-    "Give it two categories: the Armory's and the game's own, Items.Armors for armour, Items.Weapons for weapons and shields. Other mods find gear by the game's one.",
-    'Watch the Problems panel while you type. It names a wrong value before the game sees it.',
-    'Write the name in English in HyCreator\'s language editor. Coralys does the translations.',
+  { title: 'Make the colors of an item', steps: [
+    'Make the base item in HyCreator as usual: stats, quality, recipe and name.',
+    'Armor takes the categories ArmoryCategory.ArmoryArmors and Items.Armors. Weapons and shields take Items.Weapons beside their Armory one.',
+    'Put one texture per color beside the model, named for its color, such as Red.png.',
+    'Put each alt style beside the model too, named after it, such as Chest_Open.blockymodel beside Chest.blockymodel.',
+    'Open the base item and click Colors at the top of the editor.',
+    'Tick the colors you want, then press the button. It makes each color, its Alteration Table recipe and its icon.',
+    'If a color glows, type its light color in its Light box first, such as #300.',
+    'Change stats on the base item only. Every color takes them from it.',
+    'Pressing the button again only makes what is missing and fixes what is wrong.',
   ] },
-  { title: 'Make the colours', steps: [
-    'Put one colour sheet per colour next to the model, and each alternate shape next to it named after the model, such as Chest_Alt.blockymodel beside Chest.blockymodel.',
-    'Open the default piece and click Colours above the editor.',
-    'Tick the versions you want, type a light colour on a row if that colour glows, and press the button.',
-    'It makes each version, its Alteration Table recipe, its family and its icon. Pressing it again only fixes what is missing or wrong.',
-    'A version takes its stats from the default piece. Change stats on the default piece only.',
-    'Colours of a piece of the game, such as the Thorium chest: put the colour sheets in Common/Items/Armors/VanillaRecolors/Thorium/, named like Chest_Red.png, then open the game piece in HyCreator\'s vanilla list, or one of its colours, and click Colours. Never copy the game piece to start: the page builds every colour on it.',
-    'For a game weapon, type the folder of its colour sheets in the box on the page and press Look there.',
+  { title: 'Colors of a vanilla item', steps: [
+    'Put the textures in Common\\Items\\Armors\\VanillaRecolors\\Thorium for the Thorium armor, named like Chest_Red.png.',
+    'Press Ctrl+K, type the vanilla item\'s name, such as Armor_Thorium_Chest, and open it. Then click Colors.',
+    'Do not copy the vanilla item first. The Colors page builds every color on it.',
+    'For a vanilla weapon, type the folder of its textures at the bottom of the Colors page, then click Look there.',
   ] },
   { title: 'Icons', steps: [
-    'The Colours page makes the icons of the versions it makes.',
-    'For one item, use Generate icon on its page.',
-    'Never use the batch icon baker: it rewrites every icon in the mod.',
+    'The Colors page makes the icons of the colors it makes.',
+    'For one item, click Generate icon on its page.',
+    'Do not use Bake all icons (batch): it remakes every icon of the mod.',
   ] },
-  { title: 'Look at it in the game', steps: [
-    'Start a solo world with The Armory turned on in its mods list.',
-    'A file you save in HyCreator is reloaded by the running world. If a piece still looks unchanged, take it off and put it on again, or rejoin the world.',
+  { title: 'See it in Hytale', steps: [
+    'Start a world with The Armory turned on in its mods list.',
+    'A file you save in HyCreator changes in the running world. If an item still looks the same, take it off and put it on again, or rejoin the world.',
   ] },
-  { title: 'Effects and powers', steps: [
-    'Item files alone can give resistance to any kind of damage, extra breath, and a shield\'s reaction when it blocks.',
-    'The Armory adds stats you can put on armour. Speed and bonus stats are multipliers, written Multiplicative with the bonus as a fraction: 0.5 is 50 % more. They are Move_Speed, Jump_Height, Arrow_Damage_Bonus, TA_Swim_Speed, TA_Fire_Resistance, TA_Blast_Resistance, TA_Mining_Speed, TA_Ore_Find and TA_Unarmed_Damage.',
-    'TA_Night_Mana and TA_Night_Health are amounts, written Additive with the number: 50 is 50 more at night.',
-    'Anything else needs our code. Tell Larsonix what it should do.',
-    'Use only particle and sound names HyCreator suggests. A name that does not exist shows nothing, and nothing warns you.',
+  { title: 'Stats and effects', steps: [
+    'Items alone can give resistance to any kind of damage, extra breath, and a shield\'s reaction when it blocks.',
+    'The Armory adds Move_Speed, Jump_Height, Arrow_Damage_Bonus, TA_Swim_Speed, TA_Fire_Resistance, TA_Blast_Resistance, TA_Mining_Speed, TA_Ore_Find and TA_Unarmed_Damage.',
+    'Write those as Multiplicative: 0.5 is 50% more.',
+    'TA_Night_Mana and TA_Night_Health are Additive: 50 is 50 more at night.',
+    'For anything else, ask Larsonix.',
+    'For particles and sounds, use only the names HyCreator suggests.',
     'Effectly tags are no longer used.',
   ] },
-  { title: 'Files made by a tool', steps: [
-    'The chest loot tables and the showcase world are made by our tools from lists of their own. A change made in one of those files is erased the next time the tool runs.',
-    'HyCreator opens such a file on a warning first. If something in it should change, tell Larsonix.',
+  { title: 'Make a release', steps: [
+    'Commit your work first, then double-click Studio\\Release.cmd.',
+    'Type the version, or press Enter for the one it suggests.',
+    'Write the changelog in the window that opens, then click Done.',
+    'Type 1 for a draft players cannot see, 2 for a draft with a message for Larsonix, or 3 to publish.',
+    'If it cannot publish, it says why and offers a draft instead.',
+  ] },
+  { title: 'Files our tools make', steps: [
+    'Our tools rewrite the chest loot tables and the showcase world. HyCreator opens those files on a warning.',
+    'To change one, send Larsonix what should change.',
   ] },
   { title: 'When something goes wrong', steps: [
-    'Tell Larsonix what you did and what you saw. A picture helps.',
+    'Send Larsonix a screenshot, and say what you did.',
   ] },
 ];
 
 export function guideMarkdown() {
-  const lines = ['# The Armory: how to work on the mod', '',
-    'This is the same guide as the panel in HyCreator. Edit it in Studio/Tools/HyCreator/armory-studio.js, never here.', ''];
+  const lines = ['<!-- Made from GUIDE in Studio/Tools/HyCreator/armory-studio.js. Edit it there, never here. -->', '',
+    '# The Armory guide', '', 'The same guide is in HyCreator: click ? at the top.', ''];
   for (const section of GUIDE) {
     lines.push('## ' + section.title, '');
     for (const step of section.steps) lines.push('- ' + step);
@@ -1473,24 +1434,24 @@ let unregister = [];
 export default {
   id: 'armory.studio',
   name: 'The Armory Studio',
-  version: '0.3.0',
+  version: '0.4.0',
   minApi: 2,
   author: 'The Armory',
-  description: 'Colour versions made and checked from one page, the working guide, and what the checks of the mod found.',
+  description: 'The Colors page, the guide, and what the checks found.',
   activate(api) {
     host = api;
     unregister.push(api.editors.registerPage({
       id: 'plugin:armory.madebytool',
-      label: 'Made by a tool',
-      title: 'This file is written by one of the mod\'s tools',
+      label: 'Made by our tools',
+      title: 'Our tools rewrite this file',
       matches: rel => madeByTool(rel) !== null,
       defaultFor: rel => madeByTool(rel) !== null,
       component: MadeByToolPage,
     }));
     unregister.push(api.editors.registerPage({
       id: 'plugin:armory.colours',
-      label: 'Colours',
-      title: 'Every colour version of this piece, made and checked in one place',
+      label: 'Colors',
+      title: 'Make and fix every color of this item',
       matches: (rel, doc) => rel.startsWith('Item/Items/') && !!doc && typeof doc === 'object' && (typeof doc.Model === 'string' || typeof doc.Parent === 'string'),
       component: ColoursPage,
     }));
@@ -1512,7 +1473,7 @@ export default {
         const tool = typeof rel === 'string' ? madeByTool(rel) : null;
         if (!tool || warned.has(rel)) return;
         warned.add(rel);
-        api.ui.notify(fileName(rel) + ' is made by a tool from ' + tool + '. A change here is erased the next time the tool runs. Tell Larsonix what should change.');
+        api.ui.notify(fileName(rel) + ' is rewritten by our tools from ' + tool + ', so this change will be lost. Send Larsonix what should change instead.');
       }));
     }).catch(() => { /* the page warning still stands */ });
   },

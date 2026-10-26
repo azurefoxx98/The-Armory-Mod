@@ -78,7 +78,7 @@ abstract class MovementStatSystem<S extends ScaledMovementState> extends EntityT
             return;
         }
 
-        float multiplier = StatMultiplier.forStat(statMap, statIndex.get());
+        float multiplier = toSettingMultiplier(StatMultiplier.forStat(statMap, statIndex.get()));
         S state = chunk.getComponent(index, stateType);
         boolean created = state == null;
         if (created) {
@@ -98,6 +98,14 @@ abstract class MovementStatSystem<S extends ScaledMovementState> extends EntityT
             Ref<EntityStore> ref = chunk.getReferenceTo(index);
             commandBuffer.putComponent(ref, stateType, state);
         }
+    }
+
+    /**
+     * Turns the stat's multiplier into the multiplier applied to the settings. The two are the
+     * same unless the settings hold something the stat's effect grows with differently.
+     */
+    protected float toSettingMultiplier(float statMultiplier) {
+        return statMultiplier;
     }
 
     @Override

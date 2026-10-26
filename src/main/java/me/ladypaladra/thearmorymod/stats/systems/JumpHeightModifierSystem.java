@@ -16,4 +16,9 @@ public final class JumpHeightModifierSystem extends MovementStatSystem<JumpForce
     public JumpHeightModifierSystem(@Nonnull ComponentType<EntityStore, JumpForceState> stateType) {
         super(ArmoryStatIds.JUMP_HEIGHT, stateType, JumpForceState::new);
     }
+
+    @Override
+    protected float toSettingMultiplier(float statMultiplier) {
+        return JumpForceState.forceForHeight(statMultiplier);
+    }
 }

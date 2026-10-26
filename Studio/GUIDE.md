@@ -27,6 +27,14 @@ This is the same guide as the panel in HyCreator. Edit it in Studio/Tools/HyCrea
 - When you finish: Commit changes..., write one line saying what you did, then Push.
 - If Update, Pull or Push says your branch has diverged, run Update. If Update says your work and ours changed the same lines, it has changed nothing: tell Larsonix which files and keep working.
 
+## Make a release
+
+- Commit your work in HyCreator first, then double-click Studio\Release.cmd.
+- Type the version, or press Enter for the one it suggests. Write the changelog for players in the window that opens. The list beside it is only a reminder of what changed.
+- Choose 1 to save the release as a draft nobody sees yet, 2 to save it as a draft with a message for us (an effect you want added, anything), or 3 to publish it to players at once.
+- A publish waits when our checks find a problem, when the branch holds work not to be released yet, or when our code changed since the last release. It says which, and offers to save a draft with a message for us instead.
+- The first release downloads Java and two picture libraries once. Every release builds the mod, shrinks its textures without changing a pixel anyone sees, and checks the jar on GitHub is the one built.
+
 ## Our checks
 
 - After every commit and every update, our checks look at your work by themselves, in the background. You never wait for them.

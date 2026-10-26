@@ -331,7 +331,11 @@ function Invoke-Hidden([string] $exe, [string] $arguments) {
     $out = $process.StandardOutput.ReadToEndAsync(); $err = $process.StandardError.ReadToEndAsync()
     [void](Wait-Until { $process.HasExited } 900)
     $code = if ($process.HasExited) { $process.ExitCode } else { -1 }
-    $last = (($out.Result + "`n" + $err.Result).Trim() -split "`r?`n" | Where-Object { $_.Trim() } | Select-Object -Last 4) -join "`n"
+    # A program it started may outlive it and hold its output open (Gradle's helper does), so the output
+    # is read for a short while only, never waited on.
+    $said = @()
+    foreach ($task in $out, $err) { if ($task.Wait(10000)) { $said += $task.Result } }
+    $last = (($said -join "`n").Trim() -split "`r?`n" | Where-Object { $_.Trim() } | Select-Object -Last 4) -join "`n"
     return @{ Code = $code; Text = $last }
 }
 

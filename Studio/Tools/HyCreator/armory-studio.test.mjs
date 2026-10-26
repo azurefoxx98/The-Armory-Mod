@@ -26,19 +26,19 @@ function walk(dir, out = []) {
 
 const diskFiles = walk(resources).map(p => path.relative(resources, p).split(path.sep).join('/'));
 
+// The game's item and family files, read from Assets.zip in one pass: the page may scan every
+// game item to find the one a colour set starts from.
 let vanilla = null;
 function vanillaIndex() {
   if (vanilla) return vanilla;
   vanilla = new Map();
   if (!fs.existsSync(assetsZip)) return vanilla;
-  const names = execFileSync('python', ['-c', 'import sys,zipfile;print("\\n".join(n for n in zipfile.ZipFile(sys.argv[1]).namelist() if n.startswith(("Server/Item/Items/", "Server/Item/ResourceTypes/")) and n.endswith(".json")))', assetsZip], { maxBuffer: 1 << 26 }).toString().split(/\r?\n/).filter(Boolean);
-  for (const n of names) vanilla.set(n.slice('Server/'.length), n);
+  const dump = execFileSync('python', ['-c', 'import sys,zipfile,json;z=zipfile.ZipFile(sys.argv[1]);sys.stdout.write(json.dumps({n[len("Server/"):]: z.read(n).decode("utf-8","replace") for n in z.namelist() if n.startswith(("Server/Item/Items/", "Server/Item/ResourceTypes/")) and n.endswith(".json")}))', assetsZip], { maxBuffer: 1 << 28 }).toString('utf8');
+  for (const [rel, text] of Object.entries(JSON.parse(dump))) vanilla.set(rel, text);
   return vanilla;
 }
 function readVanilla(rel) {
-  const entry = vanillaIndex().get(rel);
-  if (!entry) return null;
-  return execFileSync('python', ['-c', 'import sys,zipfile;sys.stdout.buffer.write(zipfile.ZipFile(sys.argv[1]).read(sys.argv[2]))', assetsZip, entry]).toString('utf8');
+  return vanillaIndex().get(rel) ?? null;
 }
 
 // A file access like HyCreator's: Server paths, "../Common/" for Common, an in-memory overlay.
@@ -70,6 +70,7 @@ function check(label, ok, detail = '') {
   if (!ok) failures++;
 }
 const faultsOf = a => a.cells.flatMap(c => c.items.flatMap(i => i.faults.map(f => ({ id: i.id, ...f }))));
+const canonicalText = text => JSON.stringify(JSON.parse(text));
 const chest = 'Item/Items/AtlanteanSet/Atlantean_Chest_Default.json';
 const red = 'Item/Items/AtlanteanSet/Atlantean_Chest_Red.json';
 const readJson = rel => JSON.parse(fs.readFileSync(path.join(resources, 'Server', ...rel.split('/')), 'utf8'));
@@ -106,6 +107,54 @@ const readJson = rel => JSON.parse(fs.readFileSync(path.join(resources, 'Server'
   check('signs: the button touches no family', !p.create.some(c => c.rel.startsWith('Item/ResourceTypes/') && c.rel !== 'Item/ResourceTypes/' + a.set.pieceFamily + '.json')
     && !p.edit.some(e => e.ops.some(([field]) => field[0] === 'ResourceTypes' && JSON.stringify(e.ops).includes('Wood_Trunk'))),
     JSON.stringify(p).slice(0, 200));
+}
+
+// 2c. A set whose default is a game piece: the Iron chest recolours. The mod's patch puts the
+// game's Iron chest in their family, and 27 game chests inherit from the Iron chest with no family
+// of their own, so the page names them and ticks nothing.
+{
+  const fromVersion = await analyse(makeReader(io()), 'Item/Items/Armor_Iron_Chest_Black.json');
+  check('Iron chest colour: its default is the game piece', !fromVersion.error && fromVersion.set.defaultId === 'Armor_Iron_Chest' && fromVersion.set.gameDefault, fromVersion.error || fromVersion.set.defaultId);
+  check('Iron chest colour: the family comes from the mod\'s patch', fromVersion.set.pieceFamily === 'Resource_Armor_Iron_Chest', fromVersion.set.pieceFamily);
+  check('Iron chest colour: every colour is found', fromVersion.memberCount >= 20, String(fromVersion.memberCount));
+  check('Iron chest colour: the 27 game chests inheriting it are named', fromVersion.set.inheritors.length === 27, String(fromVersion.set.inheritors.length));
+  const p = plan(fromVersion, defaultChoice(fromVersion));
+  check('Iron chest colour: nothing is ticked while game items inherit its family', p.create.length + p.edit.length + p.icons.length === 0, JSON.stringify(p).slice(0, 200));
+  const fromGame = await analyse(makeReader(io()), 'Item/Items/Armor/Iron/Armor_Iron_Chest.json');
+  check('the game Iron chest opened itself: the same set', !fromGame.error && fromGame.set.defaultId === 'Armor_Iron_Chest' && fromGame.memberCount === fromVersion.memberCount, fromGame.error || String(fromGame.memberCount));
+  const sword = await analyse(makeReader(io()), 'Item/Items/VanillaRecolors/Long_Sword_Cobalt/Longsword_Cobalt_Red.json');
+  check('Cobalt longsword colour: its default is the game\'s Cobalt longsword', !sword.error && sword.set.defaultId === 'Weapon_Longsword_Cobalt', sword.error || sword.set.defaultId);
+}
+
+// 2d. A new set of colours for a game piece, planted in memory: two colour sheets of the Thorium
+// chest in the folder the mod uses by convention, and a helmet's sheet beside them. Opening the
+// game's Thorium chest offers both colours and not the helmet; the button writes the family, the
+// patch putting the game piece in it, and two small versions; pressing again writes nothing.
+{
+  const overlay = new Map();
+  const dir = '../Common/Items/Armors/VanillaRecolors/Thorium/';
+  for (const name of ['Chest_Black.png', 'Chest_Red.png', 'Helm_Red.png']) overlay.set(dir + name, '');
+  const thorium = 'Item/Items/Armor/Thorium/Armor_Thorium_Chest.json';
+  const a = await analyse(makeReader(io(overlay)), thorium);
+  check('Thorium chest: a game piece is a default', !a.error && a.set.gameDefault && a.set.defaultId === 'Armor_Thorium_Chest', a.error || JSON.stringify(a.set && a.set.defaultId));
+  check('Thorium chest: it does not take the Iron chest\'s family it inherits', a.set.pieceFamily !== 'Resource_Armor_Iron_Chest', a.set.pieceFamily);
+  check('Thorium chest: its two colours, not the helmet\'s sheet', a.set.sheets.length === 3 && !a.set.sheets.some(s => s.endsWith('Helm_Red.png')), a.set.sheets.join(', '));
+  const p = plan(a, defaultChoice(a));
+  const versions = p.create.filter(c => c.rel.endsWith('.json') && c.rel.startsWith('Item/Items/'));
+  const patch = p.create.find(c => c.rel === 'Item/Items/Armor/Thorium/Armor_Thorium_Chest.patch');
+  check('Thorium chest: the family file is made', p.create.some(c => c.rel === 'Item/ResourceTypes/' + a.set.pieceFamily + '.json'));
+  check('Thorium chest: a patch adds the game piece to the family with Patchly\'s +', !!patch && canonicalText(patch.text) === canonicalText(JSON.stringify({ 'ResourceTypes+': [{ Id: a.set.pieceFamily }] })), patch && patch.text);
+  const red = versions.map(v => JSON.parse(v.text)).find(v => v.Texture === 'Items/Armors/VanillaRecolors/Thorium/Chest_Red.png');
+  check('Thorium chest: two colours are made, named Black and Red', versions.length === 2 && versions.some(v => v.rel.endsWith('/Armor_Thorium_Chest_Red.json')), versions.map(v => v.rel).join(', '));
+  check('Thorium chest: a colour names the game piece as its parent and sits in both tabs', !!red && red.Parent === 'Armor_Thorium_Chest'
+    && JSON.stringify(red.Categories) === JSON.stringify(['ArmoryCategory.ArmoryArmors', 'Items.Armors']) && isAlterationRecipe(red.Recipe), red && JSON.stringify(red));
+  for (const c of p.create) overlay.set(c.rel, c.text);
+  const again = await analyse(makeReader(io(overlay)), thorium);
+  const p2 = plan(again, defaultChoice(again));
+  check('Thorium chest: the made colours are found as its colours', again.memberCount === 2, String(again.memberCount));
+  check('Thorium chest: pressing again writes nothing but the icons not yet baked', p2.create.length === 0 && p2.edit.length === 0, JSON.stringify(p2).slice(0, 300));
+  const fromColour = await analyse(makeReader(io(overlay)), versions[0].rel);
+  check('Thorium chest: opening a made colour finds the same set', !fromColour.error && fromColour.set.defaultId === 'Armor_Thorium_Chest', fromColour.error || fromColour.set.defaultId);
 }
 
 // 3. The October faults, planted back in memory.

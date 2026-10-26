@@ -71,6 +71,8 @@ This is the same guide as the panel in HyCreator. Edit it in Studio/Tools/HyCrea
 - Tick the versions you want, type a light colour on a row if that colour glows, and press the button.
 - It makes each version, its Alteration Table recipe, its family and its icon. Pressing it again only fixes what is missing or wrong.
 - A version takes its stats from the default piece. Change stats on the default piece only.
+- Colours of a piece of the game, such as the Thorium chest: put the colour sheets in Common/Items/Armors/VanillaRecolors/Thorium/, named like Chest_Red.png, then open the game piece in HyCreator's vanilla list, or one of its colours, and click Colours. Never copy the game piece to start: the page builds every colour on it.
+- For a game weapon, type the folder of its colour sheets in the box on the page and press Look there.
 
 ## Icons
 

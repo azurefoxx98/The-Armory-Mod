@@ -81,11 +81,96 @@ function families(doc) {
     .map(row => row && row.Id).filter(id => typeof id === 'string');
 }
 
+// The words a picture or model name starts with when it belongs to one armour piece, by the slot
+// the piece is worn on. A folder can hold one picture per piece (Chest_Texture, Hands_Texture),
+// and a picture named for another piece is never a colour of this one.
+const PIECE_WORDS = {
+  Head: ['head', 'helm', 'helmet', 'hat', 'hood', 'mask', 'crown', 'cap'],
+  Chest: ['chest', 'body', 'torso', 'cuirass', 'robe', 'shirt'],
+  Hands: ['hands', 'hand', 'gauntlets', 'gloves', 'arms', 'bracers'],
+  Legs: ['legs', 'boots', 'feet', 'pants', 'greaves', 'leggings'],
+};
+
+export function pieceSlot(name) {
+  const word = stem(name).split(/[\s_]+/)[0].toLowerCase();
+  for (const [slot, words] of Object.entries(PIECE_WORDS)) if (words.includes(word)) return slot;
+  return null;
+}
+
+// The colour a sheet stands for, as a version's id spells it. A leading piece word is not part
+// of the colour: Helm_Blue.png is the colour Blue of a helmet.
+export function sheetColour(sheet) {
+  const words = stem(sheet).split(/[\s_]+/).filter(Boolean);
+  if (words.length > 1 && pieceSlot(words[0])) words.shift();
+  return colourKey(words.join('_'));
+}
+
+// A Patchly patch applied to a game item as Patchly applies it to the item's own file: a plain
+// key replaces (an object merges, null removes), + and ++ append to a list, - and -- prepend, ?
+// fills only a missing key. Patchly works on the file itself, never on what it inherits.
+export function applyPatch(base, patch) {
+  const out = { ...(base || {}) };
+  for (const [rawKey, value] of Object.entries(patch || {})) {
+    const m = /^(.*?)(\+\+|--|\+|-|\?|~)?$/.exec(rawKey);
+    const key = m[1], op = m[2] || '';
+    const current = out[key];
+    if (op === '?') {
+      if (!(key in out)) out[key] = value;
+    } else if (op === '+' || op === '++' || op === '-' || op === '--') {
+      const list = Array.isArray(current) ? current : [];
+      const add = (Array.isArray(value) ? value : []).filter(v => op.length === 2 || !list.some(x => canonical(x) === canonical(v)));
+      out[key] = op[0] === '+' ? [...list, ...add] : [...add, ...list];
+    } else if (op === '') {
+      if (value === null) delete out[key];
+      else if (value && typeof value === 'object' && !Array.isArray(value) && current && typeof current === 'object' && !Array.isArray(current)) out[key] = applyPatch(current, value);
+      else out[key] = value;
+    }
+    // ~ merges a list by position; no family or category patch uses it, so it is not read here.
+  }
+  return out;
+}
+
+// Each Armory category and the game category its gear also carries, so other mods find it.
+const ARMORY_CATEGORY = {
+  armour: ['ArmoryCategory.ArmoryArmors', 'Items.Armors'],
+  shield: ['ArmoryCategory.ArmoryShields', 'Items.Weapons'],
+  weapon: ['ArmoryCategory.ArmoryWeapons', 'Items.Weapons'],
+};
+
+function gearKind(id, eff) {
+  if (eff && eff.Armor) return 'armour';
+  const family = eff && eff.Tags && Array.isArray(eff.Tags.Family) ? eff.Tags.Family : [];
+  if (/shield/i.test(id) || family.some(f => /shield/i.test(f))) return 'shield';
+  return eff && (eff.Weapon || /weapon/i.test(id)) ? 'weapon' : null;
+}
+
+// The categories a piece of gear should carry: the ones it has, plus the game's own beside each
+// Armory category. withArmory also puts gear with no Armory category into the Armory tab, which
+// is what a new colour of a game piece needs (the game piece carries the game's category only).
+// An item with no category at all stays as it is: the Kanohi Hau masks carry none on purpose, so
+// they stay out of the creative menu.
+export function wantedCategories(id, eff, withArmory = false) {
+  const have = eff && Array.isArray(eff.Categories) ? eff.Categories.filter(c => typeof c === 'string') : null;
+  if (!have || have.length === 0) return have;
+  const out = [...have];
+  const kind = gearKind(id, eff);
+  if (withArmory && kind && !Object.values(ARMORY_CATEGORY).some(pair => out.includes(pair[0]))) out.unshift(ARMORY_CATEGORY[kind][0]);
+  for (const pair of Object.values(ARMORY_CATEGORY)) if (out.includes(pair[0]) && !out.includes(pair[1])) out.push(pair[1]);
+  return out;
+}
+
 export function toJson(value) {
   return JSON.stringify(value, null, 2) + '\n';
 }
 
 // ---- reading the mod ----------------------------------------------------------------------------
+
+// Runs fn over every value, a batch at a time, and returns the results in order.
+export async function inBatches(values, fn, size = 64) {
+  const out = [];
+  for (let i = 0; i < values.length; i += size) out.push(...await Promise.all(values.slice(i, i + size).map(fn)));
+  return out;
+}
 
 // io: { list(prefix, exts) -> paths, read(path) -> text or null, listVanilla(prefix, exts) -> paths }
 // Server paths are relative to the Server folder. Common paths are given as "../Common/...".
@@ -122,10 +207,28 @@ export function makeReader(io) {
     return docs.get(rel);
   }
 
-  async function effective(id, seen = []) {
-    if (seen.includes(id)) throw new Error('Parent loop: ' + [...seen, id].join(' > '));
+  // The mod's patches on game items, by the game file they change.
+  let patchRels = null;
+  async function patchOf(rel) {
+    if (!patchRels) patchRels = new Set(await io.list('Item/Items/', ['patch']));
+    const patchRel = rel.replace(/\.json$/, '.patch');
+    if (!patchRels.has(patchRel)) return null;
+    const text = await io.read(patchRel);
+    try { return { rel: patchRel, doc: JSON.parse(text) }; } catch { return { rel: patchRel, doc: null }; }
+  }
+
+  // An item's own file as the game loads it: a game item with the mod's patch on it applied.
+  async function ownDoc(id) {
     const rel = await relOf(id);
     const doc = rel ? await docAt(rel) : null;
+    if (!doc || (await itemIndex()).has(id)) return doc;
+    const patch = await patchOf(rel);
+    return patch && patch.doc ? applyPatch(doc, patch.doc) : doc;
+  }
+
+  async function effective(id, seen = []) {
+    if (seen.includes(id)) throw new Error('Parent loop: ' + [...seen, id].join(' > '));
+    const doc = await ownDoc(id);
     if (!doc) return null;
     if (typeof doc.Parent !== 'string') return doc;
     const parent = await effective(doc.Parent, [...seen, id]);
@@ -135,7 +238,23 @@ export function makeReader(io) {
     return out;
   }
 
-  return { itemIndex, relOf, docAt, effective, list: io.list, listVanilla: io.listVanilla, read: io.read };
+  // Every game item's own file, read once and only when a set needs it: finding the game piece a
+  // set of colours starts from, and the game items that would inherit its family.
+  // The reads run side by side: inside HyCreator each is a call to the app, and one after the
+  // other the game's 3,964 items took 30 seconds.
+  let gameDocs = null;
+  async function gameItems() {
+    if (!gameDocs) {
+      const mod = await itemIndex();
+      await relOf('');
+      const ids = [...vanillaItems.keys()].filter(id => !mod.has(id));
+      const docsRead = await inBatches(ids, id => ownDoc(id));
+      gameDocs = new Map(ids.map((id, i) => [id, { rel: vanillaItems.get(id), doc: docsRead[i] }]));
+    }
+    return gameDocs;
+  }
+
+  return { itemIndex, relOf, docAt, ownDoc, effective, patchOf, gameItems, list: io.list, listVanilla: io.listVanilla, read: io.read };
 }
 
 // ---- the analysis -------------------------------------------------------------------------------
@@ -143,12 +262,80 @@ export function makeReader(io) {
 // Two ways the mod spells a version's id. A: Atlantean_Chest_Red_Alt. B: Atlantean_Chest_Alt_Red.
 function idFor(set, sheet, shape, order) {
   if (sheet === set.defaultSheet && shape === set.baseShape) return set.defaultId;
-  const colour = sheet === set.defaultSheet ? '' : '_' + colourKey(sheet);
+  const colour = sheet === set.defaultSheet ? '' : '_' + sheetColour(sheet);
   const suffix = shape === set.baseShape ? '' : stem(shape).slice(stem(set.baseShape).length);
   return set.base + (order === 'A' ? colour + suffix : suffix + colour);
 }
 
-export async function analyse(reader, openRel) {
+function isVersion(own) {
+  return isAlterationRecipe(own && own.Recipe) || namesAlterationBench(own && own.Recipe);
+}
+
+// The families an item declares itself. A piece of the mod also takes them from its parent, as
+// the game gives them (a colour version of a game piece names the game piece as its Parent and
+// is in its family through it). A game item takes nothing from a game parent here: the mod's Iron
+// patch puts the game's Iron armour into the Iron colour families, and every game piece built on
+// the Iron armour inherits that, which is a fault of the patch and never a family of the piece.
+async function declaredFamilies(reader, id, seen = [], asVersion = false) {
+  if (seen.includes(id)) return [];
+  const own = await reader.ownDoc(id);
+  if (!own) return [];
+  if (Array.isArray(own.ResourceTypes)) return families(own);
+  const index = await reader.itemIndex();
+  if (typeof own.Parent !== 'string' || !index.has(id)) return [];
+  // A piece of the mod built on a game item takes the game item's family only as one of its
+  // colours does, by naming it as Parent; as a default of its own it has no family yet.
+  if (!index.has(own.Parent) && !asVersion) return [];
+  return declaredFamilies(reader, own.Parent, [...seen, id], asVersion);
+}
+
+// The game piece a set of colours starts from, when no piece of the mod is its default: the one
+// game item the mod's patches put in the family, or else the game item wearing the same model
+// that the others wearing it inherit from (the giant skeleton's sword, not its two copies held by
+// the skeletons themselves).
+async function findGameDefault(reader, family, version) {
+  const games = await reader.gameItems();
+  if (family) {
+    const inFamily = [...games.entries()].filter(([, g]) => g.doc && families(g.doc).includes(family));
+    if (inFamily.length === 1) return inFamily[0][0];
+  }
+  const wearing = new Set();
+  for (const id of games.keys()) {
+    const eff = await reader.effective(id);
+    if (eff && eff.Model === version.Model) wearing.add(id);
+  }
+  const roots = [...wearing].filter(id => {
+    const parent = games.get(id).doc && games.get(id).doc.Parent;
+    return !(typeof parent === 'string' && wearing.has(parent));
+  });
+  roots.sort((a, b) => (Number(/npc/i.test(a)) - Number(/npc/i.test(b))) || a.localeCompare(b));
+  return roots[0] || null;
+}
+
+// Where the mod keeps the colour sheets of a game model by convention: armour under
+// Items/Armors/VanillaRecolors/<set>/ and <set>/<piece>/ (the Iron recolours), weapons in a
+// folder named for the material and the weapon with Recolors (CobaltLongSwordRecolors).
+async function conventionFolders(reader, baseShape) {
+  const out = [];
+  const modelFolder = folder(baseShape);
+  const armour = /^Items\/Armors\/(.+)$/.exec(modelFolder);
+  if (armour) {
+    out.push('Items/Armors/VanillaRecolors/' + armour[1]);
+    out.push('Items/Armors/VanillaRecolors/' + armour[1] + stem(baseShape) + '/');
+  }
+  if (modelFolder.startsWith('Items/Weapons/')) {
+    const kind = modelFolder.slice('Items/Weapons/'.length).replace(/\/$/, '').split('/').pop().toLowerCase();
+    const material = stem(baseShape).toLowerCase();
+    const pictures = (await reader.list('../Common/Items/Weapons/', ['png'])).map(p => p.replace(/^\.\.\/Common\//, ''));
+    for (const dir of new Set(pictures.map(folder))) {
+      const name = dir.replace(/\/$/, '').split('/').pop().toLowerCase();
+      if (name.includes('recolor') && name.includes(material) && name.replace(/[^a-z]/g, '').includes(kind.replace(/[^a-z]/g, ''))) out.push(dir);
+    }
+  }
+  return out;
+}
+
+export async function analyse(reader, openRel, options = {}) {
   const index = await reader.itemIndex();
   const openId = stem(openRel);
   const open = await reader.effective(openId);
@@ -157,83 +344,201 @@ export async function analyse(reader, openRel) {
     return { error: 'This item has no model and texture of its own, so it has no colour set.' };
   }
 
+  // A family of the game's own is never a colour family: a piece inheriting from a game item
+  // carries the game's families too (the signs inherit Wood_Trunk), and taking one would put the
+  // colours into it, so they would count as that material in every recipe, and write an empty
+  // file over the game's own.
+  const familyFiles = new Set((await reader.list('Item/ResourceTypes/', ['json'])).map(stem));
+  const gameFamilies = new Set((await reader.listVanilla('Item/ResourceTypes/', ['json'])).map(stem));
+  const colourFamily = f => familyFiles.has(f) || !gameFamilies.has(f);
+
+  const readDocs = async rels => {
+    const read = await inBatches(rels, async rel => ({ rel, own: await reader.docAt(rel), eff: await reader.effective(stem(rel)) }));
+    return new Map(read.map(d => [stem(d.rel), d]));
+  };
+  let allDocs = null;
+  const everyDoc = async () => allDocs || (allDocs = await readDocs([...index.values()]));
+
   // The folder of items this set lives in, read once.
   const itemFolder = folder(openRel);
-  const folderRels = [...index.values()].filter(rel => rel.startsWith(itemFolder));
-  const folderDocs = new Map();
-  for (const rel of folderRels) folderDocs.set(stem(rel), { rel, own: await reader.docAt(rel), eff: await reader.effective(stem(rel)) });
+  const folderDocs = await readDocs([...index.values()].filter(rel => rel.startsWith(itemFolder)));
 
-  // The default piece: the open item, unless it is itself a colour version.
+  // The default piece: the open item, unless it is itself a colour version. Its default is looked
+  // for in its folder, then anywhere in the mod, then among the game's items.
   let defaultId = openId;
   const openOwn = await reader.docAt(openRel);
-  if (isAlterationRecipe(openOwn && openOwn.Recipe) || namesAlterationBench(openOwn && openOwn.Recipe)) {
+  if (index.has(openId) && isVersion(openOwn)) {
     const family = alterationInput(openOwn.Recipe);
-    const candidates = [...folderDocs.entries()].filter(([, d]) => d.eff && families(d.eff).includes(family)
-      && !isAlterationRecipe(d.own && d.own.Recipe) && !namesAlterationBench(d.own && d.own.Recipe));
+    const defaultsIn = docs => [...docs.entries()].filter(([, d]) => d.eff && family && families(d.eff).includes(family) && !isVersion(d.own));
+    // Beside it in its folder first. Then the game piece the mod's patch puts in the family, which
+    // a patch does on purpose, before another piece elsewhere in the mod that also declares it
+    // (an old Developer sword declares the Iron sword family beside the game's Iron sword).
+    let candidates = defaultsIn(folderDocs);
+    if (candidates.length === 0 && family) {
+      const patched = [...(await reader.gameItems()).entries()].filter(([, g]) => g.doc && families(g.doc).includes(family));
+      if (patched.length === 1) candidates = [[patched[0][0]]];
+    }
+    if (candidates.length === 0) candidates = defaultsIn(await everyDoc());
+    if (candidates.length === 0) {
+      const game = await findGameDefault(reader, family, open);
+      if (game) candidates = [[game]];
+    }
     if (candidates.length !== 1) {
       return { error: candidates.length === 0
-        ? 'This is a colour version, and no default piece for its family was found in this folder. Open the default piece instead.'
+        ? 'This is a colour version, and no default piece for its family was found, in the mod or among the game\'s items. Open the default piece instead.'
         : 'This is a colour version, and several pieces could be its default: ' + candidates.map(([id]) => id).join(', ') + '. Open the default piece instead.' };
     }
     defaultId = candidates[0][0];
   }
-  const def = folderDocs.get(defaultId) || { rel: await reader.relOf(defaultId), own: await reader.docAt(await reader.relOf(defaultId)), eff: await reader.effective(defaultId) };
+  const gameDefault = !index.has(defaultId);
+  const def = { id: defaultId, rel: await reader.relOf(defaultId), own: await reader.ownDoc(defaultId), eff: await reader.effective(defaultId) };
+  if (!def.eff || typeof def.eff.Model !== 'string' || typeof def.eff.Texture !== 'string') {
+    return { error: 'The default piece ' + defaultId + ' has no model and texture, so it has no colour set.' };
+  }
 
-  // The model folder: its colour sheets and the alternate shapes of the default's model.
+  // The items its versions may be among: the default's folder for a piece of the mod (as before),
+  // every item of the mod for a game piece, whose colours live wherever they were made.
+  let pool;
+  if (gameDefault) pool = await everyDoc();
+  else if (folder(def.rel) === itemFolder) pool = folderDocs;
+  else pool = new Map([...folderDocs, ...await readDocs([...index.values()].filter(rel => rel.startsWith(folder(def.rel))))]);
+
+  // The shapes: the default's model and its alternates beside it in the mod.
   const baseShape = def.eff.Model;
   const modelFolder = folder(baseShape);
-  const inFolder = path => folder(path) === modelFolder;
   const common = p => p.replace(/^\.\.\/Common\//, '');
-  const sheets = (await reader.list('../Common/' + modelFolder, ['png'])).map(common).filter(inFolder);
-  const shapes = (await reader.list('../Common/' + modelFolder, ['blockymodel'])).map(common).filter(inFolder)
-    .filter(path => stem(path) === stem(baseShape) || stem(path).startsWith(stem(baseShape) + '_'));
-  const defaultSheet = def.eff.Texture;
-  const orderedSheets = [defaultSheet, ...sheets.filter(s => s !== defaultSheet).sort()];
+  const inside = dir => path => folder(path) === dir;
+  const modelsIn = async dir => (await reader.list('../Common/' + dir, ['blockymodel'])).map(common).filter(inside(dir));
+  const picturesIn = async dir => (await reader.list('../Common/' + dir, ['png'])).map(common).filter(inside(dir));
+  const shapes = (await modelsIn(modelFolder)).filter(path => stem(path) === stem(baseShape) || stem(path).startsWith(stem(baseShape) + '_'));
   const orderedShapes = [baseShape, ...shapes.filter(s => s !== baseShape).sort()];
-
-  // Items of the folder wearing one of these sheets on one of these shapes. A model folder can
-  // hold several families (Rook and Rook Elite share their sheets), so wearing the same art is
-  // only a candidate: belonging to the set is decided by family below.
-  const candidates = [];
-  for (const [id, d] of folderDocs) {
-    if (!d.eff || id === defaultId) continue;
-    if (orderedShapes.includes(d.eff.Model) && orderedSheets.includes(d.eff.Texture)) candidates.push({ id, ...d });
-  }
   const consumes = m => alterationInput(m.own && m.own.Recipe);
+  const shapeMates = [...pool.entries()].filter(([id, d]) => id !== defaultId && d.eff && orderedShapes.includes(d.eff.Model)).map(([id, d]) => ({ id, ...d }));
 
   // The piece family: one of the default's own families, the one colour versions are made from,
-  // and among equals the most specific. Only a default with no family at all takes its family
-  // from the versions around it. A family of the game's own is never a colour family: a piece
-  // inheriting from a game item carries the game's families too (the signs inherit Wood_Trunk),
-  // and taking one would put the colours into it, so they would count as that material in every
-  // recipe, and write an empty file over the game's own.
-  const familyFiles = new Set((await reader.list('Item/ResourceTypes/', ['json'])).map(stem));
-  const gameFamilies = new Set((await reader.listVanilla('Item/ResourceTypes/', ['json'])).map(stem));
-  const colourFamily = f => familyFiles.has(f) || !gameFamilies.has(f);
-  const defaultFamilies = families(def.eff).filter(colourFamily);
-  const madeFrom = f => candidates.filter(m => consumes(m) === f).length;
-  const owners = f => [...folderDocs.values()].filter(d => d.eff && families(d.eff).includes(f)).length;
+  // and among equals the most specific. A default with no family takes it from the pieces wearing
+  // its shapes, by how many belong to it and how many are made from it, belonging first (nine
+  // helmets in the helmet family made from the gauntlet family by mistake are helmets).
+  const defaultFamilies = (await declaredFamilies(reader, defaultId)).filter(colourFamily);
+  const madeFrom = f => shapeMates.filter(m => consumes(m) === f).length;
+  const owners = f => [...pool.values()].filter(d => d.eff && families(d.eff).includes(f)).length;
   let pieceFamily = null;
   if (defaultFamilies.length) {
     pieceFamily = [...defaultFamilies].sort((a, b) => (madeFrom(b) - madeFrom(a)) || (owners(a) - owners(b)))[0];
   } else {
-    const used = new Map();
-    for (const m of candidates) { const f = consumes(m); if (f && colourFamily(f)) used.set(f, (used.get(f) || 0) + 1); }
-    pieceFamily = [...used.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+    // A family another piece declares as its own is that piece's set: the game's Iron sword is in
+    // the Iron sword family through the mod's patch, and a mod sword built on it wearing the same
+    // model is not the default of those colours.
+    const owned = new Set();
+    for (const [id, d] of pool) if (id !== defaultId && d.own && !isVersion(d.own) && Array.isArray(d.own.ResourceTypes)) for (const f of families(d.own)) owned.add(f);
+    for (const rel of await reader.list('Item/Items/', ['patch'])) {
+      try {
+        const patch = JSON.parse(await reader.read(rel));
+        for (const k of ['ResourceTypes', 'ResourceTypes+', 'ResourceTypes++']) for (const f of families({ ResourceTypes: patch[k] })) owned.add(f);
+      } catch { /* a patch that does not parse declares nothing */ }
+    }
+    const score = new Map();
+    const bump = (f, i) => { if (!f || !colourFamily(f) || owned.has(f)) return; const s = score.get(f) || [0, 0]; s[i]++; score.set(f, s); };
+    for (const m of shapeMates) { for (const f of families(m.eff)) bump(f, 0); bump(consumes(m), 1); }
+    pieceFamily = [...score.entries()].sort((a, b) => (b[1][0] + b[1][1] - a[1][0] - a[1][1]) || (b[1][0] - a[1][0]))[0]?.[0] || null;
   }
-  const members = pieceFamily
-    ? candidates.filter(m => consumes(m) === pieceFamily || families(m.eff).includes(pieceFamily))
-    : [];
   const familyIsNew = !pieceFamily;
-  const set = {
-    defaultId, defaultRel: def.rel, base: defaultId.endsWith('_Default') ? defaultId.slice(0, -'_Default'.length) : defaultId,
-    baseShape, defaultSheet, sheets: orderedSheets, shapes: orderedShapes,
-    pieceFamily: pieceFamily || 'Resource_' + (defaultId.endsWith('_Default') ? defaultId.slice(0, -8) : defaultId),
-    familyIsNew,
-    defaultQuality: def.eff.Quality, defaultLight: def.eff.Light || null,
-    familyFileMissing: false,
+  const family = pieceFamily || 'Resource_' + (defaultId.endsWith('_Default') ? defaultId.slice(0, -8) : defaultId);
+
+
+  // The colour sheets: the pictures beside the model in the mod, the folders the family's pieces
+  // already take their pictures from, the folder the mod uses by convention for a game piece, and
+  // any folder typed on the page. A picture named for another piece (Hands_Texture beside a chest)
+  // or for another model of its folder is that piece's, never a colour of this one.
+  const sheetFolders = [modelFolder];
+  for (const m of shapeMates) {
+    if (typeof m.eff.Texture !== 'string' || folder(m.eff.Texture) === modelFolder) continue;
+    if (consumes(m) === family || families(m.eff).includes(family)) sheetFolders.push(folder(m.eff.Texture));
+  }
+  if (gameDefault) sheetFolders.push(...await conventionFolders(reader, baseShape));
+  if (typeof options.sheetFolder === 'string' && options.sheetFolder.trim()) {
+    sheetFolders.push(options.sheetFolder.trim().replace(/\\/g, '/').replace(/^\/?(Common\/)?/, '').replace(/\/?$/, '/'));
+  }
+  const folders = [...new Set(sheetFolders)];
+  const slot = statsOf(def.eff.Armor).slot;
+  const otherModels = new Set();
+  for (const dir of folders) for (const m of await modelsIn(dir)) if (!orderedShapes.includes(m)) otherModels.add(stem(m).toLowerCase());
+  // A picture a piece of this shape already wears is this set's whatever its name says: the
+  // Wizened sleeves wear the robe's chest_*.png sheets. The name only judges pictures nothing
+  // of this shape wears yet.
+  const worn = new Set(shapeMates.map(m => m.eff.Texture));
+  const ownSheet = sheet => {
+    if (worn.has(sheet)) return true;
+    const piece = pieceSlot(sheet);
+    if (slot && piece && piece !== slot) return false;
+    const name = stem(sheet).toLowerCase();
+    return ![...otherModels].some(m => name === m || name.startsWith(m + '_'));
   };
-  set.familyFileMissing = !familyFiles.has(set.pieceFamily);
+  const defaultSheet = def.eff.Texture;
+  const found = new Set();
+  for (const dir of folders) for (const p of await picturesIn(dir)) if (p !== defaultSheet && ownSheet(p)) found.add(p);
+  const orderedSheets = [defaultSheet, ...[...found].sort()];
+
+  // Items wearing one of these sheets on one of these shapes. A model folder can hold several
+  // families (Rook and Rook Elite share their sheets), so wearing the same art is only a
+  // candidate: belonging to the set is decided by family.
+  const candidates = shapeMates.filter(m => orderedSheets.includes(m.eff.Texture));
+  const members = pieceFamily ? candidates.filter(m => consumes(m) === pieceFamily || families(m.eff).includes(pieceFamily)) : [];
+
+  // Other pieces outside the set that declare its family as their own: the set is theirs as much
+  // as this one's, so the page names them and ticks nothing for her. A colour of the set made
+  // craftable is still one of its colours, never a rival.
+  const coOwners = [];
+  if (pieceFamily) {
+    const inSet = new Set([defaultId, ...candidates.map(m => m.id)]);
+    for (const [id, d] of await everyDoc()) if (!inSet.has(id) && d.own && !isVersion(d.own) && families(d.own).includes(pieceFamily)) coOwners.push(id);
+    for (const [id, g] of await reader.gameItems()) if (!inSet.has(id) && g.doc && families(g.doc).includes(pieceFamily)) coOwners.push(id);
+  }
+
+  // A game piece's own name and quality are the game's: Lady's Ruined swords are Legendary and
+  // named Ruined_Sword_Gold, the giant skeleton's sword they start from is Common. So a set on a
+  // game piece takes both from the colours it has, where they agree.
+  const majority = values => {
+    const count = new Map();
+    for (const v of values) if (v !== undefined && v !== null) count.set(v, (count.get(v) || 0) + 1);
+    const best = [...count.entries()].sort((a, b) => b[1] - a[1])[0];
+    return best && best[1] * 2 > values.length ? best[0] : undefined;
+  };
+  let base = defaultId.endsWith('_Default') ? defaultId.slice(0, -'_Default'.length) : defaultId;
+  let setQuality = def.eff.Quality;
+  if (gameDefault && members.length) {
+    const prefixes = members.map(m => {
+      const colour = sheetColour(m.eff.Texture);
+      return m.id.endsWith('_' + colour) ? m.id.slice(0, -(colour.length + 1)) : null;
+    });
+    base = majority(prefixes) || base;
+    setQuality = majority(members.map(m => m.eff.Quality)) ?? setQuality;
+  }
+
+  // Where new versions go: beside the versions it has, else beside the default.
+  const placed = new Map();
+  for (const m of members) placed.set(folder(m.rel), (placed.get(folder(m.rel)) || 0) + 1);
+  const versionFolder = [...placed.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || folder(def.rel);
+
+  // Game items that inherit from a game default without a family of their own join its family in
+  // game the moment the default does.
+  let inheritors = [];
+  if (gameDefault) {
+    inheritors = [...(await reader.gameItems()).entries()]
+      .filter(([, g]) => g.doc && g.doc.Parent === defaultId && !Array.isArray(g.doc.ResourceTypes)).map(([id]) => id).sort();
+  }
+
+  const set = {
+    defaultId, defaultRel: def.rel, base,
+    baseShape, defaultSheet, sheets: orderedSheets, shapes: orderedShapes, sheetFolders: folders,
+    pieceFamily: family, familyIsNew, gameDefault, versionFolder, inheritors, coOwners: coOwners.sort(),
+    defaultFamilies: families(def.eff),
+    defaultQuality: setQuality, defaultLight: def.eff.Light || null,
+    versionCategories: gameDefault ? wantedCategories(defaultId, def.eff, true) : null,
+    defaultCategories: def.eff.Categories || null,
+    patch: gameDefault ? (await reader.patchOf(def.rel)) || { rel: def.rel.replace(/\.json$/, '.patch'), doc: null } : null,
+    familyFileMissing: !familyFiles.has(family),
+  };
 
   // How this set spells its ids, read from the versions it already has.
   let a = 0, b = 0;
@@ -256,7 +561,8 @@ export async function analyse(reader, openRel) {
   // Items that look exactly alike may share one icon: it is the same picture.
   const everyone = [{ id: defaultId, ...def }, ...members];
   const twinsOf = m => new Set(everyone.filter(o => o.id !== m.id && o.eff.Model === m.eff.Model && o.eff.Texture === m.eff.Texture).map(o => o.id));
-  cells.get(key(defaultSheet, baseShape)).items.push({ id: defaultId, rel: def.rel, isDefault: true, slot: statsOf(def.eff.Armor).slot, faults: defaultFaults(set, def, icons, twinsOf({ id: defaultId, ...def })) });
+  cells.get(key(defaultSheet, baseShape)).items.push({ id: defaultId, rel: def.rel, isDefault: true, isGame: gameDefault, slot: statsOf(def.eff.Armor).slot,
+    faults: defaultFaults(set, { ...def, declared: defaultFamilies }, icons, twinsOf({ id: defaultId, ...def })) });
 
   for (const m of members) {
     const cell = cells.get(key(m.eff.Texture, m.eff.Model));
@@ -295,12 +601,40 @@ function iconFaults(id, doc, icons, twins) {
   return faults;
 }
 
+// Gear missing the game's own category beside its Armory one cannot be found by other mods.
+function categoryFault(id, eff, withArmory) {
+  const want = wantedCategories(id, eff, withArmory);
+  if (!want || canonical(want) === canonical(eff.Categories || null)) return [];
+  const missing = want.filter(c => !(eff.Categories || []).includes(c));
+  return [{ kind: 'category', text: 'Is not in ' + missing.join(' and ') + ', so ' + (missing.some(c => c.startsWith('ArmoryCategory.')) ? 'the Armory tab does not show it' : 'other mods cannot find it') + '.', fix: { ops: [[['Categories'], want]] }, byDefault: true }];
+}
+
 function defaultFaults(set, def, icons, twins) {
-  const faults = iconFaults(set.defaultId, def.own, icons, twins);
-  if (!families(def.eff).includes(set.pieceFamily)) {
-    faults.push({ kind: 'notInFamily', text: 'Is not in the family ' + set.pieceFamily + ', so the Alteration Table cannot turn it into a colour.', fix: { ops: [[['ResourceTypes'], [...(def.eff.ResourceTypes || []), { Id: set.pieceFamily }]]] }, byDefault: true });
+  if (set.gameDefault) {
+    // The game's own piece: nothing in its file is ours to change but its family, which the
+    // mod's patch on it gives.
+    const faults = [];
+    if (!def.declared.includes(set.pieceFamily)) {
+      faults.push({ kind: 'notInFamily', text: 'Is not in the family ' + set.pieceFamily + ', so the Alteration Table cannot turn it into a colour. A patch of the mod adds it.', fix: { ops: [], patch: true }, byDefault: true });
+    }
+    faults.push(...coOwnerNote(set));
+    if (set.inheritors.length) {
+      faults.push({ kind: 'inheritors', text: set.inheritors.length + ' game items inherit from it with no family of their own, so they are in its family too and the table turns them into its colours: ' + set.inheritors.slice(0, 6).join(', ') + (set.inheritors.length > 6 ? '...' : '') + '. Tell Larsonix before making colours of it.', fix: null });
+    }
+    return faults;
   }
+  const faults = iconFaults(set.defaultId, def.own, icons, twins);
+  if (!def.declared.includes(set.pieceFamily)) {
+    faults.push({ kind: 'notInFamily', text: 'Is not in the family ' + set.pieceFamily + ', so the Alteration Table cannot turn it into a colour.', fix: { ops: [[['ResourceTypes'], [...(def.own.ResourceTypes || []), { Id: set.pieceFamily }]]] }, byDefault: true });
+  }
+  faults.push(...categoryFault(set.defaultId, def.eff, false));
+  faults.push(...coOwnerNote(set));
   return faults;
+}
+
+function coOwnerNote(set) {
+  if (!set.coOwners.length) return [];
+  return [{ kind: 'coOwners', text: 'Its family ' + set.pieceFamily + ' is also the family of ' + set.coOwners.slice(0, 4).join(', ') + (set.coOwners.length > 4 ? '...' : '') + ', so these colours are that piece\'s too. Nothing is ticked for you: check with Larsonix which piece is the default.', fix: null }];
 }
 
 function memberFaults(set, def, m, icons, expected, twins) {
@@ -324,12 +658,14 @@ function memberFaults(set, def, m, icons, expected, twins) {
     faults.push({ kind: 'wrongFamily', text: 'Is made from ' + alterationInput(recipe) + ' instead of ' + set.pieceFamily + '.', fix: { ops: [[['Recipe'], alterationRecipe(set.pieceFamily)]] }, byDefault: true });
   }
   if (!families(m.eff).includes(set.pieceFamily)) {
-    faults.push({ kind: 'notInFamily', text: 'Is not in the family ' + set.pieceFamily + ', so the table cannot turn it back into another colour.', fix: { ops: [[['ResourceTypes'], def.eff.ResourceTypes || [{ Id: set.pieceFamily }]]] }, byDefault: true });
+    const into = set.gameDefault ? [{ Id: set.pieceFamily }] : (def.eff.ResourceTypes || [{ Id: set.pieceFamily }]);
+    faults.push({ kind: 'notInFamily', text: 'Is not in the family ' + set.pieceFamily + ', so the table cannot turn it back into another colour.', fix: { ops: [[['ResourceTypes'], into]] }, byDefault: true });
   }
   if (set.defaultQuality !== undefined && own.Quality !== set.defaultQuality && m.eff.Quality !== set.defaultQuality) {
     faults.push({ kind: 'quality', text: 'Has quality ' + (m.eff.Quality || 'none') + ', the default piece has ' + set.defaultQuality + '.', fix: { ops: [[['Quality'], set.defaultQuality]] }, byDefault: true });
   }
   faults.push(...iconFaults(m.id, own, icons, twins));
+  faults.push(...categoryFault(m.id, m.eff, set.gameDefault));
   const named = expected.get(m.id);
   if (named && named.sheet !== m.eff.Texture) {
     faults.push({ kind: 'sheetMismatch', text: 'Its name says ' + stem(named.sheet) + ', but it wears ' + stem(m.eff.Texture) + '.', fix: { ops: [[['Texture'], named.sheet]] }, byDefault: false });
@@ -356,6 +692,16 @@ function statsOf(armor) {
 
 // ---- the plan ---------------------------------------------------------------------------------
 
+// The mod's patch on a game piece with its family added. A plain ResourceTypes already in the
+// patch takes the family; otherwise Patchly's + adds it to whatever the game file holds.
+function familyPatchText(set) {
+  const doc = { ...(set.patch.doc || {}) };
+  const entry = { Id: set.pieceFamily };
+  if (Array.isArray(doc.ResourceTypes)) doc.ResourceTypes = [...doc.ResourceTypes, entry];
+  else doc['ResourceTypes+'] = [...(Array.isArray(doc['ResourceTypes+']) ? doc['ResourceTypes+'] : []), entry];
+  return toJson(doc);
+}
+
 // What one press of the button writes, as plain data: new files, edits to existing files, icons.
 export function plan(analysis, choice) {
   const { set } = analysis;
@@ -376,14 +722,16 @@ export function plan(analysis, choice) {
       if (cell.sheet !== set.defaultSheet) doc.Texture = cell.sheet;
       const light = choice.lights[cell.sheet];
       if (light && canonical(light) !== canonical(set.defaultLight)) doc.Light = light;
+      if (set.versionCategories && canonical(set.versionCategories) !== canonical(set.defaultCategories)) doc.Categories = set.versionCategories;
       doc.Recipe = alterationRecipe(set.pieceFamily);
-      create.push({ rel: folder(set.defaultRel) + cell.id + '.json', text: toJson(doc) });
+      create.push({ rel: set.versionFolder + cell.id + '.json', text: toJson(doc) });
       icons.push(cell.id);
       continue;
     }
     for (const item of cell.items) {
       for (const fault of item.faults) {
         if (!fault.fix || !choice.fix.has(item.id + '|' + fault.kind)) continue;
+        if (fault.fix.patch) create.push({ rel: set.patch.rel, text: familyPatchText(set) });
         if (fault.fix.ops.length) addEdit(item.rel, fault.fix.ops);
         if (fault.fix.icon && !icons.includes(item.id)) icons.push(item.id);
       }
@@ -394,10 +742,13 @@ export function plan(analysis, choice) {
 
 // The choices the page starts with: every fault with a clear fix is ticked, the two that may be
 // deliberate are not, and missing versions are ticked only for a set that has none yet, because
-// an existing set may leave a colour out on purpose.
+// an existing set may leave a colour out on purpose. A game piece other game items inherit from
+// starts with nothing ticked, since making colours of it changes those items too, and so does a
+// set whose family another piece also declares.
 export function defaultChoice(analysis) {
   const make = new Set();
   const fix = new Set();
+  if ((analysis.set.inheritors && analysis.set.inheritors.length) || (analysis.set.coOwners && analysis.set.coOwners.length)) return { make, fix, lights: { ...analysis.lights } };
   for (const cell of analysis.cells) {
     if (cell.missing && analysis.memberCount === 0 && !cell.clash) make.add(cell.id);
     for (const item of cell.items) for (const f of item.faults) if (f.fix && f.byDefault) fix.add(item.id + '|' + f.kind);
@@ -409,11 +760,54 @@ export function defaultChoice(analysis) {
 
 let host = null;
 
+// The game's files behind the workspace. HyCreator 1.3.8's listVanillaByExt answers nothing when
+// the vanilla source is the game's Assets.zip (measured: 0 item files, where its own list behind
+// the workspace holds all 3,964), so the app's list is read when the plugin listing is empty.
+async function vanillaFiles(api) {
+  try {
+    const store = await api.modules.store();
+    const hook = [store.useStudio, store, store.u, store.useStore, store.default].find(s => s && typeof s.getState === 'function');
+    const files = hook && hook.getState().fallback && hook.getState().fallback.files;
+    const list = Array.isArray(files) ? files : files && files.values ? [...files.values()] : [];
+    return list.map(f => typeof f === 'string' ? f : f && f.rel).filter(f => typeof f === 'string');
+  } catch {
+    return [];
+  }
+}
+
+// The game's own files, kept between openings of the page: they do not change while HyCreator
+// runs, and reading all of them is what makes the first opening of a game piece's set slow.
+const gameTexts = new Map();
+
 function hyCreatorReader(api) {
+  let vanilla = null;
+  let vanillaSet = null;
+  let modFiles = null;
+  const gameList = async () => {
+    if (!vanilla) vanilla = await vanillaFiles(api);
+    if (!vanillaSet) vanillaSet = new Set(vanilla);
+    return vanilla;
+  };
   return makeReader({
     list: (prefix, exts) => api.workspace.listByExt(prefix, exts),
-    listVanilla: (prefix, exts) => api.workspace.listVanillaByExt(prefix, exts),
-    read: async rel => { try { return await api.workspace.readText(rel); } catch { return null; } },
+    listVanilla: async (prefix, exts) => {
+      const listed = await api.workspace.listVanillaByExt(prefix, exts);
+      if (listed.length) return listed;
+      return (await gameList()).filter(rel => rel.startsWith(prefix) && exts.includes(rel.slice(rel.lastIndexOf('.') + 1)));
+    },
+    read: async rel => {
+      // Only a file on the game's own list that the mod does not hold is kept: a colour the page
+      // writes during the session is never mistaken for a game file.
+      if (!modFiles) modFiles = new Set(await api.workspace.listByExt('Item/', ['json', 'patch']));
+      await gameList();
+      const game = rel.startsWith('Item/') && !modFiles.has(rel) && vanillaSet.has(rel);
+      const key = (api.workspace.current() || {}).root + '|' + rel;
+      if (game && gameTexts.has(key)) return gameTexts.get(key);
+      let text = null;
+      try { text = await api.workspace.readText(rel); } catch { text = null; }
+      if (game && text != null) gameTexts.set(key, text);
+      return text;
+    },
   });
 }
 
@@ -490,11 +884,13 @@ function ColoursPage({ rel }) {
   const [status, setStatus] = useState('Reading the set...');
   const [busy, setBusy] = useState(false);
   const [report, setReport] = useState(null);
+  const [sheetFolder, setSheetFolder] = useState('');
+  const [typedFolder, setTypedFolder] = useState('');
 
   const load = useCallback(async () => {
     setStatus('Reading the set...');
     try {
-      const result = await analyse(hyCreatorReader(api), rel);
+      const result = await analyse(hyCreatorReader(api), rel, { sheetFolder });
       setAnalysis(result);
       setChoice(result.error ? null : defaultChoice(result));
       setStatus(result.error || '');
@@ -502,7 +898,7 @@ function ColoursPage({ rel }) {
       setAnalysis(null);
       setStatus('The set could not be read: ' + (e && e.message || e));
     }
-  }, [rel]);
+  }, [rel, sheetFolder]);
   useEffect(() => { load(); }, [load]);
 
   if (!analysis || analysis.error || !choice) {
@@ -551,9 +947,12 @@ function ColoursPage({ rel }) {
   };
 
   return h('div', { style: { padding: 16, overflow: 'auto', height: '100%' } },
-    h('h3', null, 'Colours of ' + set.defaultId),
-    h('p', null, 'Model folder ', h('code', null, folder(set.baseShape)), '. Family ', h('code', null, set.pieceFamily),
-      set.familyFileMissing ? ' (its file is missing and will be made)' : '', '.'),
+    h('h3', null, 'Colours of ' + set.defaultId + (set.gameDefault ? ', a piece of the game' : '')),
+    set.gameDefault ? h('p', null, 'Its colours are pieces of the mod that name it as their Parent. The mod adds it to their family with a small patch, so the Alteration Table takes the game\'s own piece too.') : null,
+    h('p', null, 'Family ', h('code', null, set.pieceFamily), set.familyFileMissing ? ' (its file is missing and will be made)' : '', '. Colour sheets from ',
+      set.sheetFolders.map((dir, i) => h('span', { key: dir }, i ? ', ' : '', h('code', null, dir))), '.'),
+    h('p', null, h('input', { style: { width: 360 }, value: typedFolder, placeholder: 'Another folder of colour sheets, such as Items/Weapons/CobaltLongSwordRecolors', onChange: e => setTypedFolder(e.target.value) }), ' ',
+      h('button', { onClick: () => setSheetFolder(typedFolder), disabled: busy }, 'Look there')),
     h('p', null, h('button', { onClick: () => tickAllMissing(true), disabled: busy }, 'Tick every missing version'), ' ',
       h('button', { onClick: () => tickAllMissing(false), disabled: busy }, 'Untick them')),
     h('table', { style: { borderCollapse: 'collapse' } },
@@ -564,7 +963,7 @@ function ColoursPage({ rel }) {
         h('td', { style: { padding: 4 } }, h('input', { style: { width: 70 }, value: (lightOf(sheet) && lightOf(sheet).Color) || '', placeholder: 'same as default', title: 'The colour of the light this version gives off, such as #300', onChange: e => setLight(sheet, e.target.value) })),
         set.shapes.map(shape => h('td', { key: shape, style: { padding: 4, verticalAlign: 'top' } }, cellView(cells.find(c => c.sheet === sheet && c.shape === shape)))))))),
     h('p', null, h('button', { onClick: press, disabled: busy || (steps.create.length + steps.edit.length + steps.icons.length === 0) },
-      'Make ' + steps.create.filter(f => f.rel.startsWith('Item/Items/')).length + ' versions, fix ' + steps.edit.length + ' files, make ' + steps.icons.length + ' icons')),
+      'Make ' + steps.create.filter(f => f.rel.startsWith('Item/Items/') && f.rel.endsWith('.json')).length + ' versions, fix ' + (steps.edit.length + steps.create.filter(f => f.rel.endsWith('.patch')).length) + ' files, make ' + steps.icons.length + ' icons')),
     status ? h('p', null, status) : null,
     report && report.failed.length ? h('div', null, h('p', null, 'These did not work:'), h('ul', null, report.failed.map(f => h('li', { key: f }, f)))) : null);
 }
@@ -821,6 +1220,8 @@ export const GUIDE = [
     'Tick the versions you want, type a light colour on a row if that colour glows, and press the button.',
     'It makes each version, its Alteration Table recipe, its family and its icon. Pressing it again only fixes what is missing or wrong.',
     'A version takes its stats from the default piece. Change stats on the default piece only.',
+    'Colours of a piece of the game, such as the Thorium chest: put the colour sheets in Common/Items/Armors/VanillaRecolors/Thorium/, named like Chest_Red.png, then open the game piece in HyCreator\'s vanilla list, or one of its colours, and click Colours. Never copy the game piece to start: the page builds every colour on it.',
+    'For a game weapon, type the folder of its colour sheets in the box on the page and press Look there.',
   ] },
   { title: 'Icons', steps: [
     'The Colours page makes the icons of the versions it makes.',

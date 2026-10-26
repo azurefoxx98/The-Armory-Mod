@@ -126,35 +126,37 @@ const readJson = rel => JSON.parse(fs.readFileSync(path.join(resources, 'Server'
   check('Cobalt longsword colour: its default is the game\'s Cobalt longsword', !sword.error && sword.set.defaultId === 'Weapon_Longsword_Cobalt', sword.error || sword.set.defaultId);
 }
 
-// 2d. A new set of colours for a game piece, planted in memory: two colour sheets of the Thorium
+// 2d. A new set of colours for a game piece, planted in memory: two colour sheets of the Mithril
 // chest in the folder the mod uses by convention, and a helmet's sheet beside them. Opening the
-// game's Thorium chest offers both colours and not the helmet; the button writes the family, the
+// game's Mithril chest offers both colours and not the helmet; the button writes the family, the
 // patch putting the game piece in it, and two small versions; pressing again writes nothing.
+// The Mithril chest has no colours in the mod, so the set starts empty on every branch. The
+// Thorium chest did until Lady's own Thorium colours arrived.
 {
   const overlay = new Map();
-  const dir = '../Common/Items/Armors/VanillaRecolors/Thorium/';
+  const dir = '../Common/Items/Armors/VanillaRecolors/Mithril/';
   for (const name of ['Chest_Black.png', 'Chest_Red.png', 'Helm_Red.png']) overlay.set(dir + name, '');
-  const thorium = 'Item/Items/Armor/Thorium/Armor_Thorium_Chest.json';
-  const a = await analyse(makeReader(io(overlay)), thorium);
-  check('Thorium chest: a game piece is a default', !a.error && a.set.gameDefault && a.set.defaultId === 'Armor_Thorium_Chest', a.error || JSON.stringify(a.set && a.set.defaultId));
-  check('Thorium chest: it does not take the Iron chest\'s family it inherits', a.set.pieceFamily !== 'Resource_Armor_Iron_Chest', a.set.pieceFamily);
-  check('Thorium chest: its two colours, not the helmet\'s sheet', a.set.sheets.length === 3 && !a.set.sheets.some(s => s.endsWith('Helm_Red.png')), a.set.sheets.join(', '));
+  const mithril = 'Item/Items/Armor/Mithril/Armor_Mithril_Chest.json';
+  const a = await analyse(makeReader(io(overlay)), mithril);
+  check('Mithril chest: a game piece is a default', !a.error && a.set.gameDefault && a.set.defaultId === 'Armor_Mithril_Chest', a.error || JSON.stringify(a.set && a.set.defaultId));
+  check('Mithril chest: it does not take the Iron chest\'s family it inherits', a.set.pieceFamily !== 'Resource_Armor_Iron_Chest', a.set.pieceFamily);
+  check('Mithril chest: its two colours, not the helmet\'s sheet', a.set.sheets.length === 3 && !a.set.sheets.some(s => s.endsWith('Helm_Red.png')), a.set.sheets.join(', '));
   const p = plan(a, defaultChoice(a));
   const versions = p.create.filter(c => c.rel.endsWith('.json') && c.rel.startsWith('Item/Items/'));
-  const patch = p.create.find(c => c.rel === 'Item/Items/Armor/Thorium/Armor_Thorium_Chest.patch');
-  check('Thorium chest: the family file is made', p.create.some(c => c.rel === 'Item/ResourceTypes/' + a.set.pieceFamily + '.json'));
-  check('Thorium chest: a patch adds the game piece to the family with Patchly\'s +', !!patch && canonicalText(patch.text) === canonicalText(JSON.stringify({ 'ResourceTypes+': [{ Id: a.set.pieceFamily }] })), patch && patch.text);
-  const red = versions.map(v => JSON.parse(v.text)).find(v => v.Texture === 'Items/Armors/VanillaRecolors/Thorium/Chest_Red.png');
-  check('Thorium chest: two colours are made, named Black and Red', versions.length === 2 && versions.some(v => v.rel.endsWith('/Armor_Thorium_Chest_Red.json')), versions.map(v => v.rel).join(', '));
-  check('Thorium chest: a colour names the game piece as its parent and sits in both tabs', !!red && red.Parent === 'Armor_Thorium_Chest'
+  const patch = p.create.find(c => c.rel === 'Item/Items/Armor/Mithril/Armor_Mithril_Chest.patch');
+  check('Mithril chest: the family file is made', p.create.some(c => c.rel === 'Item/ResourceTypes/' + a.set.pieceFamily + '.json'));
+  check('Mithril chest: a patch adds the game piece to the family with Patchly\'s +', !!patch && canonicalText(patch.text) === canonicalText(JSON.stringify({ 'ResourceTypes+': [{ Id: a.set.pieceFamily }] })), patch && patch.text);
+  const red = versions.map(v => JSON.parse(v.text)).find(v => v.Texture === 'Items/Armors/VanillaRecolors/Mithril/Chest_Red.png');
+  check('Mithril chest: two colours are made, named Black and Red', versions.length === 2 && versions.some(v => v.rel.endsWith('/Armor_Mithril_Chest_Red.json')), versions.map(v => v.rel).join(', '));
+  check('Mithril chest: a colour names the game piece as its parent and sits in both tabs', !!red && red.Parent === 'Armor_Mithril_Chest'
     && JSON.stringify(red.Categories) === JSON.stringify(['ArmoryCategory.ArmoryArmors', 'Items.Armors']) && isAlterationRecipe(red.Recipe), red && JSON.stringify(red));
   for (const c of p.create) overlay.set(c.rel, c.text);
-  const again = await analyse(makeReader(io(overlay)), thorium);
+  const again = await analyse(makeReader(io(overlay)), mithril);
   const p2 = plan(again, defaultChoice(again));
-  check('Thorium chest: the made colours are found as its colours', again.memberCount === 2, String(again.memberCount));
-  check('Thorium chest: pressing again writes nothing but the icons not yet baked', p2.create.length === 0 && p2.edit.length === 0, JSON.stringify(p2).slice(0, 300));
+  check('Mithril chest: the made colours are found as its colours', again.memberCount === 2, String(again.memberCount));
+  check('Mithril chest: pressing again writes nothing but the icons not yet baked', p2.create.length === 0 && p2.edit.length === 0, JSON.stringify(p2).slice(0, 300));
   const fromColour = await analyse(makeReader(io(overlay)), versions[0].rel);
-  check('Thorium chest: opening a made colour finds the same set', !fromColour.error && fromColour.set.defaultId === 'Armor_Thorium_Chest', fromColour.error || fromColour.set.defaultId);
+  check('Mithril chest: opening a made colour finds the same set', !fromColour.error && fromColour.set.defaultId === 'Armor_Mithril_Chest', fromColour.error || fromColour.set.defaultId);
 }
 
 // 3. The October faults, planted back in memory.

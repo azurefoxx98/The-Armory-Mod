@@ -2,10 +2,10 @@
 #
 # What it does, in order:
 #   1. Opens once per key: starting it again brings the open window forward.
-#   2. After the key's zip was unpacked by Windows, removes the "downloaded" mark from every file once,
-#      so Windows never warns before its programs again.
-#   3. Gives the key's folder the letter L:, and points every program it starts at the key: their
+#   2. Gives the key's folder the letter L:, and points every program it starts at the key: their
 #      settings, her sign-in and her copy of the mod all stay on it, and nothing is written to the computer.
+#   3. The first time after the key's zip was unpacked by Windows, removes the "downloaded" mark from every
+#      file, so Windows never warns before its programs again, and unpacks Gradle's folder.
 #   4. Rewrites the paths kept in plain files for the letter in use.
 #   5. Looks for Hytale on this computer and copies its files to the key, in the background, when the
 #      key has none or older ones.
@@ -48,6 +48,14 @@ function Show-Message([string] $text, [string] $buttons = 'OK') {
     return [string][Windows.Forms.MessageBox]::Show($text, $title, $buttons)
 }
 
+# Every button and the clock run through this. A failure inside a window's event would otherwise reach
+# her as the .NET error box, and on a hidden desktop it waits for a click that never comes.
+function Invoke-Safely([scriptblock] $block) {
+    try { & $block } catch {
+        [void](Show-Message "The Armory stopped on something unexpected. Send Larsonix a screenshot of this window.`n`nFor Larsonix: $($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)")
+    }
+}
+
 # 1. One window per key.
 $mutex = New-Object Threading.Mutex($false, 'Local\TheArmoryKey')
 if (-not $mutex.WaitOne(0)) {
@@ -55,8 +63,24 @@ if (-not $mutex.WaitOne(0)) {
     exit 0
 }
 
-# 2. The "downloaded" mark, removed once, with a small window saying so while it runs.
-if (Test-InternetMark (Join-Path $Key 'Start The Armory.cmd')) {
+# 2. The letter and the environment.
+$letter = Mount-KeyLetter $Key
+if (-not $letter) {
+    [void](Show-Message "The key could not get a drive letter on this computer. Send Larsonix a screenshot of this window.`n`nFor Larsonix: no free letter among $($KeyLetters -join ', ')")
+    exit 0
+}
+$root = Get-KeyRoot $letter
+$elsewhere = $letter -ne $KeyMainLetter
+Set-KeyEnvironment $root
+# The window itself holds no folder of the key open, so the key can be ejected at Done.
+Set-Location -LiteralPath $env:SystemRoot
+
+# 3. The first start after the zip was unpacked, with a small window saying so while it runs: Windows'
+# "downloaded" mark removed from every file, and Gradle's folder unpacked from its archive. Both go
+# through the key's letter, whose short paths every file fits under.
+$marked = Test-InternetMark (Join-Path $Key 'Start The Armory.cmd')
+$packed = Test-Path -LiteralPath (Join-Path $root 'Key\gradle.zip')
+if ($marked -or $packed) {
     $splash = New-Object Windows.Forms.Form
     $splash.Text = $title; $splash.Width = 420; $splash.Height = 120; $splash.StartPosition = 'CenterScreen'
     $splash.FormBorderStyle = 'FixedDialog'; $splash.ControlBox = $false
@@ -65,21 +89,17 @@ if (Test-InternetMark (Join-Path $Key 'Start The Armory.cmd')) {
     $line.Text = 'Getting the key ready. This happens only the first time.'
     $splash.Controls.Add($line)
     $splash.Show(); [Windows.Forms.Application]::DoEvents()
-    [void](Clear-InternetMark $Key { param($n) [Windows.Forms.Application]::DoEvents() })
+    if ($marked) { [void](Clear-InternetMark $root { param($n) [Windows.Forms.Application]::DoEvents() }) }
+    if ($packed) {
+        $unpack = [powershell]::Create()
+        [void]$unpack.AddScript({ param($library, $root) . $library; Expand-KeyGradle $root }).AddArgument((Join-Path $PSScriptRoot 'key.ps1')).AddArgument($root)
+        $running = $unpack.BeginInvoke()
+        while (-not $running.IsCompleted) { Start-Sleep -Milliseconds 100; [Windows.Forms.Application]::DoEvents() }
+        # A failed unpack leaves the archive for the next start. Meanwhile a release fetches what it needs.
+        try { [void]$unpack.EndInvoke($running) } catch { }
+    }
     $splash.Close()
 }
-
-# 3. The letter and the environment.
-$letter = Mount-KeyLetter $Key
-if (-not $letter) {
-    [void](Show-Message "The key could not get a drive letter on this computer. Send Larsonix a screenshot of this window.`n`nFor Larsonix: no free letter among $($KeyLetters -join ', ')")
-    exit 1
-}
-$root = Get-KeyRoot $letter
-$elsewhere = $letter -ne $KeyMainLetter
-Set-KeyEnvironment $root
-# The window itself holds no folder of the key open, so the key can be ejected at Done.
-Set-Location -LiteralPath $env:SystemRoot
 $repo = Join-Path $root 'The-Armory-Mod'
 # These scripts, through the key's letter: from her copy of the mod, or the key's own copy in Key\.
 $scripts = $PSScriptRoot
@@ -183,19 +203,19 @@ function New-Button([string] $text, [int] $x, [int] $y, [scriptblock] $click) {
 
 New-Heading 'Your programs' 14
 $buttons = @{}
-$buttons.HyCreator = New-Button 'HyCreator' 20 40 { Open-Program 'HyCreator' }
-$buttons.Blockbench = New-Button 'Blockbench' 190 40 { Open-Program 'Blockbench' }
-$buttons.PhotoCraft = New-Button 'PhotoCraft' 360 40 { Open-Program 'PhotoCraft' }
+$buttons.HyCreator = New-Button 'HyCreator' 20 40 { Invoke-Safely { Open-Program 'HyCreator' } }
+$buttons.Blockbench = New-Button 'Blockbench' 190 40 { Invoke-Safely { Open-Program 'Blockbench' } }
+$buttons.PhotoCraft = New-Button 'PhotoCraft' 360 40 { Invoke-Safely { Open-Program 'PhotoCraft' } }
 New-Heading 'Your work' 96
-$buttons.Updates = New-Button 'Get updates' 20 122 { Open-Console (Join-Path $scripts 'programs.ps1') @('-Root', $root, '-GetUpdates') }
-$buttons.Check = New-Button 'Check' 190 122 { Open-Console (Join-Path $repo 'Studio\Check.cmd') @() }
-$buttons.Release = New-Button 'Release' 360 122 { Open-Console (Join-Path $repo 'Studio\Release.cmd') @() }
+$buttons.Updates = New-Button 'Get updates' 20 122 { Invoke-Safely { Open-Console (Join-Path $scripts 'programs.ps1') @('-Root', $root, '-GetUpdates') } }
+$buttons.Check = New-Button 'Check' 190 122 { Invoke-Safely { Open-Console (Join-Path $repo 'Studio\Check.cmd') @() } }
+$buttons.Release = New-Button 'Release' 360 122 { Invoke-Safely { Open-Console (Join-Path $repo 'Studio\Release.cmd') @() } }
 
 $status = New-Object Windows.Forms.Label
 $status.Left = 20; $status.Top = 180; $status.Width = 505; $status.Height = 200
 $form.Controls.Add($status)
 
-$buttons.Done = New-Button 'Done' 360 392 { Invoke-Done }
+$buttons.Done = New-Button 'Done' 360 392 { Invoke-Safely { Invoke-Done } }
 $buttons.Done.Font = New-Object Drawing.Font('Segoe UI', 10, [Drawing.FontStyle]::Bold)
 
 # ---- what the window says ------------------------------------------------------------------------
@@ -269,8 +289,10 @@ function Update-Window {
 
 # ---- Done ------------------------------------------------------------------------------------
 
+# While Done works, the clock stops: it would read the key's letter after Done has removed it.
 function Set-Busy([bool] $on, [string] $text) {
     $script:busy = $on
+    if ($on) { $timer.Stop() } else { $timer.Start() }
     foreach ($b in $buttons.Values) { $b.Enabled = -not $on }
     if ($text) {
         $status.Text = $text
@@ -380,30 +402,34 @@ $form.Add_FormClosing({
     param($sender, $e)
     # Windows closing or signing out closes the programs itself, and must not wait on this window.
     if ($e.CloseReason -eq 'WindowsShutDown') { return }
-    if (-not $script:closing) { $e.Cancel = $true; Invoke-Done }
+    if (-not $script:closing) { $e.Cancel = $true; Invoke-Safely { Invoke-Done } }
 })
 
 $timer = New-Object Windows.Forms.Timer
 $timer.Interval = 2000
 $timer.Add_Tick({
-    Update-Window
-    # Tests drive the window through a file, since no hand can click on a hidden desktop.
-    if ($testing) {
-        $order = Join-Path $root 'Key\test-do.txt'
-        if (Test-Path -LiteralPath $order) {
-            $what = ([IO.File]::ReadAllText($order)).Trim()
-            Remove-Item -LiteralPath $order -Force
-            switch ($what) {
-                'Done' { Invoke-Done }
-                default { Open-Program $what }
+    Invoke-Safely {
+        Update-Window
+        # Tests drive the window through a file, since no hand can click on a hidden desktop.
+        if ($testing -and -not $script:busy) {
+            $order = [IO.Path]::Combine($root, 'Key\test-do.txt')
+            if ([IO.File]::Exists($order)) {
+                $what = ([IO.File]::ReadAllText($order)).Trim()
+                [IO.File]::Delete($order)
+                switch ($what) {
+                    'Done' { Invoke-Done }
+                    default { Open-Program $what }
+                }
             }
         }
     }
 })
 $form.Add_Shown({
-    Update-Window
-    if (-not (Get-KeyProcesses $root | Where-Object { $_.Path -ieq (Get-ProgramExe 'HyCreator') })) { Open-Program 'HyCreator' }
-    $timer.Start()
+    Invoke-Safely {
+        Update-Window
+        if (-not (Get-KeyProcesses $root | Where-Object { $_.Path -ieq (Get-ProgramExe 'HyCreator') })) { Open-Program 'HyCreator' }
+        $timer.Start()
+    }
 })
 [void]$form.ShowDialog()
 $timer.Stop()

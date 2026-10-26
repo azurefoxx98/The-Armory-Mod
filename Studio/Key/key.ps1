@@ -360,23 +360,72 @@ function Test-InternetMark([string] $path) {
     try { $null = Get-Content -LiteralPath $path -Stream Zone.Identifier -ErrorAction Stop; return $true } catch { return $false }
 }
 
-# Windows' own file call, because a command per file is slow over tens of thousands of files on a key.
+# Windows' own file calls, because a command per file is slow over tens of thousands of files on a key.
+# A read-only file (Git keeps its objects so) refuses to lose its mark until the flag is lifted, so the
+# flag is lifted and put back around it. Folders Windows keeps to itself, and links to other folders,
+# are passed over instead of ending the walk.
 function Clear-InternetMark([string] $folder, [scriptblock] $progress) {
     if (-not ('KeyMark' -as [type])) {
         Add-Type -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 public static class KeyMark {
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    static extern bool DeleteFileW(string path);
-    public static bool Clear(string path) { return DeleteFileW(path + ":Zone.Identifier"); }
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern bool DeleteFileW(string path);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern uint GetFileAttributesW(string path);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern bool SetFileAttributesW(string path, uint attributes);
+    public static bool Clear(string path) {
+        string stream = path + ":Zone.Identifier";
+        if (DeleteFileW(stream)) return true;
+        if (Marshal.GetLastWin32Error() != 5) return false;
+        uint attributes = GetFileAttributesW(path);
+        if (attributes == 0xFFFFFFFF || (attributes & 1) == 0) return false;
+        SetFileAttributesW(path, attributes & ~1u);
+        bool cleared = DeleteFileW(stream);
+        SetFileAttributesW(path, attributes);
+        return cleared;
+    }
+    public static List<string> Files(string root) {
+        var files = new List<string>();
+        var folders = new Stack<string>();
+        folders.Push(root);
+        while (folders.Count > 0) {
+            string folder = folders.Pop();
+            try {
+                files.AddRange(Directory.GetFiles(folder));
+                foreach (string inner in Directory.GetDirectories(folder)) {
+                    if ((File.GetAttributes(inner) & FileAttributes.ReparsePoint) == 0) folders.Push(inner);
+                }
+            } catch (UnauthorizedAccessException) { } catch (IOException) { }
+        }
+        return files;
+    }
 }
 '@
     }
     $n = 0
-    foreach ($file in [IO.Directory]::EnumerateFiles($folder, '*', [IO.SearchOption]::AllDirectories)) {
+    foreach ($file in [KeyMark]::Files($folder)) {
         [void][KeyMark]::Clear($file)
         $n++
         if ($progress -and $n % 1000 -eq 0) { & $progress $n }
     }
     return $n
+}
+
+# Gradle's folder travels inside the key as one archive (Key\gradle.zip), because its deepest paths run past
+# the 260 characters Windows' own unzip can write when the key is unpacked in a long folder: it skips such
+# files without a word. Unpacked under the key's short letter, they fit. Returns $true when it is in place.
+function Expand-KeyGradle([string] $root) {
+    $archive = Join-Path $root 'Key\gradle.zip'
+    $place = Join-Path $root 'Home\.gradle'
+    if (-not (Test-Path -LiteralPath $archive)) { return (Test-Path -LiteralPath $place) }
+    $partial = "$place.partial"
+    if (Test-Path -LiteralPath $partial) { Remove-Item -LiteralPath $partial -Recurse -Force }
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [IO.Compression.ZipFile]::ExtractToDirectory($archive, $partial)
+    if (Test-Path -LiteralPath $place) { Remove-Item -LiteralPath $place -Recurse -Force }
+    Move-Item -LiteralPath $partial -Destination $place
+    Remove-Item -LiteralPath $archive -Force
+    return $true
 }

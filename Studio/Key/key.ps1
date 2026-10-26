@@ -225,9 +225,12 @@ function Copy-KeyGame([string] $from, [string] $root, $state) {
     $partial = "$place.partial"
     try {
         $state.Total = Get-FolderBytes $from
-        # A subst letter reports the free space of the drive it points into.
-        $free = (New-Object IO.DriveInfo $root.Substring(0, 1)).AvailableFreeSpace
-        if ($free -lt ($state.Total + 300MB)) { $state.Error = 'space'; return }
+        # A subst letter reports the free space and the file system of the drive it points into.
+        $drive = New-Object IO.DriveInfo $root.Substring(0, 1)
+        if ($drive.AvailableFreeSpace -lt ($state.Total + 300MB)) { $state.Error = 'space'; return }
+        # FAT32, the format of many USB keys, holds no file of 4 GB or more, and the game's largest is close.
+        $largest = (Get-ChildItem -LiteralPath $from -Recurse -File -Force | Measure-Object Length -Maximum).Maximum
+        if ($drive.DriveFormat -eq 'FAT32' -and $largest -ge 4GB) { $state.Error = 'fat32'; return }
         if (Test-Path -LiteralPath $partial) { Remove-Item -LiteralPath $partial -Recurse -Force }
         New-Item -ItemType Directory -Force -Path $partial | Out-Null
         $buffer = New-Object byte[] (4MB)

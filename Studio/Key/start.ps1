@@ -85,6 +85,16 @@ $repo = Join-Path $root 'The-Armory-Mod'
 $scripts = $PSScriptRoot
 if ($scripts.StartsWith($Key, [StringComparison]::OrdinalIgnoreCase)) { $scripts = Join-Path $root $scripts.Substring($Key.Length).TrimStart('\') }
 $programList = Read-KeyJson (Join-Path $scripts 'programs.json')
+# The key's spare copy follows her copy of the mod, so it is current whenever it is needed.
+$spare = Join-Path $root 'Key'
+if ($scripts -ieq (Join-Path $repo 'Studio\Key')) {
+    foreach ($file in Get-ChildItem -LiteralPath $scripts -File) {
+        $copy = Join-Path $spare $file.Name
+        if (-not (Test-Path -LiteralPath $copy) -or (Get-FileHash -LiteralPath $copy).Hash -ne (Get-FileHash -LiteralPath $file.FullName).Hash) {
+            try { Copy-Item -LiteralPath $file.FullName -Destination $copy -Force } catch { }
+        }
+    }
+}
 $stateFile = Join-Path $root 'Key\window.txt'
 
 # 4. The paths kept in plain files, and the saved pages on a computer where the key has another letter.
@@ -203,6 +213,9 @@ function Get-GameLines {
         $s = $script:copy.State
         if ($s.Error -eq 'space') {
             $lines += "The key is too full for Hytale's files. They need $([math]::Ceiling($s.Total / 1GB) + 1) GB free."
+        } elseif ($s.Error -eq 'fat32') {
+            $lines += "This USB key cannot hold Hytale's largest file, which is over 4 GB. Send Larsonix a screenshot of this window."
+            $lines += 'For Larsonix: the key is FAT32. Formatted as exFAT it would hold it.'
         } elseif ($s.Error) {
             $lines += "Hytale's files could not be copied to the key. Send Larsonix a screenshot of this window."
             $lines += "For Larsonix: $($s.Error)"

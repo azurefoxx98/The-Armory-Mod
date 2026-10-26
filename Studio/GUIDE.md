@@ -68,6 +68,13 @@ The same guide is in HyCreator: click ? at the top.
 
 - Start a world with The Armory turned on in its mods list.
 - A file you save in HyCreator changes in the running world. If an item still looks the same, take it off and put it on again, or rejoin the world.
+- To get an item in your world, click /give at the top of its page, then paste it in Hytale's chat.
+- Never click Deploy at the top of HyCreator. The game already reads your copy, and Deploy only adds a large unused file to your mods folder.
+
+## Undo a mistake
+
+- To undo every change to one file since your last commit, right-click it in the file tree, then Restore from last commit.
+- A file you delete goes to the trash. Click Workspace at the top left, then Trash (restore deleted)..., to bring it back.
 
 ## Stats and effects
 
@@ -79,6 +86,15 @@ The same guide is in HyCreator: click ? at the top.
 - For particles and sounds, use only the names HyCreator suggests.
 - Effectly tags are no longer used.
 
+## Chest loot
+
+- Each zone has its own chest loot table, in Drops > TheArmory: Armory_Zone1_Loot to Armory_Zone4_Loot.
+- A table has three groups. A chest gets an item from the first group 25% of the time, from the second 5%, and from the third 1%.
+- Inside a group, every entry has the same chance. A whole set is one entry, and the chest gets one item of it.
+- Click the arrow of a group to see its entries. To add one, use + Add entry... inside that group, choose Single: an item, and pick the item.
+- Click 10k rolls at the top to see how often each item drops.
+- Keep the four table names as they are: the chests find them by name.
+
 ## Make a release
 
 - Commit your work first, then double-click Studio\Release.cmd.
@@ -89,7 +105,7 @@ The same guide is in HyCreator: click ? at the top.
 
 ## Files our tools make
 
-- Our tools rewrite the chest loot tables and the showcase world. HyCreator opens those files on a warning.
+- Our tools rewrite the showcase world and the list of chests your loot goes in. HyCreator opens those files on a warning.
 - To change one, send Larsonix what should change.
 
 ## When something goes wrong

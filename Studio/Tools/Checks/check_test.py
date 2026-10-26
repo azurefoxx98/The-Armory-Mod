@@ -191,6 +191,17 @@ GATE_STRINGS = [
     'itemcheck\t{}: its model {} cannot be read ({})',
     'itemcheck\t{}: its texture {} is not a PNG picture',
     'itemcheck\t{}: {} face(s) partly outside {} ({}x{})',
+    'lootcheck\tdrop directory not found at {}',
+    'lootcheck\tlootcheck: FAILED: {} problem(s)',
+    'lootcheck\tlootcheck: PASS: every item and drop list a loot table names exists',
+    'lootcheck\tlootcheck: cannot complete scan: {}',
+    'lootcheck\tlootcheck: {} drop files, against {} items and {} drop lists',
+    "lootcheck\tthe game's Assets.zip not found at {}",
+    'lootcheck\t{}: cannot be read as JSON, so the game never loads it ({})',
+    'lootcheck\t{}: it drops nothing at all, so the game refuses the whole file',
+    'lootcheck\t{}: it drops the item {}, which does not exist',
+    'lootcheck\t{}: it names the drop list {}, which does not exist',
+    'lootcheck\t{}: it puts the drop list {} in chests, but {} does not exist',
     'recipecheck\t (another bench route works)',
     'recipecheck\t and no family file',
     'recipecheck\t vanilla recipes, for scale: ',
@@ -283,6 +294,11 @@ SAMPLES = [
     ("assetcheck", "en-US client.lang: itemTooltip.stats.X has no {value} slot, so its amount never shows", "never shows its amount"),
     ("assetcheck", "Bench_X.json references HitboxType 'ArmoryGhost' which we do not ship", "hitbox ArmoryGhost"),
     ("assetcheck", "AlterationTable: model or texture missing", "A bench or tooltip of the mod is broken."),
+    ("lootcheck", "Server/Drops/TheArmory/Armory_Zone1_Loot.json: cannot be read as JSON, so the game never loads it (Expecting ',' delimiter: line 12 column 5 (char 210))", "fix line 12 in Notepad"),
+    ("lootcheck", "Server/Drops/TheArmory/Armory_Zone1_Loot.json: it drops the item Mace_Iron_Rustyy, which does not exist", "pick an existing item in place of Mace_Iron_Rustyy"),
+    ("lootcheck", "Server/Drops/Prefabs/Zone1_Goblin_Tier1.patch: it puts the drop list Armory_Zone1_Loot in chests, but Armory_Zone1_Loot does not exist", "Name one of your chest loot tables Armory_Zone1_Loot again."),
+    ("lootcheck", "Server/Drops/ScrapArmorDrops.json: it names the drop list Ghost_Drops, which does not exist", "names the table Ghost_Drops"),
+    ("lootcheck", "Server/Drops/TheArmory/Armory_Zone1_Loot.json: it drops nothing at all, so the game refuses the whole file", "add an item"),
 ]
 
 
@@ -310,6 +326,32 @@ def words(expect) -> None:
            [i["label"] for i in reach["items"]] == ["Praetorian_Boots", "Praetorian_Boots_Gray"], reach["items"])
     stat = check.for_lady("familycheck", SAMPLES[35][1])
     expect("a resource type with two stat profiles lists the items of both", [i["label"] for i in stat["items"]] == ["A_1", "A_2", "B_1"], stat["items"])
+    chests = check.for_lady("lootcheck", SAMPLES[51][1])
+    expect("a chest file our tools write is never offered to open", chests["items"] == [], chests["items"])
+    table = check.for_lady("lootcheck", SAMPLES[50][1])
+    expect("her loot table opens", table["items"] == [{"label": "Armory_Zone1_Loot", "open": "Drops/TheArmory/Armory_Zone1_Loot.json"}],
+           table["items"])
+
+    # One typing mistake stops three gates, which repeat the parser's message. She reads one problem.
+    parse = "Expecting ',' delimiter: line 7 column 3 (char 146)"
+    typo = [
+        {"id": "itemcheck", "title": "Item files", "status": "fail",
+         "problems": [f"Server/Item/Items/A/B.json: cannot be read as JSON, so the game never loads it ({parse})"]},
+        {"id": "recipecheck", "title": "Recipes", "status": "error", "problems": [],
+         "output_tail": [f"recipecheck: cannot complete scan: {parse}"]},
+        {"id": "assetcheck", "title": "Benches and tooltips", "status": "error", "problems": [],
+         "output_tail": ["Traceback (most recent call last):", f"json.decoder.JSONDecodeError: {parse}"]},
+        {"id": "dupkeycheck", "title": "Fields written twice", "status": "fail",
+         "problems": [f"Server\\Item\\Items\\A\\B.json: does not parse, {parse}"]},
+        {"id": "familycheck", "title": "Alteration Table", "status": "error", "problems": [],
+         "output_tail": ["familycheck: cannot complete scan: something else entirely"]},
+    ]
+    check.lady_view(typo)
+    found = check.groups({"checks": typo})
+    says = [g["says"] for g in found]
+    expect("a typing mistake that stops other checks is one problem, and a check stopped by something else still shows",
+           len(found) == 2 and says[0] == "Has a typing mistake at line 7, so Hytale skips this file. Some checks wait until it is fixed."
+           and "Alteration Table" in says[1], says)
 
     # Her branch's shape: a stat named by two gates, and a recipe making helmets from gloves.
     checks = [
@@ -407,10 +449,13 @@ def main(argv: list[str]) -> int:
                     return "".join(lines[:i] + lines[i + 1:])
             raise SystemExit("server.lang holds no name")
         edit(lang, drop_last)
-        # A hand edit to a loot table the loot tool writes.
-        drops = os.path.join(res, "Server", "Drops", "TheArmory")
-        loot = os.path.join(drops, sorted(os.listdir(drops))[0])
+        # A hand edit to a patch the loot tool writes, which puts her loot tables in chests.
+        drops = os.path.join(res, "Server", "Drops", "Prefabs")
+        loot = os.path.join(drops, sorted(n for n in os.listdir(drops) if n.endswith(".patch"))[0])
         edit(loot, lambda t: t + "\n")
+        # Her own loot table, edited the way she now may, with one item misspelled.
+        table = os.path.join(res, "Server", "Drops", "TheArmory", "Armory_Zone1_Loot.json")
+        edit(table, lambda t: t.replace('"ItemId": "Mace_Iron_Rusty"', '"ItemId": "Mace_Iron_Rustyy"', 1))
         git(clone, "-c", "user.name=Lady", "-c", "user.email=lady@example.invalid", "commit", "-q", "-am", "Her work")
 
         code, result = run(clone)
@@ -424,8 +469,11 @@ def main(argv: list[str]) -> int:
                and any("ItemSoundSetId" in p for p in checks["dupkeycheck"]["problems"]), checks["dupkeycheck"])
         expect("the lost language name is named", checks["languages"]["status"] == "fail"
                and any(lost in p for p in checks["languages"]["problems"]), checks["languages"])
-        expect("the edited loot table is named", checks["generated"]["status"] == "fail"
-               and any(os.path.basename(loot) in p for p in checks["generated"]["problems"]), checks["generated"])
+        expect("the edited chest patch is named, and her edited loot table is not", checks["generated"]["status"] == "fail"
+               and any(os.path.basename(loot) in p for p in checks["generated"]["problems"])
+               and not any("Armory_Zone1_Loot" in p for p in checks["generated"]["problems"]), checks["generated"])
+        expect("the misspelled chest item is named", checks["lootcheck"]["status"] == "fail"
+               and any("Mace_Iron_Rustyy" in p for p in checks["lootcheck"]["problems"]), checks["lootcheck"])
         expect("the checks with nothing planted still pass",
                all(checks[k]["status"] == "pass" for k in ("recipecheck", "familycheck", "assetcheck", "branch")),
                {k: checks[k]["status"] for k in checks})

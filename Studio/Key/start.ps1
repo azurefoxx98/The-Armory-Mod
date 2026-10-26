@@ -172,7 +172,7 @@ $buttons.Done.Font = New-Object Drawing.Font('Segoe UI', 10, [Drawing.FontStyle]
 # ---- what the window says ------------------------------------------------------------------------
 
 $script:work = Get-KeyWork $root
-$script:online = Test-KeyOnline
+$script:online = Test-KeyOnline $root
 $script:lastWork = Get-Date
 $script:lastOnline = Get-Date
 $script:said = ''
@@ -213,7 +213,7 @@ function Update-Window {
     if ($script:busy) { return }
     $now = Get-Date
     if (($now - $script:lastWork).TotalSeconds -ge 10) { $script:work = Get-KeyWork $root; $script:lastWork = $now }
-    if (($now - $script:lastOnline).TotalSeconds -ge 60) { $script:online = Test-KeyOnline; $script:lastOnline = $now }
+    if (($now - $script:lastOnline).TotalSeconds -ge 60) { $script:online = Test-KeyOnline $root; $script:lastOnline = $now }
     $lines = @()
     if ($elsewhere) {
         $lines += "On this computer the key uses $($letter): instead of L:. In HyCreator, open the mod folder $($root)The-Armory-Mod once."
@@ -313,10 +313,10 @@ function Invoke-Done {
     # The checks after a commit and Git finish by themselves. A release leaves Java waiting in the
     # background for its next build, which has nothing to save, so it is ended.
     Set-Busy $true 'Waiting for the checks to finish.'
-    [void](Wait-Until { @(Get-KeyProcesses $root -Everywhere | Where-Object { $_.ProcessName -ne 'java' }).Count -eq 0 } 180)
+    [void](Wait-Until { @(Get-KeyProcesses $root -Everywhere | Where-Object { $_.ProcessName -ne 'java' }).Count -eq 0 -and (Get-KeyBrowsers $root).Count -eq 0 } 180)
     Get-KeyProcesses $root -Everywhere | ForEach-Object { try { $_.Kill() } catch { } }
     $work = Get-KeyWork $root
-    $script:online = Test-KeyOnline
+    $script:online = Test-KeyOnline $root
     if ($work.Unsent -gt 0 -and $script:online) {
         Set-Busy $true 'Sending your work to GitHub.'
         $sent = Send-Work $work

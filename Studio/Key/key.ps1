@@ -310,10 +310,15 @@ function Get-KeyWork([string] $root) {
     return @{ Branch = $branch; Unsent = $unsent; Changed = $changed }
 }
 
-function Test-KeyOnline {
+# Whether the server her copy sends to answers: GitHub, or for the tests a folder, which always does.
+function Test-KeyOnline([string] $root) {
+    $url = (Invoke-KeyGit $root @('-C', (Join-Path $root 'The-Armory-Mod'), 'remote', 'get-url', 'origin')).Text
+    $server = 'github.com'
+    if ($url -match '^https?://([^/:]+)') { $server = $Matches[1] }
+    elseif ($url -match '^[A-Za-z]:[\\/]|^\\\\|^file:') { return $true }
     $client = New-Object Net.Sockets.TcpClient
     try {
-        $wait = $client.BeginConnect('github.com', 443, $null, $null)
+        $wait = $client.BeginConnect($server, 443, $null, $null)
         if (-not $wait.AsyncWaitHandle.WaitOne(3000)) { return $false }
         $client.EndConnect($wait)
         return $true
@@ -327,6 +332,15 @@ function Get-KeyProcesses([string] $root, [switch] $Everywhere) {
     return @(Get-Process -ErrorAction SilentlyContinue | Where-Object {
         try { $_.Path -and $_.Path.StartsWith($from, [StringComparison]::OrdinalIgnoreCase) } catch { $false }
     })
+}
+
+# HyCreator's page runs in Windows' own web browser part, started from the computer's folders, not the
+# key's. It writes HyCreator's saved pages on the key and ends a moment after HyCreator, so the key is
+# only safe to eject once these are gone.
+function Get-KeyBrowsers([string] $root) {
+    $data = (Join-Path $root 'Home').TrimEnd('\') + '\'
+    return @(Get-CimInstance Win32_Process -Filter "Name='msedgewebview2.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -and $_.CommandLine.IndexOf($data, [StringComparison]::OrdinalIgnoreCase) -ge 0 })
 }
 
 # Removes Windows' "downloaded from the internet" mark from every file of the key, which a zip unpacked by

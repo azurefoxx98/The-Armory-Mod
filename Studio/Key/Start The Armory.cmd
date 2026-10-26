@@ -16,6 +16,9 @@ if not exist "%WINDOW%" (
     exit /b 1
 )
 cd /d "%SystemRoot%"
+rem A newer PowerShell that started this passes on where it finds its modules, and Windows PowerShell then
+rem cannot find its own basic commands. Without the setting, Windows PowerShell uses its own places.
+set "PSModulePath="
 echo Starting The Armory...
 "%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "%WINDOW%" -Key "%KEY%."
 if errorlevel 1 (

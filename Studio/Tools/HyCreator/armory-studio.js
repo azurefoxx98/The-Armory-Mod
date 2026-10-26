@@ -369,16 +369,26 @@ export async function analyse(reader, openRel, options = {}) {
   const openOwn = await reader.docAt(openRel);
   if (index.has(openId) && isVersion(openOwn)) {
     const family = alterationInput(openOwn.Recipe);
-    const defaultsIn = docs => [...docs.entries()].filter(([, d]) => d.eff && family && families(d.eff).includes(family) && !isVersion(d.own));
+    // A family counts only when the piece declares it. A piece of the mod built on a game item
+    // carries that item's family through the Iron patch without being in the set (the Praetorian
+    // Elite chest is built on the game's Iron chest and is no default of the Iron chest colours).
+    const defaultsIn = async docs => {
+      const out = [];
+      for (const [id, d] of docs.entries()) {
+        if (!d.eff || !family || isVersion(d.own) || !families(d.eff).includes(family)) continue;
+        if ((await declaredFamilies(reader, id)).includes(family)) out.push([id, d]);
+      }
+      return out;
+    };
     // Beside it in its folder first. Then the game piece the mod's patch puts in the family, which
     // a patch does on purpose, before another piece elsewhere in the mod that also declares it
     // (an old Developer sword declares the Iron sword family beside the game's Iron sword).
-    let candidates = defaultsIn(folderDocs);
+    let candidates = await defaultsIn(folderDocs);
     if (candidates.length === 0 && family) {
       const patched = [...(await reader.gameItems()).entries()].filter(([, g]) => g.doc && families(g.doc).includes(family));
       if (patched.length === 1) candidates = [[patched[0][0]]];
     }
-    if (candidates.length === 0) candidates = defaultsIn(await everyDoc());
+    if (candidates.length === 0) candidates = await defaultsIn(await everyDoc());
     if (candidates.length === 0) {
       const game = await findGameDefault(reader, family, open);
       if (game) candidates = [[game]];

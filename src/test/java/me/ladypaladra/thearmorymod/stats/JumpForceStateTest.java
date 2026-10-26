@@ -91,6 +91,23 @@ class JumpForceStateTest {
         assertTrue(state.isActive());
     }
 
+    @Test
+    void aHeightBonusAsksForTheSquareRootOfItInForce() {
+        assertEquals((float) Math.sqrt(1.2), JumpForceState.forceForHeight(1.2F), DELTA);
+        assertEquals((float) Math.sqrt(0.8), JumpForceState.forceForHeight(0.8F), DELTA);
+    }
+
+    @Test
+    void noBonusLeavesTheForceAlone() {
+        assertEquals(1.0F, JumpForceState.forceForHeight(1.0F), DELTA);
+    }
+
+    @Test
+    void noJumpAtAllStaysNoJump() {
+        assertEquals(0.0F, JumpForceState.forceForHeight(0.0F), DELTA);
+        assertEquals(0.0F, JumpForceState.forceForHeight(-0.5F), DELTA);
+    }
+
     private static MovementSettings settings(float jumpForce, float swimJumpForce) {
         MovementSettings settings = new MovementSettings();
         settings.jumpForce = jumpForce;

@@ -1,6 +1,6 @@
 # Generated from The Armory's own checks, with their comments left out. Edit the original
 # and generate the copies again, never this file.
-# Checks that every model, picture, icon, sound, effect, stat and family an item names exists.
+# Checks that every model, picture, icon, sound, effect, stat and family an item names exists, and that gear keeps the game's own category.
 
 from __future__ import annotations
 import json
@@ -18,6 +18,7 @@ GAME = os.environ.get('ARMORY_GAME') or os.path.join(os.environ.get('APPDATA', '
 SOUND_KEY = re.compile('"(?:WorldSoundEventId|LocalSoundEventId|SoundEventId)": "([^"]+)"')
 PARTICLE_KEY = re.compile('"SystemId": "([^"]+)"')
 CAMERA_KEY = re.compile('"CameraEffect": "([^"]+)"')
+VANILLA_CATEGORY = {'ArmoryCategory.ArmoryArmors': 'Items.Armors', 'ArmoryCategory.ArmoryShields': 'Items.Weapons', 'ArmoryCategory.ArmoryWeapons': 'Items.Weapons'}
 
 def png_size(data: bytes) -> tuple[int, int]:
     if data[:8] != b'\x89PNG\r\n\x1a\n':
@@ -150,6 +151,14 @@ def item_problems(doc: dict, tree: Tree, known: dict[str, set[str]]) -> list[str
         for stat in mods or {} if isinstance(mods, dict) else {}:
             if stat not in known['stat']:
                 out.append(f'its {block_name} changes the stat {stat}, which does not exist')
+    categories = doc.get('Categories')
+    if isinstance(categories, list):
+        present = {c for c in categories if isinstance(c, str)}
+        for armory, vanilla in VANILLA_CATEGORY.items():
+            if armory in present and vanilla not in present:
+                out.append(f'it is in {armory} but not {vanilla}, so other mods cannot find it')
+    elif categories is not None:
+        out.append('its Categories is not a list')
     return out
 
 def main(argv=None) -> int:

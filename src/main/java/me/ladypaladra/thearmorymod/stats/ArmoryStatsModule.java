@@ -18,7 +18,9 @@ public final class ArmoryStatsModule {
     public static void register(JavaPlugin plugin) {
         plugin.getEntityStoreRegistry().registerSystem(new ArrowDamageBonusSystem(STAT_SERVICE));
 
-        plugin.getEntityStoreRegistry().registerSystem(new GroundMoveSpeedModifierSystem());
+        ComponentType<EntityStore, GroundSpeedState> groundSpeedType =
+                plugin.getEntityStoreRegistry().registerComponent(GroundSpeedState.class, GroundSpeedState::new);
+        plugin.getEntityStoreRegistry().registerSystem(new GroundMoveSpeedModifierSystem(groundSpeedType));
         plugin.getEntityStoreRegistry().registerSystem(new JumpHeightModifierSystem());
 
         ComponentType<EntityStore, SwimBoostState> swimBoostType =

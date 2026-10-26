@@ -226,12 +226,15 @@ const readJson = rel => JSON.parse(fs.readFileSync(path.join(resources, 'Server'
 
 check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && colourKey('Gold Blue.png') === 'Gold_Blue');
 
-// Files made by a tool: the 52 chest loot files and every showcase file, and nothing of Lady's.
+// Files made by a tool: the 48 patches that put the loot tables in chests and every showcase file,
+// and nothing of Lady's. The four chest loot tables are hers to edit.
 {
   const server = diskFiles.filter(p => p.startsWith('Server/')).map(p => p.slice('Server/'.length));
   const common = diskFiles.filter(p => p.startsWith('Common/')).map(p => '../' + p);
-  const loot = server.filter(p => madeByTool(p) === 'the chest loot list').length;
-  check('made by a tool: the 52 chest loot files', loot === 52, String(loot));
+  const loot = server.filter(p => madeByTool(p) === 'the list of chests your loot goes in').length;
+  check('made by a tool: the 48 chest patches', loot === 48, String(loot));
+  const tables = server.filter(p => p.startsWith('Drops/TheArmory/'));
+  check('made by a tool: never her 4 chest loot tables', tables.length === 4 && !tables.some(p => madeByTool(p)), tables.join(', '));
   const showcase = [...server, ...common].filter(p => madeByTool(p) === 'the showcase world');
   const named = diskFiles.filter(p => /Showcase/.test(p)).length;
   check('made by a tool: every file named for the showcase', showcase.length === named && named > 0, showcase.length + ' of ' + named);

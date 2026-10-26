@@ -6,7 +6,7 @@ last-check.json beside this file, which the HyCreator plugin shows in its checks
 notice when something is wrong. Nothing is ever blocked: a commit and a push go through whatever
 the checks say, and the mod's own review runs the same checks again before anything is merged.
 
-Five checks are the mod's own gates, copied here by the tool that keeps their code identical to
+Six checks are the mod's own gates, copied here by the tool that keeps their code identical to
 the originals. Three more look at this branch's own work: that it is not main, that no language
 file lost names, and that no file the mod's tools generate was changed by hand.
 
@@ -46,6 +46,7 @@ NO_WINDOW = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
 # The gates, in the order they run, each with the name Lady sees when it cannot run.
 GATES = [
     ("itemcheck", "Item files"),
+    ("lootcheck", "Chest loot"),
     ("recipecheck", "Recipes"),
     ("familycheck", "Alteration Table"),
     ("dupkeycheck", "Fields written twice"),
@@ -57,11 +58,11 @@ SEND = "Send Larsonix a screenshot."
 
 # Files the mod's tools write whole from a list of their own. The HyCreator plugin warns before
 # one of them is edited (madeByTool in armory-studio.js), and its test fails when the two rules
-# differ, so keep them the same.
+# differ, so keep them the same. The chest loot tables themselves, Drops/TheArmory, are Lady's
+# to edit in HyCreator's loot editor. Only the patches that put them in chests stay generated.
 MADE_BY_TOOL = [
     (r"(^|[/_])(Armory_Showcase|Showcase_Theatre)([_./]|$)", "the showcase world"),
-    (r"^Server/Drops/TheArmory/", "the chest loot list"),
-    (r"^Server/Drops/Prefabs/[^/]+\.patch$", "the chest loot list"),
+    (r"^Server/Drops/Prefabs/[^/]+\.patch$", "the list of chests your loot goes in"),
 ]
 
 
@@ -135,10 +136,30 @@ FIELD_FIX = {"Model": "Pick an existing model in its Model field.",
              "Texture": "Pick an existing texture in its Texture field.",
              "Icon": "Click Generate icon on its page."}
 SHOWS = {"sound": "plays nothing", "particle": "shows nothing", "camera effect": "does nothing"}
-TYPO = ("Has a typing mistake, so Hytale skips this file.", "Open it: HyCreator's Problems panel shows the line.")
+
+
+def typo_line(m) -> str | None:
+    """The line number a gate's JSON error names, if it names one."""
+    found = re.search(r"line (\d+)", m.groupdict().get("detail") or "")
+    return found.group(1) if found else None
+
+
+# HyCreator cannot open a file that does not parse: it shows a red notice naming the line and opens
+# nothing, so the fix goes through Notepad.
+TYPO = (lambda m: f"Has a typing mistake{' at line ' + typo_line(m) if typo_line(m) else ''}, so Hytale skips this file.",
+        lambda m: ("HyCreator cannot open it. Right-click it in the file tree, click Reveal in Explorer, "
+                   f"then fix {'line ' + typo_line(m) if typo_line(m) else 'it'} in Notepad."))
+# A gate's own words for a file that does not parse, with the parser's message, which a gate that
+# stopped on the same file repeats in its output.
+TYPO_LINE = re.compile(r"(?:cannot be read as JSON, so the game never loads it \((.*)\)|does not parse, (.*))$")
 # The Colors page makes these two fixes for every color of a set in one press (armory-studio.js:
 # categoryFault, and wrongFamily for a recipe made from the wrong resource type).
 COLORS_TOO = "For a set of colors, open one and click Colors to fix them all at once."
+# HyCreator's recipe editor, a button at the top of every item page: ingredients, bench and tier.
+RECIPE = "Click Recipe at the top of its page"
+# HyCreator's form shows a field written twice only once, so the fix is in the file's text, which
+# the More file actions button opens.
+RAW = "Click the three dots at the top of its page, then Open JSON. "
 
 RULES = [
     ("itemcheck", r"cannot be read as JSON, so the game never loads it \((?P<detail>.*)\)", *TYPO),
@@ -150,9 +171,9 @@ RULES = [
     ("itemcheck", r"CustomModelTexture (?P<value>.+) exists in neither the mod nor the game",
      "Its block texture {value} does not exist.", "Pick an existing texture in its CustomModelTexture field."),
     ("itemcheck", r"its recipe asks for the item (?P<value>\S+), which does not exist",
-     "Its recipe needs the item {value}, which does not exist.", "Fix that name in its Recipe."),
+     "Its recipe needs the item {value}, which does not exist.", RECIPE + " and fix that name."),
     ("itemcheck", r"its recipe asks for the family (?P<value>\S+), which has no family file",
-     "Its recipe takes the resource type {value}, which does not exist.", "Fix that name in its Recipe."),
+     "Its recipe takes the resource type {value}, which does not exist.", RECIPE + " and fix that name."),
     ("itemcheck", r"it belongs to the family (?P<value>\S+), which has no family file",
      "Its ResourceTypes names {value}, which does not exist.", "Fix that name in its ResourceTypes."),
     ("itemcheck", r"it plays the (?P<kind>sound|particle|camera effect) (?P<value>.+), which exists in neither the mod nor the game",
@@ -166,39 +187,40 @@ RULES = [
      "Remove {value} from its StatModifiers, or ask Larsonix for that stat."),
     ("itemcheck", r"it is in (?P<armory>\S+) but not (?P<value>\S+), so other mods cannot find it",
      "Missing the category {value}, so other mods cannot find it.", "Add {value} to its Categories. " + COLORS_TOO),
-    ("itemcheck", r"its Categories is not a list", "Its Categories is not a list.", "Open it: HyCreator's Problems panel shows the line."),
+    ("itemcheck", r"its Categories is not a list", "Its Categories is not a list.",
+     RAW + "Put its Categories in square brackets, click Apply, then Save."),
     ("itemcheck", r"its texture (?P<value>.+) is not a PNG picture",
      "Its texture {value} is not a PNG.", "Save that texture again as a PNG."),
     ("itemcheck", r"its model (?P<value>.+) cannot be read \((?P<detail>.*)\)",
      "Its model {value} cannot be read.", "Export that model again from Blockbench."),
 
-    ("recipecheck", r"no inputs", "Its recipe takes no ingredient, so no bench shows it.", "Add an ingredient to its Recipe."),
+    ("recipecheck", r"no inputs", "Its recipe takes no ingredient, so no bench shows it.", RECIPE + " and add an ingredient."),
     ("recipecheck", r"input item (?P<value>\S+) does not exist",
-     "Its recipe needs the item {value}, which does not exist.", "Fix that name in its Recipe."),
+     "Its recipe needs the item {value}, which does not exist.", RECIPE + " and fix that name."),
     ("recipecheck", r"input family (?P<value>\S+) has no English name, the bench shows (?P<key>\S+)",
      "Its recipe takes {value}, which has no English name, so the bench shows {key}.",
      "Add resourceType.{value}.name to the English Translations."),
     ("recipecheck", r"input family (?P<value>\S+) has no member item( and no family file)?",
      "Its recipe takes {value}, but no item has that resource type, so nobody can craft it.",
-     "Fix that name in its Recipe."),
+     RECIPE + " and fix that name."),
     ("recipecheck", r"input family (?P<value>\S+) holds only (?P<have>\S+) armour, the recipe makes (?P<makes>\S+) armour",
      "Its recipe takes {have} armor ({value}), but this is {makes} armor.",
-     "In its Recipe, take a resource type of {makes} armor. " + COLORS_TOO),
+     RECIPE + " and take a resource type of {makes} armor. " + COLORS_TOO),
     ("recipecheck", r"input (?P<value>.+) names no item, family or tag",
-     "Its recipe has an ingredient with no item, resource type or tag.", "Fix that ingredient in its Recipe."),
+     "Its recipe has an ingredient with no item, resource type or tag.", RECIPE + " and fix that ingredient."),
     ("recipecheck", r"output item (?P<value>\S+) does not exist",
-     "Its recipe makes the item {value}, which does not exist.", "Fix that name in its Recipe."),
+     "Its recipe makes the item {value}, which does not exist.", RECIPE + " and fix that name."),
     ("recipecheck", r"bench '(?P<value>[^']*)' is declared by no item",
-     "Its recipe needs the bench {value}, which does not exist.", "Pick a bench HyCreator suggests."),
+     "Its recipe needs the bench {value}, which does not exist.", RECIPE + " and fix the bench's name."),
     ("recipecheck", r"bench (?P<value>\S+) is a (?P<have>\S+) bench, the recipe asks for (?P<want>\S+)",
      "Its recipe asks for {value} as a {want} bench, but it is a {have} bench, so no bench shows it.",
-     "Set that bench's Type to {have} in its Recipe."),
+     RECIPE + " and set that bench's type to {have}."),
     ("recipecheck", r"bench (?P<value>\S+) has (?P<tiers>\d+) tier\(s\), the recipe needs tier (?P<tier>\d+)",
-     "Its recipe needs tier {tier} of {value}, which has {tiers}.", "Lower RequiredTierLevel in its Recipe."),
+     "Its recipe needs tier {tier} of {value}, which has {tiers}.", RECIPE + " and lower the tier."),
     ("recipecheck", r"no block grants the augment tag (?P<value>\S+)",
-     "Its recipe needs the bench upgrade {value}, which nothing gives.", "Fix that name in its Recipe."),
+     "Its recipe needs the bench upgrade {value}, which nothing gives.", RECIPE + " and fix that name."),
     ("recipecheck", r"a StructuralCrafting recipe must have exactly one input, it has (?P<count>\d+)",
-     "Its recipe takes {count} ingredients, but this bench takes exactly one.", "Keep one ingredient in its Recipe."),
+     "Its recipe takes {count} ingredients, but this bench takes exactly one.", RECIPE + " and keep one ingredient."),
     ("recipecheck", r"stale accepted entry, .*", "This check needs updating.", SEND),
 
     ("familycheck", r"STAT CLOSURE: (?P<count>\d+) distinct profiles across .*",
@@ -209,15 +231,28 @@ RULES = [
      "Give each slot its own resource type."),
     ("familycheck", r"REACHABILITY: .*",
      "No player can get these items: none is crafted at a bench or found in a chest.",
-     "Give one of them a recipe at a bench, or send Larsonix their names to put them in chests."),
+     "Give one of them a recipe at a bench, or add one to a chest loot table."),
     ("familycheck", r"stale accepted violation: .*", "This check needs updating.", SEND),
+
+    ("lootcheck", r"cannot be read as JSON, so the game never loads it \((?P<detail>.*)\)", *TYPO),
+    ("lootcheck", r"it drops the item (?P<value>\S+), which does not exist",
+     "Its loot names the item {value}, which does not exist, so it never drops.",
+     "Open it and pick an existing item in place of {value}."),
+    ("lootcheck", r"it puts the drop list (?P<value>\S+) in chests, but \S+ does not exist",
+     "Chests look for your loot table {value}, which is gone, so they hold no Armory loot.",
+     "Name one of your chest loot tables {value} again."),
+    ("lootcheck", r"it names the drop list (?P<value>\S+), which does not exist",
+     "Its loot names the table {value}, which does not exist, so that part drops nothing.",
+     "Open it and fix that name."),
+    ("lootcheck", r"it drops nothing at all, so the game refuses the whole file",
+     "Its loot holds nothing, so Hytale refuses the whole file.", "Open it and add an item."),
 
     ("dupkeycheck", r"duplicate key (?P<value>.+) \(REPEATS DIFFER, a value is being dropped\)",
      "The field {value} is written twice, with different values. Hytale uses only the second one.",
-     "Delete the one you do not want."),
+     RAW + "Delete the one you do not want, click Apply, then Save."),
     ("dupkeycheck", r"duplicate key (?P<value>.+) \(identical repeat, silent edit trap\)",
      "The field {value} is written twice. Hytale uses only the second one, so an edit to the first does nothing.",
-     "Delete the first one."),
+     RAW + "Delete the first one, click Apply, then Save."),
     ("dupkeycheck", r"does not parse, (?P<detail>.*)", *TYPO),
     ("dupkeycheck", r"unreadable, (?P<detail>.*)", "This file cannot be opened.", SEND),
 
@@ -282,6 +317,8 @@ def for_lady(gate: str, line: str) -> dict:
         if subject and subject.get("kind") == "resource type":
             named = items_named(rest)
             entry["items"] = [{"label": i, "find": "Item/Items/"} for i in named]
+        elif subject and subject.get("open") and made_by("Server/" + subject["open"]):
+            pass  # a file our tools write is never hers to open, the message says what to do instead
         elif subject:
             entry["items"] = [subject]
         return entry
@@ -313,7 +350,7 @@ def one_per_field(entries: list[dict]) -> list[dict]:
         merged["entry"]["says"] = (f"The field {m.group(1)} is written {times}"
                                    + (", with different values. Hytale uses only the last one." if merged["differ"]
                                       else ". Hytale uses only the last one, so an edit to the others does nothing."))
-        merged["entry"]["do"] = "Keep one, and delete the others."
+        merged["entry"]["do"] = RAW + "Keep one and delete the others, click Apply, then Save."
     return out
 
 
@@ -325,8 +362,13 @@ def lady_view(checks: list[dict]) -> None:
     """
     stats = set()
     mixed = set()
+    typos = set()
+    waiting = False
     for c in checks:
         for p in c["problems"]:
+            m = TYPO_LINE.search(p)
+            if m and (m.group(1) or m.group(2)):
+                typos.add(m.group(1) or m.group(2))
             if c["id"] == "itemcheck":
                 m = re.search(r"changes the stat (\S+), which does not exist$", p)
                 if m:
@@ -357,9 +399,19 @@ def lady_view(checks: list[dict]) -> None:
             entries = one_per_field(entries)
         if c["status"] == "error":
             tail = "\n".join(c.get("output_tail") or [])
-            entries.append({"says": f"The check \"{c['title']}\" could not run, so it says nothing about your work.",
-                            "do": SEND, "items": [], "line": tail, "known": True, "detail": tail})
+            # A gate that stopped on a file another gate already names as a typing mistake is that
+            # same mistake, not something for Larsonix. It runs again once the file is fixed.
+            if any(t in tail for t in typos):
+                waiting = True
+            else:
+                entries.append({"says": f"The check \"{c['title']}\" could not run, so it says nothing about your work.",
+                                "do": SEND, "items": [], "line": tail, "known": True, "detail": tail})
         c["lady"] = entries
+    if waiting:
+        for c in checks:
+            for e in c["lady"]:
+                if TYPO_LINE.search(e["line"]):
+                    e["says"] += " Some checks wait until it is fixed."
 
 
 def run_gate(name: str, game: str) -> dict:

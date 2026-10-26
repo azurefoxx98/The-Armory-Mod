@@ -60,6 +60,7 @@ This is the same guide as the panel in HyCreator. Edit it in Studio/Tools/HyCrea
 ## Make the default piece
 
 - Make one item for each piece in HyCreator: stats, quality, recipe and name.
+- Give it two categories: the Armory's and the game's own, Items.Armors for armour, Items.Weapons for weapons and shields. Other mods find gear by the game's one.
 - Watch the Problems panel while you type. It names a wrong value before the game sees it.
 - Write the name in English in HyCreator's language editor. Coralys does the translations.
 

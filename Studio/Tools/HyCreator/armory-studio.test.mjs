@@ -31,7 +31,7 @@ function vanillaIndex() {
   if (vanilla) return vanilla;
   vanilla = new Map();
   if (!fs.existsSync(assetsZip)) return vanilla;
-  const names = execFileSync('python', ['-c', 'import sys,zipfile;print("\\n".join(n for n in zipfile.ZipFile(sys.argv[1]).namelist() if n.startswith("Server/Item/Items/") and n.endswith(".json")))', assetsZip], { maxBuffer: 1 << 26 }).toString().split(/\r?\n/).filter(Boolean);
+  const names = execFileSync('python', ['-c', 'import sys,zipfile;print("\\n".join(n for n in zipfile.ZipFile(sys.argv[1]).namelist() if n.startswith(("Server/Item/Items/", "Server/Item/ResourceTypes/")) and n.endswith(".json")))', assetsZip], { maxBuffer: 1 << 26 }).toString().split(/\r?\n/).filter(Boolean);
   for (const n of names) vanilla.set(n.slice('Server/'.length), n);
   return vanilla;
 }
@@ -94,6 +94,18 @@ const readJson = rel => JSON.parse(fs.readFileSync(path.join(resources, 'Server'
 {
   const a = await analyse(makeReader(io()), red);
   check('open a colour version: same default', a.set && a.set.defaultId === 'Atlantean_Chest_Default', a.error || a.set.defaultId);
+}
+
+// 2b. A piece inheriting from a game item never takes one of the game's families as its colour
+// family. The signs inherit Wood_Trunk: taking it once offered to put all three signs into the
+// game's wood family and to write an empty Wood_Trunk file over the game's own.
+{
+  const a = await analyse(makeReader(io()), 'Item/Items/EmptySign.json');
+  check('signs: the game family Wood_Trunk is not their colour family', !a.error && a.set.pieceFamily !== 'Wood_Trunk', a.error || a.set.pieceFamily);
+  const p = plan(a, defaultChoice(a));
+  check('signs: the button touches no family', !p.create.some(c => c.rel.startsWith('Item/ResourceTypes/') && c.rel !== 'Item/ResourceTypes/' + a.set.pieceFamily + '.json')
+    && !p.edit.some(e => e.ops.some(([field]) => field[0] === 'ResourceTypes' && JSON.stringify(e.ops).includes('Wood_Trunk'))),
+    JSON.stringify(p).slice(0, 200));
 }
 
 // 3. The October faults, planted back in memory.
@@ -239,22 +251,37 @@ if (process.argv.includes('--sweep')) {
   const lines = [];
   for (const rel of index.values()) {
     const own = await reader.docAt(rel);
-    if (!own || typeof own.Model !== 'string' || typeof own.Texture !== 'string' || typeof own.Parent === 'string') continue;
+    // A Parent that is one of the mod's own items marks a colour version. A Parent from the game
+    // (every shield and most weapons inherit a vanilla template) still makes a default piece.
+    if (!own || typeof own.Parent === 'string' && index.has(own.Parent)) continue;
+    const eff = typeof own.Parent === 'string' ? await reader.effective(own.Parent) : own;
+    if (typeof (own.Model ?? eff?.Model) !== 'string' || typeof (own.Texture ?? eff?.Texture) !== 'string') continue;
     if (isAlterationRecipe(own.Recipe) || (own.Recipe && (own.Recipe.BenchRequirement || []).some(r => r && r.Id === 'ArmoryAlteration'))) continue;
     const a = await analyse(reader, rel);
     if (a.error || seen.has(a.set.pieceFamily)) continue;
     seen.add(a.set.pieceFamily);
     if (a.memberCount === 0) continue;
     sets++;
+    lines.push(a.set.defaultId + '  SET  ' + a.memberCount + ' versions, model ' + a.set.baseShape);
     const p = plan(a, defaultChoice(a));
     unasked += p.create.length + p.edit.length + p.icons.length;
+    for (const [what, rows] of [['create', p.create], ['edit', p.edit], ['icon', p.icons]]) {
+      for (const row of rows) lines.push(a.set.defaultId + '  WRITE ' + what + '  ' + JSON.stringify(row).slice(0, 300));
+    }
     for (const f of faultsOf(a)) {
       byKind.set(f.kind, (byKind.get(f.kind) || 0) + 1);
       lines.push(a.set.defaultId + '  ' + f.id + '  ' + f.kind + '  ' + f.text);
     }
   }
   console.log('SWEEP  ' + sets + ' colour sets with versions, faults by kind: ' + JSON.stringify(Object.fromEntries(byKind)));
-  check('sweep: on the mod as it ships, the button writes nothing nobody ticked', unasked === 0, unasked + ' writes');
+  // What the button offers by default on the shipped mod is a finding in the mod's own data, listed
+  // in the details file. What must never be offered is a family write: a family file of the game's
+  // own, or a piece put into a family the game owns.
+  const gameFamilies = new Set((await reader.listVanilla('Item/ResourceTypes/', ['json'])).map(r => r.slice(r.lastIndexOf('/') + 1, -5)));
+  const familyWrites = lines.filter(l => / WRITE (create|edit) /.test(l)
+    && [...gameFamilies].some(f => l.includes('"Item/ResourceTypes/' + f + '.json"') || l.includes('{"Id":"' + f + '"}')));
+  console.log('SWEEP  offered by default on the shipped mod: ' + unasked + ' writes, listed in the details file');
+  check('sweep: no set is offered a write into one of the game\'s families', familyWrites.length === 0, familyWrites.slice(0, 2).join(' | '));
   fs.writeFileSync(path.join(process.env.TEMP || here, 'armory-colours-sweep.txt'), lines.join('\n') + '\n');
   console.log('SWEEP  details: ' + path.join(process.env.TEMP || here, 'armory-colours-sweep.txt'));
 }

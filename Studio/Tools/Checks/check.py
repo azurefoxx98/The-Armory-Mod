@@ -39,8 +39,9 @@ NO_WINDOW = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
 
 # The gates, in the order they run, each with what it means for a player when it fails.
 GATES = [
-    ("itemcheck", "Every file, sound and effect an item names exists",
-     "A missing name draws the placeholder, shows no icon, or plays nothing, with no error anywhere."),
+    ("itemcheck", "Every file, sound and effect an item names exists, and gear keeps the game's category",
+     "A missing name draws the placeholder, shows no icon, or plays nothing, with no error anywhere. "
+     "Gear missing the game's own category is invisible to other mods."),
     ("recipecheck", "Every recipe can be crafted",
      "A broken recipe never lights up at its bench, or hides the item from the bench entirely."),
     ("familycheck", "Every Alteration Table family is safe",

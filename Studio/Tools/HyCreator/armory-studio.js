@@ -135,7 +135,7 @@ export function makeReader(io) {
     return out;
   }
 
-  return { itemIndex, relOf, docAt, effective, list: io.list, read: io.read };
+  return { itemIndex, relOf, docAt, effective, list: io.list, listVanilla: io.listVanilla, read: io.read };
 }
 
 // ---- the analysis -------------------------------------------------------------------------------
@@ -203,8 +203,14 @@ export async function analyse(reader, openRel) {
 
   // The piece family: one of the default's own families, the one colour versions are made from,
   // and among equals the most specific. Only a default with no family at all takes its family
-  // from the versions around it.
-  const defaultFamilies = families(def.eff);
+  // from the versions around it. A family of the game's own is never a colour family: a piece
+  // inheriting from a game item carries the game's families too (the signs inherit Wood_Trunk),
+  // and taking one would put the colours into it, so they would count as that material in every
+  // recipe, and write an empty file over the game's own.
+  const familyFiles = new Set((await reader.list('Item/ResourceTypes/', ['json'])).map(stem));
+  const gameFamilies = new Set((await reader.listVanilla('Item/ResourceTypes/', ['json'])).map(stem));
+  const colourFamily = f => familyFiles.has(f) || !gameFamilies.has(f);
+  const defaultFamilies = families(def.eff).filter(colourFamily);
   const madeFrom = f => candidates.filter(m => consumes(m) === f).length;
   const owners = f => [...folderDocs.values()].filter(d => d.eff && families(d.eff).includes(f)).length;
   let pieceFamily = null;
@@ -212,7 +218,7 @@ export async function analyse(reader, openRel) {
     pieceFamily = [...defaultFamilies].sort((a, b) => (madeFrom(b) - madeFrom(a)) || (owners(a) - owners(b)))[0];
   } else {
     const used = new Map();
-    for (const m of candidates) { const f = consumes(m); if (f) used.set(f, (used.get(f) || 0) + 1); }
+    for (const m of candidates) { const f = consumes(m); if (f && colourFamily(f)) used.set(f, (used.get(f) || 0) + 1); }
     pieceFamily = [...used.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null;
   }
   const members = pieceFamily
@@ -227,7 +233,6 @@ export async function analyse(reader, openRel) {
     defaultQuality: def.eff.Quality, defaultLight: def.eff.Light || null,
     familyFileMissing: false,
   };
-  const familyFiles = new Set((await reader.list('Item/ResourceTypes/', ['json'])).map(stem));
   set.familyFileMissing = !familyFiles.has(set.pieceFamily);
 
   // How this set spells its ids, read from the versions it already has.
@@ -806,6 +811,7 @@ export const GUIDE = [
   ] },
   { title: 'Make the default piece', steps: [
     'Make one item for each piece in HyCreator: stats, quality, recipe and name.',
+    "Give it two categories: the Armory's and the game's own, Items.Armors for armour, Items.Weapons for weapons and shields. Other mods find gear by the game's one.",
     'Watch the Problems panel while you type. It names a wrong value before the game sees it.',
     'Write the name in English in HyCreator\'s language editor. Coralys does the translations.',
   ] },

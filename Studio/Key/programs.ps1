@@ -86,7 +86,8 @@ function Complete-PortableGit([string] $folder) {
     try {
         $info = New-Object Diagnostics.ProcessStartInfo
         $info.FileName = Join-Path $env:SystemRoot 'System32\cmd.exe'
-        $info.Arguments = '/d /c post-install.bat'
+        # By its full path: some computers never run a script by its bare name from the current folder.
+        $info.Arguments = '/d /c ""' + (Join-Path $folder 'post-install.bat') + '""'
         $info.WorkingDirectory = $folder
         $info.UseShellExecute = $false
         $info.CreateNoWindow = $true

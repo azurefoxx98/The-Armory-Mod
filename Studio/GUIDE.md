@@ -8,7 +8,7 @@ The same guide is in HyCreator: click ? at the top.
 
 - Install Git for Windows from https://git-scm.com/download/win, with its default choices.
 - Put Get The Armory.cmd, the file Larsonix sends you, in the folder where you want the mod, such as Documents.
-- Double-click it. Answer its question, then do the last step it shows, in Blockbench.
+- Double-click it. Answer its question, then do the Blockbench step it shows.
 - Restart HyCreator. Click Workspace at the top left, then Open mod folder..., and pick the The-Armory-Mod folder it made.
 - The button at the top now says lady: your branch. All your work goes there.
 - The first time you push, GitHub asks you to sign in. Sign in once.

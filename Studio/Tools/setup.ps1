@@ -224,7 +224,7 @@ Write-Host 'Done. Restart HyCreator to see The Armory''s pages.'
 $blockbench = Join-Path $repo 'Studio\Tools\Blockbench\armory.js'
 if (Test-Path -LiteralPath $blockbench) {
     Write-Host ''
-    Write-Host 'Last step, only once: in Blockbench, click File > Plugins... > Load Plugin from File, and pick this file:'
+    Write-Host 'Once, in Blockbench: click File > Plugins... > Load Plugin from File, and pick this file:'
     Write-Host "  $blockbench"
 }
 exit 0

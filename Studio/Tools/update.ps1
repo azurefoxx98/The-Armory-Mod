@@ -46,7 +46,7 @@ Write-Host 'Updating your copy of The Armory.'
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Stop-Update 'Git is not installed. Install it from https://git-scm.com/download/win with its default choices, then try again.' }
 
 $branch = (Invoke-Git @('rev-parse', '--abbrev-ref', 'HEAD')).Text
-if ($branch -eq 'HEAD' -or -not $branch) { Stop-Update 'Your copy is on no branch. Send Larsonix a screenshot of this window.' }
+if ($branch -eq 'HEAD' -or -not $branch) { Stop-Update 'Your copy is on no branch. In HyCreator, click HEAD at the top, then Branches..., then lady. Then double-click Update.cmd again.' }
 if ($branch -eq $Main) { Stop-Update "Your copy is on $Main. In HyCreator, click $Main at the top, then Branches..., then lady. Then double-click Update.cmd again." }
 if (Test-Path -LiteralPath (Join-Path $repo '.git\MERGE_HEAD')) { Stop-Update 'An earlier update did not finish. Send Larsonix a screenshot of this window.' }
 $dirty = (Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Text

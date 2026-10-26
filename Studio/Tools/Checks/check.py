@@ -199,7 +199,8 @@ RULES = [
      "Its recipe needs the item {value}, which does not exist.", RECIPE + " and fix that name."),
     ("recipecheck", r"input family (?P<value>\S+) has no English name, the bench shows (?P<key>\S+)",
      "Its recipe takes {value}, which has no English name, so the bench shows {key}.",
-     "Add resourceType.{value}.name to the English Translations."),
+     "Open Languages, en-US, server. In the empty row at the bottom, type resourceType.{value}.name "
+     "and its English name, click +, then Save."),
     ("recipecheck", r"input family (?P<value>\S+) has no member item( and no family file)?",
      "Its recipe takes {value}, but no item has that resource type, so nobody can craft it.",
      RECIPE + " and fix that name."),
@@ -505,7 +506,10 @@ def check_languages(own: list[str] | None, starts: list[str], why: str) -> dict:
         rel = path[len("src/main/resources/"):]
         if not os.path.isfile(here):
             problems.append(f"{rel} is gone. It held {len(expected)} names.")
-            lady.append({"says": f"The language file {rel} is gone, so players see raw names.", "do": SEND,
+            # A file deleted in HyCreator waits in its trash, which puts it back byte for byte.
+            lady.append({"says": f"The language file {rel} is gone, so players see raw names.",
+                         "do": "If you deleted it in HyCreator, click Workspace at the top left, then Trash (restore deleted)..., "
+                               "and click Restore. If not, send Larsonix a screenshot.",
                          "items": [], "line": problems[-1], "known": True})
             continue
         with open(here, encoding="utf-8-sig") as fh:

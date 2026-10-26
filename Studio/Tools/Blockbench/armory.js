@@ -81,23 +81,37 @@
       Blockbench.showMessageBox({ title: 'The Armory', message: 'This model has no groups to save.' });
       return;
     }
-    const form = {
-      folder: { label: 'Folder', type: 'folder', value: Project.export_path ? folderOf(Project.export_path) : '' },
-      about: { type: 'info', text: 'Each ticked group is saved as its own file. A group left unticked is not saved.' },
-    };
-    model.nodes.forEach((node, i) => {
-      form['take_' + i] = { label: (i + 1) + '. ' + node.name + ' (' + countShapes(node) + ' boxes)', type: 'checkbox', value: true };
-      form['name_' + i] = { label: 'File name', type: 'text', value: guessName(node) };
-      const hidden = hiddenShapes(node);
-      if (hidden) {
-        form['show_' + i] = { label: hidden + ' of its parts are hidden in Blockbench and would be hidden in the game. Show them in the piece', type: 'checkbox', value: true };
-      }
-    });
-    new Dialog({
+    // One row per top group, so a whole set fits in one window without scrolling: a long label
+    // per field would widen the form's label column and squeeze every input.
+    const rows = model.nodes.map(node => ({ group: node.name, boxes: countShapes(node), hidden: hiddenShapes(node), take: true, name: guessName(node), show: true }));
+    const anyHidden = rows.some(r => r.hidden);
+    const dialog = new Dialog({
       id: 'armory_save_pieces',
       title: 'Save Each Group as a Piece',
-      width: 520,
-      form,
+      width: 680,
+      form_first: true,
+      form: {
+        folder: { label: 'Save in', type: 'folder', value: Project.export_path ? folderOf(Project.export_path) : '' },
+      },
+      component: {
+        data: () => ({ rows, anyHidden }),
+        template: `<div style="padding: 4px 0 0">
+          <p style="margin: 0 0 8px">Each ticked group is saved as its own piece file.<span v-if="anyHidden"> Parts hidden here would be hidden in the game too, so they are shown in the piece unless you untick them.</span></p>
+          <table style="width: 100%; border-collapse: collapse">
+            <tr style="text-align: left; opacity: 0.7">
+              <th style="padding: 4px; width: 40px">Save</th><th style="padding: 4px">Group</th><th style="padding: 4px; width: 60px">Boxes</th>
+              <th style="padding: 4px; width: 200px">File name</th><th v-if="anyHidden" style="padding: 4px; width: 150px">Hidden parts</th>
+            </tr>
+            <tr v-for="(row, i) in rows" :key="i" style="border-top: 1px solid var(--color-border)">
+              <td style="padding: 4px"><input type="checkbox" v-model="row.take"></td>
+              <td style="padding: 4px; overflow-wrap: anywhere">{{ row.group }}</td>
+              <td style="padding: 4px">{{ row.boxes }}</td>
+              <td style="padding: 4px"><input type="text" class="dark_bordered" style="width: 100%; box-sizing: border-box" v-model="row.name" :disabled="!row.take"></td>
+              <td v-if="anyHidden" style="padding: 4px"><label v-if="row.hidden"><input type="checkbox" v-model="row.show" :disabled="!row.take"> show {{ row.hidden }}</label></td>
+            </tr>
+          </table>
+        </div>`,
+      },
       onConfirm(result) {
         if (!result.folder) {
           Blockbench.showQuickMessage('Pick a folder first');
@@ -105,10 +119,11 @@
         }
         const pieces = [];
         roots.forEach((root, i) => {
-          if (!result['take_' + i]) return;
-          const name = String(result['name_' + i] || '').trim().replace(/\.blockymodel$/i, '');
+          const row = rows[i];
+          if (!row.take) return;
+          const name = String(row.name || '').trim().replace(/\.blockymodel$/i, '');
           if (!name) return;
-          pieces.push({ path: PathModule.join(result.folder, name + '.blockymodel'), content: exportAlone(roots, root, !!result['show_' + i]) });
+          pieces.push({ path: PathModule.join(result.folder, name + '.blockymodel'), content: exportAlone(roots, root, row.show && row.hidden > 0) });
         });
         const names = pieces.map(p => p.path);
         if (new Set(names).size !== names.length) {
@@ -133,7 +148,8 @@
           write();
         }
       },
-    }).show();
+    });
+    dialog.show();
   }
 
   BBPlugin.register('armory', {
@@ -141,7 +157,7 @@
     author: 'The Armory',
     description: 'Saves each group of a whole armour set as its own piece file.',
     icon: 'call_split',
-    version: '0.1.0',
+    version: '0.2.0',
     min_version: '5.2.0',
     variant: 'desktop',
     onload() {

@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn } from './armory-studio.js';
+import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, problemGroups } from './armory-studio.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const resources = path.resolve(here, '..', '..', '..', 'src', 'main', 'resources');
@@ -279,6 +279,27 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   check('notice: a pass after a pass stays quiet', noticeFor(pass, { ...pass, finished: 'z' }) === null);
   check('notice: a run that could not complete is announced', /could not run/.test(noticeFor(pass, broke) || ''));
   check('notice: one problem is spelt singular', /found 1 problem\./.test(noticeFor(null, { ...fail, checks: [fail.checks[0]].map(c => ({ ...c, problems: [c.problems[0]] })) }) || ''));
+  // The panel groups the lines that say the same thing, the shapes of her branch's real result.
+  const lines = [
+    'Server/Item/Items/Praetorian_Boots.json: its Armor changes the stat Volatility, which does not exist',
+    'Server/Item/Items/Praetorian_Chest.json: its Armor changes the stat Volatility, which does not exist',
+    'Server/Item/Items/Praetorian_Boots.json: it is in ArmoryCategory.ArmoryArmors but not Items.Armors, so other mods cannot find it',
+    'item Armor_Thorium_Head_Black: input family Resource_Thorium_Hands holds only Hands armour, the recipe makes Head armour',
+    'Resource_PraetorianBoots: REACHABILITY: no owning item has a non-alteration recipe or appears in Server/Drops owning items: Praetorian_Boots, Praetorian_Boots_Gray',
+    'Resource_PraetorianChest: REACHABILITY: no owning item has a non-alteration recipe or appears in Server/Drops owning items: Praetorian_Chest',
+    'stat Volatility is defined neither by us nor by the game',
+    'a line naming nothing'];
+  const groups = problemGroups(lines);
+  const stat = groups.find(g => /Volatility, which/.test(g.message));
+  check('panel: the same sentence on two items is one group of two', groups.length === 6 && stat && stat.subjects.length === 2 && stat.kind === 'item', groups.map(g => g.subjects.length + ' ' + g.message).join(' | '));
+  check('panel: the largest group comes first', groups[0] === stat);
+  check('panel: an item file opens from its group', stat.subjects[0].label === 'Praetorian_Boots' && stat.subjects[0].open === 'Item/Items/Praetorian_Boots.json');
+  const reach = groups.find(g => g.kind === 'family');
+  check('panel: a gate\'s rule name is dropped and each family keeps its own items', reach && reach.subjects.length === 2 && /^No owning item/.test(reach.message)
+    && reach.subjects[0].detail === 'owning items: Praetorian_Boots, Praetorian_Boots_Gray', reach && JSON.stringify(reach));
+  check('panel: an item named by id and a stat are read as such', groups.some(g => g.kind === 'item' && g.subjects[0].label === 'Armor_Thorium_Head_Black' && !g.subjects[0].open)
+    && groups.some(g => g.kind === 'stat' && g.subjects[0].label === 'Volatility'));
+  check('panel: a line naming nothing is kept whole', groups.some(g => g.kind === null && g.message === 'A line naming nothing'));
 }
 
 // The guide in the repository is the panel's text, word for word.

@@ -1,0 +1,61 @@
+{
+  "about": "The programs on Lady's USB key, each a version tested with the key. The builder installs these, and Get updates on the key offers a newer one once it is listed here. Every file is checked against the sha256 its release page publishes. Python, Java and Gradle are not listed: they follow the pins in Studio/Tools/setup.ps1, Studio/Tools/release.ps1 and the Gradle wrapper.",
+  "programs": [
+    {
+      "name": "7-Zip",
+      "version": "26.05",
+      "folder": "7-Zip",
+      "kind": "7zip",
+      "page": "https://github.com/ip7z/7zip/releases/tag/26.05",
+      "files": [
+        { "url": "https://github.com/ip7z/7zip/releases/download/26.05/7zr.exe", "sha256": "9bf582b894dfa665f852d7e9112b02290a1c303c2d95a21fcdc41ffcb03143b7" },
+        { "url": "https://github.com/ip7z/7zip/releases/download/26.05/7z2605-x64.exe", "sha256": "fd99e86f57d8f429ef5ed045bf98315af962e2309b0f1ba87a147a44c71647d0" }
+      ]
+    },
+    {
+      "name": "Git",
+      "version": "2.56.0.windows.4",
+      "folder": "Git",
+      "kind": "portablegit",
+      "page": "https://github.com/git-for-windows/git/releases/tag/v2.56.0.windows.4",
+      "files": [
+        { "url": "https://github.com/git-for-windows/git/releases/download/v2.56.0.windows.4/PortableGit-2.56.0.4-64-bit.7z.exe", "sha256": "b1f3e52216e2ed6882d1bebfd4d3fdf319bec40d2edbbf9fd26ec4fd3fce7ed1" }
+      ]
+    },
+    {
+      "name": "Blockbench",
+      "version": "5.2.2",
+      "folder": "Blockbench",
+      "kind": "blockbench",
+      "exe": "Blockbench.exe",
+      "page": "https://github.com/JannisX11/blockbench/releases/tag/v5.2.2",
+      "files": [
+        { "url": "https://github.com/JannisX11/blockbench/releases/download/v5.2.2/Blockbench_x64_5.2.2.exe", "sha256": "e866484b770f81db9e3ce20ec2adefe19529f34cacb6d764feb17163a575cec1" }
+      ]
+    },
+    {
+      "name": "PhotoCraft",
+      "version": "0.16.0",
+      "folder": "PhotoCraft",
+      "kind": "zip",
+      "exe": "photocraft.exe",
+      "keep": "PhotoCraftData",
+      "page": "https://github.com/storytold/photocraft/releases/tag/v0.16.0",
+      "files": [
+        { "url": "https://github.com/storytold/photocraft/releases/download/v0.16.0/photocraft-0.16.0-windows-x64-portable.zip", "sha256": "3e634f7e3cc95476c369d59ef0cfed3d1dd6fafd3c351ad81a4ddf3bd792e99d" }
+      ]
+    },
+    {
+      "name": "HyCreator",
+      "version": "1.3.8",
+      "folder": "HyCreator",
+      "kind": "exe",
+      "exe": "HyCreator.exe",
+      "updatesItself": true,
+      "page": "https://github.com/lewai1/HyCreator-releases/releases/tag/v1.3.8",
+      "files": [
+        { "url": "https://github.com/lewai1/HyCreator-releases/releases/download/v1.3.8/HyCreator.exe", "sha256": "e5c41e15d7c9b7b782b572bcbf5637efd0360e8a1cceea94fc9087b56998153d" }
+      ]
+    }
+  ]
+}

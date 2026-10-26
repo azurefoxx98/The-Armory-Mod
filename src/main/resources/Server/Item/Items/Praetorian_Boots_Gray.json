@@ -1,0 +1,115 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Steel_Ancient_Legs.name"
+  },
+  "Parent": "Armor_Iron_Legs",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Praetorian_Boots_Gray.png",
+  "IconProperties": {
+    "Scale": 0.4,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0.6,
+      -18
+    ]
+  },
+  "Model": "NPC/Undead/Skeleton_Elite/Models/Attachments/Praetorian/Legs.blockymodel",
+  "Texture": "Items/Armors/Praetorian/Legs_Texture.png",
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "BaseDamageResistance": 2,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Fire": [
+        {
+          "CalculationType": "Percent",
+          "Amount": 0.05
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 20,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "Amount": 16,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Volatility": [
+        {
+          "Amount": 6.5,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Affinity_Fire": [
+        {
+          "Target": "Max",
+          "CalculationType": "Additive",
+          "Amount": 18
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Pants",
+      "Shoes",
+      "Overpants"
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Steel"
+    ]
+  },
+  "MaxDurability": 75,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "Quality": "Legendary",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_PraetorianBoots"
+    }
+  ],
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_PraetorianBoots"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Categories": [ "ArmoryCategory.ArmoryArmors" ],
+  "SubCategory": "Praetorian"
+}

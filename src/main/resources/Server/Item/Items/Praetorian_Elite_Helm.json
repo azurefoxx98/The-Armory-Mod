@@ -1,0 +1,92 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Steel_Ancient_Head.name"
+  },
+  "Parent": "Armor_Iron_Head",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Praetorian_Elite_Helm.png",
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -15.6
+    ]
+  },
+  "Model": "Items/Armors/Praetorian/Elite/Head.blockymodel",
+  "Texture": "NPC/Undead/Skeleton_Elite/Models/Attachments/Elite/Head_Texture.png",
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 2,
+    "CosmeticsToHide": [
+      "EarAccessory",
+      "Ear",
+      "Haircut",
+      "HeadAccessory"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.12,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.12,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Ice": [
+        {
+          "CalculationType": "Percent",
+          "Amount": 0.1
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 15,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "Amount": 15,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Volatility": [
+        {
+          "Amount": 3.5,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Affinity_Ice": [
+        {
+          "Target": "Max",
+          "CalculationType": "Additive",
+          "Amount": 16
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Steel"
+    ]
+  },
+  "MaxDurability": 75,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "Quality": "Legendary",
+  "Categories": [ "ArmoryCategory.ArmoryArmors" ],
+  "SubCategory": "Praetorian Elite"
+}

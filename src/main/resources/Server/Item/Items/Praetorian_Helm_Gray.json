@@ -1,0 +1,116 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Steel_Ancient_Head.name"
+  },
+  "Parent": "Armor_Iron_Head",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Praetorian_Helm_Gray.png",
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -15.6
+    ]
+  },
+  "Model": "Items/Armors/Praetorian/Head.blockymodel",
+  "Texture": "Items/Armors/Praetorian/Head_Texture.png",
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 2,
+    "CosmeticsToHide": [
+      "EarAccessory",
+      "Ear",
+      "Haircut",
+      "HeadAccessory"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.12,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.12,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Fire": [
+        {
+          "CalculationType": "Percent",
+          "Amount": 0.05
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 15,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "Amount": 9,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Volatility": [
+        {
+          "Amount": 3.5,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Affinity_Fire": [
+        {
+          "Target": "Max",
+          "CalculationType": "Additive",
+          "Amount": 16
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Steel"
+    ]
+  },
+  "MaxDurability": 75,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "Quality": "Legendary",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_PraetorianHelm"
+    }
+  ],
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_PraetorianHelm"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Categories": [ "ArmoryCategory.ArmoryArmors" ],
+  "SubCategory": "Praetorian"
+}

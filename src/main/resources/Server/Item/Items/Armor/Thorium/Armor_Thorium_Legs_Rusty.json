@@ -1,0 +1,80 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Thorium_Legs.name"
+  },
+  "Parent": "Armor_Iron_Legs",
+  "Quality": "Rare",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Armor_Thorium_Legs_Rusty.png",
+  "IconProperties": {
+    "Rotation": [ 22.5, 45, 22.5 ],
+    "Scale": 0.4,
+    "Translation": [ 0, -21.6 ]
+  },
+  "Model": "Items/Armors/Thorium/Legs.blockymodel",
+  "Texture": "Items/Armors/VanillaRecolors/Thorium/Legs_Rusty.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Thorium_Legs"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [ "ArmoryAlteration" ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [ "Pants", "Shoes", "Overpants" ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.0896,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.0896,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Poison": [
+        {
+          "Amount": 0.21,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 17,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 120,
+  "Tags": {
+    "Type": [ "Armor" ],
+    "Family": [ "Thorium" ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Thorium_Legs"
+    }
+  ],
+  "Categories": [ "ArmoryCategory.ArmoryArmors" ],
+  "SubCategory": "Vanilla Recolor Thorium"
+}

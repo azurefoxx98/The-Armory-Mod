@@ -67,6 +67,20 @@
           "CalculationType": "Additive",
           "Amount": 18
         }
+      ],
+      "Move_Speed": [
+        {
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": -0.1
+        }
+      ],
+      "Jump_Height": [
+        {
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": -0.05
+        }
       ]
     },
     "CosmeticsToHide": [
@@ -86,6 +100,7 @@
   "MaxDurability": 75,
   "ItemSoundSetId": "ISS_Armor_Heavy",
   "Quality": "Legendary",
-  "Categories": [ "ArmoryCategory.ArmoryArmors" ],
-  "SubCategory": "Praetorian Elite"
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
+  "SubCategory": "Praetorian Elite",
+  "SoundEventId": "Mekanical_Ding"
 }

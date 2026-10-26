@@ -67,6 +67,20 @@
           "CalculationType": "Additive",
           "Amount": 18
         }
+      ],
+      "Move_Speed": [
+        {
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": -0.1
+        }
+      ],
+      "Jump_Height": [
+        {
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": -0.05
+        }
       ]
     },
     "CosmeticsToHide": [
@@ -91,6 +105,7 @@
       "Id": "Resource_PraetorianBoots"
     }
   ],
-  "Categories": [ "ArmoryCategory.ArmoryArmors" ],
-  "SubCategory": "Praetorian"
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
+  "SubCategory": "Praetorian",
+  "SoundEventId": "Mekanical_Ding"
 }

@@ -55,6 +55,13 @@ function Mount-KeyLetter([string] $folder) {
     foreach ($letter in $KeyLetters) {
         if ($map[$letter] -and $map[$letter] -ieq $folder) { return $letter }
     }
+    # A letter left pointing at a folder that is gone, by a key unplugged without Done, serves nothing.
+    foreach ($letter in @($map.Keys)) {
+        if ($KeyLetters -contains $letter -and -not (Test-Path -LiteralPath $map[$letter])) {
+            & "$env:SystemRoot\System32\subst.exe" "$($letter):" /d 2>$null | Out-Null
+            $map.Remove($letter)
+        }
+    }
     $used = @([IO.DriveInfo]::GetDrives() | ForEach-Object { $_.Name.Substring(0, 1).ToUpper() })
     foreach ($letter in $KeyLetters) {
         if ($used -contains $letter -or $map.ContainsKey($letter)) { continue }

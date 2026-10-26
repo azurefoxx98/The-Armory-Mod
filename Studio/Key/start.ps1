@@ -19,9 +19,28 @@ param(
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 [Windows.Forms.Application]::EnableVisualStyles()
+$title = 'The Armory'
+# Anything unexpected is said in a window, since the console it would print in is hidden.
+trap {
+    [void][Windows.Forms.MessageBox]::Show("The Armory stopped on something unexpected. Send Larsonix a screenshot of this window.`n`nFor Larsonix: $($_.InvocationInfo.ScriptName):$($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)", $title)
+    exit 0
+}
+# The console of Start The Armory.cmd, hidden now that this runs. It stays open behind, and shows again
+# only if this could not run at all.
+if (-not ('KeyConsole' -as [type])) {
+    Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class KeyConsole {
+    [DllImport("kernel32.dll")] static extern IntPtr GetConsoleWindow();
+    [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int show);
+    public static void Hide() { IntPtr h = GetConsoleWindow(); if (h != IntPtr.Zero) ShowWindow(h, 0); }
+}
+'@
+}
+[KeyConsole]::Hide()
 . (Join-Path $PSScriptRoot 'key.ps1')
 $Key = Get-KeyFolder $Key
-$title = 'The Armory'
 $testing = [bool]$env:ARMORY_KEY_TEST
 
 function Show-Message([string] $text, [string] $buttons = 'OK') {
@@ -346,6 +365,8 @@ function Invoke-Done {
 $script:closing = $false
 $form.Add_FormClosing({
     param($sender, $e)
+    # Windows closing or signing out closes the programs itself, and must not wait on this window.
+    if ($e.CloseReason -eq 'WindowsShutDown') { return }
     if (-not $script:closing) { $e.Cancel = $true; Invoke-Done }
 })
 

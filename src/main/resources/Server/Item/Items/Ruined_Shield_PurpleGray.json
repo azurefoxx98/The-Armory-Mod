@@ -1,0 +1,49 @@
+{
+  "Parent": "Template_Weapon_Shield",
+  "TranslationProperties": {
+    "Name": "server.items.Weapon_Shield_Ruined_Giant.name"
+  },
+  "Model": "NPC/Undead/Skeleton_Elite/Models/Weapons/Shield/Elite_Shield.blockymodel",
+  "Texture": "Items/Weapons/Praetorian/EliteShield/PurpleGray.png",
+  "Icon": "Icons/ItemsGenerated/Ruined_Shield_PurpleGray.png",
+  "Quality": "Legendary",
+  "ItemLevel": 40,
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      313,
+      275,
+      0
+    ],
+    "Translation": [
+      -39,
+      -39
+    ]
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Ruined_Shield"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Ruined_Shield"
+    }
+  ],
+  "SubCategory": "Praetorian Elite",
+  "Categories": [ "ArmoryCategory.ArmoryShields" ]
+}

@@ -1,0 +1,91 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Steel_Ancient_Legs.name"
+  },
+  "Parent": "Armor_Iron_Legs",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Praetorian_Elite_Boots.png",
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0.6,
+      -33
+    ]
+  },
+  "Model": "Items/Armors/Praetorian/Elite/Legs.blockymodel",
+  "Texture": "NPC/Undead/Skeleton_Elite/Models/Attachments/Elite/Legs_Texture.png",
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "BaseDamageResistance": 2,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Ice": [
+        {
+          "CalculationType": "Percent",
+          "Amount": 0.1
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 20,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "Amount": 20,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Volatility": [
+        {
+          "Amount": 6.5,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Affinity_Ice": [
+        {
+          "Target": "Max",
+          "CalculationType": "Additive",
+          "Amount": 18
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Pants",
+      "Shoes",
+      "Overpants"
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Steel"
+    ]
+  },
+  "MaxDurability": 75,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "Quality": "Legendary",
+  "Categories": [ "ArmoryCategory.ArmoryArmors" ],
+  "SubCategory": "Praetorian Elite"
+}

@@ -1,0 +1,79 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Thorium_Hands.name"
+  },
+  "Parent": "Armor_Iron_Hands",
+  "Quality": "Rare",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Armor_Thorium_Hands_Blue.png",
+  "IconProperties": {
+    "Rotation": [ 22.5, 45, 22.5 ],
+    "Scale": 0.92,
+    "Translation": [ 15, 3 ]
+  },
+  "Model": "Items/Armors/Thorium/Hands.blockymodel",
+  "Texture": "Items/Armors/VanillaRecolors/Thorium/Hands_Blue.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Thorium_Hands"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [ "ArmoryAlteration" ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Armor": {
+    "ArmorSlot": "Hands",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.0512,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.0512,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Poison": [
+        {
+          "Amount": 0.12,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 10,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 120,
+  "Tags": {
+    "Type": [ "Armor" ],
+    "Family": [ "Thorium" ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Thorium_Hands"
+    }
+  ],
+  "Categories": [ "ArmoryCategory.ArmoryArmors" ],
+  "SubCategory": "Vanilla Recolor Thorium"
+}

@@ -1,0 +1,102 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.DecorativeAntiqueDragonHelm.name"
+  },
+  "Icon": "Icons/ItemsGenerated/DecorativeMirrorShield.png",
+  "Categories": [
+    "ArmoryCategory.ArmoryProps"
+  ],
+  "InteractionVars": {
+    "Item_Throw_Projectile": {
+      "Interactions": [
+        {
+          "Parent": "Item_Throw_Projectile",
+          "ProjectileId": "Rubble_Stone"
+        }
+      ]
+    }
+  },
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Items/Weapons/MirrorShield/MirrorShield_Deco.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Items/Weapons/MirrorShield/MirrorShield.png",
+        "Weight": 0
+      }
+    ],
+    "Flags": {},
+    "RandomRotation": "None",
+    "Gathering": {
+      "UseDefaultDropWhenPlaced": false,
+      "Breaking": {
+        "GatherType": "Rocks",
+        "ItemId": "DecorativeMirrorShield"
+      }
+    },
+    "BlockParticleSetId": "Dust",
+    "ParticleColor": "#75755b",
+    "BlockSoundSetId": "Metal",
+    "CustomModelScale": 0.5,
+    "VariantRotation": "NESW",
+    "Support": {
+      "East": []
+    },
+    "CubeShadingMode": "Reflective",
+    "HitboxType": "Block_Vertical_Flat",
+    "RotationYawPlacementOffset": "Ninety"
+  },
+  "PlayerAnimationsId": "Item",
+  "Tags": {
+    "Type": [
+      "Rubble",
+      "Flint"
+    ]
+  },
+  "MaxStack": 100,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DropOnDeath": true,
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      3,
+      282,
+      359
+    ],
+    "Translation": [
+      4,
+      -29
+    ]
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Type": "Crafting",
+        "Id": "Furniture_Bench",
+        "Categories": [
+          "Furniture_Misc"
+        ]
+      }
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Decoration"
+    }
+  ],
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        "Block_Secondary"
+      ]
+    }
+  }
+}

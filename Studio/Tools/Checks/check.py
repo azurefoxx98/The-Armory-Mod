@@ -592,6 +592,8 @@ GAME_WORDS = {
                                   "Open it and set {field} like the others of its set."),
     ("like-its-siblings", "value"): ("Its {field} is {value}, where the other items of its set all have {others}.",
                                      "Open it and check its {field}."),
+    ("foreign-family", "foreign"): ("The Alteration Table can turn it into {of}, another item, and nothing turns it back.",
+                                    "Remove {name} from its ResourceTypes."),
     ("reachable", "item"): ("No player can get it: nothing crafts it, drops it or sells it.",
                             "Give it a recipe at a bench, or add it to a chest loot table."),
     ("reachable", "recipe"): ("Its recipe can never be crafted, so nobody can make it at a bench.",

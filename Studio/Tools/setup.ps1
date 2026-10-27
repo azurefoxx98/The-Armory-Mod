@@ -1,4 +1,6 @@
-# One-time setup for working on The Armory in the game directly. Run it through Studio\Setup.cmd.
+# One-time setup for working on The Armory in the game directly. The Set up button of The Armory's panel
+# in HyCreator runs it (through run.ps1): first with -Report, which changes nothing and lists the other
+# copies of the mod it would move, so the panel can ask her, then with -Yes once she agreed.
 #
 # What it does, in order:
 #   1. Checks that git is installed and that this folder is the mod's repository, and moves a fresh
@@ -22,8 +24,11 @@ param(
     [string] $PythonHome = (Join-Path $env:LOCALAPPDATA 'TheArmory\Python-3.15.1'),
     # A copy of the Python download already on this computer, used instead of downloading it. Only tests use it.
     [string] $PythonZip = '',
-    # Answer yes to every question. Only tests use it.
+    # Answer yes to every question: what the panel passes once she agreed to what -Report listed.
     [switch] $Yes,
+    # Writes what setup would do to this file and changes nothing: the other copies it would move, and
+    # whether the copy would move from main to her branch.
+    [string] $Report = '',
     # Her branch, which a fresh copy on main is moved to.
     [string] $Branch = 'lady'
 )
@@ -96,18 +101,19 @@ Write-Host ''
 
 # 1. The tools and the folders this needs.
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Stop-Setup 'Git is not installed. Install it from https://git-scm.com/download/win with its default choices, then double-click Setup.cmd again.'
+    Stop-Setup 'Git is not installed. Install it from https://git-scm.com/download/win with its default choices, then click Set up again.'
 }
 if (-not (Test-Path -LiteralPath (Join-Path $resources 'manifest.json')) -or -not (Test-Path -LiteralPath (Join-Path $repo '.git'))) {
-    Stop-Setup 'This Setup.cmd is not in a copy of the mod. Double-click Get The Armory.cmd instead.' $repo
+    Stop-Setup 'This folder is not a copy of the mod. Send Larsonix a screenshot.' $repo
 }
 if (-not (Test-Path -LiteralPath $UserData)) {
-    Stop-Setup 'Hytale was not found. Start Hytale once, then double-click Setup.cmd again.' $UserData
+    Stop-Setup 'Hytale was not found. Start Hytale once, then click Set up again.' $UserData
 }
 # 1b. Her branch. A fresh clone holds main alone, and HyCreator's Branches list shows only the
 # branches a copy holds, so her branch would not be there to pick. Setup moves a copy on main to it.
 $onBranch = (Invoke-GitQuiet @('rev-parse', '--abbrev-ref', 'HEAD')).Text
-if ($onBranch -eq 'main' -and (Invoke-GitQuiet @('rev-parse', '--verify', '--quiet', "origin/$Branch")).Code -eq 0) {
+$fromMain = $onBranch -eq 'main' -and (Invoke-GitQuiet @('rev-parse', '--verify', '--quiet', "origin/$Branch")).Code -eq 0
+if ($fromMain -and -not $Report) {
     if ((Invoke-GitQuiet @('status', '--porcelain', '--untracked-files=no')).Text) {
         Stop-Setup "Your copy has changes on main. Send Larsonix a screenshot of this window."
     }
@@ -116,13 +122,13 @@ if ($onBranch -eq 'main' -and (Invoke-GitQuiet @('rev-parse', '--verify', '--qui
     Write-Host "Your copy is now on your branch, $Branch."
 }
 
-New-Item -ItemType Directory -Force -Path $mods | Out-Null
+if (-not $Report) { New-Item -ItemType Directory -Force -Path $mods | Out-Null }
 $identity = Read-Identity $resources
 $ourLink = Join-Path $mods 'TheArmory'
 $ourJar = Join-Path $mods 'TheArmory-code.jar'
 
 # 2. Every other copy of the mod, in the shared mods folder and in each world's own.
-$folders = @($mods)
+$folders = @(@($mods) | Where-Object { Test-Path -LiteralPath $_ })
 $saves = Join-Path $UserData 'Saves'
 if (Test-Path -LiteralPath $saves) {
     $folders += Get-ChildItem -LiteralPath $saves -Directory | ForEach-Object { Join-Path $_.FullName 'mods' } |
@@ -135,6 +141,17 @@ foreach ($folder in $folders) {
         if ($entry.FullName -eq $ourLink -and (Link-Target $ourLink) -eq $resources) { continue }
         if ((Read-Identity $entry.FullName) -eq $identity) { $others += $entry }
     }
+}
+if ($Report) {
+    $current = Link-Target $ourLink
+    $plan = [ordered]@{
+        others = @($others | ForEach-Object { $_.FullName }); setAside = $setAside
+        toBranch = $(if ($fromMain) { $Branch } else { $null })
+        linkTaken = [bool]((Test-Path -LiteralPath $ourLink) -and $current -ne $resources)
+    }
+    [IO.File]::WriteAllText($Report, ($plan | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding $false))
+    if ($others.Count -gt 0) { Write-Host "Other copies of The Armory to move aside: $($others.Count)." } else { Write-Host 'No other copy of The Armory to move.' }
+    exit 0
 }
 if ($others.Count -gt 0) {
     Write-Host 'Hytale can load only one copy of The Armory, and these are in your mods folders:'
@@ -161,7 +178,7 @@ $current = Link-Target $ourLink
 if ($current -eq $resources) {
     Write-Host 'Hytale already loads The Armory from this copy.'
 } elseif (Test-Path -LiteralPath $ourLink) {
-    Stop-Setup "A folder named TheArmory is already in your mods folder: $ourLink. Rename it or move it away, then double-click Setup.cmd again."
+    Stop-Setup "A folder named TheArmory is already in your mods folder: $ourLink. Rename it or move it away, then click Set up again."
 } else {
     New-Item -ItemType Junction -Path $ourLink -Target $resources | Out-Null
     Write-Host 'Hytale now loads The Armory from this copy.'
@@ -172,7 +189,7 @@ git -C $repo config armory.mods $mods
 git -C $repo config armory.plugins $Plugins
 git -C $repo config core.hooksPath Studio/Tools/hooks
 if (-not (Test-Path -LiteralPath $Plugins)) {
-    Write-Host 'HyCreator was not found, so its Armory pages are not added yet. Start HyCreator once, then double-click Setup.cmd again.'
+    Write-Host 'HyCreator was not found, so its Armory pages are not added yet. Start HyCreator once, then click Set up again.'
 }
 & (Join-Path $PSScriptRoot 'sync.ps1')
 if ($LASTEXITCODE -ne 0) { exit 1 }
@@ -201,13 +218,13 @@ if (-not $checksReady) {
         # Unpacked beside its place and moved in whole, so an interrupted run never leaves half of it.
         $staging = "$PythonHome.partial"
         if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
-        if (Test-Path -LiteralPath $PythonHome) { Stop-Setup "The checks could not be installed. Delete this folder, then double-click Setup.cmd again: $PythonHome" }
+        if (Test-Path -LiteralPath $PythonHome) { Stop-Setup "The checks could not be installed. Delete this folder, then click Set up again: $PythonHome" }
         New-Item -ItemType Directory -Force -Path (Split-Path -Parent $PythonHome) | Out-Null
         [IO.Compression.ZipFile]::ExtractToDirectory($zip, $staging)
         Move-Item -LiteralPath $staging -Destination $PythonHome
         $checksReady = Test-Path -LiteralPath $python
     } catch {
-        Write-Host 'The checks could not be installed. Everything else is ready. Double-click Setup.cmd again later to add them.'
+        Write-Host 'The checks could not be installed. Everything else is ready. Click Set up again later to add them.'
         Write-Host "For Larsonix: $($_.Exception.Message)"
     } finally {
         if (-not $PythonZip -and $zip -and (Test-Path -LiteralPath $zip)) { Remove-Item -LiteralPath $zip -Force }
@@ -220,7 +237,7 @@ if ($checksReady) {
 }
 
 Write-Host ''
-Write-Host 'Done. Restart HyCreator to see The Armory''s pages.'
+Write-Host 'Done.'
 $blockbench = Join-Path $repo 'Studio\Tools\Blockbench\armory.js'
 if (Test-Path -LiteralPath $blockbench) {
     Write-Host ''

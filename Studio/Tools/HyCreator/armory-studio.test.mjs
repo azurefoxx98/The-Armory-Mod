@@ -9,7 +9,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, ladyItems, sortItems, matchesFilter, ITEM_ORDERS, hyCreatorTooOld, NEEDS_HYCREATOR, withMark, withoutMark, sheetColour } from './armory-studio.js';
+import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, ladyItems, sortItems, matchesFilter, ITEM_ORDERS, hyCreatorTooOld, NEEDS_HYCREATOR, withMark, withoutMark, sheetColour,
+  parseGitConfig, setupState, runView, releaseProblem, compareVersions, taskLaunch, checkLaunch, languageChanges, GET_SCRIPT, ARMORY_SOURCE, RUNS } from './armory-studio.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const resources = path.resolve(here, '..', '..', '..', 'src', 'main', 'resources');
@@ -399,6 +400,64 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   check('filter: every word must be there',!matchesFilter('Praetorian_Boots_Gray', 'praetorian red'));
   check('filter: empty keeps everything', matchesFilter('X', '') && matchesFilter('X', '   ') && matchesFilter('X', null));
   check('filter: a path is found by its file name', matchesFilter('UI/Custom/Common/Buttons/Disabled@2x.png', 'disabled'));
+}
+
+// The panel of buttons: what it reads from her copy, what it starts, and what it shows.
+{
+  const config = '[core]\n\trepositoryformatversion = 0\n\thooksPath = Studio/Tools/hooks\n[remote "origin"]\n\turl = https://example.invalid/x.git\n'
+    + '[armory]\n\tmods = C:\\\\Users\\\\L\\\\AppData\\\\Roaming\\\\Hytale\\\\UserData\\\\Mods\n\tpython = "C:/Users/L/AppData/Local/TheArmory/Python-3.15.1/python.exe"\n';
+  const c = parseGitConfig(config);
+  check('panel: her checks\' program is read from .git/config, quotes removed', c.python === 'C:/Users/L/AppData/Local/TheArmory/Python-3.15.1/python.exe', JSON.stringify(c));
+  check('panel: setup ran when the copy points git at the Studio\'s own steps', c.hooksPath === 'Studio/Tools/hooks');
+  check('panel: a setting of another section is never taken for hers', parseGitConfig('[remote "armory"]\n\tpython = x\n').python === undefined);
+  check('panel: setup state, never run, checks missing, ready', setupState(parseGitConfig('[core]\n\tbare = false\n')) === 'none'
+    && setupState(parseGitConfig('[core]\n\thooksPath = Studio/Tools/hooks\n')) === 'nochecks' && setupState(c) === 'ready' && setupState(null) === 'none');
+
+  const t0 = 1_000_000;
+  check('run: no result and nothing started is idle', runView(null, null, null, t0).state === 'idle');
+  check('run: started, its result not there yet, is starting', runView(null, 'u-1', t0, t0 + 2000).state === 'starting');
+  check('run: an older result does not count for a new start', runView({ id: 'u-0', state: 'done', lines: [] }, 'u-1', t0, t0 + 2000).state === 'starting');
+  check('run: no result of its own after 30 seconds is a start that never happened', runView(null, 'u-1', t0, t0 + 31000).state === 'lost');
+  const done = runView({ id: 'u-1', state: 'done', finished: 'x', lines: ['Updating your copy of The Armory.', '', 'For Larsonix: fatal: boom', 'Done.'] }, 'u-1', t0, t0 + 5000);
+  check('run: its own result shows its state and its lines, blanks left out', done.state === 'done' && done.lines.length === 3, JSON.stringify(done.lines));
+  check('run: a line for Larsonix is marked so the panel shows it small', done.lines[1].larsonix && done.lines[1].text === 'fatal: boom' && !done.lines[0].larsonix);
+  check('run: a result read with no start waiting shows as it is', runView({ id: 'x', state: 'running', lines: ['a'] }, null, null).state === 'running');
+  check('run: an unknown state is a failure, never a pass', runView({ id: 'x', state: 'weird', lines: [] }, null, null).state === 'failed');
+
+  const info = { last: '1.24.2', suggested: '1.24.3', released: ['1.24.0', '1.24.1', '1.24.2'] };
+  const form = { version: '', choice: 'draft', notes: 'Fixed things.', message: '' };
+  check('release form: an empty version takes the suggested one', releaseProblem(info, form) === null);
+  check('release form: a version that is not one is named', /is not a version number/.test(releaseProblem(info, { ...form, version: '1.25' }) || ''));
+  check('release form: a version not newer than the last release is named', /not newer than the last release, 1\.24\.2/.test(releaseProblem(info, { ...form, version: '1.24.1' }) || ''));
+  check('release form: v in front is allowed', releaseProblem(info, { ...form, version: 'v1.25.0' }) === null);
+  check('release form: an empty changelog is named', /changelog/.test(releaseProblem(info, { ...form, notes: '  ' }) || ''));
+  check('release form: a draft with a message needs the message', /message/.test(releaseProblem(info, { ...form, choice: 'message' }) || '')
+    && releaseProblem(info, { ...form, choice: 'message', message: 'Add a glow.' }) === null);
+  check('release form: no choice is named', /Choose/.test(releaseProblem(info, { ...form, choice: '' }) || ''));
+  check('release form: versions compare as numbers', compareVersions('1.10.0', '1.9.9') === 1 && compareVersions('1.2.3', '1.2.3') === 0 && compareVersions('0.9.0', '1.0.0') === -1);
+
+  const l = taskLaunch('C:\\Windows', 'C:/Users/L/Documents/The-Armory-Mod/', 'release', 'release-1', { Version: '1.25.0', Choice: 'draft', NotesFile: 'C:\\n.txt', MessageFile: '' });
+  check('launch: through the console host with no window', l.exe === 'C:\\Windows\\System32\\conhost.exe' && l.args[0] === '--headless' && l.args[1].endsWith('\\WindowsPowerShell\\v1.0\\powershell.exe'));
+  check('launch: the copy\'s own runner, its task and its start', l.args.includes('C:\\Users\\L\\Documents\\The-Armory-Mod\\Studio\\Tools\\run.ps1')
+    && l.args[l.args.indexOf('-Task') + 1] === 'release' && l.args[l.args.indexOf('-Id') + 1] === 'release-1', l.args.join(' '));
+  check('launch: the form\'s values follow, an empty one left out', l.args.slice(-6).join('|') === '-Version|1.25.0|-Choice|draft|-NotesFile|C:\\n.txt');
+  const k = checkLaunch('C:\\Windows', 'C:/M/The-Armory-Mod', 'C:/P/python.exe');
+  check('launch: the checks start as the git steps start them, with no window', k.exe.endsWith('conhost.exe') && k.args.join('|') === '--headless|C:\\P\\python.exe|C:\\M\\The-Armory-Mod\\Studio\\Tools\\Checks\\check.py|--spawn');
+
+  const before = new Map([['Languages/en-US/server.lang', 'a = A\n'], ['Languages/fr-FR/server.lang', 'a = B\n'], ['Languages/de-DE/server.lang', 'x\n']]);
+  const after = new Map([['Languages/en-US/server.lang', 'a = A\nb = B\n'], ['Languages/fr-FR/server.lang', 'a = B\n'], ['Languages/es-ES/server.lang', 'y\n']]);
+  check('names: a changed, an arrived and a gone language file are each named, an unchanged one is not',
+    languageChanges(before, after).sort().join() === 'Languages/de-DE/server.lang,Languages/en-US/server.lang,Languages/es-ES/server.lang',
+    languageChanges(before, after).join());
+  check('names: nothing changed is nothing to do', languageChanges(before, new Map(before)).length === 0);
+
+  check('get: clones her branch straight away, never main', /git clone --quiet --branch lady \$Source \$copy/.test(GET_SCRIPT) && ARMORY_SOURCE.endsWith('/The-Armory-Mod.git'));
+  check('runs: the panel reads the folder the runner writes', RUNS === 'Studio/Tools/Runs/' && fs.readFileSync(path.resolve(here, '..', 'run.ps1'), 'utf8').includes("Join-Path $tools 'Runs'"));
+  // The script reaches her as text inside this file, so nothing else ever checks it parses.
+  const parsed = execFileSync('powershell.exe', ['-NoProfile', '-Command',
+    '$e = $null; [void][System.Management.Automation.Language.Parser]::ParseInput([Console]::In.ReadToEnd(), [ref]$null, [ref]$e); $e.Count'],
+    { input: GET_SCRIPT }).toString().trim();
+  check('get: its script parses with no error', parsed === '0', parsed);
 }
 
 // The guide in the repository is the panel's text, word for word.

@@ -7,23 +7,26 @@ The same guide is in HyCreator: click ? at the top.
 ## Set up, once
 
 - Install Git for Windows from https://git-scm.com/download/win, with its default choices.
-- Put Get The Armory.cmd, the file Larsonix sends you, in the folder where you want the mod, such as Documents.
-- Double-click it. Answer its question, then do the Blockbench step it shows.
-- Restart HyCreator. Click Workspace at the top left, then Open mod folder..., and pick the The-Armory-Mod folder it made.
+- In HyCreator, click the gear at the top, then Plugins, then Install plugin..., and pick armory-studio.js, the file Larsonix sends you.
+- Click the hammer at the top: The Armory panel. Click Choose a folder..., and pick where the mod goes, such as Documents.
+- Click Get The Armory. When it is copied, HyCreator opens it.
+- Click Set up, and answer its question. Then do the Blockbench step it shows.
 - The button at the top now says lady: your branch. All your work goes there.
 - The first time you push, GitHub asks you to sign in. Sign in once.
 
 ## Each time you work
 
-- Before you start, double-click Studio\Update.cmd. It brings in Larsonix's latest work and sends yours to GitHub.
+- Before you start, click Update in The Armory panel. It brings in Larsonix's latest work and sends yours to GitHub.
 - When you finish, click lady at the top, then Commit changes... Write what you did in one line, then click Commit.
 - Then click lady at the top, then Push.
-- If Pull or Push says your branch has diverged, double-click Update.cmd instead.
+- If Pull or Push says your branch has diverged, click Update in The Armory panel instead.
 - If Update says your work and ours changed the same files, send Larsonix a screenshot and keep working.
+- When The Armory panel says a new version is ready, save your work and click Reload.
 
 ## The checks
 
 - The checks run by themselves each time you commit. When they find something, a notice appears.
+- To check now, click Check now in The Armory panel.
 - Click ! at the top to see what to fix. Click an item to open it.
 - Click By item at the top of the panel to see each item once, with all its problems. Open opens the item.
 - To find one item, type part of its name in the box at the top of the panel.
@@ -101,10 +104,11 @@ The same guide is in HyCreator: click ? at the top.
 
 ## Make a release
 
-- Commit your work first, then double-click Studio\Release.cmd.
-- Type the version, or press Enter for the one it suggests.
-- Write the changelog in the window that opens, then click Done.
-- Type 1 for a draft players cannot see, 2 for a draft with a message for Larsonix, or 3 to publish.
+- Commit your work first. Then click Make a release... in The Armory panel.
+- Type the version, or leave it empty for the one it suggests.
+- Choose a draft players cannot see, a draft with a message for Larsonix, or publish.
+- Write the changelog players will read, then click Start the release.
+- The panel shows each step. It ends with the link to your release on GitHub.
 
 ## Files our tools make
 

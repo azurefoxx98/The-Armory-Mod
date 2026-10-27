@@ -1,5 +1,6 @@
 # Brings the mod's latest work into this branch, keeps the work already on it, and sends the result
-# to GitHub. Run it through Studio\Update.cmd.
+# to GitHub. The Update button of The Armory's panel in HyCreator runs it (through run.ps1), and so
+# do the USB key's Get updates and Done.
 #
 # Why it exists: HyCreator's Pull only moves a branch forward. When a branch holds commits of its
 # own and new work arrives beside them, Pull refuses ("Your branch and its remote have diverged").
@@ -13,9 +14,7 @@ param(
     # The branch every release lands on. Only tests point this elsewhere.
     [string] $Main = 'main',
     # Leave out the final push. Only tests use it.
-    [switch] $NoPush,
-    # The program that keeps its own copy of the language files. Only tests point this elsewhere.
-    [string] $HyCreatorProcess = 'HyCreator'
+    [switch] $NoPush
 )
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
@@ -48,29 +47,19 @@ Write-Host 'Updating your copy of The Armory.'
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Stop-Update 'Git is not installed. Install it from https://git-scm.com/download/win with its default choices, then try again.' }
 
 $branch = (Invoke-Git @('rev-parse', '--abbrev-ref', 'HEAD')).Text
-if ($branch -eq 'HEAD' -or -not $branch) { Stop-Update 'Your copy is on no branch. In HyCreator, click HEAD at the top, then Branches..., then lady. Then double-click Update.cmd again.' }
-if ($branch -eq $Main) { Stop-Update "Your copy is on $Main. In HyCreator, click $Main at the top, then Branches..., then lady. Then double-click Update.cmd again." }
-if (Test-Path -LiteralPath (Join-Path $repo '.git\MERGE_HEAD')) { Stop-Update 'An earlier update did not finish. Send Larsonix a screenshot of this window.' }
+if ($branch -eq 'HEAD' -or -not $branch) { Stop-Update 'Your copy is on no branch. In HyCreator, click HEAD at the top, then Branches..., then lady. Then click Update again.' }
+if ($branch -eq $Main) { Stop-Update "Your copy is on $Main. In HyCreator, click $Main at the top, then Branches..., then lady. Then click Update again." }
+if (Test-Path -LiteralPath (Join-Path $repo '.git\MERGE_HEAD')) { Stop-Update 'An earlier update did not finish. Send Larsonix a screenshot.' }
 $dirty = (Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Text
-if ($dirty) { Stop-Update "Some of your changes are not committed. In HyCreator, click $branch at the top, then Commit changes... and commit them. Then double-click Update.cmd again." }
+if ($dirty) { Stop-Update "Some of your changes are not committed. In HyCreator, click $branch at the top, then Commit changes... and commit them. Then click Update again." }
 
 Write-Host 'Getting the latest from GitHub...'
 $fetch = Invoke-Git @('fetch', 'origin')
 if ($fetch.Code -ne 0) { Stop-Update 'GitHub could not be reached. Check your internet, then try again.' $fetch.Text }
 
-# HyCreator keeps its own copy of the English language file and writes it back whole when a name is
-# saved from an item's translation window. Seen in HyCreator 1.3.9: a line added on disk while it is
-# open was erased by the next such save, removed lines came back, and its own rescan did not help. So
-# an update that changes a language file waits until HyCreator is closed. Any other update goes on.
-if (Get-Process -Name $HyCreatorProcess -ErrorAction SilentlyContinue) {
-    $languages = foreach ($source in @("origin/$branch", "origin/$Main")) {
-        if ((Invoke-Git @('rev-parse', '--verify', '--quiet', "$source^{commit}")).Code -ne 0) { continue }
-        (Invoke-Git @('diff', '--name-only', "HEAD...$source", '--', 'src/main/resources/Server/Languages')).Text
-    }
-    if (@($languages | Where-Object { $_ }).Count) {
-        Stop-Update 'This update changes the names players read, and HyCreator is open. HyCreator would undo them the next time you save a name. Close HyCreator, then double-click Update.cmd again.'
-    }
-}
+# HyCreator keeps its own copy of each language file and builds every name it saves from that copy, so a
+# name that arrives here while it is open would be erased by her next save. The Armory's add-on in
+# HyCreator sees the file change and has HyCreator read it again, so an update goes on with HyCreator open.
 
 $start = (Invoke-Git @('rev-parse', 'HEAD')).Text
 $brought = 0
@@ -84,7 +73,7 @@ foreach ($source in @("origin/$branch", "origin/$Main")) {
         [void](Invoke-Git @('merge', '--abort'))
         [void](Invoke-Git @('reset', '--hard', '-q', $start))
         $list = if ($both) { ($both | ForEach-Object { "  $_" }) -join "`n" } else { "  $($merge.Text)" }
-        Stop-Update "Your work and ours changed the same lines in these files:`n$list`nNothing was changed, and you can keep working. Send Larsonix a screenshot of this window."
+        Stop-Update "Your work and ours changed the same lines in these files:`n$list`nNothing was changed, and you can keep working. Send Larsonix a screenshot."
     }
     $brought += $new
 }
@@ -97,7 +86,7 @@ if (-not $NoPush) {
     if (-not $hasRemote -or [int]$ahead -gt 0) {
         Write-Host 'Sending your work to GitHub...'
         $push = Invoke-Git @('push', '-u', 'origin', "HEAD:$branch")
-        if ($push.Code -ne 0) { Stop-Update "Your copy is updated, but sending it to GitHub failed. In HyCreator, click $branch at the top, then Push. If that fails too, send Larsonix a screenshot of this window." $push.Text }
+        if ($push.Code -ne 0) { Stop-Update "Your copy is updated, but sending it to GitHub failed. In HyCreator, click $branch at the top, then Push. If that fails too, send Larsonix a screenshot." $push.Text }
         Write-Host 'Sent.'
     }
 }

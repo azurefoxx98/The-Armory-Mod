@@ -1,7 +1,7 @@
 """Run The Armory's checks on this copy of the mod, and say what they found in plain words.
 
 Git runs this after every commit, pull and branch switch (Studio/Tools/hooks), in the background,
-so working never waits for it. Studio/Check.cmd runs it in a window any time. The result goes to
+so working never waits for it, and so does the Check now button of The Armory panel in HyCreator. The result goes to
 last-check.json beside this file, which the HyCreator plugin shows in its checks panel, with a
 notice when something is wrong. Nothing is ever blocked: a commit and a push go through whatever
 the checks say, and the mod's own review runs the same checks again before anything is merged.

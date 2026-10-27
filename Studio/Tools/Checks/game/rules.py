@@ -31,6 +31,23 @@ class Rule:
     truth: str
     not_modelled: list[str]
     run: Callable[[Pair], list[Finding]]
+
+    def __post_init__(self) -> None:
+        rule = self.run
+
+        def run(pair: Pair) -> list[Finding]:
+            return defining_files(rule(pair), pair)
+        self.run = run
+
+def defining_files(findings: list[Finding], pair: Pair) -> list[Finding]:
+    items = pair.modded.store('Item')
+    for f in findings:
+        if f.file or f.kind != 'BlockType':
+            continue
+        item = items.get(f.id.lstrip('*').split('_State_Definitions_')[0])
+        if item is not None and getattr(item, 'path', ''):
+            f.file = item.path
+    return findings
 KIND_MIN_GROUP = 20
 KIND_PRESENT_SHARE = 0.95
 KIND_DEFAULT_SHARE = 0.05

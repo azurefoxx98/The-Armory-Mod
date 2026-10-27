@@ -97,11 +97,17 @@ export function pieceSlot(name) {
   return null;
 }
 
+// Words a texture's name uses for no colour at all: Head_Texture.png names a helmet's picture, not
+// a colour called Texture.
+const NO_COLOUR_WORDS = new Set(['texture', 'textures', 'tex', 'base', 'default', 'main', 'diffuse', 'albedo', 'color', 'colour', 'skin', 'map']);
+
 // The colour a sheet stands for, as a version's id spells it. A leading piece word is not part
-// of the colour: Helm_Blue.png is the colour Blue of a helmet.
+// of the colour: Helm_Blue.png is the colour Blue of a helmet. A name with no colour word left
+// (Head_Texture.png) stands for no colour, and null says so: the page never invents a name from it.
 export function sheetColour(sheet) {
   const words = stem(sheet).split(/[\s_]+/).filter(Boolean);
   if (words.length > 1 && pieceSlot(words[0])) words.shift();
+  if (!words.length || words.every(w => NO_COLOUR_WORDS.has(w.toLowerCase()))) return null;
   return colourKey(words.join('_'));
 }
 
@@ -262,6 +268,7 @@ export function makeReader(io) {
 // Two ways the mod spells a version's id. A: Atlantean_Chest_Red_Alt. B: Atlantean_Chest_Alt_Red.
 function idFor(set, sheet, shape, order) {
   if (sheet === set.defaultSheet && shape === set.baseShape) return set.defaultId;
+  if (sheet !== set.defaultSheet && sheetColour(sheet) === null) return null;
   const colour = sheet === set.defaultSheet ? '' : '_' + sheetColour(sheet);
   const suffix = shape === set.baseShape ? '' : stem(shape).slice(stem(set.baseShape).length);
   return set.base + (order === 'A' ? colour + suffix : suffix + colour);
@@ -519,7 +526,7 @@ export async function analyse(reader, openRel, options = {}) {
   if (gameDefault && members.length) {
     const prefixes = members.map(m => {
       const colour = sheetColour(m.eff.Texture);
-      return m.id.endsWith('_' + colour) ? m.id.slice(0, -(colour.length + 1)) : null;
+      return colour && m.id.endsWith('_' + colour) ? m.id.slice(0, -(colour.length + 1)) : null;
     });
     base = majority(prefixes) || base;
     setQuality = majority(members.map(m => m.eff.Quality)) ?? setQuality;
@@ -560,7 +567,10 @@ export async function analyse(reader, openRel, options = {}) {
 
   const icons = new Set((await reader.list('../Common/' + ICON_FOLDER, ['png'])).map(common));
   const expected = new Map();
-  for (const sheet of orderedSheets) for (const shape of orderedShapes) expected.set(idFor(set, sheet, shape, set.order), { sheet, shape });
+  for (const sheet of orderedSheets) for (const shape of orderedShapes) {
+    const id = idFor(set, sheet, shape, set.order);
+    if (id) expected.set(id, { sheet, shape });
+  }
 
   // The grid, and every fault in it.
   const cells = new Map();
@@ -586,7 +596,10 @@ export async function analyse(reader, openRel, options = {}) {
       if (alike.length) item.faults.push({ kind: 'shared', text: 'Looks exactly like ' + alike.map(i => i.id).join(', ') + ', on the same slot.', fix: null });
     }
     cell.missing = cell.items.length === 0;
-    cell.clash = cell.missing && index.has(cell.id) ? index.get(cell.id) : null;
+    // A texture whose name says no colour: an item already wearing it keeps its own name, and none
+    // is made from it, since its name would be invented.
+    cell.unnamed = cell.id === null;
+    cell.clash = cell.missing && cell.id && index.has(cell.id) ? index.get(cell.id) : null;
   }
 
   // A light per colour: the one its versions already use, otherwise the default's.
@@ -725,7 +738,7 @@ export function plan(analysis, choice) {
 
   for (const cell of analysis.cells) {
     if (cell.missing) {
-      if (!choice.make.has(cell.id) || cell.clash) continue;
+      if (cell.unnamed || !choice.make.has(cell.id) || cell.clash) continue;
       const doc = { Parent: set.defaultId };
       if (set.defaultQuality !== undefined) doc.Quality = set.defaultQuality;
       doc.Icon = ICON_FOLDER + cell.id + '.png';
@@ -761,7 +774,7 @@ export function defaultChoice(analysis) {
   const fix = new Set();
   if ((analysis.set.inheritors && analysis.set.inheritors.length) || (analysis.set.coOwners && analysis.set.coOwners.length)) return { make, fix, lights: { ...analysis.lights } };
   for (const cell of analysis.cells) {
-    if (cell.missing && analysis.memberCount === 0 && !cell.clash) make.add(cell.id);
+    if (cell.missing && analysis.memberCount === 0 && !cell.clash && !cell.unnamed) make.add(cell.id);
     for (const item of cell.items) for (const f of item.faults) if (f.fix && f.byDefault) fix.add(item.id + '|' + f.kind);
   }
   return { make, fix, lights: { ...analysis.lights } };
@@ -958,7 +971,7 @@ function ColoursPage({ rel }) {
     setChoice({ ...choice, fix: next });
   };
   const tickAllMissing = on => {
-    const make = new Set(on ? cells.filter(c => c.missing && !c.clash).map(c => c.id) : []);
+    const make = new Set(on ? cells.filter(c => c.missing && !c.clash && !c.unnamed).map(c => c.id) : []);
     setChoice({ ...choice, make });
   };
   const press = async () => {
@@ -992,7 +1005,7 @@ function ColoursPage({ rel }) {
       }
     }
   }
-  const missing = cells.filter(c => c.missing && !c.clash);
+  const missing = cells.filter(c => c.missing && !c.clash && !c.unnamed);
   const versions = steps.create.filter(f => f.rel.startsWith('Item/Items/') && f.rel.endsWith('.json')).length;
   const fixedFiles = steps.edit.length + steps.create.filter(f => f.rel.endsWith('.patch')).length;
   const parts = [];
@@ -1016,6 +1029,7 @@ function ColoursPage({ rel }) {
   const cellView = cell => {
     if (!cell) return null;
     if (cell.missing) {
+      if (cell.unnamed) return h('span', { style: tagStyle(LOOK.dim) }, 'missing: rename this texture to its color to make it');
       if (cell.clash) return h('span', { title: cell.clash, style: tagStyle(LOOK.danger) }, 'missing, but the name ' + cell.id + ' is taken');
       const on = choice.make.has(cell.id);
       return h('label', { style: { cursor: 'pointer' } },

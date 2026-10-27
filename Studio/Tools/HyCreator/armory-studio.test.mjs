@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, hyCreatorTooOld, NEEDS_HYCREATOR, withMark, withoutMark } from './armory-studio.js';
+import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, hyCreatorTooOld, NEEDS_HYCREATOR, withMark, withoutMark, sheetColour } from './armory-studio.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const resources = path.resolve(here, '..', '..', '..', 'src', 'main', 'resources');
@@ -264,6 +264,23 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   const theirs = JSON.parse(answers);
   const differ = asked.filter((p, i) => (madeByTool(p.startsWith('Server/') ? p.slice('Server/'.length) : '../' + p) || null) !== theirs[i]);
   check('made by a tool: the plugin and the checks agree on all ' + asked.length + ' files', differ.length === 0, differ.slice(0, 3).join(', '));
+}
+
+// A texture named for no colour never gives a colour name (the gray Praetorian helm wears Head_Texture.png).
+{
+  check('colour name: Helm_Blue.png is Blue', sheetColour('Items/X/Helm_Blue.png') === 'Blue');
+  check('colour name: Head_Texture.png names no colour', sheetColour('Items/X/Head_Texture.png') === null);
+  check('colour name: a plain colour file is its colour', sheetColour('Items/X/Deep orange.png') === 'Deep_Orange');
+  const a = await analyse(makeReader(io()), 'Item/Items/Praetorian_Helm.json');
+  check('colour name: the Praetorian helm set offers no Praetorian_Helm_Texture', a.set && !a.cells.some(c => c.id === 'Praetorian_Helm_Texture'),
+    a.cells ? a.cells.map(c => c.id).join(', ') : JSON.stringify(a).slice(0, 200));
+  const gray = a.cells && a.cells.find(c => c.items.some(i => i.id === 'Praetorian_Helm_Gray'));
+  check('colour name: the gray helm stays in its own cell, unnamed, with nothing to make', gray && gray.unnamed && !gray.missing);
+  const removed = new Set(['Item/Items/Praetorian_Helm_Gray.json']);
+  const b = await analyse(makeReader(io(new Map(), removed)), 'Item/Items/Praetorian_Helm.json');
+  const empty = b.cells && b.cells.find(c => c.unnamed);
+  check('colour name: without the gray helm its texture is offered as nothing to make', empty && empty.missing
+    && !defaultChoice(b).make.has(null) && plan(b, { make: new Set([null]), fix: new Set() }).create.length === 0);
 }
 
 // The checks panel and its notices, from results shaped as check.py writes them.

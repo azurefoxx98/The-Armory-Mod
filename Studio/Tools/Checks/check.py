@@ -432,6 +432,23 @@ def lady_view(checks: list[dict]) -> None:
                     e["says"] += " Some checks wait until it is fixed."
 
 
+def owner_of_card(check_id: str, e: dict) -> str:
+    """us or mod: whose a card is. A card that hands the work to Larsonix is ours, and the owner table both checks
+    read (game/owners.py) decides the rest: a gate's line by its gate and its words, a finding of the game check by
+    what the game check found."""
+    if e.get("owner") in ("us", "mod"):
+        return e["owner"]
+    if e["do"].startswith("Send Larsonix a screenshot"):
+        return "us"
+    if GAME_DIR not in sys.path:
+        sys.path.insert(0, GAME_DIR)
+    import owners
+    item = (e.get("items") or [{}])[0]
+    path = "Server/" + item["open"] if item.get("open") else ""
+    return "us" if owners.owner_of(ident=item.get("label", ""), file=path, gate=check_id, line=e.get("line", ""))[0] == "us" \
+        else "mod"
+
+
 def run_gate(name: str, game: str) -> dict:
     env = dict(os.environ, ARMORY_RESOURCES=RESOURCES, ARMORY_GAME=game, PYTHONDONTWRITEBYTECODE="1",
                PYTHONIOENCODING="utf-8")
@@ -631,6 +648,9 @@ GAME_WORDS = {
                                     "then Save."),
     ("reachable", "item"): ("No player can get it: nothing crafts it, drops it or sells it.",
                             NEW_RECIPE + " Or add it to a chest loot table."),
+    # A colour of a game item: the Colors page puts the game item in its resource type with one patch.
+    ("reachable", "base outside"): ("No player can get it: its base, the vanilla {base}, does not have its resource type yet.",
+                                    "Open it and click Colors at the top, then click the Fix button."),
     ("reachable", "recipe"): ("Its recipe can never be crafted, so nobody can make it at a bench.",
                               RECIPE + " and check each ingredient and the bench."),
     ("names-and-pictures", "no text"): ("It has no English name, so players see a raw name.", ADD_TRANSLATION),
@@ -717,7 +737,7 @@ def game_words(f: dict) -> dict:
     except (KeyError, IndexError):
         return {"says": "Hytale found something the checks cannot explain yet.", "do": SEND, "items": items,
                 "line": f["fact"], "known": False, "detail": f["fact"]}
-    return {"says": says, "do": do, "items": items, "line": f["fact"], "known": True}
+    return {"says": says, "do": do, "items": items, "line": f["fact"], "known": True, "owner": f.get("owner", "mod")}
 
 
 def finding_key(f: dict) -> str:
@@ -745,20 +765,21 @@ def game_findings(vanilla: str, modded: str) -> list[dict]:
     if GAME_DIR not in sys.path:
         sys.path.insert(0, GAME_DIR)
     import model
+    import owners
     import rules
     pair = model.Pair(model.Snapshot(vanilla), model.Snapshot(modded))
     out = []
     for rule in rules.RULES:
         for f in rule.run(pair):
             d = dict(f.detail)
-            # Only her mod's own: the engine's own loading order and the showcase world are not hers. And only what a
-            # player meets: a file that differs from the game's own with no proven effect, or a plain copy of another
-            # file, is not a problem to fix.
-            if d.get("owner") or any(re.search(p, f.id) or re.search(p, f.file or "") for p, _ in MADE_BY_TOOL):
+            # Whose it is comes from the one owner table both checks read. The engine's own loading order is nobody's
+            # to fix. And only what a player meets: a file that differs from the game's own with no proven effect, or a
+            # plain copy of another file, is not a problem to fix.
+            owner = owners.owner_of(f.rule, f.id, f.file or "", d)[0]
+            if owner == "game" or not rules.effect_proven(f):
                 continue
-            if not rules.effect_proven(f):
-                continue
-            out.append({"rule": f.rule, "kind": f.kind, "id": f.id, "file": f.file, "fact": f.fact, "detail": d})
+            out.append({"rule": f.rule, "kind": f.kind, "id": f.id, "file": f.file, "fact": f.fact, "detail": d,
+                        "owner": owner})
     return out
 
 
@@ -857,6 +878,9 @@ def run_all() -> dict:
             entry.update(outcome)
             result["checks"].append(entry)
         lady_view(result["checks"])
+        for c in result["checks"]:
+            for e in c.get("lady") or []:
+                e["owner"] = owner_of_card(c["id"], e)
     result["finished"] = now()
     result["seconds"] = round(time.monotonic() - clock, 1)
     return result

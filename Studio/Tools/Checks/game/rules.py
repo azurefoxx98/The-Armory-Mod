@@ -407,6 +407,14 @@ def reachable(pair: Pair) -> list[Finding]:
                     changed = True
     findings: list[Finding] = []
     states = 0
+    game_ways = {o for r in pair.vanilla.store('CraftingRecipe').values() for o in outputs(r)}
+    for kind in ('ItemDropList', 'BarterShopAsset', 'ShopAsset'):
+        for d in pair.vanilla.store(kind).values():
+            game_ways |= set(_drop_items(d.asset))
+    wearers: dict[str, set[str]] = {}
+    for g, v in vanilla_items.items():
+        if g in items and isinstance(items[g].asset.get('Model'), str):
+            wearers.setdefault(items[g].asset['Model'], set()).add(g)
     for i, a in sorted(mod_items.items()):
         if a.asset.get('Armor') is None and a.asset.get('Weapon') is None:
             continue
@@ -420,7 +428,16 @@ def reachable(pair: Pair) -> list[Finding]:
             fact = f'{i} has no way in: no recipe makes it, no drop list names it and no shop sells it, in the game as loaded with the mod.'
         else:
             fact = f'{i} has no way in: ' + '; '.join((f'{r.id}: ' + '; '.join(blockers(r)) for r in makers)) + '.'
-        findings.append(Finding('reachable', 'Item', i, a.path, fact, family=f"set:{a.asset.get('SubCategory') or '-'}", detail={'form': 'item', 'makers': [r.id for r in makers]}))
+        detail = {'form': 'item', 'makers': [r.id for r in makers]}
+        roots = sorted((g for g in wearers.get(a.asset.get('Model'), ()) if not re.search('npc', g, re.I) and vanilla_items[g].parent not in wearers.get(a.asset.get('Model'), ())))
+        base = roots[0] if len(roots) == 1 and roots[0] in game_ways else None
+        wanted = {inp['ResourceTypeId'] for r in makers for inp in r.asset.get('Input') or [] if inp.get('ResourceTypeId')}
+        if base and len(wanted) == 1 and makers and all((b.startswith('it takes the resource type ') for r in makers for b in blockers(r))):
+            family = wanted.pop()
+            if family not in values_at(items[base].asset, 'ResourceTypes.*.Id'):
+                detail = {'form': 'base outside', 'makers': [r.id for r in makers], 'base': base, 'name': family}
+                fact += f" Its base, the game's {base}, has a way in but does not carry {family}."
+        findings.append(Finding('reachable', 'Item', i, a.path, fact, family=f"set:{a.asset.get('SubCategory') or '-'}", detail=detail))
     unreachable_items = {f.id for f in findings}
     for r in recipes:
         outs = outputs(r)

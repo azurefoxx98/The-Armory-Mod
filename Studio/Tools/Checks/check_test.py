@@ -324,6 +324,9 @@ GAME_SAMPLES = [
      "beside Resource_Armor_Iron_Hands, click Remove element"),
     ({"rule": "reachable", "kind": "Item", "id": "Praetorian_Helm", "file": "", "fact": "x",
       "detail": {"form": "item", "makers": []}}, "No player can get it"),
+    ({"rule": "reachable", "kind": "Item", "id": "Armor_Thorium_Chest_Black", "file": "", "fact": "x",
+      "detail": {"form": "base outside", "makers": [], "base": "Armor_Thorium_Chest", "name": "Resource_Thorium_Chest"}},
+     "the vanilla Armor_Thorium_Chest, does not have its resource type yet"),
     ({"rule": "reachable", "kind": "CraftingRecipe", "id": "R", "file": "", "fact": "x",
       "detail": {"form": "recipe", "output": "A"}}, "can never be crafted"),
     ({"rule": "names-and-pictures", "kind": "Item", "id": "Goblin_Skirt", "file": "", "fact": "x",
@@ -384,6 +387,23 @@ def words(expect) -> None:
                             "detail": {"field": "a new line", "form": "log"}})
     expect("a game finding no text knows is kept whole for Larsonix", not odd["known"] and odd["do"] == check.SEND
            and odd["detail"] == "a new line", odd)
+    sys.path.insert(0, check.GAME_DIR)
+    import owners
+    tool_files = ["Server/Item/Items/Armory_Showcase/X.json", "Server/Models/Showcase_Theatre/Y.json",
+                  "Server/Drops/Prefabs/Zone1_Goblin_Tier1.patch"]
+    wrong = [p for p in tool_files if check.made_by(p) and owners.owner_of(file=p)[0] != "us"]
+    expect("every file our tools rewrite is ours in the owner table", not wrong and all(check.made_by(p) for p in tool_files),
+           str(wrong))
+    stat = check.for_lady("itemcheck", "Server/Item/Items/Praetorian_Boots.json: its Armor changes the stat Volatility, which does not exist")
+    quality = check.for_lady("itemcheck", "Server/Item/Items/A/B.json: its quality Ghostly does not exist")
+    expect("a stat only code adds is Larsonix's, a missing quality is hers",
+           check.owner_of_card("itemcheck", stat) == "us" and check.owner_of_card("itemcheck", quality) == "mod",
+           f"{check.owner_of_card('itemcheck', stat)} {check.owner_of_card('itemcheck', quality)}")
+    hitbox = check.for_lady("assetcheck", "Bench_X.json references HitboxType 'ArmoryGhost' which we do not ship")
+    expect("a card that hands the work to Larsonix is his", check.owner_of_card("assetcheck", hitbox) == "us")
+    game_stat = check.game_words({"rule": "names-resolve", "kind": "Item", "id": "Praetorian_Boots", "file": "", "fact": "x",
+                                  "owner": "us", "detail": {"field": "Armor.StatModifiers", "name": "Volatility", "form": "key"}})
+    expect("a game finding keeps the owner the table gave it", check.owner_of_card("game", game_stat) == "us")
     opened = check.game_words(GAME_SAMPLES[0][0])
     expect("a game finding about an item opens its file",
            opened["items"] == [{"label": "Praetorian_Boots", "open": "Item/Items/Praetorian_Boots.json"}], opened["items"])

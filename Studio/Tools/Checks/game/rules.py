@@ -39,6 +39,9 @@ class Rule:
             return defining_files(rule(pair), pair)
         self.run = run
 
+def effect_proven(f: Finding) -> bool:
+    return not ('effect' in f.detail and f.detail['effect'] is None)
+
 def defining_files(findings: list[Finding], pair: Pair) -> list[Finding]:
     items = pair.modded.store('Item')
     for f in findings:
@@ -51,6 +54,7 @@ def defining_files(findings: list[Finding], pair: Pair) -> list[Finding]:
 KIND_MIN_GROUP = 20
 KIND_PRESENT_SHARE = 0.95
 KIND_DEFAULT_SHARE = 0.05
+KIND_EFFECTS = {('BlockType', 'ParticleColor', 'unset'): 'the world map draws it white', ('BlockType', 'BlockParticleSetId', 'unset'): 'nothing stepping on it or hitting it raises particles', ('BlockType', 'BlockSoundSetId', 'default'): 'it makes no sound when placed or broken', ('Item', 'Categories', 'unset'): 'it shows in no tab of the creative inventory', ('Item', 'PlayerAnimationsId', 'default'): "a player holds it in a pose the game's own items of that use never have"}
 
 def top_present(asset: dict) -> set[str]:
 
@@ -134,11 +138,11 @@ def like_its_kind(pair: Pair) -> list[Finding]:
             for p, why in sorted(missing.items()):
                 if len(why) != len(ctxs):
                     continue
-                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} sets no {p}, which the game's own {kind} assets of the same use set: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'unset'}))
+                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} sets no {p}, which the game's own {kind} assets of the same use set: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'unset', 'effect': KIND_EFFECTS.get((kind, p, 'unset'))}))
             for p, why in sorted(defaulted.items()):
                 if len(why) != len(ctxs):
                     continue
-                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} leaves {p} at the engine's default {default_leaves[p]!r}, which the game's own {kind} assets of the same use almost never hold: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'default'}))
+                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} leaves {p} at the engine's default {default_leaves[p]!r}, which the game's own {kind} assets of the same use almost never hold: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'default', 'effect': KIND_EFFECTS.get((kind, p, 'default'))}))
     return findings
 SIBLING_MIN_FAMILY = 4
 SIBLING_PRESENT_SHARE = 0.9
@@ -309,24 +313,34 @@ def names_and_pictures(pair: Pair) -> list[Finding]:
             other_slot, n = said[w]
             if other_slot and other_slot != slot(i):
                 findings.append(Finding('names-and-pictures', 'Item', i, items[i].path, f'{i} is worn on the {slot(i)} and its name "{name_of(i)}" says "{w}", a word the {n} other items using it are all worn on the {other_slot}.', family=f'name says another slot: {w}', detail={'field': 'name', 'form': 'slot word', 'word': w}))
+    game = pair.vanilla_assets('Item')
     kind = lambda i: 'armor' if slot(i) else 'weapon' if items[i].asset.get('Weapon') is not None else None
+    model = lambda i: items[i].asset.get('Model')
+    family = lambda i: {r for r in values_at(items[i].asset, 'ResourceTypes.*.Id') if isinstance(r, str)}
     for shown, ids in sorted(by_text.items()):
         for i in sorted((x for x in ids if x in mod)):
             if not kind(i):
                 continue
-            others = sorted((x for x in ids if x != i and kind(x) == kind(i) and (sub(x) != sub(i) or not sub(i)) and (items[x].asset.get('Model') != items[i].asset.get('Model'))))
+            holders = [x for x in ids if x in game and kind(x) == kind(i)]
+            if any((model(x) == model(i) for x in holders)):
+                continue
+            others = sorted((x for x in ids if x != i and kind(x) == kind(i) and (sub(x) != sub(i) or not sub(i)) and (model(x) != model(i)) and (x in game or not family(x) & family(i))))
             if others:
                 findings.append(Finding('names-and-pictures', 'Item', i, items[i].path, f'''{i} shows the name "{name_of(i)}", which {len(others)} {kind(i)} item(s) of another set or of the game, with another model, also show: {', '.join(others[:6])}''' + (' ...' if len(others) > 6 else '') + '.', family=f'same name across sets: {shown}', detail={'field': 'name', 'form': 'shared', 'with': others}))
+    own = lambda i: _stem(items[i].asset.get('Icon')) == i
     for icon, ids in sorted(by_icon.items()):
         mine = sorted((x for x in ids if x in mod))
         if len({look(x) for x in ids}) < 2 or not mine:
             continue
         for i in mine:
             others = sorted((x for x in ids if look(x) != look(i)))
-            if not others:
+            if not others or own(i):
                 continue
-            findings.append(Finding('names-and-pictures', 'Item', i, items[i].path, f"{i} shows the icon {icon}, and so do {len(others)} item(s) with another model or texture: {', '.join(others[:6])}" + (' ...' if len(others) > 6 else '') + '.', family=f'same icon, other look: {icon}', detail={'field': 'icon', 'form': 'shared', 'with': others}))
+            findings.append(Finding('names-and-pictures', 'Item', i, items[i].path, f"{i} shows the icon {icon}, and so do {len(others)} item(s) with another model or texture: {', '.join(others[:6])}" + (' ...' if len(others) > 6 else '') + '. One icon can be right for one look at most.', family=f'same icon, other look: {icon}', detail={'field': 'icon', 'form': 'shared', 'with': others}))
     return findings
+
+def _stem(path) -> str:
+    return path.rsplit('/', 1)[-1].rsplit('.', 1)[0] if isinstance(path, str) else ''
 
 def _drop_items(value: Any) -> set[str]:
     out = set()
@@ -524,7 +538,7 @@ def common_files(pair: Pair) -> list[Finding]:
                 continue
             replaced.add((f['pack'], f['name']))
             same = hash_of.get((f['pack'], f['name'])) is not None and hash_of.get((f['pack'], f['name'])) == hash_of.get((game[0]['pack'], game[0]['name']))
-            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"The mod ships {f['name']} under the game's own file name, so it replaces the game's file everywhere the game uses it" + (', with identical bytes (no visible change)' if same else ", with different bytes (the game's own items or pages change too)") + '.', family='replaces a game file' + (' (identical)' if same else ''), detail={'field': 'replace', 'form': 'identical' if same else 'different', 'pack': f['pack']}))
+            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"The mod ships {f['name']} under the game's own file name, so it replaces the game's file everywhere the game uses it" + (', with identical bytes (no visible change)' if same else ", with different bytes (the game's own items or pages change too)") + '.', family='replaces a game file' + (' (identical)' if same else ''), detail={'field': 'replace', 'form': 'identical' if same else 'different', 'pack': f['pack'], 'effect': None if same else "the game's own items and pages using it change too"}))
     for group in data['sameBytes']:
         files = group['files']
         mine = [f for f in files if not is_game(f) and (f['pack'], f['name']) not in replaced]
@@ -533,7 +547,7 @@ def common_files(pair: Pair) -> list[Finding]:
         others = [f for f in files if f not in mine]
         for f in mine:
             twin = (others or [x for x in mine if x is not f])[0]
-            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"{f['name']} has the same bytes as {twin['name']} ({('the game' if is_game(twin) else 'the mod')}): {len(files) - 1} other file(s) hold the same bytes.", family='same bytes as another file', detail={'field': 'copy', 'form': 'game' if any((is_game(x) for x in files)) else 'mod', 'twin': twin['name'], 'group': sorted((x['name'] for x in mine))}))
+            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"{f['name']} has the same bytes as {twin['name']} ({('the game' if is_game(twin) else 'the mod')}): {len(files) - 1} other file(s) hold the same bytes.", family='same bytes as another file', detail={'field': 'copy', 'form': 'game' if any((is_game(x) for x in files)) else 'mod', 'twin': twin['name'], 'group': sorted((x['name'] for x in mine)), 'effect': None}))
     return findings
 
 def duplicates_added(findings: list[Finding]) -> int:

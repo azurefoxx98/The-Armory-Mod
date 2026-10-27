@@ -583,9 +583,8 @@ GAME_WORDS = {
                                  "Open it and pick a name HyCreator suggests for {name}."),
     ("names-resolve", "key"): ("Its {field} names {name}, which does not exist, so that part does nothing in game.",
                                "Open it and pick a name HyCreator suggests for {name}."),
-    ("like-its-kind", "unset"): ("It has no {field}, which vanilla ones used the same way all have.",
-                                 "Open it and fill in {field}."),
-    ("like-its-kind", "default"): ("It keeps the base {field}, which vanilla ones used the same way almost never keep.",
+    ("like-its-kind", "unset"): ("It has no {field}, so {effect}.", "Open it and fill in {field}."),
+    ("like-its-kind", "default"): ("It keeps the base {field}, so {effect}.",
                                    "Open it and set {field} to a value of its own."),
     ("like-its-siblings", None): ("It has no {field}, which the other items of its set have.",
                                   "Open it and set {field} like the others of its set."),
@@ -598,14 +597,14 @@ GAME_WORDS = {
     ("names-and-pictures", "no text"): ("It has no English name, so players see a raw name.", LANGUAGES),
     ("names-and-pictures", "slot word"): ("It is worn on the {slot}, but its name says {word}.",
                                           "Fix its English name in Languages, en-US, server."),
-    ("names-and-pictures", "shared"): ("It shows the same {field} as items that look different.",
-                                       "Give it a {field} of its own."),
+    ("names-and-pictures", "shared", "name"): ("It shows the same name as items that look different.",
+                                               "Give it a name of its own."),
+    ("names-and-pictures", "shared", "icon"): ("It shares its icon with items of another look, so the icon is right for one of them at most.",
+                                               FIELD_FIX["Icon"]),
     ("common-files", "different"): ("This file has the same name as a vanilla file, so it replaces that file "
                                     "everywhere in the game.", "Rename your file, unless that is what you want."),
     ("common-files", "identical"): ("This file is a copy of a vanilla file with the same name.",
                                     "Delete your copy, the vanilla file is used anyway."),
-    ("common-files", "game"): ("This file is an exact copy of {twin}.", "Use {twin} instead, and delete this copy."),
-    ("common-files", "mod"): ("This file is an exact copy of {twin}.", "Use {twin} instead, and delete this copy."),
     ("all-loaded", "not loaded"): ("Hytale did not load this file, so it is missing in game.",
                                    "Read the other messages about this file: they say why."),
     ("all-loaded", "none loaded"): ("Hytale loaded none of your work, so the whole mod is missing in game.", SEND),
@@ -630,7 +629,8 @@ def game_words(f: dict) -> dict:
     d = f.get("detail") or {}
     fields = {k: (", ".join(map(str, v)) if isinstance(v, list) else v) for k, v in d.items()}
     form = d.get("form")
-    words = GAME_WORDS.get((f["rule"], form)) or GAME_WORDS.get((f["rule"], None))
+    words = GAME_WORDS.get((f["rule"], form, d.get("field"))) or GAME_WORDS.get((f["rule"], form)) \
+        or GAME_WORDS.get((f["rule"], None))
     if f["rule"] == "server-says" and form in ("warning", "error"):
         for pattern, says, do in SERVER_SAYS:
             m = pattern.match(d.get("field") or "")
@@ -687,8 +687,12 @@ def game_findings(vanilla: str, modded: str) -> list[dict]:
     for rule in rules.RULES:
         for f in rule.run(pair):
             d = dict(f.detail)
-            # Only her mod's own: the engine's own loading order and the showcase world are not hers.
+            # Only her mod's own: the engine's own loading order and the showcase world are not hers. And only what a
+            # player meets: a file that differs from the game's own with no proven effect, or a plain copy of another
+            # file, is not a problem to fix.
             if d.get("owner") or any(re.search(p, f.id) or re.search(p, f.file or "") for p, _ in MADE_BY_TOOL):
+                continue
+            if not rules.effect_proven(f):
                 continue
             out.append({"rule": f.rule, "kind": f.kind, "id": f.id, "file": f.file, "fact": f.fact, "detail": d})
     return out

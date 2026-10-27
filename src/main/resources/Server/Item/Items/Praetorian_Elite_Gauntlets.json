@@ -1,6 +1,7 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.Armor_Steel_Ancient_Hands.name"
+    "Name": "server.items.Praetorian_Elite_Gauntlet.name",
+    "Description": "server.items.Titan_Armor.description"
   },
   "Parent": "Armor_Iron_Hands",
   "ItemLevel": 30,
@@ -96,5 +97,31 @@
   "ItemSoundSetId": "ISS_Armor_Heavy",
   "Quality": "Legendary",
   "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
-  "SubCategory": "Praetorian Elite"
+  "SubCategory": "Praetorian Elite",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Gold",
+        "Quantity": 25
+      },
+      {
+        "ItemId": "Ingredient_Voidtaken_Grizzly_Hide",
+        "Quantity": 15
+      },
+      {
+        "ItemId": "Ingredient_Ice_Essence",
+        "Quantity": 10
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [ "Armor_Hands" ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "KnowledgeRequired": true,
+    "TimeSeconds": 3
+  }
 }

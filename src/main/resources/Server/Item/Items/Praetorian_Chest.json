@@ -1,6 +1,7 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.Armor_Steel_Ancient_Chest.name"
+    "Name": "server.items.Praetorian_Chest.name",
+    "Description": "server.items.Titan_Armor.description"
   },
   "Parent": "Armor_Iron_Chest",
   "ItemLevel": 30,
@@ -104,5 +105,34 @@
     }
   ],
   "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
-  "SubCategory": "Praetorian"
+  "SubCategory": "Praetorian",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Adamantite",
+        "Quantity": 70
+      },
+      {
+        "ItemId": "Ingredient_Bar_Thorium",
+        "Quantity": 25
+      },
+      {
+        "ItemId": "SlumberingRubble",
+        "Quantity": 6
+      },
+      {
+        "ItemId": "Armor_Steel_Ancient_Chest"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [ "Armor_Chest" ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "KnowledgeRequired": true,
+    "TimeSeconds": 3
+  }
 }

@@ -1,6 +1,7 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.Armor_Steel_Ancient_Chest.name"
+    "Name": "server.items.Praetorian_Elite_Chest.name",
+    "Description": "server.items.Titan_Armor.description"
   },
   "Parent": "Armor_Iron_Chest",
   "ItemLevel": 30,
@@ -99,5 +100,31 @@
   "ItemSoundSetId": "ISS_Armor_Heavy",
   "Quality": "Legendary",
   "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
-  "SubCategory": "Praetorian Elite"
+  "SubCategory": "Praetorian Elite",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Gold",
+        "Quantity": 45
+      },
+      {
+        "ItemId": "Ingredient_Voidtaken_Grizzly_Hide",
+        "Quantity": 25
+      },
+      {
+        "ItemId": "Ingredient_Ice_Essence",
+        "Quantity": 15
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [ "Armor_Head" ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "KnowledgeRequired": true,
+    "TimeSeconds": 3
+  }
 }

@@ -1,0 +1,147 @@
+{
+  "Container": {
+    "Type": "Multiple",
+    "Containers": [
+      {
+        "Type": "Choice",
+        "Weight": 100,
+        "Containers": [
+          {
+            "Type": "Single",
+            "Weight": 70,
+            "Item": {
+              "ItemId": "Ingredient_Bar_Thorium",
+              "QuantityMin": 1,
+              "QuantityMax": 3
+            }
+          },
+          {
+            "Type": "Single",
+            "Weight": 30,
+            "Item": {
+              "ItemId": "Ingredient_Bar_Cobalt",
+              "QuantityMin": 1,
+              "QuantityMax": 3
+            }
+          }
+        ]
+      },
+      {
+        "Type": "Choice",
+        "Weight": 100,
+        "Containers": [
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Ingredient_Fire_Essence",
+              "QuantityMin": 3,
+              "QuantityMax": 6
+            }
+          }
+        ]
+      },
+      {
+        "Type": "Choice",
+        "Weight": 15,
+        "Containers": [
+          {
+            "Weight": 25,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Armor_Steel_Ancient_Head",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 25,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Armor_Steel_Ancient_Chest",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 25,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Armor_Steel_Ancient_Hands",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 25,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Armor_Steel_Ancient_Legs",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          }
+        ]
+      },
+      {
+        "Type": "Single",
+        "Weight": 50,
+        "Item": {
+          "ItemId": "Weapon_Spellbook_Rekindle_Embers",
+          "QuantityMin": 5,
+          "QuantityMax": 5
+        }
+      },
+      {
+        "Type": "Single",
+        "Weight": 100,
+        "Item": {
+          "ItemId": "Deco_Bone_Skulls",
+          "QuantityMin": 5,
+          "QuantityMax": 8
+        }
+      },
+      {
+        "Type": "Multiple",
+        "Containers": [
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Praetorian_Helm_Recipe",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            },
+            "Weight": 25
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Praetorian_Chest_Recipe",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            },
+            "Weight": 25
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Praetorian_Gauntlets_Recipe",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            },
+            "Weight": 25
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Praetorian_Boots_Recipe",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            },
+            "Weight": 25
+          }
+        ],
+        "Weight": 10
+      }
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Praetorian_Helm_Recipe.name"
+  },
+  "Icon": "Icons/ItemsGenerated/Praetorian_Chest_Recipe.png",
+  "Quality": "Legendary",
+  "Categories": [ "Items.Recipes" ],
+  "PlayerAnimationsId": "Item",
+  "Model": "Items/Consumables/Recipes/Recipe.blockymodel",
+  "Texture": "Items/Ingredients/Recipes/Rustprint.png",
+  "IconProperties": {
+    "Scale": 0.76,
+    "Rotation": [ 135, 135, 0 ],
+    "Translation": [ -1, 5 ]
+  },
+  "Consumable": true,
+  "Interactions": {
+    "Primary": {
+      "Interactions": [
+        {
+          "ItemId": "Praetorian_Helm",
+          "Type": "LearnRecipe",
+          "Next": {
+            "Type": "ModifyInventory",
+            "AdjustHeldItemQuantity": -1
+          }
+        }
+      ]
+    },
+    "Secondary": {
+      "Interactions": [
+        {
+          "ItemId": "Food_Pie_Apple",
+          "Type": "LearnRecipe",
+          "Next": {
+            "Type": "ModifyInventory",
+            "AdjustHeldItemQuantity": -1
+          }
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [ "Recipe" ],
+    "Family": [ "Food" ]
+  },
+  "MaxStack": 10
+}

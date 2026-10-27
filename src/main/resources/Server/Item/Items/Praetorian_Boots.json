@@ -1,6 +1,7 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.Armor_Steel_Ancient_Legs.name"
+    "Name": "server.items.Praetorian_Boots.name",
+    "Description": "server.items.Titan_Armor.description"
   },
   "Parent": "Armor_Iron_Legs",
   "ItemLevel": 30,
@@ -106,5 +107,34 @@
     }
   ],
   "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
-  "SubCategory": "Praetorian"
+  "SubCategory": "Praetorian",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Adamantite",
+        "Quantity": 50
+      },
+      {
+        "ItemId": "Ingredient_Bar_Thorium",
+        "Quantity": 20
+      },
+      {
+        "ItemId": "SlumberingRubble",
+        "Quantity": 4
+      },
+      {
+        "ItemId": "Armor_Steel_Ancient_Legs"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [ "Armor_Legs" ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "KnowledgeRequired": true,
+    "TimeSeconds": 3
+  }
 }

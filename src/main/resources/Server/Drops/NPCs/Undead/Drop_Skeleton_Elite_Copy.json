@@ -1,0 +1,73 @@
+{
+  "Container": {
+    "Type": "Multiple",
+    "Containers": [
+      {
+        "Type": "Single",
+        "Item": {
+          "ItemId": "Ingredient_Enkindled_Resource",
+          "QuantityMin": 2,
+          "QuantityMax": 2
+        }
+      },
+      {
+        "Type": "Single",
+        "Item": {
+          "ItemId": "Ingredient_Crystal_Void",
+          "QuantityMin": 1,
+          "QuantityMax": 2
+        }
+      },
+      {
+        "Type": "Single",
+        "Item": {
+          "ItemId": "Ingredient_Rune_Shard",
+          "QuantityMin": 2,
+          "QuantityMax": 2
+        }
+      },
+      {
+        "Type": "Multiple",
+        "Containers": [
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Elite_Praetorian_Helm_Recipe",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            },
+            "Weight": 25
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Elite_Praetorian_Chest_Recipe",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            },
+            "Weight": 25
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Elite_Praetorian_Gauntlets_Recipe",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            },
+            "Weight": 25
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Elite_Praetorian_Boots_Recipe",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            },
+            "Weight": 25
+          }
+        ],
+        "Weight": 10
+      }
+    ]
+  }
+}

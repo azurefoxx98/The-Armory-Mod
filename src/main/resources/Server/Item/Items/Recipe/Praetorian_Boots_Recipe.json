@@ -1,17 +1,13 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.RecipeItem.name",
-    "NameArguments": {
-      "itemName": "server.items.Food_Pie_Apple.name"
-    },
-    "Description": "server.items.Recipe_Food_Pie_Apple.description"
+    "Name": "server.items.Praetorian_Boots_Recipe.name"
   },
-  "Icon": "Icons/ItemsGenerated/Recipe_Food_Pie_Apple.png",
-  "Quality": "Rare",
+  "Icon": "Icons/ItemsGenerated/Praetorian_Boots_Recipe.png",
+  "Quality": "Legendary",
   "Categories": [ "Items.Recipes" ],
   "PlayerAnimationsId": "Item",
   "Model": "Items/Consumables/Recipes/Recipe.blockymodel",
-  "Texture": "Items/Consumables/Recipes/Recipe_Texture.png",
+  "Texture": "Items/Ingredients/Recipes/Rustprint.png",
   "IconProperties": {
     "Scale": 0.76,
     "Rotation": [ 135, 135, 0 ],
@@ -22,7 +18,7 @@
     "Primary": {
       "Interactions": [
         {
-          "ItemId": "Food_Pie_Apple",
+          "ItemId": "Praetorian_Boots",
           "Type": "LearnRecipe",
           "Next": {
             "Type": "ModifyInventory",

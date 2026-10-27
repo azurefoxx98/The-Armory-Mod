@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, hyCreatorTooOld, NEEDS_HYCREATOR, withMark, withoutMark, sheetColour } from './armory-studio.js';
+import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, ladyItems, sortItems, matchesFilter, ITEM_ORDERS, hyCreatorTooOld, NEEDS_HYCREATOR, withMark, withoutMark, sheetColour } from './armory-studio.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const resources = path.resolve(here, '..', '..', '..', 'src', 'main', 'resources');
@@ -355,6 +355,50 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   // What her work added comes first, whatever its size.
   const order = ladyGroups([{ says: 'big', do: 'x', items: [{ label: '1' }, { label: '2' }, { label: '3' }] }, { says: 'small', do: 'x', items: [{ label: 'a' }], new: true }]);
   check('new: what her work added comes first', order[0].says === 'small' && order[0].new === true);
+
+  // The view by item: the same problems, each item once with every problem on it, and the same marks.
+  const two = { ...pass, checks: [{ id: 'game', title: 'G', status: 'fail', lady: [
+    { says: 'No icon.', do: 'Generate one.', key: 'game|icon|B', items: [{ label: 'B', open: 'Item/Items/A/B.json' }] },
+    { says: 'No icon.', do: 'Generate one.', key: 'game|icon|C', items: [{ label: 'C', open: 'Item/Items/Z/C.json' }] },
+    { says: 'No name.', do: 'Add one.', key: 'game|name|B', items: [{ label: 'B', open: 'Item/Items/A/B.json' }], new: true },
+    { says: 'Its stat X does not exist.', do: 'x', key: 'game|stat|B', owner: 'us', items: [{ label: 'B' }] },
+    { says: 'The check could not run.', do: 'Send a screenshot.', key: 'branch|run', items: [] }] }] };
+  const bv = checkView(two, null, []);
+  const li = ladyItems(bv.entries);
+  const b = li.items.find(i => i.label === 'B');
+  check('by item: each item once, with every problem on it', li.items.length === 2 && b && b.problems.length === 2 && li.items.find(i => i.label === 'C').problems.length === 1,
+    JSON.stringify(li.items.map(i => [i.label, i.problems.length])));
+  check('by item: an item keeps the file it opens', b.open === 'Item/Items/A/B.json');
+  check('by item: a problem on no item stays a card of its own', li.loose.length === 1 && li.loose[0].says === 'The check could not run.');
+  check('by item: what her work added comes first on the item, and marks the item new', b.new && b.problems[0].says === 'No name.');
+  check('by item: each problem keeps its own key for Normal for me', b.problems.map(p => p.key).sort().join() === 'game|icon|B,game|name|B');
+  check("by item: Larsonix's problems stay apart", !li.items.some(i => i.problems.some(p => p.says.startsWith('Its stat')))
+    && ladyItems(bv.ourEntries).items.length === 1 && ladyItems(bv.ourEntries).items[0].problems[0].says === 'Its stat X does not exist.');
+  const marked = checkView(two, null, [{ key: 'game|icon|B', item: 'B' }]);
+  const mb = ladyItems(marked.entries).items.find(i => i.label === 'B');
+  check('by item: a mark made in either view hides that one problem on that item in both', mb.problems.length === 1 && mb.problems[0].key === 'game|name|B'
+    && marked.groups.find(g => g.says === 'No icon.').items.map(i => i.label).join() === 'C');
+  const allMarked = checkView(two, null, [{ key: 'game|icon|B', item: 'B' }, { key: 'game|name|B', item: 'B' }]);
+  check('by item: an item whose every problem is normal leaves the list', !ladyItems(allMarked.entries).items.some(i => i.label === 'B'));
+
+  // The orders, each breaking its ties by name.
+  const it = (label, n, isNew = false, open) => ({ label, open, new: isNew, problems: Array(n).fill({}) });
+  const list = [it('b', 1), it('A', 2), it('c', 3, true), it('a10', 1), it('a9', 1), it('d', 2, false, 'Item/Items/Z/d.json'), it('e', 2, false, 'Item/Items/B/e.json')];
+  const names = order => sortItems(list, order).map(i => i.label).join();
+  check('sort: by name, A to Z, any case, numbers as numbers', names('name') === 'A,a9,a10,b,c,d,e', names('name'));
+  check('sort: most problems first, ties by name', names('count') === 'c,A,d,e,a9,a10,b', names('count'));
+  check('sort: new first, then most problems, then name', names('new') === 'c,A,d,e,a9,a10,b', names('new'));
+  check('sort: by folder, then name', names('folder').startsWith('A,a9,a10,b,c,e,d'), names('folder'));
+  check('sort: an unknown order falls back to new first', names('nonsense') === names('new'));
+  check('sort: the list given is never reordered', list.map(i => i.label).join() === 'b,A,c,a10,a9,d,e');
+  check('sort: every order offered exists', ITEM_ORDERS.every(o => sortItems(list, o.id).length === list.length) && ITEM_ORDERS.map(o => o.id).join() === 'new,count,name,folder');
+
+  // The filter: every word typed, any case, any order, a space for an underscore.
+  check('filter: words in any order and case', matchesFilter('Praetorian_Boots_Gray', 'gray PRAETORIAN') && matchesFilter('Praetorian_Boots_Gray', 'praetorian boots'));
+  check('filter: an underscore typed counts as a space', matchesFilter('Praetorian_Boots_Gray', 'praetorian_gray'));
+  check('filter: every word must be there',!matchesFilter('Praetorian_Boots_Gray', 'praetorian red'));
+  check('filter: empty keeps everything', matchesFilter('X', '') && matchesFilter('X', '   ') && matchesFilter('X', null));
+  check('filter: a path is found by its file name', matchesFilter('UI/Custom/Common/Buttons/Disabled@2x.png', 'disabled'));
 }
 
 // The guide in the repository is the panel's text, word for word.

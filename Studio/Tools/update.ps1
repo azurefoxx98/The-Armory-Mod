@@ -13,7 +13,9 @@ param(
     # The branch every release lands on. Only tests point this elsewhere.
     [string] $Main = 'main',
     # Leave out the final push. Only tests use it.
-    [switch] $NoPush
+    [switch] $NoPush,
+    # The program that keeps its own copy of the language files. Only tests point this elsewhere.
+    [string] $HyCreatorProcess = 'HyCreator'
 )
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
@@ -55,6 +57,20 @@ if ($dirty) { Stop-Update "Some of your changes are not committed. In HyCreator,
 Write-Host 'Getting the latest from GitHub...'
 $fetch = Invoke-Git @('fetch', 'origin')
 if ($fetch.Code -ne 0) { Stop-Update 'GitHub could not be reached. Check your internet, then try again.' $fetch.Text }
+
+# HyCreator keeps its own copy of the English language file and writes it back whole when a name is
+# saved from an item's translation window. Seen in HyCreator 1.3.9: a line added on disk while it is
+# open was erased by the next such save, removed lines came back, and its own rescan did not help. So
+# an update that changes a language file waits until HyCreator is closed. Any other update goes on.
+if (Get-Process -Name $HyCreatorProcess -ErrorAction SilentlyContinue) {
+    $languages = foreach ($source in @("origin/$branch", "origin/$Main")) {
+        if ((Invoke-Git @('rev-parse', '--verify', '--quiet', "$source^{commit}")).Code -ne 0) { continue }
+        (Invoke-Git @('diff', '--name-only', "HEAD...$source", '--', 'src/main/resources/Server/Languages')).Text
+    }
+    if (@($languages | Where-Object { $_ }).Count) {
+        Stop-Update 'This update changes the names players read, and HyCreator is open. HyCreator would undo them the next time you save a name. Close HyCreator, then double-click Update.cmd again.'
+    }
+}
 
 $start = (Invoke-Git @('rev-parse', 'HEAD')).Text
 $brought = 0

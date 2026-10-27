@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups } from './armory-studio.js';
+import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, hyCreatorTooOld, NEEDS_HYCREATOR } from './armory-studio.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const resources = path.resolve(here, '..', '..', '..', 'src', 'main', 'resources');
@@ -225,6 +225,17 @@ const readJson = rel => JSON.parse(fs.readFileSync(path.join(resources, 'Server'
 }
 
 check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && colourKey('Gold Blue.png') === 'Gold_Blue');
+
+// The oldest HyCreator the plugin works in. 1.3.8 is the last one with the empty vanilla listing and
+// the empty file picker, so it alone of these is refused.
+{
+  const old = ['1.3.8', '1.3.0', '1.2.9', '0.9.9'];
+  const fine = ['1.3.9', '1.3.10', '1.4.0', '1.10.0', '2.0.0', '1.4.0-beta.1'];
+  check('HyCreator too old: ' + old.join(', '), old.every(hyCreatorTooOld), old.filter(v => !hyCreatorTooOld(v)).join(', '));
+  check('HyCreator new enough: ' + fine.join(', '), !fine.some(hyCreatorTooOld), fine.filter(hyCreatorTooOld).join(', '));
+  check('HyCreator whose version cannot be read is let through', ![undefined, null, '', 'dev', '1.3'].some(hyCreatorTooOld));
+  check('the floor is 1.3.9', NEEDS_HYCREATOR === '1.3.9');
+}
 
 // Files made by a tool: the 48 patches that put the loot tables in chests and every showcase file,
 // and nothing of Lady's. The four chest loot tables are hers to edit.

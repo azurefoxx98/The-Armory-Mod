@@ -771,47 +771,42 @@ export function defaultChoice(analysis) {
 
 let host = null;
 
-// The game's files behind the workspace. HyCreator 1.3.8's listVanillaByExt answers nothing when
-// the vanilla source is the game's Assets.zip (measured: 0 item files, where its own list behind
-// the workspace holds all 3,964), so the app's list is read when the plugin listing is empty.
-async function vanillaFiles(api) {
-  try {
-    const store = await api.modules.store();
-    const hook = [store.useStudio, store, store.u, store.useStore, store.default].find(s => s && typeof s.getState === 'function');
-    const files = hook && hook.getState().fallback && hook.getState().fallback.files;
-    const list = Array.isArray(files) ? files : files && files.values ? [...files.values()] : [];
-    return list.map(f => typeof f === 'string' ? f : f && f.rel).filter(f => typeof f === 'string');
-  } catch {
-    return [];
-  }
+// The oldest HyCreator the plugin works in. Before 1.3.9, a Gradle mod like this one, whose files sit
+// in src/main/resources, met two faults: the vanilla listing a plugin gets came back empty when the
+// game's Assets.zip is the vanilla source, so the Colors page saw no vanilla item and misread every
+// set built on one, and the file picker's tab for the mod showed 0 files. Measured in 1.3.8 and 1.3.9
+// side by side on the same copy of the mod: 0 against 3,964 vanilla items, 0 against 2,486 textures.
+export const NEEDS_HYCREATOR = '1.3.9';
+
+// Whether the running HyCreator is older than that. Every HyCreator this plugin has met reports its
+// version, so one that cannot be read is a newer way of writing it, never an old app, and is let through.
+export function hyCreatorTooOld(version) {
+  const parts = v => String(v).split(/[.-]/).slice(0, 3).map(n => Number.parseInt(n, 10));
+  const have = parts(version);
+  const need = parts(NEEDS_HYCREATOR);
+  if (!version || have.length < 3 || have.some(Number.isNaN)) return false;
+  for (let i = 0; i < 3; i++) if (have[i] !== need[i]) return have[i] < need[i];
+  return false;
 }
+
+const UPDATE_STEPS = 'Click ⚙ at the top, then Application, then Check for updates...';
 
 // The game's own files, kept between openings of the page: they do not change while HyCreator
 // runs, and reading all of them is what makes the first opening of a game piece's set slow.
 const gameTexts = new Map();
 
 function hyCreatorReader(api) {
-  let vanilla = null;
-  let vanillaSet = null;
+  let gameItems = null;
   let modFiles = null;
-  const gameList = async () => {
-    if (!vanilla) vanilla = await vanillaFiles(api);
-    if (!vanillaSet) vanillaSet = new Set(vanilla);
-    return vanilla;
-  };
   return makeReader({
     list: (prefix, exts) => api.workspace.listByExt(prefix, exts),
-    listVanilla: async (prefix, exts) => {
-      const listed = await api.workspace.listVanillaByExt(prefix, exts);
-      if (listed.length) return listed;
-      return (await gameList()).filter(rel => rel.startsWith(prefix) && exts.includes(rel.slice(rel.lastIndexOf('.') + 1)));
-    },
+    listVanilla: (prefix, exts) => api.workspace.listVanillaByExt(prefix, exts),
     read: async rel => {
       // Only a file on the game's own list that the mod does not hold is kept: a colour the page
       // writes during the session is never mistaken for a game file.
       if (!modFiles) modFiles = new Set(await api.workspace.listByExt('Item/', ['json', 'patch']));
-      await gameList();
-      const game = rel.startsWith('Item/') && !modFiles.has(rel) && vanillaSet.has(rel);
+      if (!gameItems) gameItems = new Set(await api.workspace.listVanillaByExt('Item/', ['json']));
+      const game = rel.startsWith('Item/') && !modFiles.has(rel) && gameItems.has(rel);
       const key = (api.workspace.current() || {}).root + '|' + rel;
       if (game && gameTexts.has(key)) return gameTexts.get(key);
       let text = null;
@@ -845,7 +840,7 @@ async function bakeIcon(api, reader, id) {
   const [models, render, core, store] = await Promise.all([api.modules.models(), api.modules.render(), api.modules.core(), api.modules.store()]);
   const rel = await reader.relOf(id);
   const doc = await reader.effective(id);
-  // The app's state hook is named useStudio in 1.3.8. The other names are guesses for a rename.
+  // The app's state hook is named useStudio in 1.3.8 and 1.3.9. The other names are guesses for a rename.
   const hook = [store.useStudio, store, store.u, store.useStore, store.default].find(s => s && typeof s.getState === 'function');
   if (!hook) throw new Error('this HyCreator version keeps its state where the plugin does not look');
   const state = hook.getState();
@@ -927,6 +922,12 @@ function ColoursPage({ rel }) {
   const load = useCallback(async () => {
     setStatus('Reading the colors...');
     setDetail('');
+    const version = api.host && api.host.version;
+    if (hyCreatorTooOld(version)) {
+      setAnalysis(null);
+      setStatus('The Colors page needs HyCreator ' + NEEDS_HYCREATOR + ' or newer, and you have ' + version + '. ' + UPDATE_STEPS);
+      return;
+    }
     try {
       const result = await analyse(hyCreatorReader(api), rel, { sheetFolder });
       setAnalysis(result);
@@ -1454,6 +1455,10 @@ export default {
   description: 'The Colors page, the guide, and what the checks found.',
   activate(api) {
     host = api;
+    const version = api.host && api.host.version;
+    if (hyCreatorTooOld(version)) {
+      api.ui.notify('HyCreator ' + version + ' cannot list your textures and models when you browse for a file. ' + UPDATE_STEPS);
+    }
     unregister.push(api.editors.registerPage({
       id: 'plugin:armory.madebytool',
       label: 'Made by our tools',

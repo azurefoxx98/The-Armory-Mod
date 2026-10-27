@@ -1374,6 +1374,15 @@ function ChecksPanel() {
   // An item named by its id alone is found among the mod's files when clicked.
   const openSubject = async s => {
     if (s.open) return api.session.openFile(s.open);
+    // A picture, model or interface file is named by its path under Common, as the checks name it, and HyCreator opens
+    // it by that path below its Common folder. It opens an empty tab for a path that does not exist too, so the file
+    // is looked up first.
+    if (s.label.includes('/')) {
+      const dot = s.label.lastIndexOf('.');
+      const listed = dot > 0 ? await api.workspace.listByExt('../Common/' + folder(s.label), [s.label.slice(dot + 1)]) : [];
+      if (listed.includes('../Common/' + s.label)) return api.session.openFile('Common/' + s.label);
+      return api.ui.notify(s.label + ' is not in your files any more.');
+    }
     const rel = (await api.workspace.listByExt(s.find || 'Item/Items/', ['json'])).find(r => stem(r) === s.label);
     if (rel) api.session.openFile(rel);
     else api.ui.notify(s.label + ' is not in your files: it is a vanilla one.');
@@ -1695,7 +1704,6 @@ export const GUIDE = [
     'Type the version, or press Enter for the one it suggests.',
     'Write the changelog in the window that opens, then click Done.',
     'Type 1 for a draft players cannot see, 2 for a draft with a message for Larsonix, or 3 to publish.',
-    'If it cannot publish, it says why and offers a draft instead.',
   ] },
   { title: 'Files our tools make', steps: [
     'Our tools rewrite the showcase world and the list of chests your loot goes in. HyCreator opens those files on a warning.',

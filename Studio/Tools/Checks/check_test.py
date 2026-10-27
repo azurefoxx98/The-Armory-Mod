@@ -376,6 +376,48 @@ GAME_SAMPLES = [
 ]
 
 
+def own_folders(expect) -> None:
+    """Two game check runs at once, or one cut off halfway, never stop the next one (the shared snapshot folder did)."""
+    work = tempfile.mkdtemp(prefix="armory-work-")
+    saved = check.WORK
+    check.WORK = work
+    try:
+        # What a run cut off halfway left behind: a shared folder with no run.json, and its own folder, long stale.
+        os.makedirs(os.path.join(work, "now", "server"))
+        stale = os.path.join(work, "now.4242")
+        os.makedirs(os.path.join(stale, "server"))
+        os.utime(stale, (time.time() - check.STALE_SECONDS - 60,) * 2)
+        live = os.path.join(work, "now.4343")
+        os.makedirs(live)
+        mine = check.own_folder("now")
+        expect("a run snapshots into a folder of its own", os.path.basename(mine) == f"now.{os.getpid()}")
+        expect("a folder left by a run cut off long ago is removed", not os.path.exists(stale))
+        expect("a folder of a run still going is left alone", os.path.isdir(live))
+        os.makedirs(os.path.join(mine, "stores"))
+        with open(os.path.join(mine, "run.json"), "w", encoding="utf-8") as fh:
+            fh.write("{}")
+        kept = check.keep_as(mine, os.path.join(work, "now"), replace=True)
+        expect("the finished snapshot replaces the half-written shared folder", kept == os.path.join(work, "now")
+               and os.path.isfile(os.path.join(work, "now", "run.json")) and not os.path.exists(mine))
+        # The game alone, already made by another run: this run's own copy is dropped and theirs is read.
+        van = os.path.join(work, "vanilla-x")
+        os.makedirs(van)
+        with open(os.path.join(van, "run.json"), "w", encoding="utf-8") as fh:
+            fh.write('{"run": "first"}')
+        other = check.own_folder("vanilla-x")
+        os.makedirs(other)
+        with open(os.path.join(other, "run.json"), "w", encoding="utf-8") as fh:
+            fh.write('{"run": "second"}')
+        kept = check.keep_as(other, van, replace=False)
+        with open(os.path.join(van, "run.json"), encoding="utf-8") as fh:
+            first = json.load(fh).get("run") == "first"
+        expect("a finished game-alone snapshot made first by another run is kept, this run's dropped",
+               kept == van and first and not os.path.exists(other))
+    finally:
+        check.WORK = saved
+        shutil.rmtree(work, ignore_errors=True)
+
+
 def words(expect) -> None:
     wrong = []
     for finding, part in GAME_SAMPLES:
@@ -544,6 +586,7 @@ def main(argv: list[str]) -> int:
             failures.append(label)
 
     words(expect)
+    own_folders(expect)
     if argv == ["--words"]:
         print(f"check_test: {len(failures)} failure(s)")
         return 1 if failures else 0

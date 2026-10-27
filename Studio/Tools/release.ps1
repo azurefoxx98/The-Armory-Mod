@@ -4,12 +4,12 @@
 #   1. Brings in the mod's latest work, as Update does, so a release always holds it.
 #   2. Asks for the version, the changelog (in Notepad) and what to do with the release:
 #      save it as a draft, save it as a draft with a message for us, or publish it.
-#   3. For a publish, makes sure it is safe to ship: the mod's checks pass, no hold is placed on
-#      the branch, and the mod's code has not changed since the last release (a code change needs
-#      our own release checks). If one is not met, it says why and offers a draft instead.
-#   4. Sets the version, builds the mod, optimises its model textures with proof, and stamps the jar.
-#   5. Commits the version, tags it, pushes both, and creates the release on GitHub with the jar,
+#   3. Sets the version, builds the mod, optimises its model textures with proof, and stamps the jar.
+#   4. Commits the version, tags it, pushes both, and creates the release on GitHub with the jar,
 #      then downloads the jar back and compares it. A publish also moves main to the release.
+#
+# Nothing here refuses a publish she chose. When to release is agreed between people, never held by a
+# tool. What the checks find shows in her panel, hers and ours, and stops nothing.
 #
 # The first run installs Java 25 and the two picture libraries the optimiser needs, each checked
 # against the fingerprint its publisher gives. Nothing is installed outside the Armory's own folder.
@@ -22,7 +22,6 @@ param(
     [ValidateSet('', 'draft', 'message', 'publish')] [string] $Choice = '',
     [string] $NotesFile = '',
     [string] $MessageFile = '',
-    [switch] $AcceptDraft,
     [string] $ToolsHome = (Join-Path $env:LOCALAPPDATA 'TheArmory')
 )
 $ErrorActionPreference = 'Stop'
@@ -76,11 +75,6 @@ function Stop-Release([string] $text, [string] $detail = '') {
 # The one hand-off for anything she cannot fix herself.
 $send = 'Send Larsonix a screenshot of this window.'
 $downloadsAnnounced = $false
-
-function Ask([string] $question) {
-    $answer = Read-Host "$question (y/n)"
-    return $answer -match '^\s*y'
-}
 
 function Get-Checked([string] $url, [string] $sha256, [string] $what) {
     $file = Join-Path ([IO.Path]::GetTempPath()) ('TheArmory-' + [IO.Path]::GetFileName(([Uri]$url).LocalPath))
@@ -275,39 +269,6 @@ $message = ''
 if ($Choice -eq 'message') {
     $message = Read-Written 'message for Larsonix' "What should Larsonix do with this release? Write it below, then click Done.`r`nOnly the mod's team can read it." $MessageFile
     if (-not $message) { Stop-Release 'Release stopped: the message was empty.' }
-}
-
-# What a publish needs, checked before anything changes.
-if ($Choice -eq 'publish') {
-    $why = @()
-    $hold = Join-Path $repo 'Studio\release-hold.txt'
-    # The hold file's first line is the reason, written for her.
-    if (Test-Path -LiteralPath $hold) { $why += (([IO.File]::ReadAllText($hold)).Trim() -split "`r?`n")[0] }
-    if ($last) {
-        $code = (Invoke-Git @('diff', '--name-only', "v$last", 'HEAD', '--', 'src/main/java', 'settings.gradle', 'gradle')).Out
-        $gradle = (Invoke-Git @('diff', "v$last", 'HEAD', '--', 'build.gradle')).Out -split "`n" |
-            Where-Object { $_ -match '^[+-][^+-]' -and $_ -notmatch "^[+-]version = '" }
-        if ($code -or $gradle) { $why += 'The mod''s code changed since the last release, and Larsonix tests code before it is published.' }
-    }
-    $python = (Invoke-Git @('config', '--get', 'armory.python')).Out
-    if ($python -and (Test-Path -LiteralPath $python)) {
-        Write-Host 'Running the checks...'
-        $checker = Join-Path $repo 'Studio\Tools\Checks\check.py'
-        if ((Invoke-Native { & $python $checker 2>&1 | Out-Host }) -ne 0) { $why += 'The checks found things to fix, listed above.' }
-    } else {
-        $why += 'The checks are not installed. Double-click Setup.cmd first.'
-    }
-    if ($why.Count) {
-        Write-Host ''
-        Write-Host 'This release cannot be published yet:'
-        $why | ForEach-Object { Write-Host "  - $_" }
-        Write-Host ''
-        Write-Host 'Yes saves it as a draft, with these reasons as your message to Larsonix.'
-        Write-Host 'No stops here, and nothing is released.'
-        if (-not $AcceptDraft -and -not (Ask 'Save it as a draft?')) { Stop-Release 'Release stopped.' }
-        $Choice = 'message'
-        $message = ($why | ForEach-Object { "- $_" }) -join "`r`n"
-    }
 }
 
 # Build. A draft made again for the same version finds the version set already.

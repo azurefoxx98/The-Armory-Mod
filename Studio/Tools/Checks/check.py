@@ -798,6 +798,52 @@ def run_snapshot(out: str, game: str, packs: list[str], jar: str | None) -> tupl
     return r.returncode == 0, (r.stdout + r.stderr).strip()
 
 
+# Twice the longest a snapshot may run (run_snapshot's timeout): a run's folder older than this was cut off.
+STALE_SECONDS = 2 * 1200
+
+
+def own_folder(name: str) -> str:
+    """A snapshot folder for this run alone, beside the shared one it will replace.
+
+    The hooks start a run after every commit, pull and branch switch, so two runs often overlap. Both once snapshotted
+    into the same folder, and the second refused it ("exists and was not written by this tool"). A run cut off halfway
+    left that folder without its run.json, and every later run refused it the same way, for good. A folder of this
+    kind left by a run that was cut off is removed once it is older than STALE_SECONDS.
+    """
+    import pathlib
+    import snapshot
+    for entry in os.listdir(WORK):
+        path = os.path.join(WORK, entry)
+        if entry.startswith(name + ".") and entry[len(name) + 1:].isdigit() and os.path.isdir(path) \
+                and time.time() - os.path.getmtime(path) > STALE_SECONDS:
+            snapshot.remove_tree(pathlib.Path(path))
+    return os.path.join(WORK, f"{name}.{os.getpid()}")
+
+
+def keep_as(mine: str, shared: str, replace: bool) -> str:
+    """Moves this run's finished snapshot to the shared folder and returns where it is now.
+
+    replace: an older snapshot there gives way. Without it, a finished one there is kept and this run's is dropped,
+    since another run made the same one first. A shared folder with no run.json, left by an older version of these
+    checks that was cut off, always gives way.
+    """
+    import pathlib
+    import snapshot
+    finished = os.path.isfile(os.path.join(shared, "run.json"))
+    if finished and not replace:
+        snapshot.remove_tree(pathlib.Path(mine))
+        return shared
+    if os.path.isdir(shared):
+        snapshot.remove_tree(pathlib.Path(shared))
+    try:
+        os.replace(mine, shared)
+        return shared
+    except OSError:
+        # Another run moved its own there in between, or a file in it is still open: this run's stays where it is,
+        # and a later run removes it once it is stale.
+        return mine
+
+
 def game_findings(vanilla: str, modded: str) -> list[dict]:
     if GAME_DIR not in sys.path:
         sys.path.insert(0, GAME_DIR)
@@ -837,9 +883,11 @@ def check_game(own: list[str] | None, starts: list[str], why: str, game: str) ->
     os.makedirs(WORK, exist_ok=True)
     vanilla = os.path.join(WORK, f"vanilla-{version}")
     if not os.path.isfile(os.path.join(vanilla, "run.json")):
-        ok, text = run_snapshot(vanilla, game, [], None)
+        mine = own_folder(f"vanilla-{version}")
+        ok, text = run_snapshot(mine, game, [], None)
         if not ok:
             return {"status": "error", "problems": [], "output_tail": text.splitlines()[-6:]}
+        vanilla = keep_as(mine, vanilla, replace=False)
     # What her branch started from, computed once per starting commit, game version and rules.
     rules_id = git("hash-object", os.path.join(GAME_DIR, "rules.py")) or "?"
     base_keys: set[str] = set()
@@ -852,11 +900,13 @@ def check_game(own: list[str] | None, starts: list[str], why: str, game: str) ->
             write_json(cache, {"keys": sorted(keys)})
         with open(cache, encoding="utf-8") as fh:
             base_keys |= set(json.load(fh)["keys"])
-    now = os.path.join(WORK, "now")
-    ok, text = run_snapshot(now, game, [RESOURCES], CODE_JAR)
+    mine = own_folder("now")
+    ok, text = run_snapshot(mine, game, [RESOURCES], CODE_JAR)
     if not ok:
         return {"status": "error", "problems": [], "output_tail": text.splitlines()[-6:]}
-    found = game_findings(vanilla, now)
+    found = game_findings(vanilla, mine)
+    # The latest snapshot stays readable as "now", for a person looking into a finding.
+    keep_as(mine, os.path.join(WORK, "now"), replace=True)
     lady = []
     for f in found:
         e = game_words(f)

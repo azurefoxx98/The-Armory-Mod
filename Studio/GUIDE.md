@@ -105,7 +105,6 @@ The same guide is in HyCreator: click ? at the top.
 - Type the version, or press Enter for the one it suggests.
 - Write the changelog in the window that opens, then click Done.
 - Type 1 for a draft players cannot see, 2 for a draft with a message for Larsonix, or 3 to publish.
-- If it cannot publish, it says why and offers a draft instead.
 
 ## Files our tools make
 

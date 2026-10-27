@@ -302,7 +302,63 @@ SAMPLES = [
 ]
 
 
+# One finding of each kind the game check reports, as game/rules.py makes it, and what Lady reads.
+GAME_SAMPLES = [
+    ({"rule": "names-resolve", "kind": "Item", "id": "Praetorian_Boots", "file": "/Server/Item/Items/Praetorian_Boots.json",
+      "fact": "x", "detail": {"field": "Armor.StatModifiers", "name": "Volatility", "form": "key"}}, "names Volatility"),
+    ({"rule": "like-its-kind", "kind": "ParticleSpawner", "id": "Mirror_Glow_Spawner", "file": "/Server/Particles/A.particlespawner",
+      "fact": "x", "detail": {"field": "ParticleLifeSpan", "form": "unset"}}, "It has no ParticleLifeSpan"),
+    ({"rule": "like-its-kind", "kind": "ParticleSpawner", "id": "Mirror_Glow_Spawner", "file": "",
+      "fact": "x", "detail": {"field": "MaxConcurrentParticles", "form": "default"}}, "keeps the base MaxConcurrentParticles"),
+    ({"rule": "like-its-siblings", "kind": "Item", "id": "Praetorian_Boots_Gray", "file": "/Server/Item/Items/B.json",
+      "fact": "x", "detail": {"field": "SoundEventId", "set": "Praetorian"}}, "the other items of its set have"),
+    ({"rule": "like-its-siblings", "kind": "Item", "id": "RookEliteBootsCharred", "file": "",
+      "fact": "x", "detail": {"field": "Armor.X", "form": "value", "value": 19, "others": 15}}, "is 19, where"),
+    ({"rule": "reachable", "kind": "Item", "id": "Praetorian_Helm", "file": "", "fact": "x",
+      "detail": {"form": "item", "makers": []}}, "No player can get it"),
+    ({"rule": "reachable", "kind": "CraftingRecipe", "id": "R", "file": "", "fact": "x",
+      "detail": {"form": "recipe", "output": "A"}}, "can never be crafted"),
+    ({"rule": "names-and-pictures", "kind": "Item", "id": "Goblin_Skirt", "file": "", "fact": "x",
+      "detail": {"field": "name", "form": "no text"}}, "no English name"),
+    ({"rule": "names-and-pictures", "kind": "Item", "id": "A", "file": "", "fact": "x",
+      "detail": {"field": "name", "form": "slot word", "word": "chestplate", "slot": "Head"}}, "its name says chestplate"),
+    ({"rule": "names-and-pictures", "kind": "Item", "id": "A", "file": "", "fact": "x",
+      "detail": {"field": "icon", "form": "shared", "with": ["B"]}}, "the same icon"),
+    ({"rule": "common-files", "kind": "CommonFile", "id": "Icons/X.png", "file": "Icons/X.png", "fact": "x",
+      "detail": {"field": "replace", "form": "different"}}, "replaces that file"),
+    ({"rule": "common-files", "kind": "CommonFile", "id": "Icons/X.png", "file": "Icons/X.png", "fact": "x",
+      "detail": {"field": "copy", "form": "mod", "twin": "Icons/Y.png"}}, "exact copy of Icons/Y.png"),
+    ({"rule": "all-loaded", "kind": "Item", "id": "Mirror_Shield", "file": "/Server/Item/Items/M.json", "fact": "x",
+      "detail": {"field": "file", "form": "not loaded"}}, "did not load this file"),
+    ({"rule": "all-loaded", "kind": "Mod", "id": "x.jar", "file": "", "fact": "x",
+      "detail": {"field": "files", "form": "none loaded", "count": 9}}, "loaded none of your work"),
+    ({"rule": "server-says", "kind": "Server", "id": "refuses to start", "file": "", "fact": "x",
+      "detail": {"field": "boot", "form": "refused", "files": ["Mirror_Shield"]}}, "refuses to start"),
+    ({"rule": "server-says", "kind": "ServerFinding", "id": "Mirror_Shield", "file": "/Server/Item/Items/M.json", "fact": "x",
+      "detail": {"field": "Asset 'Mirror_Distortion_System_Glow' of type com.x.ParticleSystem doesn't exist!",
+                 "form": "error"}}, "names Mirror_Distortion_System_Glow"),
+    ({"rule": "server-says", "kind": "ServerFinding", "id": "S", "file": "/Server/Item/Interactions/S.json", "fact": "x",
+      "detail": {"field": "Unused key: Config.Particles.0.ParticleColor", "form": "warning"}}, "ignores its field"),
+    ({"rule": "server-says", "kind": "ServerFinding", "id": "M", "file": "/Server/Item/Items/M.json", "fact": "x",
+      "detail": {"field": "[LOC] Key 'server.items.Wyrm_Shield.name' does not exist in server.lang!", "form": "warning"}},
+     "no English text"),
+]
+
+
 def words(expect) -> None:
+    wrong = []
+    for finding, part in GAME_SAMPLES:
+        e = check.game_words(finding)
+        if not e["known"] or part not in e["says"] + " " + e["do"]:
+            wrong.append(f"{finding['rule']} {finding['detail'].get('form')} -> {e['says']} / {e['do']}")
+    expect(f"each of the {len(GAME_SAMPLES)} kinds of game finding reads as Lady's words", not wrong, "\n      ".join(wrong))
+    odd = check.game_words({"rule": "server-says", "kind": "ServerLog", "id": "x", "file": "", "fact": "a new line",
+                            "detail": {"field": "a new line", "form": "log"}})
+    expect("a game finding no text knows is kept whole for Larsonix", not odd["known"] and odd["do"] == check.SEND
+           and odd["detail"] == "a new line", odd)
+    opened = check.game_words(GAME_SAMPLES[0][0])
+    expect("a game finding about an item opens its file",
+           opened["items"] == [{"label": "Praetorian_Boots", "open": "Item/Items/Praetorian_Boots.json"}], opened["items"])
     now = gate_strings()
     added = sorted(set(now) - set(GATE_STRINGS))
     gone = sorted(set(GATE_STRINGS) - set(now))
@@ -410,6 +466,8 @@ def main(argv: list[str]) -> int:
         for name in os.listdir(HERE):
             if name.endswith(".py"):
                 shutil.copyfile(os.path.join(HERE, name), os.path.join(target, name))
+        shutil.copytree(os.path.join(HERE, "game"), os.path.join(target, "game"), dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns("__pycache__"))
         git(clone, "add", "Studio/Tools/Checks")
         git(clone, "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-q", "--allow-empty",
             "-m", "The checks as they stand")
@@ -474,6 +532,15 @@ def main(argv: list[str]) -> int:
                and not any("Armory_Zone1_Loot" in p for p in checks["generated"]["problems"]), checks["generated"])
         expect("the misspelled chest item is named", checks["lootcheck"]["status"] == "fail"
                and any("Mace_Iron_Rustyy" in p for p in checks["lootcheck"]["problems"]), checks["lootcheck"])
+        game = checks.get("game", {})
+        expect("the game check names the item whose sound set does not exist, in her words",
+               game.get("status") == "fail" and any(os.path.splitext(os.path.basename(rel_item))[0] in
+                                                    [i["label"] for i in e["items"]] for e in game.get("lady", [])),
+               json.dumps({k: game.get(k) for k in ("status", "problems", "output_tail")})[:1500])
+        # Four changes were planted, and the branch's start already holds hundreds of findings. Only lines
+        # her commit caused may show: a handful, never the start's own.
+        expect("the game check shows only what her commit changed, not what was there before it",
+               0 < len(game.get("problems", [])) <= 12, game.get("problems"))
         expect("the checks with nothing planted still pass",
                all(checks[k]["status"] == "pass" for k in ("recipecheck", "familycheck", "assetcheck", "branch")),
                {k: checks[k]["status"] for k in checks})

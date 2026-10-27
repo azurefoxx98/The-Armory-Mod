@@ -376,6 +376,27 @@ GAME_SAMPLES = [
 ]
 
 
+# A whole snapshot's log: one server, one verdict. And the real damage of 2026-10-27: two servers wrote one log, and a
+# record starts inside another.
+WHOLE_LOG = ("[2026/10/27 19:09:26   INFO] [Hytale] Loading NPC assets phase...\n"
+             "[2026/10/27 19:09:40   INFO] CHECKS snapshot complete=true assets=1\n")
+WRITTEN_OVER = ("[2026/10/27 19:09:29   WARN] [NPC|P] Replacing asset 'Test[2026/10/27 19:09:29   WARN] [NPC|P] Replacing\n"
+                "[2026/10/27 19:09:40   INFO] CHECKS snapshot complete=true assets=1\n")
+
+
+def snapshot_at(folder: str, made: str, log: str = WHOLE_LOG) -> None:
+    os.makedirs(os.path.join(folder, "stores"), exist_ok=True)
+    with open(os.path.join(folder, "run.json"), "w", encoding="utf-8") as fh:
+        json.dump({"complete": True, "made": made}, fh)
+    with open(os.path.join(folder, "boot.log"), "w", encoding="utf-8") as fh:
+        fh.write(log)
+
+
+def made_by(folder: str) -> str:
+    with open(os.path.join(folder, "run.json"), encoding="utf-8") as fh:
+        return json.load(fh).get("made")
+
+
 def own_folders(expect) -> None:
     """Two game check runs at once, or one cut off halfway, never stop the next one (the shared snapshot folder did)."""
     work = tempfile.mkdtemp(prefix="armory-work-")
@@ -393,26 +414,25 @@ def own_folders(expect) -> None:
         expect("a run snapshots into a folder of its own", os.path.basename(mine) == f"now.{os.getpid()}")
         expect("a folder left by a run cut off long ago is removed", not os.path.exists(stale))
         expect("a folder of a run still going is left alone", os.path.isdir(live))
-        os.makedirs(os.path.join(mine, "stores"))
-        with open(os.path.join(mine, "run.json"), "w", encoding="utf-8") as fh:
-            fh.write("{}")
+        snapshot_at(mine, "now")
         kept = check.keep_as(mine, os.path.join(work, "now"), replace=True)
         expect("the finished snapshot replaces the half-written shared folder", kept == os.path.join(work, "now")
                and os.path.isfile(os.path.join(work, "now", "run.json")) and not os.path.exists(mine))
         # The game alone, already made by another run: this run's own copy is dropped and theirs is read.
         van = os.path.join(work, "vanilla-x")
-        os.makedirs(van)
-        with open(os.path.join(van, "run.json"), "w", encoding="utf-8") as fh:
-            fh.write('{"run": "first"}')
+        snapshot_at(van, "first")
         other = check.own_folder("vanilla-x")
-        os.makedirs(other)
-        with open(os.path.join(other, "run.json"), "w", encoding="utf-8") as fh:
-            fh.write('{"run": "second"}')
+        snapshot_at(other, "second")
         kept = check.keep_as(other, van, replace=False)
-        with open(os.path.join(van, "run.json"), encoding="utf-8") as fh:
-            first = json.load(fh).get("run") == "first"
         expect("a finished game-alone snapshot made first by another run is kept, this run's dropped",
-               kept == van and first and not os.path.exists(other))
+               kept == van and made_by(van) == "first" and not os.path.exists(other))
+        # The game alone, written by two servers at once: its log is cut, so this run's whole one takes its place.
+        snapshot_at(van, "written over", log=WRITTEN_OVER)
+        other = check.own_folder("vanilla-x")
+        snapshot_at(other, "whole")
+        kept = check.keep_as(other, van, replace=False)
+        expect("a game-alone snapshot whose log two servers wrote gives way to this run's whole one",
+               kept == van and made_by(van) == "whole" and not os.path.exists(other))
     finally:
         check.WORK = saved
         shutil.rmtree(work, ignore_errors=True)
@@ -644,18 +664,27 @@ def main(argv: list[str]) -> int:
         rel_item = os.path.relpath(item, res).replace(os.sep, "/")
         # A sound set that exists nowhere, written twice at the end, where the game reads it.
         edit(item, lambda t: t.rstrip()[:-1].rstrip() + ',\n  "ItemSoundSetId": "ISS_Ghost",\n  "ItemSoundSetId": "ISS_Ghost"\n}\n')
-        # A language file saved from an older copy: its last name is lost.
+        # A language file saved from an older copy: its last name is lost. The last one at most one file uses, so the
+        # planted fault stays one fault whatever her file ends with (a description shared by 13 items once made it 13).
         lang = os.path.join(res, "Server", "Languages", "en-US", "server.lang")
         lost = None
+        users: dict[str, int] = {}
+        for dirpath, _dirs, files in os.walk(os.path.join(res, "Server")):
+            for f in files:
+                if f.endswith(".json"):
+                    with open(os.path.join(dirpath, f), encoding="utf-8-sig", errors="replace") as fh:
+                        for key in set(re.findall(r'"server\.([^"]+)"', fh.read())):
+                            users[key] = users.get(key, 0) + 1
 
         def drop_last(text: str) -> str:
             nonlocal lost
             lines = text.splitlines(keepends=True)
             for i in range(len(lines) - 1, -1, -1):
-                if "=" in lines[i] and not lines[i].lstrip().startswith("#"):
+                if "=" in lines[i] and not lines[i].lstrip().startswith("#") \
+                        and users.get(lines[i].split("=", 1)[0].strip(), 0) <= 1:
                     lost = lines[i].split("=", 1)[0].strip()
                     return "".join(lines[:i] + lines[i + 1:])
-            raise SystemExit("server.lang holds no name")
+            raise SystemExit("server.lang holds no name used by at most one file")
         edit(lang, drop_last)
         # A hand edit to a patch the loot tool writes, which puts her loot tables in chests.
         drops = os.path.join(res, "Server", "Drops", "Prefabs")

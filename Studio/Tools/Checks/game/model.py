@@ -83,17 +83,45 @@ class Asset:
     @property
     def kind(self) -> str:
         return short(self.store)
+VERDICT = re.compile('CHECKS snapshot complete=(true|false)(.*)')
+RECORD_START = re.compile('\\[\\d{4}/\\d\\d/\\d\\d \\d\\d:\\d\\d:\\d\\d +[A-Z]+\\]|::(?:warning|error) file=')
+ANSI = re.compile('\\x1b\\[[0-9;]*m')
+
+def log_problems(text: str) -> list[str]:
+    text = ANSI.sub('', text)
+    out = []
+    verdicts = len(VERDICT.findall(text))
+    if verdicts > 1:
+        out.append(f'the log holds {verdicts} verdicts, so more than one server wrote it')
+    cut = [line for line in text.split('\n') if any((m.start() > 0 for m in RECORD_START.finditer(line)))]
+    if cut:
+        out.append(f'{len(cut)} line(s) of the log hold a record that starts inside another, so it was written over: {cut[0][:120]}')
+    return out
+
+def snapshot_problems(folder: Path | str) -> list[str]:
+    folder = Path(folder)
+    run = folder / 'run.json'
+    if not run.exists():
+        return [f'no snapshot at {folder} (run snapshot.py or cases.py)']
+    try:
+        complete = json.loads(run.read_text(encoding='utf-8')).get('complete')
+    except (ValueError, AttributeError):
+        return [f'the snapshot at {folder} has an unreadable run.json']
+    if not complete:
+        return [f'the snapshot at {folder} is not complete']
+    log = folder / 'boot.log'
+    if not log.exists():
+        return [f'the snapshot at {folder} has no boot.log']
+    return log_problems(log.read_text(encoding='utf-8', errors='replace'))
 
 class Snapshot:
 
     def __init__(self, folder: Path):
         self.folder = Path(folder)
-        run = self.folder / 'run.json'
-        if not run.exists():
-            raise SystemExit(f'no snapshot at {self.folder} (run snapshot.py or cases.py)')
-        self.run = json.loads(run.read_text(encoding='utf-8'))
-        if not self.run.get('complete'):
-            raise SystemExit(f'the snapshot at {self.folder} is not complete; take it again')
+        problems = snapshot_problems(self.folder)
+        if problems:
+            raise SystemExit('; '.join(problems) + '; take it again')
+        self.run = json.loads((self.folder / 'run.json').read_text(encoding='utf-8'))
         self._stores: dict[str, dict[str, Asset]] = {}
         self.learned: dict = {}
 

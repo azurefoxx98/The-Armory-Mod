@@ -25,6 +25,7 @@ line no rule knows is shown whole, with the screenshot hand-off, never dropped.
 from __future__ import annotations
 
 import datetime
+import hashlib
 import json
 import os
 import re
@@ -824,12 +825,15 @@ def keep_as(mine: str, shared: str, replace: bool) -> str:
     """Moves this run's finished snapshot to the shared folder and returns where it is now.
 
     replace: an older snapshot there gives way. Without it, a finished one there is kept and this run's is dropped,
-    since another run made the same one first. A shared folder with no run.json, left by an older version of these
-    checks that was cut off, always gives way.
+    since another run made the same one first. A shared folder that is not a whole snapshot always gives way: one with
+    no run.json, left by an older version of these checks that was cut off, or one whose log a second run's server
+    wrote over, as two runs into one folder once did.
     """
     import pathlib
+    import model
     import snapshot
-    finished = os.path.isfile(os.path.join(shared, "run.json"))
+    # Only a whole one is kept: one whose log another run's server wrote over is made again.
+    finished = not model.snapshot_problems(shared)
     if finished and not replace:
         snapshot.remove_tree(pathlib.Path(mine))
         return shared
@@ -878,11 +882,12 @@ def check_game(own: list[str] | None, starts: list[str], why: str, game: str) ->
     if not os.path.isfile(os.path.join(GAME_DIR, "snapshot.py")) or not os.path.isfile(CODE_JAR):
         return {"status": "error", "problems": [], "output_tail": ["the game check's files are missing"]}
     sys.path.insert(0, GAME_DIR)
+    import model
     import snapshot
     version = snapshot.read_version(os.path.join(game, "Server", "HytaleServer.jar")) or "unknown"
     os.makedirs(WORK, exist_ok=True)
     vanilla = os.path.join(WORK, f"vanilla-{version}")
-    if not os.path.isfile(os.path.join(vanilla, "run.json")):
+    if model.snapshot_problems(vanilla):
         mine = own_folder(f"vanilla-{version}")
         ok, text = run_snapshot(mine, game, [], None)
         if not ok:
@@ -890,9 +895,12 @@ def check_game(own: list[str] | None, starts: list[str], why: str, game: str) ->
         vanilla = keep_as(mine, vanilla, replace=False)
     # What her branch started from, computed once per starting commit, game version and rules.
     rules_id = git("hash-object", os.path.join(GAME_DIR, "rules.py")) or "?"
+    # And against this game-alone snapshot: one made again starts its own.
+    with open(os.path.join(vanilla, "run.json"), "rb") as fh:
+        vanilla_id = hashlib.sha1(fh.read()).hexdigest()
     base_keys: set[str] = set()
     for start in starts if compare else []:
-        cache = os.path.join(WORK, f"base-{start[:12]}-{version}-{rules_id[:12]}.json")
+        cache = os.path.join(WORK, f"base-{start[:12]}-{version}-{rules_id[:12]}-{vanilla_id[:12]}.json")
         if not os.path.isfile(cache):
             keys = base_findings(start, game, vanilla)
             if keys is None:

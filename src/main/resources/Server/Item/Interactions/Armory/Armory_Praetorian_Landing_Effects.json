@@ -1,0 +1,18 @@
+{
+  "Type": "Simple",
+  "RunTime": 0.2,
+  "Effects": {
+    "LocalSoundEventId": "SFX_Armory_Praetorian_Landing",
+    "CameraEffect": "Mace_Explode",
+    "Particles": [
+      {
+        "SystemId": "Mace_Signature_Ground_Hit",
+        "TargetEntityPart": "Entity",
+        "TargetNodeName": "Hip",
+        "PositionOffset": {
+          "Y": 0.1
+        }
+      }
+    ]
+  }
+}

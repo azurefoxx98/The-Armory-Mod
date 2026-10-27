@@ -25,6 +25,8 @@ The same guide is in HyCreator: click ? at the top.
 
 - The checks run by themselves each time you commit. When they find something, a notice appears.
 - Click ! at the top to see what to fix. Click an item to open it.
+- Click By item at the top of the panel to see each item once, with all its problems. Open opens the item.
+- To find one item, type part of its name in the box at the top of the panel.
 - If a problem is how you want that item, click Normal for me beside it. It hides that problem on that item only. Hidden, at the bottom, shows it again.
 - Larsonix's problems are his to fix. Nothing to do for you.
 - You can always push, even with things to fix.

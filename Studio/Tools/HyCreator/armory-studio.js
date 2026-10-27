@@ -1184,6 +1184,8 @@ export function checkView(result, running, marks) {
   const busy = !!running && (!result.finished || String(running.started || '') > String(result.finished));
   return {
     state, busy, groups, ours: ourGroups, hidden, stale: [...wanted.entries()].filter(([k]) => !seen.has(k)).map(([, m]) => m),
+    // The same problems one by one, for the view by item: hers with her marks already applied, and ours.
+    entries: mine, ourEntries: ours,
     problems: groups.length, error: result.error || null, errorDetail: result.error_detail || null,
     finished: result.finished || null, branch: result.branch || null,
   };
@@ -1205,6 +1207,54 @@ export function ladyGroups(entries) {
     if (e.detail) g.details.push(e.detail);
   }
   return [...groups.values()].sort((a, b) => (b.new - a.new) || (Math.max(b.count, b.items.length) - Math.max(a.count, a.items.length)));
+}
+
+// The same problems item by item, for the view by item: each item once, with every problem the checks prove
+// on it, what her work added first. Each problem keeps its own key, so "Normal for me" marks the same thing
+// in both views. A problem about no item (a check that could not run) has nothing to sit under, so it stays a
+// card of its own, grouped as in the view by problem.
+export function ladyItems(entries) {
+  const items = new Map();
+  const loose = [];
+  for (const e of entries || []) {
+    if (!(e.items || []).length) { loose.push(e); continue; }
+    for (const i of e.items) {
+      if (!items.has(i.label)) items.set(i.label, { label: i.label, open: i.open, find: i.find, problems: [], new: false });
+      const item = items.get(i.label);
+      item.problems.push({ key: e.key || null, says: e.says, do: e.do || '', new: !!e.new, detail: e.detail || null });
+      item.new = item.new || !!e.new;
+    }
+  }
+  for (const item of items.values()) item.problems.sort((a, b) => b.new - a.new);
+  return { items: [...items.values()], loose: ladyGroups(loose) };
+}
+
+// The orders the view by item offers. Each breaks its ties by name, so the list never shuffles between checks.
+export const ITEM_ORDERS = [
+  { id: 'new', label: 'New first', title: 'What your latest work added first, then the items with the most problems.' },
+  { id: 'count', label: 'Most problems', title: 'The items with the most problems first.' },
+  { id: 'name', label: 'Name', title: 'By name, A to Z.' },
+  { id: 'folder', label: 'Folder', title: 'By the folder the item is in, so the items of one set sit together.' },
+];
+const byName = (a, b) => a.label.localeCompare(b.label, undefined, { numeric: true, sensitivity: 'base' });
+const folderOf = i => folder(i.open || i.label);
+const ORDER_COMPARE = {
+  new: (a, b) => (b.new - a.new) || (b.problems.length - a.problems.length) || byName(a, b),
+  count: (a, b) => (b.problems.length - a.problems.length) || byName(a, b),
+  name: byName,
+  folder: (a, b) => folderOf(a).localeCompare(folderOf(b), undefined, { sensitivity: 'base' }) || byName(a, b),
+};
+export function sortItems(items, order) {
+  const compare = ORDER_COMPARE[order] || ORDER_COMPARE.new;
+  return [...items].sort(compare);
+}
+
+// Whether an item's name holds every word typed in the filter, in any case and in any order. A space and an
+// underscore count the same, so "praetorian gray" finds Praetorian_Boots_Gray.
+export function matchesFilter(label, filter) {
+  const words = String(filter || '').toLowerCase().split(/[\s_]+/).filter(Boolean);
+  const name = String(label || '').toLowerCase();
+  return words.every(w => name.includes(w));
 }
 
 // Her marks as the file holds them, with one more or one less. The file is written whole each time.
@@ -1299,6 +1349,16 @@ function ChecksPanel() {
   const { useState, useEffect } = api.React;
   const [data, setData] = useState({ loading: true });
   const [opened, setOpened] = useState({});
+  // The view, the order and the filter. The first two are remembered between openings of the panel.
+  const remembered = (name, allowed, fallback) => {
+    try { const v = api.storage && api.storage.get(name); return allowed.includes(v) ? v : fallback; } catch { return fallback; }
+  };
+  const remember = (name, value) => { try { if (api.storage) api.storage.set(name, value); } catch { /* kept until HyCreator closes */ } };
+  const [mode, setModeState] = useState(() => remembered('checks.view', ['problem', 'item'], 'problem'));
+  const [order, setOrderState] = useState(() => remembered('checks.order', ITEM_ORDERS.map(o => o.id), 'new'));
+  const [filter, setFilter] = useState('');
+  const setMode = v => { setModeState(v); remember('checks.view', v); };
+  const setOrder = v => { setOrderState(v); remember('checks.order', v); };
   useEffect(() => {
     let alive = true;
     const load = async () => {
@@ -1343,25 +1403,74 @@ function ChecksPanel() {
     return box([h('p', { key: 'n' }, view.state === 'running' ? 'Checking...' : 'No check yet. The first one runs when you commit, or double-click Check.cmd in the Studio folder.'), foot]);
   }
 
-  const headline = view.state === 'pass' ? '✓ Everything is fine'
-    : view.state === 'error' ? 'The checks could not run'
-    : plural(view.problems, 'thing', 'things') + ' to fix';
-  const items = [h('div', { key: 'head', style: cardStyle() },
-    h('div', { style: { fontSize: 15, fontWeight: 600, color: view.state === 'pass' ? LOOK.ok : LOOK.danger } }, headline),
-    h('div', { style: { fontSize: 12, color: LOOK.dim } }, 'Checked ' + when(view.finished) + '.'),
-    view.busy ? h('div', { style: { fontSize: 12, color: LOOK.accent, fontStyle: 'italic' } }, 'Checking your latest changes...') : null,
-    view.error ? h('div', { style: { color: LOOK.danger, marginTop: 4 } }, view.error) : null,
-    view.errorDetail ? h('div', { style: { fontSize: 11.5, color: LOOK.dim } }, 'For Larsonix: ' + view.errorDetail) : null)];
+  // Both views read the same problems and the same marks. The filter keeps the items whose name holds
+  // every word typed, in both views, in her problems and in ours.
+  const mine = ladyItems(view.entries);
+  const ours = ladyItems(view.ourEntries);
+  const typed = filter.trim();
+  const match = s => matchesFilter(s.label, typed);
+  const byItem = mode === 'item';
+  const shownGroups = typed ? view.groups.map(g => ({ ...g, items: g.items.filter(match) })).filter(g => g.items.length) : view.groups;
+  const shownOurGroups = typed ? view.ours.map(g => ({ ...g, items: g.items.filter(match) })).filter(g => g.items.length) : view.ours;
+  const shownItems = sortItems(mine.items.filter(match), order);
+  const shownOurItems = sortItems(ours.items.filter(match), order);
+  const shownLoose = typed ? [] : mine.loose;
+  const shownOurLoose = typed ? [] : ours.loose;
+  const listed = view.groups.length + view.ours.length > 0;
 
   const small = { padding: '0 8px', fontSize: 11.5 };
+  const headline = view.state === 'pass' ? '✓ Everything is fine'
+    : view.state === 'error' ? 'The checks could not run'
+    : byItem ? plural(mine.items.length, 'item', 'items') + ' to fix' + (mine.loose.length ? ', and ' + plural(mine.loose.length, 'other thing', 'other things') : '')
+    : plural(view.problems, 'thing', 'things') + ' to fix';
+  const headColour = view.state === 'pass' ? LOOK.ok : LOOK.danger;
+
+  // The switch between the two views, left of the count: two joined buttons, HyCreator's own "on" marking the
+  // one shown. With nothing listed there is nothing to switch.
+  const segButton = (on, label, onClick, title, extra) => h('button', { key: label, className: 'btn slim' + (on ? ' on' : ''), title, onClick, style: extra }, label);
+  const switcher = listed ? h('div', { style: { display: 'inline-flex', flexShrink: 0 } },
+    segButton(!byItem, 'By problem', () => setMode('problem'), 'Each problem once, with every item it is on.', { borderTopRightRadius: 0, borderBottomRightRadius: 0 }),
+    segButton(byItem, 'By item', () => setMode('item'), 'Each item once, with every problem it has.', { borderTopLeftRadius: 0, borderBottomLeftRadius: 0, marginLeft: -1 })) : null;
+
+  // The order of the view by item, beside the filter.
+  const fieldStyle = { background: 'var(--field)', color: LOOK.text, border: '1px solid ' + LOOK.border, borderRadius: 'var(--radius-m, 6px)', fontSize: 12.5, padding: '3px 8px' };
+  const sorter = byItem ? h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: LOOK.dim, flexShrink: 0 } }, 'Sort by',
+    h('select', { value: order, onChange: e => setOrder(e.target.value), style: fieldStyle, title: (ITEM_ORDERS.find(o => o.id === order) || {}).title },
+      ITEM_ORDERS.map(o => h('option', { key: o.id, value: o.id }, o.label)))) : null;
+  const filterBox = listed ? h('input', { type: 'search', className: 'tree-search', value: filter, placeholder: 'Find an item by its name',
+    style: { margin: 0, flex: '1 1 160px', minWidth: 0, padding: '3px 9px', fontSize: 12.5 }, onChange: e => setFilter(e.target.value) }) : null;
+  const filterNote = typed && mine.items.length ? h('div', { style: { fontSize: 12, color: LOOK.dim, marginTop: 4 } },
+    shownItems.length ? plural(shownItems.length, 'item', 'items') + ' of your ' + mine.items.length + ' match.' : 'None of your ' + plural(mine.items.length, 'item', 'items') + ' matches.') : null;
+
+  // The head stays at the top while the list scrolls, so the switch, the filter and the order are always at hand.
+  const items = [h('div', { key: 'head', style: cardStyle({ position: 'sticky', top: 0, zIndex: 1 }) },
+    h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+      switcher,
+      h('div', { style: { fontSize: 15, fontWeight: 600, color: headColour } }, headline)),
+    h('div', { style: { fontSize: 12, color: LOOK.dim, marginTop: 2 } }, 'Checked ' + when(view.finished) + '.'),
+    view.busy ? h('div', { style: { fontSize: 12, color: LOOK.accent, fontStyle: 'italic' } }, 'Checking your latest changes...') : null,
+    view.error ? h('div', { style: { color: LOOK.danger, marginTop: 4 } }, view.error) : null,
+    view.errorDetail ? h('div', { style: { fontSize: 11.5, color: LOOK.dim } }, 'For Larsonix: ' + view.errorDetail) : null,
+    filterBox ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' } }, filterBox, sorter) : null,
+    filterNote)];
+
   // The button keeps its one line; a long item name gives way instead, cut short with its full name on hover.
   const normalButton = (key, item, says) => h('button', { className: 'btn slim', style: { ...small, color: LOOK.dim, flexShrink: 0, whiteSpace: 'nowrap' },
     title: 'Hide this problem on ' + (item || 'this card') + ' only. It stays on every other item, and you can show it again below.',
     onClick: () => markNormal(key, item, says) }, 'Normal for me');
-  for (const g of view.groups) {
+
+  // A card of the view by problem: what is wrong, the fix, and the items, each with its own Normal for me.
+  const problemCard = (g, readOnly) => {
+    if (readOnly) {
+      return h('div', { key: 'ours-' + g.key, style: cardStyle({ borderColor: tint(LOOK.dim, 45) }) },
+        h('div', { style: { color: LOOK.text } },
+          g.items.length > 1 ? h('span', { style: tagStyle(LOOK.dim) }, plural(g.items.length, 'item', 'items')) : null, g.says),
+        g.items.length ? h('div', { style: { fontSize: 11.5, color: LOOK.dim, marginTop: 4 } },
+          g.items.slice(0, 12).map(s => s.label).join(', ') + (g.items.length > 12 ? ' and ' + (g.items.length - 12) + ' more' : '')) : null);
+    }
     const all = opened[g.key];
-    const shown = all ? g.items : g.items.slice(0, 12);
-    items.push(h('div', { key: g.key, style: cardStyle({ borderColor: tint(LOOK.danger, 45) }) },
+    const shown = all || typed ? g.items : g.items.slice(0, 12);
+    return h('div', { key: g.key, style: cardStyle({ borderColor: tint(LOOK.danger, 45) }) },
       h('div', { style: { fontWeight: 600, color: LOOK.strong } },
         g.new ? h('span', { style: tagStyle(LOOK.accent) }, 'new') : null,
         g.items.length > 1 ? h('span', { style: tagStyle(LOOK.warn) }, plural(g.items.length, 'item', 'items')) : null, g.says),
@@ -1372,23 +1481,73 @@ function ChecksPanel() {
           h('button', { className: 'btn slim', style: { ...small, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
             title: 'Open ' + s.label, onClick: () => openSubject(s) }, s.label),
           s.problem ? normalButton(s.problem, s.label, g.says) : null)),
-        g.items.length > 12 ? h('button', { className: 'btn slim', style: { ...small, color: LOOK.accent, alignSelf: 'flex-start' }, onClick: () => setOpened({ ...opened, [g.key]: !all }) },
+        g.items.length > 12 && !typed ? h('button', { className: 'btn slim', style: { ...small, color: LOOK.accent, alignSelf: 'flex-start' }, onClick: () => setOpened({ ...opened, [g.key]: !all }) },
           all ? 'Show fewer' : '+' + (g.items.length - 12) + ' more') : null) : null,
       !g.items.length && g.problems.length === 1 && g.problems[0] ? h('div', { style: { marginTop: 6, display: 'flex', justifyContent: 'flex-end' } }, normalButton(g.problems[0], '', g.says)) : null,
-      g.details.map((d, i) => h('div', { key: i, style: { fontSize: 11.5, color: LOOK.dim, wordBreak: 'break-word', whiteSpace: 'pre-wrap', marginTop: 4 } }, 'For Larsonix: ' + d))));
-  }
-  if (view.state === 'problems') items.push(h('p', { key: 'rest', style: { fontSize: 12, color: LOOK.ok } }, 'Everything else is fine.'));
+      g.details.map((d, i) => h('div', { key: i, style: { fontSize: 11.5, color: LOOK.dim, wordBreak: 'break-word', whiteSpace: 'pre-wrap', marginTop: 4 } }, 'For Larsonix: ' + d)));
+  };
 
-  // Larsonix's: the file is ours, or only code can fix it. Read only, nothing to click.
-  if (view.ours.length) {
+  // A row of the view by item: folded to its name and its count, opened to its problems, each with its fix
+  // and its own Normal for me. Our rows open to read only.
+  const itemKey = (it, readOnly) => (readOnly ? 'ours:' : 'item:') + it.label;
+  const count = (it, readOnly) => h('span', { style: tagStyle(readOnly ? LOOK.dim : LOOK.warn, { marginRight: 0, minWidth: 18, textAlign: 'center' }),
+    title: plural(it.problems.length, 'problem', 'problems') }, String(it.problems.length));
+  const itemRow = (it, readOnly) => {
+    const k = itemKey(it, readOnly);
+    const isOpen = !!opened[k];
+    const toggle = () => setOpened({ ...opened, [k]: !isOpen });
+    const name = h('button', { className: 'btn slim', title: (isOpen ? 'Fold ' : 'Show the problems of ') + it.label, onClick: toggle,
+      style: { ...small, flex: '1 1 auto', minWidth: 0, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', border: 'none', background: 'transparent', color: readOnly ? LOOK.text : LOOK.strong } },
+      (isOpen ? '▾ ' : '▸ ') + it.label);
+    const newTag = it.new ? h('span', { style: tagStyle(LOOK.accent, { marginRight: 0 }) }, 'new') : null;
+    const openButton = readOnly ? null : h('button', { className: 'btn slim', style: { ...small, flexShrink: 0 }, title: 'Open ' + it.label, onClick: () => openSubject(it) }, 'Open');
+    const head = h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } }, name, newTag, count(it, readOnly), openButton);
+    const body = isOpen ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, margin: '4px 0 2px 22px' } },
+      it.problems.map((p, i) => h('div', { key: i, style: { display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'flex-start', borderTop: i ? '1px solid ' + LOOK.border : 'none', paddingTop: i ? 6 : 0 } },
+        h('div', { style: { minWidth: 0 } },
+          h('div', { style: { color: readOnly ? LOOK.text : LOOK.strong, fontWeight: readOnly ? 400 : 600 } }, p.new ? h('span', { style: tagStyle(LOOK.accent) }, 'new') : null, p.says),
+          !readOnly && p.do ? h('div', { style: { marginTop: 2 } }, h('span', { style: { color: LOOK.dim } }, 'To fix: '), p.do) : null,
+          !readOnly && p.detail ? h('div', { style: { fontSize: 11.5, color: LOOK.dim, wordBreak: 'break-word', whiteSpace: 'pre-wrap', marginTop: 2 } }, 'For Larsonix: ' + p.detail) : null),
+        !readOnly && p.key ? normalButton(p.key, it.label, p.says) : null))) : null;
+    return h('div', { key: k, style: cardStyle({ padding: '4px 8px 4px 2px', marginBottom: 4, borderColor: readOnly ? tint(LOOK.dim, 45) : tint(LOOK.danger, 35) }) }, head, body);
+  };
+  // Opens or folds every row of one list.
+  const foldAll = (list, readOnly) => {
+    const keys = list.map(it => itemKey(it, readOnly));
+    const allOpen = keys.length > 0 && keys.every(k => opened[k]);
+    return h('button', { className: 'btn slim', style: { ...small, flexShrink: 0 }, onClick: () => {
+      const next = { ...opened };
+      for (const k of keys) next[k] = !allOpen;
+      setOpened(next);
+    } }, allOpen ? 'Fold all' : 'Open all');
+  };
+  const listHead = (list, readOnly) => list.length > 1
+    ? h('div', { key: (readOnly ? 'ours-' : '') + 'fold', style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 4 } }, foldAll(list, readOnly)) : null;
+
+  if (byItem) {
+    for (const g of shownLoose) items.push(problemCard(g, false));
+    if (shownItems.length) {
+      items.push(listHead(shownItems, false));
+      for (const it of shownItems) items.push(itemRow(it, false));
+    }
+  } else {
+    for (const g of shownGroups) items.push(problemCard(g, false));
+  }
+  if (view.state === 'problems' && !typed) items.push(h('p', { key: 'rest', style: { fontSize: 12, color: LOOK.ok } }, 'Everything else is fine.'));
+
+  // Ours: the file is ours, or only code can fix it. Read only, nothing to click but folding.
+  const anyOurs = byItem ? shownOurItems.length + shownOurLoose.length : shownOurGroups.length;
+  if (anyOurs) {
     items.push(h('div', { key: 'ours-head', style: { fontSize: 13, fontWeight: 600, color: LOOK.strong, margin: '14px 0 4px' } },
       "Larsonix's problems: he fixes these. Nothing to do for you."));
-    for (const g of view.ours) {
-      items.push(h('div', { key: 'ours-' + g.key, style: cardStyle({ borderColor: tint(LOOK.dim, 45) }) },
-        h('div', { style: { color: LOOK.text } },
-          g.items.length > 1 ? h('span', { style: tagStyle(LOOK.dim) }, plural(g.items.length, 'item', 'items')) : null, g.says),
-        g.items.length ? h('div', { style: { fontSize: 11.5, color: LOOK.dim, marginTop: 4 } },
-          g.items.slice(0, 12).map(s => s.label).join(', ') + (g.items.length > 12 ? ' and ' + (g.items.length - 12) + ' more' : '')) : null));
+    if (byItem) {
+      for (const g of shownOurLoose) items.push(problemCard(g, true));
+      if (shownOurItems.length) {
+        items.push(listHead(shownOurItems, true));
+        for (const it of shownOurItems) items.push(itemRow(it, true));
+      }
+    } else {
+      for (const g of shownOurGroups) items.push(problemCard(g, true));
     }
   }
 
@@ -1466,6 +1625,8 @@ export const GUIDE = [
   { title: 'The checks', steps: [
     'The checks run by themselves each time you commit. When they find something, a notice appears.',
     'Click ! at the top to see what to fix. Click an item to open it.',
+    'Click By item at the top of the panel to see each item once, with all its problems. Open opens the item.',
+    'To find one item, type part of its name in the box at the top of the panel.',
     'If a problem is how you want that item, click Normal for me beside it. It hides that problem on that item only. Hidden, at the bottom, shows it again.',
     "Larsonix's problems are his to fix. Nothing to do for you.",
     'You can always push, even with things to fix.',

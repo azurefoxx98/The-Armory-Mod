@@ -503,6 +503,11 @@ def names_resolve(pair: Pair) -> list[Finding]:
                     findings.append(Finding('names-resolve', kind, a.id, a.path, f"{a.id} names {n!r} {('as a key of' if form == 'key' else 'at')} {path}, where the game names a {where}; no {where} called {n!r} exists in the game as loaded with the mod.", family=f'{kind}:{path}', detail={'field': path, 'name': n, 'form': form}))
     return findings
 _LOG_LINE = re.compile('\\[[0-9/ :]+\\s+(WARN|SEVERE|WARNING)\\]\\s+(.*)')
+_SHUTDOWN = re.compile('\\[HytaleServer\\] Shutdown triggered')
+_PATCHLY_WIPE = re.compile("\\[AssetMonitor\\] The asset file '[^']*[\\\\/]mods[\\\\/][^\\\\/']+_Patchly(?:[\\\\/][^']*)?' was deleted before we could load/update it!$")
+
+def _folded(message: str) -> str:
+    return re.sub('[A-Za-z]:\\\\[^ ]*?\\\\snapshots\\\\[^\\\\ ]+', '<run>', message).strip()
 
 def _log_lines(snap) -> set[str]:
     text = re.sub('\\x1b\\[[0-9;]*m', '', (snap.folder / 'boot.log').read_text(encoding='utf-8', errors='replace'))
@@ -510,12 +515,24 @@ def _log_lines(snap) -> set[str]:
     for line in text.splitlines():
         m = _LOG_LINE.match(line)
         if m and '[SERR]' not in m.group(2):
-            out.add(re.sub('[A-Za-z]:\\\\[^ ]*?\\\\snapshots\\\\[^\\\\ ]+', '<run>', m.group(2)).strip())
+            out.add(_folded(m.group(2)))
     return out
 _MISSING_INTERACTION = re.compile('\\[Hytale\\] Missing (root )?interaction (\\S+)$')
 _DUPLICATE_COUNT = re.compile('\\[CommonAssetModule\\|P\\] Duplicated Asset Count: (\\d+)$')
 _FOR_FILE = re.compile("for file '([^']+)'")
 _LOST_PARENT = re.compile('\\[AssetStore\\|\\w+\\] Failed to find inherited parent asset (\\S+) \\((\\w+)\\) for (\\S+)$')
+
+def _shutdown_wipes(snap) -> set[str]:
+    text = re.sub('\\x1b\\[[0-9;]*m', '', (snap.folder / 'boot.log').read_text(encoding='utf-8', errors='replace'))
+    out: set[str] = set()
+    stopping = False
+    for line in text.splitlines():
+        if _SHUTDOWN.search(line):
+            stopping = True
+        m = _LOG_LINE.match(line)
+        if stopping and m and _PATCHLY_WIPE.search(m.group(2)):
+            out.add(_folded(m.group(2)))
+    return out
 
 def _left_nothing(snap, root: bool, ident: str) -> bool:
     a = snap.store('RootInteraction' if root else 'Interaction').get(ident)
@@ -551,7 +568,12 @@ def server_says(pair: Pair) -> list[Finding]:
     left_nothing = 0
     explained = []
     vanilla_lines = _log_lines(pair.vanilla)
+    wipes = _shutdown_wipes(pair.modded)
+    wiped = 0
     for message in sorted(_log_lines(pair.modded) - vanilla_lines):
+        if message in wipes:
+            wiped += 1
+            continue
         m = _DUPLICATE_COUNT.match(message)
         if m:
             base = next((int(x.group(1)) for x in map(_DUPLICATE_COUNT.match, vanilla_lines) if x), 0)
@@ -574,7 +596,7 @@ def server_says(pair: Pair) -> list[Finding]:
         file = normal_path(named.group(1)) if named else ''
         ident = file.rsplit('/', 1)[-1].rsplit('.', 1)[0] if file.startswith('/') else re.sub('\\d+', 'N', message)[:120]
         findings.append(Finding('server-says', 'ServerLog', ident, file, f'''The game's own server prints "{message}" with the mod, and never without it.''' + ('' if file.startswith('/') else ' The line names no file.'), family='log:' + re.sub("'[^']*'", "'..'", re.sub('[0-9]+', 'N', message))[:90], detail={'field': message, 'form': 'log'}))
-    pair.notes['server-says'] = explained + ([f'{left_nothing} "Missing interaction" line(s) the game alone never prints, each proven to leave nothing behind: the loaded game holds the real interaction'] if left_nothing else [])
+    pair.notes['server-says'] = explained + ([f'{left_nothing} "Missing interaction" line(s) the game alone never prints, each proven to leave nothing behind: the loaded game holds the real interaction'] if left_nothing else []) + ([f'{wiped} file watcher line(s) printed as the server shut down, about Patchly clearing its own generated folder: nothing a player meets'] if wiped else [])
     return findings
 
 def common_files(pair: Pair) -> list[Finding]:

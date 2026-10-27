@@ -615,8 +615,13 @@ def common_files(pair: Pair) -> list[Finding]:
             if is_game(f) or not game:
                 continue
             replaced.add((f['pack'], f['name']))
-            same = hash_of.get((f['pack'], f['name'])) is not None and hash_of.get((f['pack'], f['name'])) == hash_of.get((game[0]['pack'], game[0]['name']))
-            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"The mod ships {f['name']} under the game's own file name, so it replaces the game's file everywhere the game uses it" + (', with identical bytes (no visible change)' if same else ", with different bytes (the game's own items or pages change too)") + '.', family='replaces a game file' + (' (identical)' if same else ''), detail={'field': 'replace', 'form': 'identical' if same else 'different', 'pack': f['pack'], 'effect': None if same else "the game's own items and pages using it change too"}))
+            if f.get('hash') and game[0].get('hash'):
+                same = f['hash'] == game[0]['hash']
+            else:
+                same = hash_of.get((f['pack'], f['name'])) is not None and hash_of.get((f['pack'], f['name'])) == hash_of.get((game[0]['pack'], game[0]['name']))
+            picture = not same and bool(f.get('picture')) and (f.get('picture') == game[0].get('picture'))
+            form = 'identical' if same else 'same picture' if picture else 'different'
+            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"The mod ships {f['name']} under the game's own file name, so it replaces the game's file everywhere the game uses it" + {'identical': ', with identical bytes (no visible change)', 'same picture': ', with other bytes that hold the same picture (no visible change)', 'different': ", with different bytes (the game's own items or pages change too)"}[form] + '.', family='replaces a game file' + ('' if form == 'different' else f' ({form})'), detail={'field': 'replace', 'form': form, 'pack': f['pack'], 'effect': "the game's own items and pages using it change too" if form == 'different' else None}))
     for group in data['sameBytes']:
         files = group['files']
         mine = [f for f in files if not is_game(f) and (f['pack'], f['name']) not in replaced]

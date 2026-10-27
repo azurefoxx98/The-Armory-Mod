@@ -10,7 +10,8 @@ Six checks are the mod's own gates, copied here by the tool that keeps their cod
 the originals. Four more look at this branch's own work: that it is not main, that no language
 file lost names, that no file the mod's tools generate was changed by hand, and what her work
 changed in the game itself (the game check, in game/: the game's own server loads her work
-exactly as her game does, and only what is new since her branch started is shown).
+exactly as her game does, every finding is shown, and what is new since her branch started
+comes first).
 
 The gates print for us, so their words never change here. Every line they print is translated
 below into what Lady reads: what is wrong in her words, and the one thing to change. Both places
@@ -432,6 +433,34 @@ def lady_view(checks: list[dict]) -> None:
                     e["says"] += " Some checks wait until it is fixed."
 
 
+def fold_game(checks: list[dict]) -> None:
+    """One card per fact: a gate's line the game check also states is left out, the game check's card says it.
+
+    Two pairs overlap, each measured on her branch: the item check's "changes the stat X, which does not exist" with
+    the game check's name that does not exist, and the family check's "no player can get these items" with the game
+    check's no way in, when every item it lists is one the game check names. A family line naming an item the game
+    check does not name stays whole.
+    """
+    game = next((c for c in checks if c["id"] == "game"), None)
+    if not game:
+        return
+    about = [e["about"] for e in game.get("lady") or [] if e.get("about")]
+    stats = {(a["id"], a["name"]) for a in about if a["rule"] == "names-resolve" and a["form"] == "key"}
+    unreached = {a["id"] for a in about if a["rule"] == "reachable" and a["form"] in ("item", "base outside")}
+    for c in checks:
+        if c["id"] == "itemcheck":
+            def stated(e):
+                m = re.search(r"changes the stat (\S+), which does not exist$", e["line"])
+                return bool(m and e["items"] and (e["items"][0]["label"], m.group(1)) in stats)
+        elif c["id"] == "familycheck":
+            def stated(e):
+                labels = [i["label"] for i in e["items"]]
+                return "REACHABILITY:" in e["line"] and bool(labels) and all(i in unreached for i in labels)
+        else:
+            continue
+        c["lady"] = [e for e in c.get("lady") or [] if not stated(e)]
+
+
 def owner_of_card(check_id: str, e: dict) -> str:
     """us or mod: whose a card is. A card that hands the work to Larsonix is ours, and the owner table both checks
     read (game/owners.py) decides the rest: a gate's line by its gate and its words, a finding of the game check by
@@ -599,8 +628,9 @@ def check_generated(own: list[str] | None, starts: list[str], why: str) -> dict:
 # The game's own server is booted over her work exactly as her game loads it (the code from
 # Studio/Tools/TheArmory-code.jar, her files from src/main/resources), and every item, effect and recipe
 # is written down as the game holds it. The rules in game/rules.py compare that with vanilla and with
-# the other items of each set. The same is done once for the commit her branch started from, and she is
-# shown only what her own work changed. A result is kept per starting commit, so it is computed once.
+# the other items of each set. Every finding is shown, every run. When her branch has work of its own,
+# the same is done once for the commit it started from, and what her work added is marked new and
+# comes first. A result is kept per starting commit, so it is computed once.
 
 GAME_DIR = os.path.join(HERE, "game")
 CODE_JAR = os.path.join(REPO, "Studio", "Tools", "TheArmory-code.jar")
@@ -784,12 +814,14 @@ def game_findings(vanilla: str, modded: str) -> list[dict]:
 
 
 def check_game(own: list[str] | None, starts: list[str], why: str, game: str) -> dict:
-    """What her work changed, as the game loads it: findings present now and absent where her branch started."""
-    if own is None:
-        return {"status": "error", "problems": [], "output_tail": [why]}
+    """Her work as the game loads it: every finding, the ones absent where her branch started marked new and first.
+
+    Before 2026-10-27 only the new ones showed, so a problem already there when her branch started never reached
+    her ("it's better we get everything than we miss some"). A branch with no work of its own has nothing new, and a
+    copy never pulled from GitHub has no start to compare with, so nothing is marked new on either.
+    """
     changed = bool(git("status", "--porcelain", "--", "src/main/resources"))
-    if not own and not changed:
-        return {"status": "pass", "problems": [], "output_tail": []}
+    compare = own is not None and (bool(own) or changed)
     if not os.path.isfile(os.path.join(GAME_DIR, "snapshot.py")) or not os.path.isfile(CODE_JAR):
         return {"status": "error", "problems": [], "output_tail": ["the game check's files are missing"]}
     sys.path.insert(0, GAME_DIR)
@@ -804,7 +836,7 @@ def check_game(own: list[str] | None, starts: list[str], why: str, game: str) ->
     # What her branch started from, computed once per starting commit, game version and rules.
     rules_id = git("hash-object", os.path.join(GAME_DIR, "rules.py")) or "?"
     base_keys: set[str] = set()
-    for start in starts:
+    for start in starts if compare else []:
         cache = os.path.join(WORK, f"base-{start[:12]}-{version}-{rules_id[:12]}.json")
         if not os.path.isfile(cache):
             keys = base_findings(start, game, vanilla)
@@ -817,9 +849,18 @@ def check_game(own: list[str] | None, starts: list[str], why: str, game: str) ->
     ok, text = run_snapshot(now, game, [RESOURCES], CODE_JAR)
     if not ok:
         return {"status": "error", "problems": [], "output_tail": text.splitlines()[-6:]}
-    new = [f for f in game_findings(vanilla, now) if finding_key(f) not in base_keys]
-    lady = [game_words(f) for f in new]
-    return {"status": "fail" if new else "pass", "problems": [f["fact"] for f in new], "lady": lady, "output_tail": []}
+    found = game_findings(vanilla, now)
+    lady = []
+    for f in found:
+        e = game_words(f)
+        e["new"] = compare and finding_key(f) not in base_keys
+        d = f.get("detail") or {}
+        # What it is about, so a line another check states about the same thing can be folded into it.
+        e["about"] = {"rule": f["rule"], "id": f["id"], "form": d.get("form"), "name": d.get("name")}
+        lady.append(e)
+    lady.sort(key=lambda e: not e["new"])
+    return {"status": "fail" if found else "pass", "problems": [f["fact"] for f in found], "lady": lady,
+            "new": sum(e["new"] for e in lady), "output_tail": []}
 
 
 def base_findings(start: str, game: str, vanilla: str) -> set[str] | None:
@@ -878,6 +919,7 @@ def run_all() -> dict:
             entry.update(outcome)
             result["checks"].append(entry)
         lady_view(result["checks"])
+        fold_game(result["checks"])
         for c in result["checks"]:
             for e in c.get("lady") or []:
                 e["owner"] = owner_of_card(c["id"], e)
@@ -899,12 +941,14 @@ def groups(result: dict) -> list[dict]:
     out: dict[tuple[str, str], dict] = {}
     for c in result["checks"]:
         for e in c.get("lady") or []:
-            g = out.setdefault((e["says"], e["do"]), {"says": e["says"], "do": e["do"], "items": [], "count": 0, "details": []})
+            g = out.setdefault((e["says"], e["do"]), {"says": e["says"], "do": e["do"], "items": [], "count": 0, "details": [],
+                                                      "new": False})
             g["count"] += 1
+            g["new"] = g["new"] or bool(e.get("new"))
             g["items"] += [i["label"] for i in e["items"] if i["label"] not in g["items"]]
             if e.get("detail"):
                 g["details"].append(e["detail"])
-    return sorted(out.values(), key=lambda g: -max(g["count"], len(g["items"])))
+    return sorted(out.values(), key=lambda g: (not g["new"], -max(g["count"], len(g["items"]))))
 
 
 def when(stamp: str | None) -> str:
@@ -926,7 +970,8 @@ def summary(result: dict) -> tuple[str, bool]:
     lines = [head, f"{total} thing{'s' if total != 1 else ''} to fix.", ""]
     for g in found:
         many = len(g["items"]) > 1
-        lines.append((f"{len(g['items'])} items: " if many else (g["items"][0] + ": " if g["items"] else "")) + g["says"])
+        lines.append(("New: " if g["new"] else "") + (f"{len(g['items'])} items: " if many else (g["items"][0] + ": " if g["items"] else ""))
+                     + g["says"])
         lines.append("  To fix: " + g["do"])
         if many:
             shown = ", ".join(g["items"][:10]) + (f" and {len(g['items']) - 10} more" if len(g["items"]) > 10 else "")

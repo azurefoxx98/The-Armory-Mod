@@ -404,6 +404,31 @@ def words(expect) -> None:
     game_stat = check.game_words({"rule": "names-resolve", "kind": "Item", "id": "Praetorian_Boots", "file": "", "fact": "x",
                                   "owner": "us", "detail": {"field": "Armor.StatModifiers", "name": "Volatility", "form": "key"}})
     expect("a game finding keeps the owner the table gave it", check.owner_of_card("game", game_stat) == "us")
+    # One card per fact: the item check's missing stat and the family check's unreachable items fold into the game
+    # check's card when it states the same thing, and stay whole when it does not.
+    stat_line = "Server/Item/Items/Praetorian_Boots.json: its Armor changes the stat Volatility, which does not exist"
+    other_stat = "Server/Item/Items/Praetorian_Boots.json: its Armor changes the stat Ghost_Stat, which does not exist"
+    reach_line = ("Resource_PraetorianBoots: REACHABILITY: no owning item has a non-alteration recipe or appears in Server/Drops "
+                  "owning items: Praetorian_Boots, Praetorian_Boots_Gray")
+    checks = [{"id": "itemcheck", "lady": [check.for_lady("itemcheck", stat_line), check.for_lady("itemcheck", other_stat)]},
+              {"id": "familycheck", "lady": [check.for_lady("familycheck", reach_line)]},
+              {"id": "game", "lady": [
+                  {"about": {"rule": "names-resolve", "id": "Praetorian_Boots", "form": "key", "name": "Volatility"}},
+                  {"about": {"rule": "reachable", "id": "Praetorian_Boots", "form": "item", "name": None}},
+                  {"about": {"rule": "reachable", "id": "Praetorian_Boots_Gray", "form": "item", "name": None}}]}]
+    check.fold_game(checks)
+    expect("a stat the game check names is one card, a stat it does not name stays",
+           [e["line"] for e in checks[0]["lady"]] == [other_stat], [e["line"] for e in checks[0]["lady"]])
+    expect("unreachable items the game check names are one card", checks[1]["lady"] == [], checks[1]["lady"])
+    checks[2]["lady"].pop()
+    checks[1]["lady"] = [check.for_lady("familycheck", reach_line)]
+    check.fold_game(checks)
+    expect("a family line naming an item the game check does not name stays whole", len(checks[1]["lady"]) == 1)
+    order = check.groups({"checks": [{"lady": [
+        {"says": "old and big", "do": "x", "items": [{"label": str(i)} for i in range(9)], "new": False},
+        {"says": "new and small", "do": "x", "items": [{"label": "a"}], "new": True}]}]})
+    expect("what her work added comes first, whatever its size", [g["says"] for g in order] == ["new and small", "old and big"],
+           [g["says"] for g in order])
     opened = check.game_words(GAME_SAMPLES[0][0])
     expect("a game finding about an item opens its file",
            opened["items"] == [{"label": "Praetorian_Boots", "open": "Item/Items/Praetorian_Boots.json"}], opened["items"])
@@ -527,11 +552,16 @@ def main(argv: list[str]) -> int:
         # The checks that read the whole mod report what the branch already holds (since her October import, the
         # Praetorian stats and families), so a branch of her own is judged on what it adds, never on that.
         before = {k: set(v["problems"]) for k, v in checks.items()}
-        own = ("branch", "languages", "generated", "game")
+        own = ("branch", "languages", "generated")
         expect("a branch made from ours shows no problem of its own, and no check stops",
                not result["error"] and all(checks[k]["status"] == "pass" for k in own)
                and all(v["status"] != "error" for v in checks.values()),
                json.dumps({k: (v["status"], v["problems"][:2], v["output_tail"][-3:]) for k, v in checks.items()}))
+        start_game = checks.get("game", {})
+        expect("the game check runs on a branch with nothing of its own, shows what the game finds, and marks nothing new",
+               start_game.get("status") in ("pass", "fail") and start_game.get("new") == 0
+               and not any(e.get("new") for e in start_game.get("lady", [])),
+               json.dumps({k: start_game.get(k) for k in ("status", "new", "output_tail")})[:800])
         expect("it finds the game and counts no commit as hers", bool(result["game"]) and result.get("own_commits") == 0,
                f"game {result['game']}, own commits {result.get('own_commits')}")
 
@@ -590,10 +620,15 @@ def main(argv: list[str]) -> int:
                game.get("status") == "fail" and any(os.path.splitext(os.path.basename(rel_item))[0] in
                                                     [i["label"] for i in e["items"]] for e in game.get("lady", [])),
                json.dumps({k: game.get(k) for k in ("status", "problems", "output_tail")})[:1500])
-        # Four changes were planted, and the branch's start already holds hundreds of findings. Only lines
-        # her commit caused may show: a handful, never the start's own.
-        expect("the game check shows only what her commit changed, not what was there before it",
-               0 < len(game.get("problems", [])) <= 12, game.get("problems"))
+        # Four changes were planted, and the branch's start already holds hundreds of findings. All of them show, and
+        # only the lines her commit caused are new: a handful, listed first.
+        new = [e for e in game.get("lady", []) if e.get("new")]
+        expect("the game check marks only what her commit changed as new",
+               0 < len(new) <= 12 and game.get("new") == len(new), [e["says"] for e in new])
+        expect("and still shows every finding the start already held",
+               len(game.get("problems", [])) >= len(start_game.get("problems", [])), (len(game.get("problems", [])),
+                                                                                       len(start_game.get("problems", []))))
+        expect("what is new comes first", all(e.get("new") for e in game.get("lady", [])[:len(new)]))
         # The comparison below can fail: the item check, where a sound set was planted, holds new lines.
         expect("the comparison with the branch's start sees what was planted",
                any("ISS_Ghost" in p for p in set(checks["itemcheck"]["problems"]) - before["itemcheck"]),

@@ -1366,12 +1366,13 @@ function ChecksPanel() {
         g.items.length > 1 ? h('span', { style: tagStyle(LOOK.warn) }, plural(g.items.length, 'item', 'items')) : null, g.says),
       g.do ? h('div', { style: { marginTop: 4 } }, h('span', { style: { color: LOOK.dim } }, 'To fix: '), g.do) : null,
       shown.length ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, marginTop: 6 } },
-        shown.map((s, i) => h('div', { key: i, style: { display: 'flex', gap: 4 } },
+        // The item's name on the left, its Normal for me on the right edge of the card.
+        shown.map((s, i) => h('div', { key: i, style: { display: 'flex', gap: 4, justifyContent: 'space-between', alignItems: 'center' } },
           h('button', { className: 'btn slim', style: small, title: 'Open ' + s.label, onClick: () => openSubject(s) }, s.label),
           s.problem ? normalButton(s.problem, s.label, g.says) : null)),
         g.items.length > 12 ? h('button', { className: 'btn slim', style: { ...small, color: LOOK.accent, alignSelf: 'flex-start' }, onClick: () => setOpened({ ...opened, [g.key]: !all }) },
           all ? 'Show fewer' : '+' + (g.items.length - 12) + ' more') : null) : null,
-      !g.items.length && g.problems.length === 1 && g.problems[0] ? h('div', { style: { marginTop: 6 } }, normalButton(g.problems[0], '', g.says)) : null,
+      !g.items.length && g.problems.length === 1 && g.problems[0] ? h('div', { style: { marginTop: 6, display: 'flex', justifyContent: 'flex-end' } }, normalButton(g.problems[0], '', g.says)) : null,
       g.details.map((d, i) => h('div', { key: i, style: { fontSize: 11.5, color: LOOK.dim, wordBreak: 'break-word', whiteSpace: 'pre-wrap', marginTop: 4 } }, 'For Larsonix: ' + d))));
   }
   if (view.state === 'problems') items.push(h('p', { key: 'rest', style: { fontSize: 12, color: LOOK.ok } }, 'Everything else is fine.'));

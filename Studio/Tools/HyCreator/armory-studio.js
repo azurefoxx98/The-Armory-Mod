@@ -1403,13 +1403,13 @@ function ChecksPanel() {
 
   const box = children => h('div', { style: { padding: 12, overflow: 'auto', height: '100%', lineHeight: 1.45, color: LOOK.text } }, children);
   const foot = h('p', { key: 'f', style: { fontSize: 12, color: LOOK.dim } },
-    'The checks run by themselves each time you commit or update. You can always push, even with things to fix. To check now, double-click Check.cmd in the Studio folder.');
+    'The checks run by themselves each time you commit or update. You can always push, even with things to fix. To check now, click Check now in The Armory panel.');
   if (data.loading) return box([h('p', { key: 'l' }, 'Reading the last check...')]);
-  if (data.unreadable) return box([h('p', { key: 'u' }, 'This HyCreator cannot show the checks. Double-click Check.cmd in the Studio folder to see them.'), foot]);
+  if (data.unreadable) return box([h('p', { key: 'u' }, 'This HyCreator cannot show the checks. Send Larsonix a screenshot of this panel.'), foot]);
   if (data.studio === false) return box([h('p', { key: 's' }, 'Open your whole copy of the mod in HyCreator, the folder that holds Studio, to see the checks.')]);
   const view = checkView(data.result, data.running, data.marks);
   if (view.state === 'none' || view.state === 'running') {
-    return box([h('p', { key: 'n' }, view.state === 'running' ? 'Checking...' : 'No check yet. The first one runs when you commit, or double-click Check.cmd in the Studio folder.'), foot]);
+    return box([h('p', { key: 'n' }, view.state === 'running' ? 'Checking...' : 'No check yet. The first one runs when you commit, or click Check now in The Armory panel.'), foot]);
   }
 
   // Both views read the same problems and the same marks. The filter keeps the items whose name holds
@@ -1611,6 +1611,581 @@ function watchChecks(api) {
   return () => { stopped = true; clearInterval(timer); };
 }
 
+// ---- the panel of buttons: Update, Check now, Release, Set up, Get The Armory ------------------------
+
+// Every button starts a script of the Studio folder through Windows' own console host, which runs it with no
+// window at all (HyCreator 1.3.9's launch_app, the command behind its own "open in Blockbench" button). Measured
+// on 2026-10-27: the console host and a no-window Python start nothing on either desktop, while a "hidden"
+// PowerShell opens a Windows Terminal on the real screen on Windows 11. launch_app answers nothing, so each script
+// writes its result to Studio/Tools/Runs/<task>.json (run.ps1) and the panel reads it.
+export const RUNS = 'Studio/Tools/Runs/';
+export const ARMORY_SOURCE = 'https://github.com/azurefoxx98/The-Armory-Mod.git';
+// Where Windows usually lives, then the other letters it can be installed on. launch_app wants a full path.
+const WINDOWS_DIRS = ['C:\\Windows', 'D:\\Windows', 'E:\\Windows'];
+// A task whose result never shows its start within this time did not start.
+const START_WAIT_MS = 30000;
+
+// The settings of her copy the panel needs, from .git/config: her checks' program and whether setup ran.
+export function parseGitConfig(text) {
+  const out = {};
+  let section = '';
+  for (const raw of String(text || '').split(/\r?\n/)) {
+    const line = raw.trim();
+    const head = /^\[([^\]\s"]+)(?:\s+"([^"]*)")?\]$/.exec(line);
+    if (head) { section = (head[1] + (head[2] !== undefined ? '.' + head[2] : '')).toLowerCase(); continue; }
+    const kv = /^([A-Za-z][\w-]*)\s*=\s*(.*)$/.exec(line);
+    if (!kv) continue;
+    const value = kv[2].replace(/^"(.*)"$/, '$1');
+    const key = section + '.' + kv[1].toLowerCase();
+    if (key === 'armory.python') out.python = value;
+    if (key === 'core.hookspath') out.hooksPath = value;
+    if (key === 'armory.mods') out.mods = value;
+    if (key === 'armory.plugins') out.plugins = value;
+  }
+  return out;
+}
+
+// none: setup never ran on this copy. nochecks: it ran, but the checks are missing. ready: everything is there.
+export function setupState(config) {
+  if (!config || !config.hooksPath) return 'none';
+  return config.python ? 'ready' : 'nochecks';
+}
+
+// What the panel shows for one task, from its result file and the start the panel is waiting for.
+export function runView(result, wantId, startedAt, now = Date.now()) {
+  const fresh = result && typeof result === 'object' && (!wantId || result.id === wantId);
+  if (wantId && !fresh) return { state: now - (startedAt || now) > START_WAIT_MS ? 'lost' : 'starting', lines: [], data: null };
+  if (!fresh) return { state: 'idle', lines: [], data: null };
+  const lines = (Array.isArray(result.lines) ? result.lines : []).map(String).filter(l => l.trim()).map(text => {
+    const larsonix = text.startsWith('For Larsonix: ');
+    return { text: larsonix ? text.slice('For Larsonix: '.length) : text, larsonix };
+  });
+  const state = ['running', 'done', 'failed'].includes(result.state) ? result.state : 'failed';
+  return { state, lines, data: result.data || null, finished: result.finished || null, id: result.id || null };
+}
+
+export function compareVersions(a, b) {
+  const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number);
+  for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return Math.sign(x[i] - y[i]);
+  return 0;
+}
+
+// What stops the form from starting a release, in her words, or null. The release script checks the same again.
+export function releaseProblem(info, form) {
+  const version = String(form.version || '').trim().replace(/^v/, '') || (info && info.suggested) || '';
+  if (!/^\d+\.\d+\.\d+$/.test(version)) return version + ' is not a version number. Type one like ' + ((info && info.suggested) || '1.0.0') + '.';
+  if (info && info.last && compareVersions(version, info.last) <= 0) return version + ' is not newer than the last release, ' + info.last + '.';
+  if (info && Array.isArray(info.released) && info.released.includes(version)) return version + ' is already released.';
+  if (!['draft', 'message', 'publish'].includes(form.choice)) return 'Choose what should happen with this release.';
+  if (!String(form.notes || '').trim()) return 'Write the changelog players will read.';
+  if (form.choice === 'message' && !String(form.message || '').trim()) return 'Write your message for Larsonix.';
+  return null;
+}
+
+// The program and arguments launch_app gets to run one task of run.ps1 with no window.
+export function taskLaunch(windows, root, task, id, params = {}) {
+  const repo = String(root).replace(/\//g, '\\').replace(/\\$/, '');
+  const args = ['--headless', windows + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', '-NoProfile', '-NonInteractive',
+    '-ExecutionPolicy', 'Bypass', '-File', repo + '\\Studio\\Tools\\run.ps1', '-Task', task, '-Id', id];
+  for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null && v !== '') args.push('-' + k, String(v));
+  return { exe: windows + '\\System32\\conhost.exe', args };
+}
+
+// The checks, started the way the git hooks start them: a run in the background that writes last-check.json.
+export function checkLaunch(windows, root, python) {
+  const repo = String(root).replace(/\//g, '\\').replace(/\\$/, '');
+  return { exe: windows + '\\System32\\conhost.exe', args: ['--headless', String(python).replace(/\//g, '\\'), repo + '\\Studio\\Tools\\Checks\\check.py', '--spawn'] };
+}
+
+// The language files whose text changed between two readings: changed, appeared or gone. HyCreator's kept copy of
+// each one is stale then, a file it never saw included, since it keeps "no file" too and would write one from nothing.
+export function languageChanges(before, after) {
+  const out = [];
+  for (const [rel, text] of after) if (!before.has(rel) || before.get(rel) !== text) out.push(rel);
+  for (const rel of before.keys()) if (!after.has(rel)) out.push(rel);
+  return out;
+}
+
+// The script Get The Armory runs before any copy of the mod exists, written by the add-on to its own output
+// folder. It clones her branch straight away: HyCreator's own Clone lands on main, and moving to her branch after
+// that leaves two files changed that she never touched, under Git's usual line ending setting (measured 2026-10-27).
+export const GET_SCRIPT = [
+  'param([string] $Into, [string] $Source, [string] $Status, [string] $Id)',
+  '$lines = New-Object System.Collections.Generic.List[string]',
+  'function Save([string] $state, $data) {',
+  '    $result = [ordered]@{ id = $Id; state = $state; lines = $lines; data = $data; finished = $(if ($state -ne "running") { (Get-Date).ToString("o") }) }',
+  '    [IO.File]::WriteAllText("$Status.tmp", ($result | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding $false))',
+  '    Move-Item -LiteralPath "$Status.tmp" -Destination $Status -Force',
+  '}',
+  'function Say([string] $text) { $lines.Add($text); Save "running" $null }',
+  'function Fail([string] $text, [string] $detail) { $lines.Add($text); if ($detail) { $lines.Add("For Larsonix: $detail") }; Save "failed" $null; exit 1 }',
+  'try {',
+  '    Say "Getting The Armory."',
+  '    if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Fail "Git is not installed. Install it from https://git-scm.com/download/win with its default choices, then click Get The Armory again." "" }',
+  '    $copy = Join-Path $Into "The-Armory-Mod"',
+  '    if ((Test-Path -LiteralPath (Join-Path $Into ".git")) -and (Test-Path -LiteralPath (Join-Path $Into "Studio\\Tools\\setup.ps1"))) { $copy = $Into }',
+  '    if (Test-Path -LiteralPath (Join-Path $copy ".git")) { Say "The mod is already here: $copy" }',
+  '    else {',
+  '        Say "Downloading The Armory, about 80 MB, into $copy"',
+  '        $said = & git clone --quiet --branch lady $Source $copy 2>&1 | ForEach-Object { "$_" }',
+  '        if ($LASTEXITCODE -ne 0) { Fail "The download failed. Check your internet, then click Get The Armory again." ($said -join " ") }',
+  '    }',
+  '    $lines.Add("Done.")',
+  '    Save "done" @{ copy = $copy }',
+  '} catch { Fail "Getting The Armory stopped on something unexpected. Send Larsonix a screenshot." "$_" }',
+].join('\r\n') + '\r\n';
+
+async function invoke(cmd, args) {
+  const tauri = globalThis.__TAURI_INTERNALS__;
+  if (!tauri || typeof tauri.invoke !== 'function') throw new Error('this HyCreator cannot start programs');
+  return tauri.invoke(cmd, args);
+}
+
+// Starts a program through launch_app, trying each place Windows can live until one has the program.
+async function launchWith(make) {
+  let last = null;
+  for (const dir of WINDOWS_DIRS) {
+    const { exe, args } = make(dir);
+    try { await invoke('launch_app', { exe, args }); return true; } catch (e) {
+      last = e;
+      if (!/not found/i.test(String(e && e.message || e))) break;
+    }
+  }
+  throw last || new Error('nothing to start');
+}
+
+async function readAbsolute(path) {
+  try {
+    if (!(await invoke('plugin:fs|exists', { path }))) return null;
+    const raw = await invoke('plugin:fs|read_text_file', { path });
+    return typeof raw === 'string' ? raw : new TextDecoder().decode(new Uint8Array(raw));
+  } catch { return null; }
+}
+
+async function studioState(api) {
+  const store = await api.modules.store();
+  return [store.useStudio, store.u].find(s => s && typeof s.getState === 'function') || null;
+}
+
+// A window of HyCreator over the page, such as the translation window while a name is being saved.
+function windowOpen() {
+  return [...document.querySelectorAll('.modal-backdrop, .modal, [role=dialog]')].some(el => {
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  });
+}
+
+// Reloads HyCreator's window, which loads a new version of this add-on and reads every language file again. Only
+// when nothing is unsaved and no window is open over the page; her tabs come back by HyCreator's own setting.
+async function unsavedFiles(api) {
+  try {
+    const S = await studioState(api);
+    const st = S && S.getState();
+    return st && st.sessions ? [...st.sessions.entries()].filter(([, s]) => s && s.dirty).map(([rel]) => rel) : [];
+  } catch { return null; }
+}
+
+async function reloadWhenSafe(api) {
+  const unsaved = await unsavedFiles(api);
+  if (!unsaved || unsaved.length || windowOpen()) return false;
+  setTimeout(() => location.reload(), 400);
+  return true;
+}
+
+// HyCreator keeps its own copy of each language file and builds every name it saves from that copy, so a name that
+// arrives from outside (Update, HyCreator's own Pull, a branch switch, Restore from last commit) is erased by her
+// next save. Measured in 1.3.9 on 2026-10-27, with its own Pull. Rewriting the file with its own unchanged text
+// through HyCreator's built-in write_asset makes it read the file again: same bytes, git sees nothing, and the
+// arrived name survived the next save. A file open in a tab takes that write itself, so then the window reloads.
+let languageRefresh = null;
+async function sameSize(S, rel, text) {
+  try {
+    const source = S && S.getState().workspace && S.getState().workspace.source;
+    if (!source || !source.serverRoot) return false;
+    const info = await invoke('plugin:fs|stat', { path: String(source.serverRoot).replace(/\\/g, '/').replace(/\/$/, '') + '/' + rel });
+    return !!info && Number(info.size) === new TextEncoder().encode(text).length;
+  } catch { return false; }
+}
+function watchLanguages(api) {
+  let root = null, seen = new Map(), primed = false, busy = false, stopped = false;
+  const pending = new Set();
+  let reload = false;
+  const tick = async () => {
+    if (busy || stopped) return;
+    busy = true;
+    try {
+      const current = api.workspace.current();
+      const now = current && current.kind === 'folder' ? String(current.root) : null;
+      if (now !== root) { root = now; seen = new Map(); primed = false; pending.clear(); reload = false; }
+      if (!now) return;
+      const rels = (await api.workspace.listByExt('Languages/', ['lang'])).filter(r => /^Languages\/[^/]+\/server\.lang$/.test(r));
+      const texts = new Map();
+      for (const rel of rels) { try { const t = await api.workspace.readText(rel); if (typeof t === 'string') texts.set(rel, t); } catch { /* gone */ } }
+      if (primed) for (const rel of languageChanges(seen, texts)) pending.add(rel);
+      seen = texts;
+      primed = true;
+      if ((!pending.size && !reload) || windowOpen()) return;
+      const S = await studioState(api);
+      const sessions = S && S.getState().sessions;
+      for (const rel of [...pending]) {
+        // A file gone has nothing to write back, and a file open in a tab takes the write itself: both reload.
+        if (!texts.has(rel) || (sessions && sessions.has(rel))) { reload = true; pending.delete(rel); continue; }
+        if (!api.mcp || typeof api.mcp.callBuiltin !== 'function') { reload = true; pending.delete(rel); continue; }
+        // Read again just before writing, so a save made in between is never written over.
+        const text = await api.workspace.readText(rel);
+        if (text !== texts.get(rel)) continue;
+        // The text written back must be the file byte for byte. A file whose size differs from its text (a mark at
+        // its start that the reading dropped, for one) would change, so it takes the reload instead.
+        if (!(await sameSize(S, rel, text))) { reload = true; pending.delete(rel); continue; }
+        try { await api.mcp.callBuiltin('write_asset', { rel, content: text }); pending.delete(rel); } catch { reload = true; pending.delete(rel); }
+      }
+      if (reload && await reloadWhenSafe(api)) reload = false;
+    } finally { busy = false; }
+  };
+  languageRefresh = tick;
+  tick();
+  const timer = setInterval(tick, 3000);
+  return () => { stopped = true; clearInterval(timer); languageRefresh = null; };
+}
+
+// The add-on's own file in her copy. Git copies it to HyCreator after every pull and branch switch, and HyCreator
+// runs the version it loaded at start, so a change here means a newer version waits for a reload.
+const ADDON_FILE = 'Studio/Tools/HyCreator/armory-studio.js';
+let addonAtStart = { root: null, text: null };
+async function addonChanged(api) {
+  const current = api.workspace.current();
+  const root = current ? String(current.root) : null;
+  const r = await readRepoText(api, ADDON_FILE);
+  if (r.text === undefined) return false;
+  if (addonAtStart.root !== root || addonAtStart.text === null) { addonAtStart = { root, text: r.text }; return false; }
+  return r.text !== addonAtStart.text;
+}
+
+// Takes the add-on's first reading as soon as a copy is open, so a change made before the panel is first opened
+// still counts. The panel reads its answer instead of reading the file itself.
+let addonNewer = false;
+function watchAddon(api) {
+  const tick = () => { addonChanged(api).then(c => { addonNewer = addonNewer || c; }).catch(() => { /* read again next time */ }); };
+  tick();
+  const timer = setInterval(tick, 5000);
+  return () => clearInterval(timer);
+}
+
+const TASK_TITLE = { update: 'Update', 'release-info': 'Reading the last release', release: 'Release', 'setup-report': 'Set up', setup: 'Set up' };
+
+function StudioPanel() {
+  const api = host;
+  const h = api.React.createElement;
+  const { useState, useEffect, useRef } = api.React;
+  const [info, setInfo] = useState({ loading: true });
+  const [runs, setRuns] = useState({});
+  const [waiting, setWaiting] = useState({});
+  const [form, setForm] = useState(null);
+  // The folder she chose for Get The Armory last time, kept by HyCreator for this add-on.
+  const [getting, setGetting] = useState(() => {
+    let folder = '';
+    try { folder = (api.storage && api.storage.get('install.folder')) || ''; } catch { folder = ''; }
+    return { folder, id: null, started: 0, result: null, status: null };
+  });
+  const [updated, setUpdated] = useState(false);
+  const [note, setNote] = useState('');
+  const [openLog, setOpenLog] = useState({});
+  const after = useRef({});
+
+  const read = async () => {
+    const current = api.workspace.current();
+    const studio = current && current.kind === 'folder' ? await hasStudio(api) : false;
+    const next = { loading: false, root: current && current.kind === 'folder' ? String(current.root) : null, studio };
+    if (studio) {
+      const [config, result, running] = await Promise.all([readRepoText(api, '.git/config'), readJson(api, CHECK_RESULT), readJson(api, CHECK_RUNNING)]);
+      next.config = parseGitConfig(config.text);
+      next.checks = checkView(result.value || null, running.value || null, []);
+      const found = {};
+      for (const t of Object.keys(TASK_TITLE)) { const r = await readJson(api, RUNS + t + '.json'); found[t] = r.value || null; }
+      setRuns(found);
+      setUpdated(addonNewer);
+    }
+    setInfo(next);
+  };
+  useEffect(() => {
+    let alive = true;
+    const go = async () => { if (alive) await read(); };
+    go();
+    const timer = setInterval(go, 1500);
+    return () => { alive = false; clearInterval(timer); };
+  }, []);
+
+  // Once a task she started ends: what follows it.
+  useEffect(() => {
+    for (const [task, w] of Object.entries(waiting)) {
+      const view = runView(runs[task], w.id, w.started);
+      if ((view.state === 'done' || view.state === 'failed' || view.state === 'lost') && !after.current[w.id]) {
+        after.current[w.id] = true;
+        const last = view.lines.filter(l => !l.larsonix).slice(-1)[0];
+        if (task === 'update') {
+          api.ui.notify((view.state === 'done' ? '✓ Update: ' : 'Update: ') + (last ? last.text : 'it did not finish.'));
+          if (languageRefresh) languageRefresh();
+          if (view.state === 'done') addonChanged(api).then(c => { addonNewer = addonNewer || c; if (c) reloadWhenSafe(api); });
+        }
+        if (task === 'release-info' && view.state === 'done' && form) setForm(f => f && { ...f, info: view.data, loading: false });
+        if (task === 'release-info' && view.state !== 'done' && form) setForm(f => f && { ...f, loading: false, infoFailed: view.lines });
+        if (task === 'release') api.ui.notify((view.state === 'done' ? '✓ ' : '') + (last ? last.text : 'Release: it did not finish.'));
+        if (task === 'setup-report' && view.state === 'done') afterReport(view.data);
+        if (task === 'setup' && view.state === 'done') reloadWhenSafe(api);
+      }
+    }
+  }, [runs, waiting]);
+
+  // Only a task started from this panel greys the buttons. A result still marked running from elsewhere (another
+  // window, or a run cut off by sleep) never does: run.ps1 itself refuses a second task while the first one lives.
+  const busyTask = Object.keys(waiting).find(t => {
+    const v = runView(runs[t], waiting[t].id, waiting[t].started);
+    return v.state === 'running' || v.state === 'starting';
+  });
+
+  const start = async (task, params = {}) => {
+    const id = task + '-' + Date.now();
+    try {
+      await launchWith(dir => taskLaunch(dir, info.root, task, id, params));
+      setWaiting(w => ({ ...w, [task]: { id, started: Date.now() } }));
+      return true;
+    } catch (e) {
+      setNote('It could not start. Send Larsonix a screenshot of this panel. For Larsonix: ' + String(e && e.message || e));
+      return false;
+    }
+  };
+
+  // Update and Release work on the saved files only, so unsaved ones are named first. Going on stays her choice.
+  const saveFirst = async (verb, why) => {
+    const files = await unsavedFiles(api);
+    if (!files.length) return true;
+    return api.ui.confirmDanger({ title: 'Some files are not saved', confirmLabel: verb + ' anyway', body: why, items: files });
+  };
+  const runUpdate = async () => {
+    if (await saveFirst('Update', 'Update sees only saved files. Save these first: saving one after Update could undo what it brought into it.')) start('update');
+  };
+
+  const checkNow = async () => {
+    if (!info.config || !info.config.python) { setNote('The checks are not installed yet. Click Set up first.'); return; }
+    try { await launchWith(dir => checkLaunch(dir, info.root, info.config.python)); setNote(''); }
+    catch (e) { setNote('The checks could not start. Send Larsonix a screenshot of this panel. For Larsonix: ' + String(e && e.message || e)); }
+  };
+
+  const afterReport = async data => {
+    const others = data && Array.isArray(data.others) ? data.others : [];
+    if (others.length) {
+      const ok = await api.ui.confirmDanger({ title: 'Move other copies of The Armory', confirmLabel: 'Move them',
+        body: 'Hytale can load only one copy of The Armory. These move to ' + data.setAside + ', where you can find them again. Nothing is deleted.',
+        items: others });
+      if (!ok) { setNote('Set up stopped, and nothing was moved.'); return; }
+    }
+    start('setup');
+  };
+
+  const openRelease = () => {
+    setForm({ version: '', choice: 'draft', notes: '', message: '', loading: true, info: null });
+    start('release-info');
+  };
+  const startRelease = async () => {
+    const problem = releaseProblem(form.info, form);
+    if (problem) { setForm({ ...form, problem }); return; }
+    if (!(await saveFirst('Release', 'A release holds only saved and committed files. Save these first, then commit them.'))) return;
+    if (form.choice === 'publish') {
+      const ok = await api.ui.confirmDanger({ title: 'Publish this release', confirmLabel: 'Publish',
+        body: 'Players can download version ' + (form.version.trim() || form.info.suggested) + ' right away.', items: [] });
+      if (!ok) return;
+    }
+    const notes = await writeRepoText(api, RUNS + 'release-notes.txt', form.notes.trim() + '\n');
+    const message = form.choice !== 'message' || await writeRepoText(api, RUNS + 'release-message.txt', form.message.trim() + '\n');
+    if (!notes || !message) { setForm({ ...form, problem: 'The changelog could not be saved. Send Larsonix a screenshot of this panel.' }); return; }
+    const repo = info.root.replace(/\//g, '\\');
+    const params = { Version: form.version.trim(), Choice: form.choice, NotesFile: repo + '\\Studio\\Tools\\Runs\\release-notes.txt' };
+    if (form.choice === 'message') params.MessageFile = repo + '\\Studio\\Tools\\Runs\\release-message.txt';
+    if (await start('release', params)) setForm(null);
+  };
+
+  // Get The Armory, before any copy exists: a folder chosen, the script written to the add-on's own folder.
+  const chooseFolder = async () => {
+    try {
+      const picked = await invoke('plugin:dialog|open', { options: { directory: true, multiple: false, title: 'Where should The Armory go?' } });
+      if (typeof picked === 'string' && picked) {
+        setGetting(g => ({ ...g, folder: picked }));
+        try { api.storage.set('install.folder', picked); } catch { /* chosen again next time */ }
+      }
+    } catch (e) { setNote('The folder window could not open. For Larsonix: ' + String(e && e.message || e)); }
+  };
+  const getArmory = async () => {
+    const id = 'get-' + Date.now();
+    try {
+      const where = String(await api.files.writeOutput('get-the-armory.ps1', GET_SCRIPT));
+      const status = where.replace(/[\\/][^\\/]+$/, '') + '\\get-the-armory.json';
+      let source = ARMORY_SOURCE;
+      try { source = (api.storage && api.storage.get('install.source')) || ARMORY_SOURCE; } catch { /* the usual place */ }
+      await launchWith(dir => ({ exe: dir + '\\System32\\conhost.exe', args: ['--headless', dir + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
+        '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', where, '-Into', getting.folder, '-Source', source, '-Status', status, '-Id', id] }));
+      setGetting(g => ({ ...g, id, started: Date.now(), status, result: null }));
+    } catch (e) { setNote('Getting The Armory could not start. Send Larsonix a screenshot of this panel. For Larsonix: ' + String(e && e.message || e)); }
+  };
+  useEffect(() => {
+    if (!getting.status || !getting.id) return;
+    let alive = true;
+    const poll = async () => {
+      const text = await readAbsolute(getting.status);
+      let value = null;
+      try { value = text ? JSON.parse(text) : null; } catch { value = null; }
+      if (!alive) return;
+      setGetting(g => ({ ...g, result: value }));
+      const view = runView(value, getting.id, getting.started);
+      if (view.state === 'done' && view.data && view.data.copy) {
+        alive = false;
+        const S = await studioState(api);
+        if (S) await S.getState().openFolder(String(view.data.copy).replace(/\\/g, '/'));
+      }
+    };
+    poll();
+    const timer = setInterval(poll, 1000);
+    return () => { alive = false; clearInterval(timer); };
+  }, [getting.status, getting.id]);
+
+  // ---- what she sees ----
+  const box = children => h('div', { 'data-armory': 'panel', style: { padding: 12, overflow: 'auto', height: '100%', lineHeight: 1.45, color: LOOK.text } }, children);
+  const title = text => h('div', { style: { fontWeight: 600, color: LOOK.strong, marginBottom: 6 } }, text);
+  const dim = (text, key) => h('div', { key, style: { fontSize: 12, color: LOOK.dim } }, text);
+  const when = text => { const d = new Date(text); return isNaN(d) ? '' : d.toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); };
+  const noteLine = note ? h('div', { key: 'note', style: cardStyle({ borderColor: tint(LOOK.warn, 50) }) }, note) : null;
+
+  // The lines a task printed: the last few, all of them when opened, the detail lines small.
+  const log = (task, view) => {
+    if (!view.lines.length) return null;
+    const all = !!openLog[task];
+    const shown = all ? view.lines : view.lines.slice(-6);
+    return h('div', { style: { marginTop: 6, fontSize: 12.5 } },
+      view.lines.length > 6 ? h('button', { className: 'btn slim', style: { padding: '0 8px', fontSize: 11.5, marginBottom: 4 }, onClick: () => setOpenLog({ ...openLog, [task]: !all }) },
+        all ? 'Show less' : 'Show everything it said') : null,
+      shown.map((l, i) => h('div', { key: i, style: l.larsonix ? { fontSize: 11.5, color: LOOK.dim, wordBreak: 'break-word' } : { whiteSpace: 'pre-wrap', wordBreak: 'break-word' } },
+        l.larsonix ? 'For Larsonix: ' + l.text : l.text)));
+  };
+  const status = view => {
+    if (view.state === 'starting') return h('div', { style: { color: LOOK.accent, fontStyle: 'italic' } }, 'Starting...');
+    if (view.state === 'running') return h('div', { style: { color: LOOK.accent, fontStyle: 'italic' } }, 'Working...');
+    if (view.state === 'lost') return h('div', { style: { color: LOOK.danger } }, 'It did not start. Send Larsonix a screenshot of this panel.');
+    if (view.state === 'done') return h('div', { style: { color: LOOK.ok } }, '✓ Done ' + when(view.finished) + '.');
+    if (view.state === 'failed') return h('div', { style: { color: LOOK.danger } }, 'It stopped ' + when(view.finished) + '. It says why below.');
+    return null;
+  };
+  const viewOf = task => { const w = waiting[task]; return runView(runs[task], w && w.id, w && w.started); };
+  const button = (label, onClick, primary, extra) => h('button', { className: 'btn' + (primary ? ' primary' : ''), disabled: !!busyTask, onClick, style: extra }, label);
+
+  if (info.loading) return box([h('p', { key: 'l' }, 'Reading your copy of the mod...')]);
+  if (info.studio === null) return box([h('p', { key: 'u' }, 'This HyCreator cannot show The Armory\'s buttons. Send Larsonix a screenshot of this panel.')]);
+
+  // No copy of the mod open: Get The Armory.
+  if (!info.studio) {
+    const view = runView(getting.result, getting.id, getting.started);
+    const working = getting.id && (view.state === 'starting' || view.state === 'running');
+    return box([
+      h('div', { key: 'get', style: cardStyle() },
+        title('Get The Armory'),
+        h('p', { style: { marginTop: 0 } }, 'This copies The Armory onto this computer, on your branch, and opens it here.'),
+        info.root ? dim('The folder open now is not a copy of the mod.', 'w') : null,
+        h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', margin: '8px 0' } },
+          h('button', { className: 'btn', onClick: chooseFolder, disabled: working }, 'Choose a folder...'),
+          h('span', { style: { fontSize: 12, color: getting.folder ? LOOK.strong : LOOK.dim, wordBreak: 'break-all' } }, getting.folder || 'Such as Documents. The mod goes in a folder named The-Armory-Mod inside it.')),
+        h('button', { className: 'btn primary', disabled: !getting.folder || working, onClick: getArmory }, working ? 'Working...' : 'Get The Armory'),
+        getting.id ? status(view) : null,
+        getting.id ? log('get', view) : null),
+      noteLine,
+      dim('Git for Windows is needed first: https://git-scm.com/download/win, with its default choices.', 'git'),
+    ]);
+  }
+
+  const state = setupState(info.config);
+  const cards = [];
+  if (updated) {
+    cards.push(h('div', { key: 'new', style: cardStyle({ borderColor: tint(LOOK.accent, 50), display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }) },
+      h('span', { style: { flex: '1 1 200px' } }, 'A new version of The Armory\'s buttons and pages is ready. Save your work, then reload.'),
+      h('button', { className: 'btn primary', onClick: async () => { if (!(await reloadWhenSafe(api))) setNote('Save every open file first, then click Reload again.'); } }, 'Reload')));
+  }
+  const setupView = runView(runs.setup, waiting.setup && waiting.setup.id, waiting.setup && waiting.setup.started);
+  const reportView = viewOf('setup-report');
+  if (state !== 'ready') {
+    cards.push(h('div', { key: 'setup', style: cardStyle({ borderColor: tint(LOOK.warn, 50) }) },
+      title('Set up this computer'),
+      h('p', { style: { marginTop: 0 } }, state === 'none'
+        ? 'Hytale then loads the mod from this copy, the checks run after each commit, and these pages stay up to date.'
+        : 'The checks are not installed yet. Set up adds them.'),
+      button('Set up', () => start('setup-report'), true),
+      status(reportView), log('setup-report', reportView),
+      status(setupView), log('setup', setupView)));
+  }
+
+  const update = viewOf('update');
+  cards.push(h('div', { key: 'update', style: cardStyle() },
+    title('Update'),
+    dim('Brings in Larsonix\'s latest work, keeps yours, and sends both to GitHub. Commit your changes first.', 'u'),
+    h('div', { style: { marginTop: 8 } }, button(busyTask === 'update' ? 'Updating...' : 'Update', runUpdate, true)),
+    status(update), log('update', update)));
+
+  const checks = info.checks || { state: 'none' };
+  const checkLine = checks.state === 'pass' ? '✓ Everything of yours is fine.'
+    : checks.state === 'problems' ? plural(checks.problems, 'thing', 'things') + ' to fix.'
+    : checks.state === 'error' ? 'The checks could not run.' : 'No check yet.';
+  cards.push(h('div', { key: 'checks', style: cardStyle() },
+    title('Checks'),
+    dim('They run by themselves after each commit and update.', 'c'),
+    h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 8 } },
+      button('Check now', checkNow, false),
+      h('button', { className: 'btn', onClick: () => api.ui.openSidePanel && api.ui.openSidePanel('armory.studio.checks') }, 'See the problems')),
+    h('div', { style: { marginTop: 6, color: checks.state === 'pass' ? LOOK.ok : checks.state === 'problems' ? LOOK.warn : LOOK.text } },
+      checks.busy ? 'Checking...' : checkLine + (checks.finished ? ' Checked ' + when(checks.finished) + '.' : ''))));
+
+  const release = viewOf('release');
+  const infoView = viewOf('release-info');
+  const releaseCard = [title('Release')];
+  if (!form) {
+    releaseCard.push(dim('Builds the mod and puts it on GitHub: as a draft, as a draft with a message for Larsonix, or published.', 'r'),
+      h('div', { key: 'b', style: { marginTop: 8 } }, button(busyTask === 'release' ? 'Releasing...' : 'Make a release...', openRelease, false)),
+      status(release), log('release', release));
+  } else {
+    const fi = form.info;
+    const field = { background: 'var(--field)', color: LOOK.text, border: '1px solid ' + LOOK.border, borderRadius: 'var(--radius-m, 6px)', padding: '4px 8px', fontSize: 13, width: '100%', boxSizing: 'border-box' };
+    const choice = (id, label) => h('label', { key: id, style: { display: 'block', cursor: 'pointer', marginBottom: 2 } },
+      h('input', { type: 'radio', name: 'armory-release', checked: form.choice === id, onChange: () => setForm({ ...form, choice: id, problem: null }), style: { marginRight: 6, verticalAlign: 'middle' } }), label);
+    if (form.loading) releaseCard.push(h('div', { key: 'l', style: { color: LOOK.accent, fontStyle: 'italic' } }, 'Reading the last release...'));
+    else if (!fi) releaseCard.push(h('div', { key: 'f', style: { color: LOOK.danger } }, 'The last release could not be read.'), log('release-info', infoView));
+    else {
+      if (fi.uncommitted) releaseCard.push(h('div', { key: 'u', style: { color: LOOK.warn, marginBottom: 6 } }, 'Some of your changes are not committed. Commit them first: click ' + fi.branch + ' at the top, then Commit changes...'));
+      releaseCard.push(
+        h('div', { key: 'v', style: { marginBottom: 8 } }, h('div', { style: { fontSize: 12, color: LOOK.dim } }, 'Version. The last release is ' + (fi.last || 'none yet') + '.'),
+          h('input', { style: { ...field, width: 140 }, value: form.version, placeholder: fi.suggested, onChange: e => setForm({ ...form, version: e.target.value, problem: null }) })),
+        h('div', { key: 'c', style: { marginBottom: 8 } }, h('div', { style: { fontSize: 12, color: LOOK.dim } }, 'What should happen with it?'),
+          choice('draft', 'A draft. Players cannot see it yet.'),
+          choice('message', 'A draft with a message for Larsonix, for example an effect you want added.'),
+          choice('publish', 'Publish it. Players can download it right away.')),
+        h('div', { key: 'n', style: { marginBottom: 8 } }, h('div', { style: { fontSize: 12, color: LOOK.dim } }, 'The changelog players will read.'),
+          h('textarea', { style: { ...field, minHeight: 120, fontFamily: 'inherit' }, value: form.notes, onChange: e => setForm({ ...form, notes: e.target.value, problem: null }) })),
+        form.choice === 'message' ? h('div', { key: 'm', style: { marginBottom: 8 } }, h('div', { style: { fontSize: 12, color: LOOK.dim } }, 'Your message for Larsonix. Only the mod\'s team can read it.'),
+          h('textarea', { style: { ...field, minHeight: 70, fontFamily: 'inherit' }, value: form.message, onChange: e => setForm({ ...form, message: e.target.value, problem: null }) })) : null,
+        fi.changes && fi.changes.length ? h('details', { key: 'w', style: { marginBottom: 8, fontSize: 12 } }, h('summary', { style: { cursor: 'pointer', color: LOOK.dim } }, 'What changed since the last release, to help you remember. Players never see this list.'),
+          h('ul', { style: { margin: '4px 0 0', paddingLeft: 18 } }, fi.changes.map((c, i) => h('li', { key: i }, c)))) : null,
+        form.problem ? h('div', { key: 'p', style: { color: LOOK.danger, marginBottom: 6 } }, form.problem) : null,
+        h('div', { key: 'go', style: { display: 'flex', gap: 8 } },
+          button('Start the release', startRelease, true),
+          h('button', { className: 'btn', onClick: () => setForm(null) }, 'Cancel')));
+    }
+  }
+  cards.push(h('div', { key: 'release', style: cardStyle() }, releaseCard));
+  if (noteLine) cards.push(noteLine);
+  if (state === 'ready') {
+    cards.push(h('div', { key: 'again', style: { fontSize: 12, color: LOOK.dim, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+      'If Hytale or the checks stop finding your copy:',
+      h('button', { className: 'btn slim', disabled: !!busyTask, onClick: () => start('setup-report') }, 'Set up again'),
+      status(reportView), status(setupView)));
+    if (setupView.state !== 'idle' || reportView.state !== 'idle') cards.push(h('div', { key: 'again-log' }, log('setup-report', reportView), log('setup', setupView)));
+  }
+  return box(cards);
+}
+
 // ---- the guide -------------------------------------------------------------------------------
 
 // Every section is one job: what it is for, then the steps. The same text is saved as
@@ -1618,21 +2193,24 @@ function watchChecks(api) {
 export const GUIDE = [
   { title: 'Set up, once', steps: [
     'Install Git for Windows from https://git-scm.com/download/win, with its default choices.',
-    'Put Get The Armory.cmd, the file Larsonix sends you, in the folder where you want the mod, such as Documents.',
-    'Double-click it. Answer its question, then do the Blockbench step it shows.',
-    'Restart HyCreator. Click Workspace at the top left, then Open mod folder..., and pick the The-Armory-Mod folder it made.',
+    'In HyCreator, click the gear at the top, then Plugins, then Install plugin..., and pick armory-studio.js, the file Larsonix sends you.',
+    'Click the hammer at the top: The Armory panel. Click Choose a folder..., and pick where the mod goes, such as Documents.',
+    'Click Get The Armory. When it is copied, HyCreator opens it.',
+    'Click Set up, and answer its question. Then do the Blockbench step it shows.',
     'The button at the top now says lady: your branch. All your work goes there.',
     'The first time you push, GitHub asks you to sign in. Sign in once.',
   ] },
   { title: 'Each time you work', steps: [
-    'Before you start, double-click Studio\\Update.cmd. It brings in Larsonix\'s latest work and sends yours to GitHub.',
+    'Before you start, click Update in The Armory panel. It brings in Larsonix\'s latest work and sends yours to GitHub.',
     'When you finish, click lady at the top, then Commit changes... Write what you did in one line, then click Commit.',
     'Then click lady at the top, then Push.',
-    'If Pull or Push says your branch has diverged, double-click Update.cmd instead.',
+    'If Pull or Push says your branch has diverged, click Update in The Armory panel instead.',
     'If Update says your work and ours changed the same files, send Larsonix a screenshot and keep working.',
+    'When The Armory panel says a new version is ready, save your work and click Reload.',
   ] },
   { title: 'The checks', steps: [
     'The checks run by themselves each time you commit. When they find something, a notice appears.',
+    'To check now, click Check now in The Armory panel.',
     'Click ! at the top to see what to fix. Click an item to open it.',
     'Click By item at the top of the panel to see each item once, with all its problems. Open opens the item.',
     'To find one item, type part of its name in the box at the top of the panel.',
@@ -1700,10 +2278,11 @@ export const GUIDE = [
     'Keep the four table names as they are: the chests find them by name.',
   ] },
   { title: 'Make a release', steps: [
-    'Commit your work first, then double-click Studio\\Release.cmd.',
-    'Type the version, or press Enter for the one it suggests.',
-    'Write the changelog in the window that opens, then click Done.',
-    'Type 1 for a draft players cannot see, 2 for a draft with a message for Larsonix, or 3 to publish.',
+    'Commit your work first. Then click Make a release... in The Armory panel.',
+    'Type the version, or leave it empty for the one it suggests.',
+    'Choose a draft players cannot see, a draft with a message for Larsonix, or publish.',
+    'Write the changelog players will read, then click Start the release.',
+    'The panel shows each step. It ends with the link to your release on GitHub.',
   ] },
   { title: 'Files our tools make', steps: [
     'Our tools rewrite the showcase world and the list of chests your loot goes in. HyCreator opens those files on a warning.',
@@ -1738,10 +2317,10 @@ let unregister = [];
 export default {
   id: 'armory.studio',
   name: 'The Armory Studio',
-  version: '0.4.0',
+  version: '0.5.0',
   minApi: 2,
   author: 'The Armory',
-  description: 'The Colors page, the guide, and what the checks found.',
+  description: 'Update, Check and Release buttons, the Colors page, the guide, and what the checks found.',
   activate(api) {
     host = api;
     const version = api.host && api.host.version;
@@ -1764,10 +2343,22 @@ export default {
       component: ColoursPage,
     }));
     if (api.ui.registerSidePanel) {
+      api.ui.registerSidePanel({ id: 'armory.studio.panel', title: 'The Armory', glyph: '⚒', component: StudioPanel, defaultWidth: 440 });
       api.ui.registerSidePanel({ id: 'armory.studio.guide', title: 'The Armory guide', glyph: '?', component: GuidePanel, defaultWidth: 440 });
       api.ui.registerSidePanel({ id: 'armory.studio.checks', title: 'The Armory checks', glyph: '!', component: ChecksPanel, defaultWidth: 480 });
     }
     unregister.push(watchChecks(api));
+    unregister.push(watchLanguages(api));
+    unregister.push(watchAddon(api));
+    // Installed on its own, before any copy of the mod: the panel opens once, on Get The Armory.
+    hasStudio(api).then(studio => {
+      let shown = null;
+      try { shown = api.storage && api.storage.get('panel.shown'); } catch { shown = null; }
+      if (studio === false && !shown && api.ui.openSidePanel) {
+        api.ui.openSidePanel('armory.studio.panel');
+        try { api.storage.set('panel.shown', true); } catch { /* shown again next start */ }
+      }
+    }).catch(() => { /* the panel is still at the top */ });
     // The warning page above only reaches editors that offer plugin pages, and HyCreator's own
     // drop list and patch editors do not open on it. So the first edit of such a file, in any
     // editor, also raises a notice. HyCreator reports an edit without naming the file, so the

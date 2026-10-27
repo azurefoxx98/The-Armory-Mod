@@ -1,9 +1,10 @@
-# Makes a release of The Armory from this computer. Run it through Studio\Release.cmd.
+# Makes a release of The Armory from this computer. The release form of The Armory's panel in HyCreator
+# runs it (through run.ps1), and -Info is how that form learns the last version and what changed since.
 #
 # What it does, in order:
 #   1. Brings in the mod's latest work, as Update does, so a release always holds it.
-#   2. Asks for the version, the changelog (in Notepad) and what to do with the release:
-#      save it as a draft, save it as a draft with a message for us, or publish it.
+#   2. Takes the version, the changelog and what to do with the release from the form: save it as a
+#      draft, save it as a draft with a message for us, or publish it.
 #   3. Sets the version, builds the mod, optimises its model textures with proof, and stamps the jar.
 #   4. Commits the version, tags it, pushes both, and creates the release on GitHub with the jar,
 #      then downloads the jar back and compares it. A publish also moves main to the release.
@@ -14,14 +15,18 @@
 # The first run installs Java 25 and the two picture libraries the optimiser needs, each checked
 # against the fingerprint its publisher gives. Nothing is installed outside the Armory's own folder.
 param(
-    # Test switches. Leave out the GitHub steps, take a given jar instead of building, or answer
-    # the questions from these values.
-    [switch] $NoGitHub,
-    [string] $Jar = '',
+    # What the form gives: the version, a draft, a draft with a message, or a publish, and the files
+    # holding the changelog and the message.
     [string] $Version = '',
     [ValidateSet('', 'draft', 'message', 'publish')] [string] $Choice = '',
     [string] $NotesFile = '',
     [string] $MessageFile = '',
+    # Writes what the form shows to this file, then stops: the branch, the version now, the last
+    # release, the next version, and the changes since the last release. Nothing else is done.
+    [string] $Info = '',
+    # Test switches. Leave out the GitHub steps, or take a given jar instead of building.
+    [switch] $NoGitHub,
+    [string] $Jar = '',
     [string] $ToolsHome = (Join-Path $env:LOCALAPPDATA 'TheArmory')
 )
 $ErrorActionPreference = 'Stop'
@@ -73,7 +78,7 @@ function Stop-Release([string] $text, [string] $detail = '') {
 }
 
 # The one hand-off for anything she cannot fix herself.
-$send = 'Send Larsonix a screenshot of this window.'
+$send = 'Send Larsonix a screenshot.'
 $downloadsAnnounced = $false
 
 function Get-Checked([string] $url, [string] $sha256, [string] $what) {
@@ -101,7 +106,7 @@ function Get-Checked([string] $url, [string] $sha256, [string] $what) {
 function Install-Tools {
     $python = (Invoke-Git @('config', '--get', 'armory.python')).Out
     if (-not $python -or -not (Test-Path -LiteralPath $python)) {
-        Stop-Release 'The checks are not installed. Double-click Setup.cmd first, then Release.cmd again.'
+        Stop-Release 'The checks are not installed. Click Set up in The Armory panel first, then Release again.'
     }
     $pythonHome = Split-Path -Parent $python
     $site = Join-Path $pythonHome 'Lib\site-packages'
@@ -169,31 +174,26 @@ function Set-ModVersion([string] $old, [string] $new) {
     }
 }
 
-# A text she writes in a window of its own, with a reminder beside it. Notepad is not used: on
-# Windows 11 it opens a file in a tab of a Notepad already open and returns at once, which would
-# read an empty text.
-function Read-Written([string] $title, [string] $reminder, [string] $given) {
-    if ($given) { return ([IO.File]::ReadAllText($given)).Trim() }
-    Add-Type -AssemblyName System.Windows.Forms
-    $form = New-Object Windows.Forms.Form
-    $form.Text = "The Armory: $title"; $form.Width = 900; $form.Height = 640; $form.StartPosition = 'CenterScreen'
-    $help = New-Object Windows.Forms.TextBox
-    $help.Multiline = $true; $help.ReadOnly = $true; $help.ScrollBars = 'Vertical'; $help.Dock = 'Top'; $help.Height = 200
-    $help.Text = $reminder
-    $box = New-Object Windows.Forms.TextBox
-    $box.Multiline = $true; $box.ScrollBars = 'Vertical'; $box.Dock = 'Fill'; $box.AcceptsReturn = $true
-    $box.Font = New-Object Drawing.Font('Segoe UI', 11)
-    $buttons = New-Object Windows.Forms.FlowLayoutPanel
-    $buttons.Dock = 'Bottom'; $buttons.Height = 44; $buttons.FlowDirection = 'RightToLeft'
-    $ok = New-Object Windows.Forms.Button; $ok.Text = 'Done'; $ok.Width = 120; $ok.DialogResult = 'OK'
-    $help.Font = New-Object Drawing.Font('Segoe UI', 10)
-    $cancel = New-Object Windows.Forms.Button; $cancel.Text = 'Cancel'; $cancel.Width = 120; $cancel.DialogResult = 'Cancel'
-    $buttons.Controls.AddRange(@($ok, $cancel))
-    $form.Controls.AddRange(@($box, $help, $buttons))
-    $form.CancelButton = $cancel
-    $form.Add_Shown({ $box.Focus() })
-    if ($form.ShowDialog() -ne 'OK') { return '' }
-    return $box.Text.Trim()
+# A text she wrote in the form, kept in a file by the panel.
+function Read-Written([string] $given) {
+    if (-not $given -or -not (Test-Path -LiteralPath $given)) { return '' }
+    return ([IO.File]::ReadAllText($given)).Trim()
+}
+
+# The last released version and the one after it, from the version tags and the build file.
+function Get-Versions {
+    $current = Read-ModVersion
+    $tags = @((Invoke-Git @('tag', '--list', 'v*')).Out -split "`n" | Where-Object { $_ -match '^v[0-9]+\.[0-9]+\.[0-9]+$' } | ForEach-Object { $_.Substring(1) })
+    $last = $tags | Sort-Object { [version]$_ } | Select-Object -Last 1
+    $base = if ($last -and (Compare-Version $last $current) -ge 0) { $last } else { $current }
+    $parts = $base.Split('.')
+    return @{ Current = $current; Tags = $tags; Last = $last; Suggested = "$($parts[0]).$($parts[1]).$([int]$parts[2] + 1)" }
+}
+
+# What changed since the last release, as the commits name it, to help her write the changelog.
+function Get-Changes($versions) {
+    $since = if ($versions.Last) { "v$($versions.Last)..HEAD" } else { 'HEAD' }
+    return @((Invoke-Git @('log', '--no-merges', '--format=%s', $since)).Out -split "`n" | Where-Object { $_ } | Select-Object -First 60)
 }
 
 # ---- GitHub --------------------------------------------------------------------------------
@@ -213,7 +213,7 @@ function Get-GitHub {
         $token = (& gh auth token 2>$null | Select-Object -First 1)
         $ErrorActionPreference = 'Stop'
     }
-    if (-not $token) { Stop-Release "GitHub does not know you on this computer yet. In HyCreator, click $branch at the top, then Push, and sign in. Then double-click Release.cmd again." }
+    if (-not $token) { Stop-Release "GitHub does not know you on this computer yet. In HyCreator, click $branch at the top, then Push, and sign in. Then click Release again." }
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     return @{ Api = "https://api.github.com/repos/$owner/$name"; Upload = "https://uploads.github.com/repos/$owner/$name"
               Headers = @{ Authorization = "Bearer $token"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' } }
@@ -221,10 +221,24 @@ function Get-GitHub {
 
 # ---- the release ---------------------------------------------------------------------------
 
-Write-Host 'Making a release of The Armory.'
 $branch = (Invoke-Git @('rev-parse', '--abbrev-ref', 'HEAD')).Out
-if ($branch -eq $main -or $branch -eq 'HEAD' -or -not $branch) { Stop-Release "Releases are made from your branch. In HyCreator, click $(if ($branch) { $branch } else { 'the git button' }) at the top, then Branches..., then lady. Then double-click Release.cmd again." }
-if ((Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Out) { Stop-Release "Some of your changes are not committed. In HyCreator, click $branch at the top, then Commit changes... and commit them. Then double-click Release.cmd again." }
+
+if ($Info) {
+    # The tags others pushed are fetched first. Offline, the ones this copy has are used.
+    [void](Invoke-Git @('fetch', '--tags', 'origin'))
+    $versions = Get-Versions
+    $form = [ordered]@{
+        branch = $branch; current = $versions.Current; last = $versions.Last; suggested = $versions.Suggested
+        released = @($versions.Tags); changes = @(Get-Changes $versions)
+        uncommitted = [bool](Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Out
+    }
+    [IO.File]::WriteAllText($Info, ($form | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding $false))
+    exit 0
+}
+
+Write-Host 'Making a release of The Armory.'
+if ($branch -eq $main -or $branch -eq 'HEAD' -or -not $branch) { Stop-Release "Releases are made from your branch. In HyCreator, click $(if ($branch) { $branch } else { 'the git button' }) at the top, then Branches..., then lady. Then click Release again." }
+if ((Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Out) { Stop-Release "Some of your changes are not committed. In HyCreator, click $branch at the top, then Commit changes... and commit them. Then click Release again." }
 
 if (-not $NoGitHub) {
     & (Join-Path $PSScriptRoot 'update.ps1')
@@ -232,42 +246,25 @@ if (-not $NoGitHub) {
 }
 [void](Invoke-Git @('fetch', '--tags', 'origin'))
 
-$current = Read-ModVersion
-$tags = (Invoke-Git @('tag', '--list', 'v*')).Out -split "`n" | Where-Object { $_ -match '^v[0-9]+\.[0-9]+\.[0-9]+$' } | ForEach-Object { $_.Substring(1) }
-$last = $tags | Sort-Object { [version]$_ } | Select-Object -Last 1
-$base = if ($last -and (Compare-Version $last $current) -ge 0) { $last } else { $current }
-$parts = $base.Split('.'); $suggested = "$($parts[0]).$($parts[1]).$([int]$parts[2] + 1)"
-if (-not $Version) {
-    Write-Host ''
-    Write-Host "The last release is $(if ($last) { $last } else { 'none yet' })."
-    $Version = Read-Host "Version of this release (press Enter for $suggested)"
-    if (-not $Version.Trim()) { $Version = $suggested }
-}
+$versions = Get-Versions
+$current = $versions.Current
+$tags = $versions.Tags
+$last = $versions.Last
+$suggested = $versions.Suggested
+# An empty version in the form means the one it suggests.
+if (-not $Version.Trim()) { $Version = $suggested }
 $Version = $Version.Trim().TrimStart('v')
-$again = 'Double-click Release.cmd and type a version like ' + $suggested + '.'
+$again = "Type a version like $suggested, then click Release again."
 if ($Version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') { Stop-Release "$Version is not a version number. $again" }
 if ($last -and (Compare-Version $Version $last) -le 0) { Stop-Release "$Version is not newer than the last release, $last. $again" }
 if ($tags -contains $Version) { Stop-Release "$Version is already released. $again" }
+if (-not $Choice) { Stop-Release 'Release stopped: choose a draft, a draft with a message, or publish.' }
 
-if (-not $Choice) {
-    Write-Host ''
-    Write-Host 'What should happen with this release?'
-    Write-Host '  1  A draft. Players cannot see it yet.'
-    Write-Host '  2  A draft with a message for Larsonix, for example an effect you want added.'
-    Write-Host '  3  Publish it. Players can download it right away.'
-    $pick = Read-Host 'Type 1, 2 or 3, then press Enter'
-    $Choice = @{ '1' = 'draft'; '2' = 'message'; '3' = 'publish' }[$pick.Trim()]
-    if (-not $Choice) { Stop-Release 'Release stopped: 1, 2 or 3 was not typed.' }
-}
-
-$since = if ($last) { "v$last..HEAD" } else { 'HEAD' }
-$changes = (Invoke-Git @('log', '--no-merges', '--format=%s', $since)).Out -split "`n" | Where-Object { $_ } | Select-Object -First 60
-$reminder = "Write the changelog players will read in the box below, then click Done.`r`n`r`nWhat changed since the last release, to help you remember. Players never see this list:`r`n" + (($changes | ForEach-Object { "  - $_" }) -join "`r`n")
-$notes = Read-Written "changelog of $Version" $reminder $NotesFile
+$notes = Read-Written $NotesFile
 if (-not $notes) { Stop-Release 'Release stopped: the changelog was empty.' }
 $message = ''
 if ($Choice -eq 'message') {
-    $message = Read-Written 'message for Larsonix' "What should Larsonix do with this release? Write it below, then click Done.`r`nOnly the mod's team can read it." $MessageFile
+    $message = Read-Written $MessageFile
     if (-not $message) { Stop-Release 'Release stopped: the message was empty.' }
 }
 

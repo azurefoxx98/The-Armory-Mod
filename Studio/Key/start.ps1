@@ -9,8 +9,8 @@
 #   4. Rewrites the paths kept in plain files for the letter in use.
 #   5. Looks for Hytale on this computer and copies its files to the key, in the background, when the
 #      key has none or older ones.
-#   6. Shows the window and starts HyCreator. Its buttons start the programs and her own Update, Check
-#      and Release, unchanged, with the key's Git.
+#   6. Shows the window and starts HyCreator. Its buttons start the programs and Get updates, with the
+#      key's Git. Her Update, Check and Release are buttons of The Armory panel inside HyCreator.
 #   7. Done: closes the programs normally, sends her committed work, removes the letter and ejects the key.
 param(
     # The key's folder as this computer sees it.
@@ -208,8 +208,10 @@ $buttons.Blockbench = New-Button 'Blockbench' 190 40 { Invoke-Safely { Open-Prog
 $buttons.PhotoCraft = New-Button 'PhotoCraft' 360 40 { Invoke-Safely { Open-Program 'PhotoCraft' } }
 New-Heading 'Your work' 96
 $buttons.Updates = New-Button 'Get updates' 20 122 { Invoke-Safely { Open-Console (Join-Path $scripts 'programs.ps1') @('-Root', $root, '-GetUpdates') } }
-$buttons.Check = New-Button 'Check' 190 122 { Invoke-Safely { Open-Console (Join-Path $repo 'Studio\Check.cmd') @() } }
-$buttons.Release = New-Button 'Release' 360 122 { Invoke-Safely { Open-Console (Join-Path $repo 'Studio\Release.cmd') @() } }
+$where = New-Object Windows.Forms.Label
+$where.Text = 'Check and Release are in HyCreator: click the hammer at the top.'
+$where.Left = 190; $where.Top = 122; $where.Width = 330; $where.Height = 40; $where.TextAlign = 'MiddleLeft'
+$form.Controls.Add($where)
 
 $status = New-Object Windows.Forms.Label
 $status.Left = 20; $status.Top = 180; $status.Width = 505; $status.Height = 200
@@ -256,7 +258,7 @@ function Get-GameLines {
     }
     if (-not $script:hasGame -and -not ($script:copy -and -not $script:copy.State.Finished -and -not $script:copy.State.Error)) {
         $lines += "Hytale's files are not on this key yet. Plug it into your own computer once, with Hytale installed, and it copies them."
-        $lines += 'Until then HyCreator shows no game previews, and Check and Release wait.'
+        $lines += 'Until then HyCreator shows no game previews, and the checks and releases wait.'
     }
     return $lines
 }
@@ -283,8 +285,6 @@ function Update-Window {
         $script:said = $text
         try { Write-KeyText $stateFile $text } catch { }
     }
-    $buttons.Check.Enabled = $script:hasGame
-    $buttons.Release.Enabled = $script:hasGame
 }
 
 # ---- Done ------------------------------------------------------------------------------------

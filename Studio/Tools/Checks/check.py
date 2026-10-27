@@ -474,7 +474,11 @@ def owner_of_card(check_id: str, e: dict) -> str:
         return "us"
     if GAME_DIR not in sys.path:
         sys.path.insert(0, GAME_DIR)
-    import owners
+    try:
+        import owners
+    except ImportError:
+        # A copy without the game check's folder (main before the checks reach it) still shows every card, as hers.
+        return "mod"
     item = (e.get("items") or [{}])[0]
     path = "Server/" + item["open"] if item.get("open") else ""
     return "us" if owners.owner_of(ident=item.get("label", ""), file=path, gate=check_id, line=e.get("line", ""))[0] == "us" \

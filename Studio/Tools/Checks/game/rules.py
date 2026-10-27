@@ -54,7 +54,14 @@ def defining_files(findings: list[Finding], pair: Pair) -> list[Finding]:
 KIND_MIN_GROUP = 20
 KIND_PRESENT_SHARE = 0.95
 KIND_DEFAULT_SHARE = 0.05
-KIND_EFFECTS = {('BlockType', 'ParticleColor', 'unset'): 'the world map draws it white', ('BlockType', 'BlockParticleSetId', 'unset'): 'nothing stepping on it or hitting it raises particles', ('BlockType', 'BlockSoundSetId', 'default'): 'it makes no sound when placed or broken', ('Item', 'Categories', 'unset'): 'it shows in no tab of the creative inventory', ('Item', 'PlayerAnimationsId', 'default'): "a player holds it in a pose the game's own items of that use never have"}
+KIND_EFFECTS = {('BlockType', 'ParticleColor', 'unset'): 'the world map draws it white', ('BlockType', 'BlockParticleSetId', 'unset'): 'nothing stepping on it or hitting it raises particles', ('BlockType', 'BlockSoundSetId', 'default'): 'it makes no sound when placed or broken', ('Item', 'Categories', 'unset'): 'it shows in no tab of the creative inventory', ('Item', 'PlayerAnimationsId', 'default'): "a player holds it in a pose the game's own items of that use never have", ('ResourceType', 'Icon', 'unset'): 'the crafting window shows an empty square for it'}
+
+def _shown_ingredient(pair: Pair) -> set[str]:
+    out: set[str] = set()
+    for r in pair.modded.store('CraftingRecipe').values():
+        if any((isinstance(b, dict) and b.get('Type') == 'Crafting' for b in r.asset.get('BenchRequirement') or [])):
+            out |= {i['ResourceTypeId'] for i in r.asset.get('Input') or [] if isinstance(i, dict) and i.get('ResourceTypeId')}
+    return out
 
 def top_present(asset: dict) -> set[str]:
 
@@ -97,6 +104,8 @@ def like_its_kind(pair: Pair) -> list[Finding]:
         for a in vanilla.values():
             for c in _contexts(vrefs, kind, a.id):
                 groups.setdefault(c, []).append(a)
+        shown = _shown_ingredient(pair) if kind == 'ResourceType' else set()
+        effect = lambda p, form, ident: None if (kind, p) == ('ResourceType', 'Icon') and ident not in shown else KIND_EFFECTS.get((kind, p, form))
         defaults = pair.vanilla.defaults(kind)
         default_leaves = {p: v for p, v in defaults.items() if not isinstance(v, (dict, list))}
         stats_cache: dict[tuple, tuple[dict, dict]] = {}
@@ -138,11 +147,11 @@ def like_its_kind(pair: Pair) -> list[Finding]:
             for p, why in sorted(missing.items()):
                 if len(why) != len(ctxs):
                     continue
-                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} sets no {p}, which the game's own {kind} assets of the same use set: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'unset', 'effect': KIND_EFFECTS.get((kind, p, 'unset'))}))
+                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} sets no {p}, which the game's own {kind} assets of the same use set: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'unset', 'effect': effect(p, 'unset', a.id)}))
             for p, why in sorted(defaulted.items()):
                 if len(why) != len(ctxs):
                     continue
-                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} leaves {p} at the engine's default {default_leaves[p]!r}, which the game's own {kind} assets of the same use almost never hold: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'default', 'effect': KIND_EFFECTS.get((kind, p, 'default'))}))
+                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} leaves {p} at the engine's default {default_leaves[p]!r}, which the game's own {kind} assets of the same use almost never hold: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'default', 'effect': effect(p, 'default', a.id)}))
     return findings
 SIBLING_MIN_FAMILY = 4
 SIBLING_PRESENT_SHARE = 0.9

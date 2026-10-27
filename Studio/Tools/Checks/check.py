@@ -584,6 +584,8 @@ GAME_WORDS = {
     ("names-resolve", "key"): ("Its {field} names {name}, which does not exist, so that part does nothing in game.",
                                "Open it and pick a name HyCreator suggests for {name}."),
     ("like-its-kind", "unset"): ("It has no {field}, so {effect}.", "Open it and fill in {field}."),
+    ("like-its-kind", "unset", "Icon"): ("It has no Icon, so {effect}.",
+                                         "Open it and set its Icon to the icon of the plain item of its set."),
     ("like-its-kind", "default"): ("It keeps the base {field}, so {effect}.",
                                    "Open it and set {field} to a value of its own."),
     ("like-its-siblings", None): ("It has no {field}, which the other items of its set have.",

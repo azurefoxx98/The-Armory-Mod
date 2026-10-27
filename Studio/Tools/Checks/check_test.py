@@ -429,6 +429,30 @@ def words(expect) -> None:
         {"says": "new and small", "do": "x", "items": [{"label": "a"}], "new": True}]}]})
     expect("what her work added comes first, whatever its size", [g["says"] for g in order] == ["new and small", "old and big"],
            [g["says"] for g in order])
+    # "Normal for me": one entry hides one problem on one item, never the same problem on another item.
+    reach = check.for_lady("familycheck", reach_line)
+    reach["key"], reach["owner"] = "familycheck|" + reach_line, "mod"
+    stat = {"says": "Uses a stat", "do": "x", "items": [{"label": "Praetorian_Boots"}], "line": "s", "key": "game|stat",
+            "owner": "us"}
+    result = {"finished": "2026-10-27T18:00:00", "error": None,
+              "checks": [{"id": "familycheck", "status": "fail", "lady": [reach]}, {"id": "game", "status": "fail", "lady": [stat]}]}
+    marks = [{"key": reach["key"], "item": "Praetorian_Boots", "by": "Lady"},
+             {"key": "familycheck|gone", "item": "Old_Item", "by": "Lady"}]
+    result["normal"] = check.apply_normal(result["checks"], marks)
+    mine = check.groups(result, "mod")
+    expect("a problem judged normal on one item still shows on the other item",
+           len(mine) == 1 and mine[0]["items"] == ["Praetorian_Boots_Gray"], mine)
+    expect("a mark matching nothing any more is named, and the hidden ones are counted",
+           [e["item"] for e in result["normal"]["stale"]] == ["Old_Item"] and result["normal"]["hidden"] == 1, result["normal"])
+    _, ok = check.summary(result)
+    expect("her own open problem fails the run", not ok)
+    marks.append({"key": reach["key"], "item": "Praetorian_Boots_Gray", "by": "Lady"})
+    result["normal"] = check.apply_normal(result["checks"], marks)
+    text, ok = check.summary(result)
+    expect("Larsonix's problems never fail her run, and the window names them as his",
+           ok and "Larsonix's problems" in text and "Uses a stat" in text and "Hidden as normal for you: 2" in text, text)
+    result["checks"].append({"id": "recipecheck", "status": "error", "lady": []})
+    expect("a check that could not run still fails the run", not check.summary(result)[1])
     opened = check.game_words(GAME_SAMPLES[0][0])
     expect("a game finding about an item opens its file",
            opened["items"] == [{"label": "Praetorian_Boots", "open": "Item/Items/Praetorian_Boots.json"}], opened["items"])

@@ -38,6 +38,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 RESOURCES = os.path.join(REPO, "src", "main", "resources")
 RESULT = os.path.join(HERE, "last-check.json")
+# The single problems she judged normal for her work, written by the panel's "Normal for me" button and
+# committed with her work, so we see her judgments too. One entry hides one problem on one item.
+NORMAL = os.path.join(REPO, "Studio", "Checks", "normal.json")
 RUNNING = os.path.join(HERE, "last-check.running.json")
 # 2 adds "lady" to each check: its problems as she reads them.
 FORMAT = 2
@@ -854,6 +857,8 @@ def check_game(own: list[str] | None, starts: list[str], why: str, game: str) ->
     for f in found:
         e = game_words(f)
         e["new"] = compare and finding_key(f) not in base_keys
+        # What "Normal for me" remembers: the finding itself, never its sentence, whose counts move with the game.
+        e["key"] = "game|" + finding_key(f)
         d = f.get("detail") or {}
         # What it is about, so a line another check states about the same thing can be folded into it.
         e["about"] = {"rule": f["rule"], "id": f["id"], "form": d.get("form"), "name": d.get("name")}
@@ -923,6 +928,8 @@ def run_all() -> dict:
         for c in result["checks"]:
             for e in c.get("lady") or []:
                 e["owner"] = owner_of_card(c["id"], e)
+                e.setdefault("key", c["id"] + "|" + e["line"])
+        result["normal"] = apply_normal(result["checks"], read_normal())
     result["finished"] = now()
     result["seconds"] = round(time.monotonic() - clock, 1)
     return result
@@ -936,16 +943,48 @@ def write_json(path: str, value: dict) -> None:
     os.replace(temp, path)
 
 
-def groups(result: dict) -> list[dict]:
-    """Every problem of every check, the ones that say the same thing together, the largest first."""
+def read_normal() -> list[dict]:
+    """Her "Normal for me" entries, or none when the file is missing or unreadable (a broken file hides nothing)."""
+    try:
+        with open(NORMAL, encoding="utf-8-sig") as fh:
+            entries = json.load(fh).get("normal")
+    except (OSError, ValueError, AttributeError):
+        return []
+    return [e for e in entries or [] if isinstance(e, dict) and isinstance(e.get("key"), str)]
+
+
+def apply_normal(checks: list[dict], entries: list[dict]) -> dict:
+    """Marks each problem she judged normal as hidden: one entry is one problem on one item, never the same problem on
+    another item, never another problem on the same item. Returns how many are hidden, and the entries that match
+    nothing any more (the problem was fixed or its item renamed), which she can remove."""
+    wanted = {e["key"] + "|" + str(e.get("item") or "") for e in entries}
+    seen = set()
+    for c in checks:
+        for e in c.get("lady") or []:
+            labels = [i["label"] for i in e["items"]] or [""]
+            e["hidden"] = [lab for lab in labels if e["key"] + "|" + lab in wanted]
+            seen |= {e["key"] + "|" + lab for lab in e["hidden"]}
+    stale = [e for e in entries if e["key"] + "|" + str(e.get("item") or "") not in seen]
+    return {"hidden": len(seen), "stale": stale}
+
+
+def groups(result: dict, owner: str | None = None) -> list[dict]:
+    """Every problem of every check, the ones that say the same thing together, new first, then the largest. With an
+    owner, only that owner's. A problem she judged normal is left out."""
     out: dict[tuple[str, str], dict] = {}
     for c in result["checks"]:
         for e in c.get("lady") or []:
+            if owner and e.get("owner", "mod") != owner:
+                continue
+            hidden = set(e.get("hidden") or [])
+            items = [i for i in e["items"] if i["label"] not in hidden]
+            if (e["items"] and not items) or (not e["items"] and "" in hidden):
+                continue
             g = out.setdefault((e["says"], e["do"]), {"says": e["says"], "do": e["do"], "items": [], "count": 0, "details": [],
                                                       "new": False})
             g["count"] += 1
             g["new"] = g["new"] or bool(e.get("new"))
-            g["items"] += [i["label"] for i in e["items"] if i["label"] not in g["items"]]
+            g["items"] += [i["label"] for i in items if i["label"] not in g["items"]]
             if e.get("detail"):
                 g["details"].append(e["detail"])
     return sorted(out.values(), key=lambda g: (not g["new"], -max(g["count"], len(g["items"]))))
@@ -963,9 +1002,24 @@ def summary(result: dict) -> tuple[str, bool]:
     if result["error"]:
         detail = result.get("error_detail")
         return head + "\n" + result["error"] + (f"\nFor Larsonix: {detail}" if detail else ""), False
-    found = groups(result)
+    found = groups(result, "mod")
+    ours = groups(result, "us")
+    stopped = [c for c in result["checks"] if c.get("status") == "error"]
+    normal = result.get("normal") or {}
+    tail = []
+    if ours:
+        tail += ["", "Larsonix's problems, he fixes these:"] + ["  " + (f"{len(g['items'])} items: " if len(g["items"]) > 1 else
+                                                                         (g["items"][0] + ": " if g["items"] else "")) + g["says"]
+                                                                  for g in ours]
+    if normal.get("hidden"):
+        tail += ["", f"Hidden as normal for you: {normal['hidden']}. The checks panel in HyCreator shows them."]
+    if normal.get("stale"):
+        tail += ["", "Marked normal, but no longer found: " + ", ".join(str(e.get("item") or "") for e in normal["stale"][:10])
+                 + ". Remove them in the checks panel."]
+    # Her own open problems fail the run, and so does a check that could not run. Ours never stop her release.
+    ok = not found and not stopped
     if not found:
-        return head + ": everything is fine.", True
+        return head + ": everything of yours is fine." + "\n".join([""] + tail), ok
     total = len(found)
     lines = [head, f"{total} thing{'s' if total != 1 else ''} to fix.", ""]
     for g in found:
@@ -980,7 +1034,7 @@ def summary(result: dict) -> tuple[str, bool]:
             lines.append("  For Larsonix: " + detail.replace("\n", "\n    "))
         lines.append("")
     lines.append("Everything else is fine.")
-    return "\n".join(lines).rstrip(), False
+    return "\n".join(lines + tail).rstrip(), False
 
 
 def spawn() -> int:

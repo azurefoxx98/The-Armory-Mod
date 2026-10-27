@@ -1,0 +1,11 @@
+{
+  "Group": "Checks",
+  "Name": "SnapshotReader",
+  "Version": "0.1.0",
+  "Description": "Writes out every asset the engine loaded, as the engine holds it, then stops the server. For checks only, never for play.",
+  "Main": "checks.SnapshotReader",
+  "ServerVersion": "*",
+  "OptionalDependencies": {
+    "LadyPaladra:TheArmory": "*"
+  }
+}

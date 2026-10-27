@@ -7,8 +7,10 @@ notice when something is wrong. Nothing is ever blocked: a commit and a push go 
 the checks say, and the mod's own review runs the same checks again before anything is merged.
 
 Six checks are the mod's own gates, copied here by the tool that keeps their code identical to
-the originals. Three more look at this branch's own work: that it is not main, that no language
-file lost names, and that no file the mod's tools generate was changed by hand.
+the originals. Four more look at this branch's own work: that it is not main, that no language
+file lost names, that no file the mod's tools generate was changed by hand, and what her work
+changed in the game itself (the game check, in game/: the game's own server loads her work
+exactly as her game does, and only what is new since her branch started is shown).
 
 The gates print for us, so their words never change here. Every line they print is translated
 below into what Lady reads: what is wrong in her words, and the one thing to change. Both places
@@ -560,6 +562,200 @@ def check_generated(own: list[str] | None, starts: list[str], why: str) -> dict:
     return {"status": "fail" if problems else "pass", "problems": problems, "lady": lady, "output_tail": []}
 
 
+# ---- the game check: her work as the game itself loads it ------------------------------------------
+#
+# The game's own server is booted over her work exactly as her game loads it (the code from
+# Studio/Tools/TheArmory-code.jar, her files from src/main/resources), and every item, effect and recipe
+# is written down as the game holds it. The rules in game/rules.py compare that with vanilla and with
+# the other items of each set. The same is done once for the commit her branch started from, and she is
+# shown only what her own work changed. A result is kept per starting commit, so it is computed once.
+
+GAME_DIR = os.path.join(HERE, "game")
+CODE_JAR = os.path.join(REPO, "Studio", "Tools", "TheArmory-code.jar")
+WORK = os.path.join(os.environ.get("LOCALAPPDATA", ""), "TheArmory", "Checks")
+
+# What she reads for each kind of finding: what is wrong in her words, then the one thing to do. A
+# field name is the one she types in HyCreator. {name}, {field} and the rest come from the finding.
+LANGUAGES = ("Open Languages, en-US, server. In the empty row at the bottom, type its name key and its English name, "
+             "click +, then Save.")
+GAME_WORDS = {
+    ("names-resolve", "value"): ("Its {field} names {name}, which does not exist, so that part does nothing in game.",
+                                 "Open it and pick a name HyCreator suggests for {name}."),
+    ("names-resolve", "key"): ("Its {field} names {name}, which does not exist, so that part does nothing in game.",
+                               "Open it and pick a name HyCreator suggests for {name}."),
+    ("like-its-kind", "unset"): ("It has no {field}, which vanilla ones used the same way all have.",
+                                 "Open it and fill in {field}."),
+    ("like-its-kind", "default"): ("It keeps the base {field}, which vanilla ones used the same way almost never keep.",
+                                   "Open it and set {field} to a value of its own."),
+    ("like-its-siblings", None): ("It has no {field}, which the other items of its set have.",
+                                  "Open it and set {field} like the others of its set."),
+    ("like-its-siblings", "value"): ("Its {field} is {value}, where the other items of its set all have {others}.",
+                                     "Open it and check its {field}."),
+    ("reachable", "item"): ("No player can get it: nothing crafts it, drops it or sells it.",
+                            "Give it a recipe at a bench, or add it to a chest loot table."),
+    ("reachable", "recipe"): ("Its recipe can never be crafted, so nobody can make it at a bench.",
+                              RECIPE + " and check each ingredient and the bench."),
+    ("names-and-pictures", "no text"): ("It has no English name, so players see a raw name.", LANGUAGES),
+    ("names-and-pictures", "slot word"): ("It is worn on the {slot}, but its name says {word}.",
+                                          "Fix its English name in Languages, en-US, server."),
+    ("names-and-pictures", "shared"): ("It shows the same {field} as items that look different.",
+                                       "Give it a {field} of its own."),
+    ("common-files", "different"): ("This file has the same name as a vanilla file, so it replaces that file "
+                                    "everywhere in the game.", "Rename your file, unless that is what you want."),
+    ("common-files", "identical"): ("This file is a copy of a vanilla file with the same name.",
+                                    "Delete your copy, the vanilla file is used anyway."),
+    ("common-files", "game"): ("This file is an exact copy of {twin}.", "Use {twin} instead, and delete this copy."),
+    ("common-files", "mod"): ("This file is an exact copy of {twin}.", "Use {twin} instead, and delete this copy."),
+    ("all-loaded", "not loaded"): ("Hytale did not load this file, so it is missing in game.",
+                                   "Read the other messages about this file: they say why."),
+    ("all-loaded", "none loaded"): ("Hytale loaded none of your work, so the whole mod is missing in game.", SEND),
+    ("server-says", "refused"): ("Hytale refuses to start with your work, because some files cannot load.",
+                                 "Fix each file listed here. Each has its own message in this panel."),
+    ("server-says", "failed to load"): ("Hytale cannot load some of your files, so they are missing in game.",
+                                        "Fix each file listed here. Each has its own message in this panel."),
+}
+SERVER_SAYS = [
+    (re.compile(r"^Unused key: (?P<key>\S+)$"), "Hytale ignores its field {key}, so it does nothing.",
+     "Check the spelling of {key}, or remove it."),
+    (re.compile(r"^Asset '(?P<name>[^']+)' of type \S+ doesn't exist!$"),
+     "It names {name}, which does not exist, so Hytale cannot load this file.",
+     "Open it and pick a name HyCreator suggests in place of {name}."),
+    (re.compile(r"^\[LOC\] Key '(?P<key>[^']+)' does not exist in server\.lang!$"),
+     "It uses the name {key}, which has no English text, so players see a raw name.", LANGUAGES),
+]
+
+
+def game_words(f: dict) -> dict:
+    """One finding of the game check as Lady reads it, in the same shape as the gates' lines."""
+    d = f.get("detail") or {}
+    fields = {k: (", ".join(map(str, v)) if isinstance(v, list) else v) for k, v in d.items()}
+    form = d.get("form")
+    words = GAME_WORDS.get((f["rule"], form)) or GAME_WORDS.get((f["rule"], None))
+    if f["rule"] == "server-says" and form in ("warning", "error"):
+        for pattern, says, do in SERVER_SAYS:
+            m = pattern.match(d.get("field") or "")
+            if m:
+                words = (says, do)
+                fields.update(m.groupdict())
+                break
+        else:
+            words = None
+    path = f.get("file") or ""
+    items = [{"label": f["id"], "open": path[len("/Server/"):]}] if path.startswith("/Server/") and path.endswith(".json") \
+        else ([{"label": f["id"]}] if f["kind"] not in ("Server", "ServerLog", "ServerFinding") else [])
+    if f["rule"] == "server-says" and form in ("refused", "failed to load"):
+        items = [{"label": i} for i in d.get("files") or []]
+    if not words:
+        return {"says": "Hytale found something the checks cannot explain yet.", "do": SEND, "items": items,
+                "line": f["fact"], "known": False, "detail": f["fact"]}
+    try:
+        says, do = (w.format(**fields) for w in words)
+    except (KeyError, IndexError):
+        return {"says": "Hytale found something the checks cannot explain yet.", "do": SEND, "items": items,
+                "line": f["fact"], "known": False, "detail": f["fact"]}
+    return {"says": says, "do": do, "items": items, "line": f["fact"], "known": True}
+
+
+def finding_key(f: dict) -> str:
+    d = f.get("detail") or {}
+    return "|".join(str(x) for x in (f["rule"], f["kind"], f["id"], d.get("field"), d.get("form"), d.get("name"),
+                                      d.get("word")))
+
+
+def run_snapshot(out: str, game: str, packs: list[str], jar: str | None) -> tuple[bool, str]:
+    cmd = [sys.executable, os.path.join(GAME_DIR, "snapshot.py"), "--out", out, "--game", game]
+    if jar:
+        cmd += ["--mod", jar]
+    for p in packs:
+        cmd += ["--pack", p]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1200,
+                           stdin=subprocess.DEVNULL, creationflags=NO_WINDOW,
+                           env=dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1"))
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return False, str(exc)
+    return r.returncode == 0, (r.stdout + r.stderr).strip()
+
+
+def game_findings(vanilla: str, modded: str) -> list[dict]:
+    if GAME_DIR not in sys.path:
+        sys.path.insert(0, GAME_DIR)
+    import model
+    import rules
+    pair = model.Pair(model.Snapshot(vanilla), model.Snapshot(modded))
+    out = []
+    for rule in rules.RULES:
+        for f in rule.run(pair):
+            d = dict(f.detail)
+            # Only her mod's own: the engine's own loading order and the showcase world are not hers.
+            if d.get("owner") or any(re.search(p, f.id) or re.search(p, f.file or "") for p, _ in MADE_BY_TOOL):
+                continue
+            out.append({"rule": f.rule, "kind": f.kind, "id": f.id, "file": f.file, "fact": f.fact, "detail": d})
+    return out
+
+
+def check_game(own: list[str] | None, starts: list[str], why: str, game: str) -> dict:
+    """What her work changed, as the game loads it: findings present now and absent where her branch started."""
+    if own is None:
+        return {"status": "error", "problems": [], "output_tail": [why]}
+    changed = bool(git("status", "--porcelain", "--", "src/main/resources"))
+    if not own and not changed:
+        return {"status": "pass", "problems": [], "output_tail": []}
+    if not os.path.isfile(os.path.join(GAME_DIR, "snapshot.py")) or not os.path.isfile(CODE_JAR):
+        return {"status": "error", "problems": [], "output_tail": ["the game check's files are missing"]}
+    sys.path.insert(0, GAME_DIR)
+    import snapshot
+    version = snapshot.read_version(os.path.join(game, "Server", "HytaleServer.jar")) or "unknown"
+    os.makedirs(WORK, exist_ok=True)
+    vanilla = os.path.join(WORK, f"vanilla-{version}")
+    if not os.path.isfile(os.path.join(vanilla, "run.json")):
+        ok, text = run_snapshot(vanilla, game, [], None)
+        if not ok:
+            return {"status": "error", "problems": [], "output_tail": text.splitlines()[-6:]}
+    # What her branch started from, computed once per starting commit, game version and rules.
+    rules_id = git("hash-object", os.path.join(GAME_DIR, "rules.py")) or "?"
+    base_keys: set[str] = set()
+    for start in starts:
+        cache = os.path.join(WORK, f"base-{start[:12]}-{version}-{rules_id[:12]}.json")
+        if not os.path.isfile(cache):
+            keys = base_findings(start, game, vanilla)
+            if keys is None:
+                return {"status": "error", "problems": [], "output_tail": [f"the start {start[:12]} could not be read"]}
+            write_json(cache, {"keys": sorted(keys)})
+        with open(cache, encoding="utf-8") as fh:
+            base_keys |= set(json.load(fh)["keys"])
+    now = os.path.join(WORK, "now")
+    ok, text = run_snapshot(now, game, [RESOURCES], CODE_JAR)
+    if not ok:
+        return {"status": "error", "problems": [], "output_tail": text.splitlines()[-6:]}
+    new = [f for f in game_findings(vanilla, now) if finding_key(f) not in base_keys]
+    lady = [game_words(f) for f in new]
+    return {"status": "fail" if new else "pass", "problems": [f["fact"] for f in new], "lady": lady, "output_tail": []}
+
+
+def base_findings(start: str, game: str, vanilla: str) -> set[str] | None:
+    """The findings at a commit: its files and its code jar, booted like her own work."""
+    import io
+    import tarfile
+    import tempfile
+    with tempfile.TemporaryDirectory(dir=WORK) as tmp:
+        # Read from git's output, never from a file git writes: the Python a Windows store installs keeps a folder
+        # it creates under AppData to itself, and git cannot see it.
+        r = subprocess.run(["git", "-C", REPO, "archive", "--format=tar", start, "src/main/resources",
+                            "Studio/Tools/TheArmory-code.jar"], capture_output=True, stdin=subprocess.DEVNULL,
+                           creationflags=NO_WINDOW)
+        if r.returncode != 0:
+            return None
+        with tarfile.open(fileobj=io.BytesIO(r.stdout)) as tar:
+            tar.extractall(tmp, filter="data")
+        snap = os.path.join(tmp, "snapshot")
+        ok, _ = run_snapshot(snap, game, [os.path.join(tmp, "src", "main", "resources")],
+                             os.path.join(tmp, "Studio", "Tools", "TheArmory-code.jar"))
+        if not ok:
+            return None
+        return {finding_key(f) for f in game_findings(vanilla, snap)}
+
+
 def run_all() -> dict:
     started = now()
     clock = time.monotonic()
@@ -587,6 +783,7 @@ def run_all() -> dict:
             ("branch", "Your branch", check_branch()),
             ("languages", "Language files", check_languages(own, starts, why)),
             ("generated", "Files our tools make", check_generated(own, starts, why)),
+            ("game", "Your work in the game", check_game(own, starts, why, game)),
         ):
             entry = {"id": name, "title": title, "seconds": None}
             entry.update(outcome)

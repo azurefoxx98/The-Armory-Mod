@@ -1354,7 +1354,8 @@ function ChecksPanel() {
     view.errorDetail ? h('div', { style: { fontSize: 11.5, color: LOOK.dim } }, 'For Larsonix: ' + view.errorDetail) : null)];
 
   const small = { padding: '0 8px', fontSize: 11.5 };
-  const normalButton = (key, item, says) => h('button', { className: 'btn slim', style: { ...small, color: LOOK.dim },
+  // The button keeps its one line; a long item name gives way instead, cut short with its full name on hover.
+  const normalButton = (key, item, says) => h('button', { className: 'btn slim', style: { ...small, color: LOOK.dim, flexShrink: 0, whiteSpace: 'nowrap' },
     title: 'Hide this problem on ' + (item || 'this card') + ' only. It stays on every other item, and you can show it again below.',
     onClick: () => markNormal(key, item, says) }, 'Normal for me');
   for (const g of view.groups) {
@@ -1368,7 +1369,8 @@ function ChecksPanel() {
       shown.length ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, marginTop: 6 } },
         // The item's name on the left, its Normal for me on the right edge of the card.
         shown.map((s, i) => h('div', { key: i, style: { display: 'flex', gap: 4, justifyContent: 'space-between', alignItems: 'center' } },
-          h('button', { className: 'btn slim', style: small, title: 'Open ' + s.label, onClick: () => openSubject(s) }, s.label),
+          h('button', { className: 'btn slim', style: { ...small, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+            title: 'Open ' + s.label, onClick: () => openSubject(s) }, s.label),
           s.problem ? normalButton(s.problem, s.label, g.says) : null)),
         g.items.length > 12 ? h('button', { className: 'btn slim', style: { ...small, color: LOOK.accent, alignSelf: 'flex-start' }, onClick: () => setOpened({ ...opened, [g.key]: !all }) },
           all ? 'Show fewer' : '+' + (g.items.length - 12) + ' more') : null) : null,

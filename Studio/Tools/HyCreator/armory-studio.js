@@ -97,11 +97,17 @@ export function pieceSlot(name) {
   return null;
 }
 
+// Words a texture's name uses for no colour at all: Head_Texture.png names a helmet's picture, not
+// a colour called Texture.
+const NO_COLOUR_WORDS = new Set(['texture', 'textures', 'tex', 'base', 'default', 'main', 'diffuse', 'albedo', 'color', 'colour', 'skin', 'map']);
+
 // The colour a sheet stands for, as a version's id spells it. A leading piece word is not part
-// of the colour: Helm_Blue.png is the colour Blue of a helmet.
+// of the colour: Helm_Blue.png is the colour Blue of a helmet. A name with no colour word left
+// (Head_Texture.png) stands for no colour, and null says so: the page never invents a name from it.
 export function sheetColour(sheet) {
   const words = stem(sheet).split(/[\s_]+/).filter(Boolean);
   if (words.length > 1 && pieceSlot(words[0])) words.shift();
+  if (!words.length || words.every(w => NO_COLOUR_WORDS.has(w.toLowerCase()))) return null;
   return colourKey(words.join('_'));
 }
 
@@ -262,6 +268,7 @@ export function makeReader(io) {
 // Two ways the mod spells a version's id. A: Atlantean_Chest_Red_Alt. B: Atlantean_Chest_Alt_Red.
 function idFor(set, sheet, shape, order) {
   if (sheet === set.defaultSheet && shape === set.baseShape) return set.defaultId;
+  if (sheet !== set.defaultSheet && sheetColour(sheet) === null) return null;
   const colour = sheet === set.defaultSheet ? '' : '_' + sheetColour(sheet);
   const suffix = shape === set.baseShape ? '' : stem(shape).slice(stem(set.baseShape).length);
   return set.base + (order === 'A' ? colour + suffix : suffix + colour);
@@ -519,7 +526,7 @@ export async function analyse(reader, openRel, options = {}) {
   if (gameDefault && members.length) {
     const prefixes = members.map(m => {
       const colour = sheetColour(m.eff.Texture);
-      return m.id.endsWith('_' + colour) ? m.id.slice(0, -(colour.length + 1)) : null;
+      return colour && m.id.endsWith('_' + colour) ? m.id.slice(0, -(colour.length + 1)) : null;
     });
     base = majority(prefixes) || base;
     setQuality = majority(members.map(m => m.eff.Quality)) ?? setQuality;
@@ -560,7 +567,10 @@ export async function analyse(reader, openRel, options = {}) {
 
   const icons = new Set((await reader.list('../Common/' + ICON_FOLDER, ['png'])).map(common));
   const expected = new Map();
-  for (const sheet of orderedSheets) for (const shape of orderedShapes) expected.set(idFor(set, sheet, shape, set.order), { sheet, shape });
+  for (const sheet of orderedSheets) for (const shape of orderedShapes) {
+    const id = idFor(set, sheet, shape, set.order);
+    if (id) expected.set(id, { sheet, shape });
+  }
 
   // The grid, and every fault in it.
   const cells = new Map();
@@ -586,7 +596,10 @@ export async function analyse(reader, openRel, options = {}) {
       if (alike.length) item.faults.push({ kind: 'shared', text: 'Looks exactly like ' + alike.map(i => i.id).join(', ') + ', on the same slot.', fix: null });
     }
     cell.missing = cell.items.length === 0;
-    cell.clash = cell.missing && index.has(cell.id) ? index.get(cell.id) : null;
+    // A texture whose name says no colour: an item already wearing it keeps its own name, and none
+    // is made from it, since its name would be invented.
+    cell.unnamed = cell.id === null;
+    cell.clash = cell.missing && cell.id && index.has(cell.id) ? index.get(cell.id) : null;
   }
 
   // A light per colour: the one its versions already use, otherwise the default's.
@@ -725,7 +738,7 @@ export function plan(analysis, choice) {
 
   for (const cell of analysis.cells) {
     if (cell.missing) {
-      if (!choice.make.has(cell.id) || cell.clash) continue;
+      if (cell.unnamed || !choice.make.has(cell.id) || cell.clash) continue;
       const doc = { Parent: set.defaultId };
       if (set.defaultQuality !== undefined) doc.Quality = set.defaultQuality;
       doc.Icon = ICON_FOLDER + cell.id + '.png';
@@ -761,7 +774,7 @@ export function defaultChoice(analysis) {
   const fix = new Set();
   if ((analysis.set.inheritors && analysis.set.inheritors.length) || (analysis.set.coOwners && analysis.set.coOwners.length)) return { make, fix, lights: { ...analysis.lights } };
   for (const cell of analysis.cells) {
-    if (cell.missing && analysis.memberCount === 0 && !cell.clash) make.add(cell.id);
+    if (cell.missing && analysis.memberCount === 0 && !cell.clash && !cell.unnamed) make.add(cell.id);
     for (const item of cell.items) for (const f of item.faults) if (f.fix && f.byDefault) fix.add(item.id + '|' + f.kind);
   }
   return { make, fix, lights: { ...analysis.lights } };
@@ -771,47 +784,42 @@ export function defaultChoice(analysis) {
 
 let host = null;
 
-// The game's files behind the workspace. HyCreator 1.3.8's listVanillaByExt answers nothing when
-// the vanilla source is the game's Assets.zip (measured: 0 item files, where its own list behind
-// the workspace holds all 3,964), so the app's list is read when the plugin listing is empty.
-async function vanillaFiles(api) {
-  try {
-    const store = await api.modules.store();
-    const hook = [store.useStudio, store, store.u, store.useStore, store.default].find(s => s && typeof s.getState === 'function');
-    const files = hook && hook.getState().fallback && hook.getState().fallback.files;
-    const list = Array.isArray(files) ? files : files && files.values ? [...files.values()] : [];
-    return list.map(f => typeof f === 'string' ? f : f && f.rel).filter(f => typeof f === 'string');
-  } catch {
-    return [];
-  }
+// The oldest HyCreator the plugin works in. Before 1.3.9, a Gradle mod like this one, whose files sit
+// in src/main/resources, met two faults: the vanilla listing a plugin gets came back empty when the
+// game's Assets.zip is the vanilla source, so the Colors page saw no vanilla item and misread every
+// set built on one, and the file picker's tab for the mod showed 0 files. Measured in 1.3.8 and 1.3.9
+// side by side on the same copy of the mod: 0 against 3,964 vanilla items, 0 against 2,486 textures.
+export const NEEDS_HYCREATOR = '1.3.9';
+
+// Whether the running HyCreator is older than that. Every HyCreator this plugin has met reports its
+// version, so one that cannot be read is a newer way of writing it, never an old app, and is let through.
+export function hyCreatorTooOld(version) {
+  const parts = v => String(v).split(/[.-]/).slice(0, 3).map(n => Number.parseInt(n, 10));
+  const have = parts(version);
+  const need = parts(NEEDS_HYCREATOR);
+  if (!version || have.length < 3 || have.some(Number.isNaN)) return false;
+  for (let i = 0; i < 3; i++) if (have[i] !== need[i]) return have[i] < need[i];
+  return false;
 }
+
+const UPDATE_STEPS = 'Click ⚙ at the top, then Application, then Check for updates...';
 
 // The game's own files, kept between openings of the page: they do not change while HyCreator
 // runs, and reading all of them is what makes the first opening of a game piece's set slow.
 const gameTexts = new Map();
 
 function hyCreatorReader(api) {
-  let vanilla = null;
-  let vanillaSet = null;
+  let gameItems = null;
   let modFiles = null;
-  const gameList = async () => {
-    if (!vanilla) vanilla = await vanillaFiles(api);
-    if (!vanillaSet) vanillaSet = new Set(vanilla);
-    return vanilla;
-  };
   return makeReader({
     list: (prefix, exts) => api.workspace.listByExt(prefix, exts),
-    listVanilla: async (prefix, exts) => {
-      const listed = await api.workspace.listVanillaByExt(prefix, exts);
-      if (listed.length) return listed;
-      return (await gameList()).filter(rel => rel.startsWith(prefix) && exts.includes(rel.slice(rel.lastIndexOf('.') + 1)));
-    },
+    listVanilla: (prefix, exts) => api.workspace.listVanillaByExt(prefix, exts),
     read: async rel => {
       // Only a file on the game's own list that the mod does not hold is kept: a colour the page
       // writes during the session is never mistaken for a game file.
       if (!modFiles) modFiles = new Set(await api.workspace.listByExt('Item/', ['json', 'patch']));
-      await gameList();
-      const game = rel.startsWith('Item/') && !modFiles.has(rel) && vanillaSet.has(rel);
+      if (!gameItems) gameItems = new Set(await api.workspace.listVanillaByExt('Item/', ['json']));
+      const game = rel.startsWith('Item/') && !modFiles.has(rel) && gameItems.has(rel);
       const key = (api.workspace.current() || {}).root + '|' + rel;
       if (game && gameTexts.has(key)) return gameTexts.get(key);
       let text = null;
@@ -845,7 +853,7 @@ async function bakeIcon(api, reader, id) {
   const [models, render, core, store] = await Promise.all([api.modules.models(), api.modules.render(), api.modules.core(), api.modules.store()]);
   const rel = await reader.relOf(id);
   const doc = await reader.effective(id);
-  // The app's state hook is named useStudio in 1.3.8. The other names are guesses for a rename.
+  // The app's state hook is named useStudio in 1.3.8 and 1.3.9. The other names are guesses for a rename.
   const hook = [store.useStudio, store, store.u, store.useStore, store.default].find(s => s && typeof s.getState === 'function');
   if (!hook) throw new Error('this HyCreator version keeps its state where the plugin does not look');
   const state = hook.getState();
@@ -927,6 +935,12 @@ function ColoursPage({ rel }) {
   const load = useCallback(async () => {
     setStatus('Reading the colors...');
     setDetail('');
+    const version = api.host && api.host.version;
+    if (hyCreatorTooOld(version)) {
+      setAnalysis(null);
+      setStatus('The Colors page needs HyCreator ' + NEEDS_HYCREATOR + ' or newer, and you have ' + version + '. ' + UPDATE_STEPS);
+      return;
+    }
     try {
       const result = await analyse(hyCreatorReader(api), rel, { sheetFolder });
       setAnalysis(result);
@@ -957,7 +971,7 @@ function ColoursPage({ rel }) {
     setChoice({ ...choice, fix: next });
   };
   const tickAllMissing = on => {
-    const make = new Set(on ? cells.filter(c => c.missing && !c.clash).map(c => c.id) : []);
+    const make = new Set(on ? cells.filter(c => c.missing && !c.clash && !c.unnamed).map(c => c.id) : []);
     setChoice({ ...choice, make });
   };
   const press = async () => {
@@ -991,7 +1005,7 @@ function ColoursPage({ rel }) {
       }
     }
   }
-  const missing = cells.filter(c => c.missing && !c.clash);
+  const missing = cells.filter(c => c.missing && !c.clash && !c.unnamed);
   const versions = steps.create.filter(f => f.rel.startsWith('Item/Items/') && f.rel.endsWith('.json')).length;
   const fixedFiles = steps.edit.length + steps.create.filter(f => f.rel.endsWith('.patch')).length;
   const parts = [];
@@ -1015,6 +1029,7 @@ function ColoursPage({ rel }) {
   const cellView = cell => {
     if (!cell) return null;
     if (cell.missing) {
+      if (cell.unnamed) return h('span', { style: tagStyle(LOOK.dim) }, 'missing: rename this texture to its color to make it');
       if (cell.clash) return h('span', { title: cell.clash, style: tagStyle(LOOK.danger) }, 'missing, but the name ' + cell.id + ' is taken');
       const on = choice.make.has(cell.id);
       return h('label', { style: { cursor: 'pointer' } },
@@ -1123,50 +1138,131 @@ function MadeByToolPage({ rel }) {
 // own file access, the same route HyCreator uses for its own files.
 export const CHECK_RESULT = 'Studio/Tools/Checks/last-check.json';
 export const CHECK_RUNNING = 'Studio/Tools/Checks/last-check.running.json';
+// The problems she judged normal for her work, one problem on one item each, committed with her work.
+// check.py reads the same file (NORMAL), so its window and her release leave them out too.
+export const CHECK_NORMAL = 'Studio/Checks/normal.json';
 
-// What the panel shows, from the result and the running marker, as plain data. Every problem comes
-// as check.py translated it for Lady: what is wrong, the one thing to change, the items it is about.
-// A result written before that translation existed shows each line whole until the next check.
-export function checkView(result, running) {
+// What the panel shows, from the result, the running marker and her "Normal for me" marks, as plain
+// data. Every problem comes as check.py translated it for Lady: what is wrong, the one thing to change,
+// the items it is about, and whose it is. Hers come first, as cards to fix; Larsonix's come apart, read
+// only; the ones she judged normal sit behind one closed line. A result written before that
+// translation existed shows each line whole until the next check.
+export function checkView(result, running, marks) {
   if (!result || typeof result !== 'object') {
-    return { state: running ? 'running' : 'none', groups: [], problems: 0 };
+    return { state: running ? 'running' : 'none', groups: [], ours: [], hidden: [], stale: [], problems: 0 };
   }
-  const entries = [];
+  const wanted = new Map((Array.isArray(marks) ? marks : []).filter(m => m && typeof m.key === 'string').map(m => [m.key + '|' + (m.item || ''), m]));
+  const seen = new Set();
+  const mine = [], ours = [], hidden = [];
   for (const c of Array.isArray(result.checks) ? result.checks : []) {
     if (c.status === 'pass') continue;
-    if (Array.isArray(c.lady)) {
-      entries.push(...c.lady);
-      continue;
+    const entries = [];
+    if (Array.isArray(c.lady)) entries.push(...c.lady);
+    else {
+      for (const line of c.problems || []) {
+        const open = fileIn(line);
+        entries.push({ says: line, do: '', items: open ? [{ label: stem(open), open }] : [] });
+      }
+      if (c.status === 'error') entries.push({ says: 'The check "' + c.title + '" could not run.', do: 'Send Larsonix a screenshot of this panel.', items: [] });
     }
-    for (const line of c.problems || []) {
-      const open = fileIn(line);
-      entries.push({ says: line, do: '', items: open ? [{ label: stem(open), open }] : [] });
+    for (const e of entries) {
+      if (e.owner === 'us') { ours.push(e); continue; }
+      const key = e.key || (c.id + '|' + (e.line || e.says));
+      const items = (e.items || []).length ? e.items : [null];
+      const kept = [];
+      for (const i of items) {
+        const k = key + '|' + (i ? i.label : '');
+        if (wanted.has(k)) { seen.add(k); hidden.push({ key, item: i ? i.label : '', open: i, says: e.says }); } else kept.push(i);
+      }
+      if (kept.length) mine.push({ ...e, key, items: kept.filter(Boolean) });
     }
-    if (c.status === 'error') entries.push({ says: 'The check "' + c.title + '" could not run.', do: 'Send Larsonix a screenshot of this panel.', items: [] });
   }
-  const groups = ladyGroups(entries);
+  const groups = ladyGroups(mine);
+  const ourGroups = ladyGroups(ours);
   const state = result.error ? 'error' : groups.length ? 'problems' : 'pass';
   // A marker newer than the result means a later run is still going.
   const busy = !!running && (!result.finished || String(running.started || '') > String(result.finished));
   return {
-    state, busy, groups, problems: groups.length, error: result.error || null, errorDetail: result.error_detail || null,
+    state, busy, groups, ours: ourGroups, hidden, stale: [...wanted.entries()].filter(([k]) => !seen.has(k)).map(([, m]) => m),
+    // The same problems one by one, for the view by item: hers with her marks already applied, and ours.
+    entries: mine, ourEntries: ours,
+    problems: groups.length, error: result.error || null, errorDetail: result.error_detail || null,
     finished: result.finished || null, branch: result.branch || null,
   };
 }
 
-// The problems that say the same thing and ask for the same fix, as one, the largest first. The same
-// grouping as check.py's own window.
+// The problems that say the same thing and ask for the same fix, as one: what her work added first, then
+// the largest. The same grouping as check.py's own window. Each item keeps the key of its own problem,
+// which is what "Normal for me" remembers.
 export function ladyGroups(entries) {
   const groups = new Map();
   for (const e of entries) {
     const key = e.says + '|' + (e.do || '');
-    if (!groups.has(key)) groups.set(key, { key, says: e.says, do: e.do || '', items: [], details: [], count: 0 });
+    if (!groups.has(key)) groups.set(key, { key, says: e.says, do: e.do || '', items: [], details: [], count: 0, new: false, problems: [] });
     const g = groups.get(key);
     g.count++;
-    for (const i of e.items || []) if (!g.items.some(x => x.label === i.label)) g.items.push(i);
+    g.new = g.new || !!e.new;
+    if (!(e.items || []).length) g.problems.push(e.key || null);
+    for (const i of e.items || []) if (!g.items.some(x => x.label === i.label)) g.items.push({ ...i, problem: e.key || null });
     if (e.detail) g.details.push(e.detail);
   }
-  return [...groups.values()].sort((a, b) => Math.max(b.count, b.items.length) - Math.max(a.count, a.items.length));
+  return [...groups.values()].sort((a, b) => (b.new - a.new) || (Math.max(b.count, b.items.length) - Math.max(a.count, a.items.length)));
+}
+
+// The same problems item by item, for the view by item: each item once, with every problem the checks prove
+// on it, what her work added first. Each problem keeps its own key, so "Normal for me" marks the same thing
+// in both views. A problem about no item (a check that could not run) has nothing to sit under, so it stays a
+// card of its own, grouped as in the view by problem.
+export function ladyItems(entries) {
+  const items = new Map();
+  const loose = [];
+  for (const e of entries || []) {
+    if (!(e.items || []).length) { loose.push(e); continue; }
+    for (const i of e.items) {
+      if (!items.has(i.label)) items.set(i.label, { label: i.label, open: i.open, find: i.find, problems: [], new: false });
+      const item = items.get(i.label);
+      item.problems.push({ key: e.key || null, says: e.says, do: e.do || '', new: !!e.new, detail: e.detail || null });
+      item.new = item.new || !!e.new;
+    }
+  }
+  for (const item of items.values()) item.problems.sort((a, b) => b.new - a.new);
+  return { items: [...items.values()], loose: ladyGroups(loose) };
+}
+
+// The orders the view by item offers. Each breaks its ties by name, so the list never shuffles between checks.
+export const ITEM_ORDERS = [
+  { id: 'new', label: 'New first', title: 'What your latest work added first, then the items with the most problems.' },
+  { id: 'count', label: 'Most problems', title: 'The items with the most problems first.' },
+  { id: 'name', label: 'Name', title: 'By name, A to Z.' },
+  { id: 'folder', label: 'Folder', title: 'By the folder the item is in, so the items of one set sit together.' },
+];
+const byName = (a, b) => a.label.localeCompare(b.label, undefined, { numeric: true, sensitivity: 'base' });
+const folderOf = i => folder(i.open || i.label);
+const ORDER_COMPARE = {
+  new: (a, b) => (b.new - a.new) || (b.problems.length - a.problems.length) || byName(a, b),
+  count: (a, b) => (b.problems.length - a.problems.length) || byName(a, b),
+  name: byName,
+  folder: (a, b) => folderOf(a).localeCompare(folderOf(b), undefined, { sensitivity: 'base' }) || byName(a, b),
+};
+export function sortItems(items, order) {
+  const compare = ORDER_COMPARE[order] || ORDER_COMPARE.new;
+  return [...items].sort(compare);
+}
+
+// Whether an item's name holds every word typed in the filter, in any case and in any order. A space and an
+// underscore count the same, so "praetorian gray" finds Praetorian_Boots_Gray.
+export function matchesFilter(label, filter) {
+  const words = String(filter || '').toLowerCase().split(/[\s_]+/).filter(Boolean);
+  const name = String(label || '').toLowerCase();
+  return words.every(w => name.includes(w));
+}
+
+// Her marks as the file holds them, with one more or one less. The file is written whole each time.
+export function withMark(marks, mark) {
+  return [...(marks || []).filter(m => !(m.key === mark.key && (m.item || '') === (mark.item || ''))), mark];
+}
+export function withoutMark(marks, mark) {
+  return (marks || []).filter(m => !(m.key === mark.key && (m.item || '') === (mark.item || '')));
 }
 
 // The item file a check line names, as HyCreator opens it: relative to the Server folder.
@@ -1178,10 +1274,10 @@ export function fileIn(text) {
 // The notice for a new result, or null when there is nothing to say. Only a change is announced:
 // a pass after something else, or a list of problems that differs from the last one, so a pull
 // that leaves the same problem in place does not repeat it.
-export function noticeFor(previous, next) {
+export function noticeFor(previous, next, marks) {
   if (!next || !next.finished || (previous && previous.finished === next.finished)) return null;
-  const view = checkView(next, null);
-  const before = previous ? checkView(previous, null) : null;
+  const view = checkView(next, null, marks);
+  const before = previous ? checkView(previous, null, marks) : null;
   if (view.state === 'error') {
     return before && before.state === 'error' && before.error === view.error ? null : 'The Armory checks could not run. Click ! at the top to see why.';
   }
@@ -1218,6 +1314,24 @@ async function readRepoText(api, rel) {
   }
 }
 
+// Writes a file of the mod's own folder outside Server and Common, through the app's own file access,
+// the route readRepoText reads by. Proven in a hidden HyCreator 1.3.9: the folder is made and the file
+// written where git sees it.
+async function writeRepoText(api, rel, text) {
+  const current = api.workspace.current();
+  const tauri = globalThis.__TAURI_INTERNALS__;
+  if (!current || current.kind !== 'folder' || !tauri || typeof tauri.invoke !== 'function') return false;
+  const root = String(current.root).replace(/\\/g, '/').replace(/\/$/, '');
+  const path = root + '/' + rel;
+  try {
+    await tauri.invoke('plugin:fs|mkdir', { path: path.slice(0, path.lastIndexOf('/')), options: { recursive: true } });
+    await tauri.invoke('plugin:fs|write_text_file', new TextEncoder().encode(text), { headers: { path: encodeURIComponent(path), options: JSON.stringify({}) } });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function readJson(api, rel) {
   const r = await readRepoText(api, rel);
   if (r.text === undefined) return r;
@@ -1235,11 +1349,22 @@ function ChecksPanel() {
   const { useState, useEffect } = api.React;
   const [data, setData] = useState({ loading: true });
   const [opened, setOpened] = useState({});
+  // The view, the order and the filter. The first two are remembered between openings of the panel.
+  const remembered = (name, allowed, fallback) => {
+    try { const v = api.storage && api.storage.get(name); return allowed.includes(v) ? v : fallback; } catch { return fallback; }
+  };
+  const remember = (name, value) => { try { if (api.storage) api.storage.set(name, value); } catch { /* kept until HyCreator closes */ } };
+  const [mode, setModeState] = useState(() => remembered('checks.view', ['problem', 'item'], 'problem'));
+  const [order, setOrderState] = useState(() => remembered('checks.order', ITEM_ORDERS.map(o => o.id), 'new'));
+  const [filter, setFilter] = useState('');
+  const setMode = v => { setModeState(v); remember('checks.view', v); };
+  const setOrder = v => { setOrderState(v); remember('checks.order', v); };
   useEffect(() => {
     let alive = true;
     const load = async () => {
-      const [result, running, studio] = await Promise.all([readJson(api, CHECK_RESULT), readJson(api, CHECK_RUNNING), hasStudio(api)]);
-      if (alive) setData({ result: result.value || null, running: running.value || null, studio, unreadable: !!result.unreadable });
+      const [result, running, studio, normal] = await Promise.all([readJson(api, CHECK_RESULT), readJson(api, CHECK_RUNNING), hasStudio(api), readJson(api, CHECK_NORMAL)]);
+      const marks = normal.value && Array.isArray(normal.value.normal) ? normal.value.normal : [];
+      if (alive) setData({ result: result.value || null, running: running.value || null, studio, marks, unreadable: !!result.unreadable });
     };
     load();
     const timer = setInterval(load, 4000);
@@ -1249,10 +1374,28 @@ function ChecksPanel() {
   // An item named by its id alone is found among the mod's files when clicked.
   const openSubject = async s => {
     if (s.open) return api.session.openFile(s.open);
+    // A picture, model or interface file is named by its path under Common, as the checks name it, and HyCreator opens
+    // it by that path below its Common folder. It opens an empty tab for a path that does not exist too, so the file
+    // is looked up first.
+    if (s.label.includes('/')) {
+      const dot = s.label.lastIndexOf('.');
+      const listed = dot > 0 ? await api.workspace.listByExt('../Common/' + folder(s.label), [s.label.slice(dot + 1)]) : [];
+      if (listed.includes('../Common/' + s.label)) return api.session.openFile('Common/' + s.label);
+      return api.ui.notify(s.label + ' is not in your files any more.');
+    }
     const rel = (await api.workspace.listByExt(s.find || 'Item/Items/', ['json'])).find(r => stem(r) === s.label);
     if (rel) api.session.openFile(rel);
     else api.ui.notify(s.label + ' is not in your files: it is a vanilla one.');
   };
+  // "Normal for me": one problem on one item, written to her file at once and shown so before the next check.
+  const saveMarks = async marks => {
+    const ok = await writeRepoText(api, CHECK_NORMAL, JSON.stringify({ normal: marks }, null, 1) + '\n');
+    if (ok) setData(d => ({ ...d, marks }));
+    else api.ui.notify('This could not be saved. Send Larsonix a screenshot of this panel.');
+  };
+  const today = () => new Date().toISOString().slice(0, 10);
+  const markNormal = (key, item, says) => saveMarks(withMark(data.marks, { key, item, says, by: 'Lady', date: today() }));
+  const showAgain = m => saveMarks(withoutMark(data.marks, m));
   const when = text => {
     const date = new Date(text);
     return isNaN(date) ? String(text || '') : date.toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -1264,35 +1407,178 @@ function ChecksPanel() {
   if (data.loading) return box([h('p', { key: 'l' }, 'Reading the last check...')]);
   if (data.unreadable) return box([h('p', { key: 'u' }, 'This HyCreator cannot show the checks. Double-click Check.cmd in the Studio folder to see them.'), foot]);
   if (data.studio === false) return box([h('p', { key: 's' }, 'Open your whole copy of the mod in HyCreator, the folder that holds Studio, to see the checks.')]);
-  const view = checkView(data.result, data.running);
+  const view = checkView(data.result, data.running, data.marks);
   if (view.state === 'none' || view.state === 'running') {
     return box([h('p', { key: 'n' }, view.state === 'running' ? 'Checking...' : 'No check yet. The first one runs when you commit, or double-click Check.cmd in the Studio folder.'), foot]);
   }
 
+  // Both views read the same problems and the same marks. The filter keeps the items whose name holds
+  // every word typed, in both views, in her problems and in ours.
+  const mine = ladyItems(view.entries);
+  const ours = ladyItems(view.ourEntries);
+  const typed = filter.trim();
+  const match = s => matchesFilter(s.label, typed);
+  const byItem = mode === 'item';
+  const shownGroups = typed ? view.groups.map(g => ({ ...g, items: g.items.filter(match) })).filter(g => g.items.length) : view.groups;
+  const shownOurGroups = typed ? view.ours.map(g => ({ ...g, items: g.items.filter(match) })).filter(g => g.items.length) : view.ours;
+  const shownItems = sortItems(mine.items.filter(match), order);
+  const shownOurItems = sortItems(ours.items.filter(match), order);
+  const shownLoose = typed ? [] : mine.loose;
+  const shownOurLoose = typed ? [] : ours.loose;
+  const listed = view.groups.length + view.ours.length > 0;
+
+  const small = { padding: '0 8px', fontSize: 11.5 };
   const headline = view.state === 'pass' ? '✓ Everything is fine'
     : view.state === 'error' ? 'The checks could not run'
+    : byItem ? plural(mine.items.length, 'item', 'items') + ' to fix' + (mine.loose.length ? ', and ' + plural(mine.loose.length, 'other thing', 'other things') : '')
     : plural(view.problems, 'thing', 'things') + ' to fix';
-  const items = [h('div', { key: 'head', style: cardStyle() },
-    h('div', { style: { fontSize: 15, fontWeight: 600, color: view.state === 'pass' ? LOOK.ok : LOOK.danger } }, headline),
-    h('div', { style: { fontSize: 12, color: LOOK.dim } }, 'Checked ' + when(view.finished) + '.'),
+  const headColour = view.state === 'pass' ? LOOK.ok : LOOK.danger;
+
+  // The switch between the two views, left of the count: two joined buttons, HyCreator's own "on" marking the
+  // one shown. With nothing listed there is nothing to switch.
+  const segButton = (on, label, onClick, title, extra) => h('button', { key: label, className: 'btn slim' + (on ? ' on' : ''), title, onClick, style: extra }, label);
+  const switcher = listed ? h('div', { style: { display: 'inline-flex', flexShrink: 0 } },
+    segButton(!byItem, 'By problem', () => setMode('problem'), 'Each problem once, with every item it is on.', { borderTopRightRadius: 0, borderBottomRightRadius: 0 }),
+    segButton(byItem, 'By item', () => setMode('item'), 'Each item once, with every problem it has.', { borderTopLeftRadius: 0, borderBottomLeftRadius: 0, marginLeft: -1 })) : null;
+
+  // The order of the view by item, beside the filter.
+  const fieldStyle = { background: 'var(--field)', color: LOOK.text, border: '1px solid ' + LOOK.border, borderRadius: 'var(--radius-m, 6px)', fontSize: 12.5, padding: '3px 8px' };
+  const sorter = byItem ? h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: LOOK.dim, flexShrink: 0 } }, 'Sort by',
+    h('select', { value: order, onChange: e => setOrder(e.target.value), style: fieldStyle, title: (ITEM_ORDERS.find(o => o.id === order) || {}).title },
+      ITEM_ORDERS.map(o => h('option', { key: o.id, value: o.id }, o.label)))) : null;
+  const filterBox = listed ? h('input', { type: 'search', className: 'tree-search', value: filter, placeholder: 'Find an item by its name',
+    style: { margin: 0, flex: '1 1 160px', minWidth: 0, padding: '3px 9px', fontSize: 12.5 }, onChange: e => setFilter(e.target.value) }) : null;
+  const filterNote = typed && mine.items.length ? h('div', { style: { fontSize: 12, color: LOOK.dim, marginTop: 4 } },
+    shownItems.length ? plural(shownItems.length, 'item', 'items') + ' of your ' + mine.items.length + ' match.' : 'None of your ' + plural(mine.items.length, 'item', 'items') + ' matches.') : null;
+
+  // The head stays at the top while the list scrolls, so the switch, the filter and the order are always at hand.
+  const items = [h('div', { key: 'head', style: cardStyle({ position: 'sticky', top: 0, zIndex: 1 }) },
+    h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+      switcher,
+      h('div', { style: { fontSize: 15, fontWeight: 600, color: headColour } }, headline)),
+    h('div', { style: { fontSize: 12, color: LOOK.dim, marginTop: 2 } }, 'Checked ' + when(view.finished) + '.'),
     view.busy ? h('div', { style: { fontSize: 12, color: LOOK.accent, fontStyle: 'italic' } }, 'Checking your latest changes...') : null,
     view.error ? h('div', { style: { color: LOOK.danger, marginTop: 4 } }, view.error) : null,
-    view.errorDetail ? h('div', { style: { fontSize: 11.5, color: LOOK.dim } }, 'For Larsonix: ' + view.errorDetail) : null)];
+    view.errorDetail ? h('div', { style: { fontSize: 11.5, color: LOOK.dim } }, 'For Larsonix: ' + view.errorDetail) : null,
+    filterBox ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' } }, filterBox, sorter) : null,
+    filterNote)];
 
-  for (const g of view.groups) {
+  // The button keeps its one line; a long item name gives way instead, cut short with its full name on hover.
+  const normalButton = (key, item, says) => h('button', { className: 'btn slim', style: { ...small, color: LOOK.dim, flexShrink: 0, whiteSpace: 'nowrap' },
+    title: 'Hide this problem on ' + (item || 'this card') + ' only. It stays on every other item, and you can show it again below.',
+    onClick: () => markNormal(key, item, says) }, 'Normal for me');
+
+  // A card of the view by problem: what is wrong, the fix, and the items, each with its own Normal for me.
+  const problemCard = (g, readOnly) => {
+    if (readOnly) {
+      return h('div', { key: 'ours-' + g.key, style: cardStyle({ borderColor: tint(LOOK.dim, 45) }) },
+        h('div', { style: { color: LOOK.text } },
+          g.items.length > 1 ? h('span', { style: tagStyle(LOOK.dim) }, plural(g.items.length, 'item', 'items')) : null, g.says),
+        g.items.length ? h('div', { style: { fontSize: 11.5, color: LOOK.dim, marginTop: 4 } },
+          g.items.slice(0, 12).map(s => s.label).join(', ') + (g.items.length > 12 ? ' and ' + (g.items.length - 12) + ' more' : '')) : null);
+    }
     const all = opened[g.key];
-    const shown = all ? g.items : g.items.slice(0, 12);
-    items.push(h('div', { key: g.key, style: cardStyle({ borderColor: tint(LOOK.danger, 45) }) },
+    const shown = all || typed ? g.items : g.items.slice(0, 12);
+    return h('div', { key: g.key, style: cardStyle({ borderColor: tint(LOOK.danger, 45) }) },
       h('div', { style: { fontWeight: 600, color: LOOK.strong } },
+        g.new ? h('span', { style: tagStyle(LOOK.accent) }, 'new') : null,
         g.items.length > 1 ? h('span', { style: tagStyle(LOOK.warn) }, plural(g.items.length, 'item', 'items')) : null, g.says),
       g.do ? h('div', { style: { marginTop: 4 } }, h('span', { style: { color: LOOK.dim } }, 'To fix: '), g.do) : null,
-      shown.length ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 } },
-        shown.map((s, i) => h('button', { key: i, className: 'btn slim', style: { padding: '0 8px', fontSize: 11.5 }, title: 'Open ' + s.label, onClick: () => openSubject(s) }, s.label)),
-        g.items.length > 12 ? h('button', { className: 'btn slim', style: { padding: '0 8px', fontSize: 11.5, color: LOOK.accent }, onClick: () => setOpened({ ...opened, [g.key]: !all }) },
+      shown.length ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, marginTop: 6 } },
+        // The item's name on the left, its Normal for me on the right edge of the card.
+        shown.map((s, i) => h('div', { key: i, style: { display: 'flex', gap: 4, justifyContent: 'space-between', alignItems: 'center' } },
+          h('button', { className: 'btn slim', style: { ...small, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+            title: 'Open ' + s.label, onClick: () => openSubject(s) }, s.label),
+          s.problem ? normalButton(s.problem, s.label, g.says) : null)),
+        g.items.length > 12 && !typed ? h('button', { className: 'btn slim', style: { ...small, color: LOOK.accent, alignSelf: 'flex-start' }, onClick: () => setOpened({ ...opened, [g.key]: !all }) },
           all ? 'Show fewer' : '+' + (g.items.length - 12) + ' more') : null) : null,
-      g.details.map((d, i) => h('div', { key: i, style: { fontSize: 11.5, color: LOOK.dim, wordBreak: 'break-word', whiteSpace: 'pre-wrap', marginTop: 4 } }, 'For Larsonix: ' + d))));
+      !g.items.length && g.problems.length === 1 && g.problems[0] ? h('div', { style: { marginTop: 6, display: 'flex', justifyContent: 'flex-end' } }, normalButton(g.problems[0], '', g.says)) : null,
+      g.details.map((d, i) => h('div', { key: i, style: { fontSize: 11.5, color: LOOK.dim, wordBreak: 'break-word', whiteSpace: 'pre-wrap', marginTop: 4 } }, 'For Larsonix: ' + d)));
+  };
+
+  // A row of the view by item: folded to its name and its count, opened to its problems, each with its fix
+  // and its own Normal for me. Our rows open to read only.
+  const itemKey = (it, readOnly) => (readOnly ? 'ours:' : 'item:') + it.label;
+  const count = (it, readOnly) => h('span', { style: tagStyle(readOnly ? LOOK.dim : LOOK.warn, { marginRight: 0, minWidth: 18, textAlign: 'center' }),
+    title: plural(it.problems.length, 'problem', 'problems') }, String(it.problems.length));
+  const itemRow = (it, readOnly) => {
+    const k = itemKey(it, readOnly);
+    const isOpen = !!opened[k];
+    const toggle = () => setOpened({ ...opened, [k]: !isOpen });
+    const name = h('button', { className: 'btn slim', title: (isOpen ? 'Fold ' : 'Show the problems of ') + it.label, onClick: toggle,
+      style: { ...small, flex: '1 1 auto', minWidth: 0, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', border: 'none', background: 'transparent', color: readOnly ? LOOK.text : LOOK.strong } },
+      (isOpen ? '▾ ' : '▸ ') + it.label);
+    const newTag = it.new ? h('span', { style: tagStyle(LOOK.accent, { marginRight: 0 }) }, 'new') : null;
+    const openButton = readOnly ? null : h('button', { className: 'btn slim', style: { ...small, flexShrink: 0 }, title: 'Open ' + it.label, onClick: () => openSubject(it) }, 'Open');
+    const head = h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } }, name, newTag, count(it, readOnly), openButton);
+    const body = isOpen ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, margin: '4px 0 2px 22px' } },
+      it.problems.map((p, i) => h('div', { key: i, style: { display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'flex-start', borderTop: i ? '1px solid ' + LOOK.border : 'none', paddingTop: i ? 6 : 0 } },
+        h('div', { style: { minWidth: 0 } },
+          h('div', { style: { color: readOnly ? LOOK.text : LOOK.strong, fontWeight: readOnly ? 400 : 600 } }, p.new ? h('span', { style: tagStyle(LOOK.accent) }, 'new') : null, p.says),
+          !readOnly && p.do ? h('div', { style: { marginTop: 2 } }, h('span', { style: { color: LOOK.dim } }, 'To fix: '), p.do) : null,
+          !readOnly && p.detail ? h('div', { style: { fontSize: 11.5, color: LOOK.dim, wordBreak: 'break-word', whiteSpace: 'pre-wrap', marginTop: 2 } }, 'For Larsonix: ' + p.detail) : null),
+        !readOnly && p.key ? normalButton(p.key, it.label, p.says) : null))) : null;
+    return h('div', { key: k, style: cardStyle({ padding: '4px 8px 4px 2px', marginBottom: 4, borderColor: readOnly ? tint(LOOK.dim, 45) : tint(LOOK.danger, 35) }) }, head, body);
+  };
+  // Opens or folds every row of one list.
+  const foldAll = (list, readOnly) => {
+    const keys = list.map(it => itemKey(it, readOnly));
+    const allOpen = keys.length > 0 && keys.every(k => opened[k]);
+    return h('button', { className: 'btn slim', style: { ...small, flexShrink: 0 }, onClick: () => {
+      const next = { ...opened };
+      for (const k of keys) next[k] = !allOpen;
+      setOpened(next);
+    } }, allOpen ? 'Fold all' : 'Open all');
+  };
+  const listHead = (list, readOnly) => list.length > 1
+    ? h('div', { key: (readOnly ? 'ours-' : '') + 'fold', style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 4 } }, foldAll(list, readOnly)) : null;
+
+  if (byItem) {
+    for (const g of shownLoose) items.push(problemCard(g, false));
+    if (shownItems.length) {
+      items.push(listHead(shownItems, false));
+      for (const it of shownItems) items.push(itemRow(it, false));
+    }
+  } else {
+    for (const g of shownGroups) items.push(problemCard(g, false));
   }
-  if (view.state === 'problems') items.push(h('p', { key: 'rest', style: { fontSize: 12, color: LOOK.ok } }, 'Everything else is fine.'));
+  if (view.state === 'problems' && !typed) items.push(h('p', { key: 'rest', style: { fontSize: 12, color: LOOK.ok } }, 'Everything else is fine.'));
+
+  // Ours: the file is ours, or only code can fix it. Read only, nothing to click but folding.
+  const anyOurs = byItem ? shownOurItems.length + shownOurLoose.length : shownOurGroups.length;
+  if (anyOurs) {
+    items.push(h('div', { key: 'ours-head', style: { fontSize: 13, fontWeight: 600, color: LOOK.strong, margin: '14px 0 4px' } },
+      "Larsonix's problems: he fixes these. Nothing to do for you."));
+    if (byItem) {
+      for (const g of shownOurLoose) items.push(problemCard(g, true));
+      if (shownOurItems.length) {
+        items.push(listHead(shownOurItems, true));
+        for (const it of shownOurItems) items.push(itemRow(it, true));
+      }
+    } else {
+      for (const g of shownOurGroups) items.push(problemCard(g, true));
+    }
+  }
+
+  // What she judged normal: one closed line, opened to show each one again.
+  const hiddenCount = view.hidden.length + view.stale.length;
+  if (hiddenCount) {
+    const open = !!opened['hidden'];
+    items.push(h('button', { key: 'hidden', className: 'btn slim', style: { ...small, marginTop: 12 }, onClick: () => setOpened({ ...opened, hidden: !open }) },
+      (open ? 'Hide again ' : '') + 'Hidden: ' + view.hidden.length));
+    if (open) {
+      for (const [n, x] of view.hidden.entries()) {
+        items.push(h('div', { key: 'h' + n, style: { display: 'flex', gap: 6, alignItems: 'baseline', fontSize: 12, marginTop: 4 } },
+          h('button', { className: 'btn slim', style: small, onClick: () => showAgain({ key: x.key, item: x.item }) }, 'Show again'),
+          h('span', null, (x.item ? x.item + ': ' : '') + x.says)));
+      }
+      for (const [n, m] of view.stale.entries()) {
+        items.push(h('div', { key: 's' + n, style: { display: 'flex', gap: 6, alignItems: 'baseline', fontSize: 12, marginTop: 4, color: LOOK.dim } },
+          h('button', { className: 'btn slim', style: small, onClick: () => showAgain(m) }, 'Remove'),
+          h('span', null, 'No longer found: ' + (m.item ? m.item + ': ' : '') + (m.says || ''))));
+      }
+    }
+  }
   items.push(foot);
   return box(items);
 }
@@ -1314,7 +1600,8 @@ function watchChecks(api) {
     const r = await readJson(api, CHECK_RESULT);
     if (!primed) { primed = true; last = r.value || null; return; }
     if (r.value && (!last || r.value.finished !== last.finished)) {
-      const text = noticeFor(last, r.value);
+      const normal = await readJson(api, CHECK_NORMAL);
+      const text = noticeFor(last, r.value, normal.value && Array.isArray(normal.value.normal) ? normal.value.normal : []);
       if (text) api.ui.notify(text);
       last = r.value;
     }
@@ -1347,6 +1634,10 @@ export const GUIDE = [
   { title: 'The checks', steps: [
     'The checks run by themselves each time you commit. When they find something, a notice appears.',
     'Click ! at the top to see what to fix. Click an item to open it.',
+    'Click By item at the top of the panel to see each item once, with all its problems. Open opens the item.',
+    'To find one item, type part of its name in the box at the top of the panel.',
+    'If a problem is how you want that item, click Normal for me beside it. It hides that problem on that item only. Hidden, at the bottom, shows it again.',
+    "Larsonix's problems are his to fix. Nothing to do for you.",
     'You can always push, even with things to fix.',
   ] },
   { title: 'Where your files go', steps: [
@@ -1413,7 +1704,6 @@ export const GUIDE = [
     'Type the version, or press Enter for the one it suggests.',
     'Write the changelog in the window that opens, then click Done.',
     'Type 1 for a draft players cannot see, 2 for a draft with a message for Larsonix, or 3 to publish.',
-    'If it cannot publish, it says why and offers a draft instead.',
   ] },
   { title: 'Files our tools make', steps: [
     'Our tools rewrite the showcase world and the list of chests your loot goes in. HyCreator opens those files on a warning.',
@@ -1454,6 +1744,10 @@ export default {
   description: 'The Colors page, the guide, and what the checks found.',
   activate(api) {
     host = api;
+    const version = api.host && api.host.version;
+    if (hyCreatorTooOld(version)) {
+      api.ui.notify('HyCreator ' + version + ' cannot list your textures and models when you browse for a file. ' + UPDATE_STEPS);
+    }
     unregister.push(api.editors.registerPage({
       id: 'plugin:armory.madebytool',
       label: 'Made by our tools',

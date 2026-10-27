@@ -1,6 +1,6 @@
 # Copies the code-only jar and the HyCreator plugin from this repository to where the game and
-# HyCreator read them, when they changed. Setup runs it once, and git runs it after every pull
-# and every branch switch, so both always match the files of the branch that is checked out.
+# HyCreator read them, when they changed. Setup runs it once, and git runs it after every pull and
+# every branch switch, so both always match the files of the branch that is checked out.
 #
 # The two places are stored in this repository's git settings by setup (armory.mods and
 # armory.plugins), so this script needs no arguments.
@@ -50,6 +50,28 @@ if ($plugins -and (Test-Path -LiteralPath $pluginSource) -and (Test-Path -Litera
         if (-not (Copy-IfChanged $_.FullName (Join-Path $plugins $_.Name) 'The Armory''s pages in HyCreator (restart HyCreator to see them)' 'Close HyCreator, then double-click Update.cmd.')) {
             $ok = $false
         }
+    }
+}
+
+# HyCreator before 1.3.9 listed the mod's own textures and models from a Common folder at the top of
+# the open folder, so this script used to keep a link named Common there, pointing at
+# src\main\resources\Common. HyCreator 1.3.9 finds them where they are and nothing reads the link any
+# more, so it is removed, as a link only: the files it points at stay. A real folder named Common is
+# left alone.
+$common = Join-Path $repo 'Common'
+$item = Get-Item -LiteralPath $common -Force -ErrorAction SilentlyContinue
+if ($item -and ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    try { [IO.Directory]::Delete($common, $false) } catch { }
+}
+# The line that kept the link out of git goes with it, so a real folder made there by mistake shows
+# in git instead of being silently left out of every commit.
+$exclude = (git -C $repo rev-parse --git-path info/exclude) 2>$null
+if ($exclude) {
+    if (-not [IO.Path]::IsPathRooted($exclude)) { $exclude = Join-Path $repo $exclude }
+    if (Test-Path -LiteralPath $exclude) {
+        $text = [IO.File]::ReadAllText($exclude)
+        $kept = [regex]::Replace($text, '(?m)^/Common\r?(\n|$)', '')
+        if ($kept -ne $text) { [IO.File]::WriteAllText($exclude, $kept, (New-Object Text.UTF8Encoding $false)) }
     }
 }
 

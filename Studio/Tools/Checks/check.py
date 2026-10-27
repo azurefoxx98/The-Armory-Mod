@@ -7,8 +7,11 @@ notice when something is wrong. Nothing is ever blocked: a commit and a push go 
 the checks say, and the mod's own review runs the same checks again before anything is merged.
 
 Six checks are the mod's own gates, copied here by the tool that keeps their code identical to
-the originals. Three more look at this branch's own work: that it is not main, that no language
-file lost names, and that no file the mod's tools generate was changed by hand.
+the originals. Four more look at this branch's own work: that it is not main, that no language
+file lost names, that no file the mod's tools generate was changed by hand, and what her work
+changed in the game itself (the game check, in game/: the game's own server loads her work
+exactly as her game does, every finding is shown, and what is new since her branch started
+comes first).
 
 The gates print for us, so their words never change here. Every line they print is translated
 below into what Lady reads: what is wrong in her words, and the one thing to change. Both places
@@ -35,6 +38,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 RESOURCES = os.path.join(REPO, "src", "main", "resources")
 RESULT = os.path.join(HERE, "last-check.json")
+# The single problems she judged normal for her work, written by the panel's "Normal for me" button and
+# committed with her work, so we see her judgments too. One entry hides one problem on one item.
+NORMAL = os.path.join(REPO, "Studio", "Checks", "normal.json")
 RUNNING = os.path.join(HERE, "last-check.running.json")
 # 2 adds "lady" to each check: its problems as she reads them.
 FORMAT = 2
@@ -132,9 +138,12 @@ def problems_in(name: str, output: str) -> list[str]:
 # from the pattern. A rule with do=SEND is something she cannot fix herself.
 
 ITEM_FIELD = {"Model": "model", "Texture": "texture", "Icon": "icon"}
-FIELD_FIX = {"Model": "Pick an existing model in its Model field.",
-             "Texture": "Pick an existing texture in its Texture field.",
-             "Icon": "Click Generate icon on its page."}
+# HyCreator labels the Model and Texture fields "Item Model" and "Item Texture". Generate icon frames
+# the item with its own IconProperties, which can leave it half off the picture, so she frames it in
+# that window before saving.
+FIELD_FIX = {"Model": "Pick an existing model in its Item Model field.",
+             "Texture": "Pick an existing texture in its Item Texture field.",
+             "Icon": "Click Generate icon on its page, frame the item in that window, then click Save icon."}
 SHOWS = {"sound": "plays nothing", "particle": "shows nothing", "camera effect": "does nothing"}
 
 
@@ -145,10 +154,12 @@ def typo_line(m) -> str | None:
 
 
 # HyCreator cannot open a file that does not parse: it shows a red notice naming the line and opens
-# nothing, so the fix goes through Notepad.
+# nothing, so the fix goes through Notepad. A missing comma is reported on the line after it, so the
+# line above is named too.
 TYPO = (lambda m: f"Has a typing mistake{' at line ' + typo_line(m) if typo_line(m) else ''}, so Hytale skips this file.",
         lambda m: ("HyCreator cannot open it. Right-click it in the file tree, click Reveal in Explorer, "
-                   f"then fix {'line ' + typo_line(m) if typo_line(m) else 'it'} in Notepad."))
+                   + (f"then fix line {typo_line(m)} in Notepad, or the end of the line above it." if typo_line(m)
+                      else "then fix it in Notepad.")))
 # A gate's own words for a file that does not parse, with the parser's message, which a gate that
 # stopped on the same file repeats in its output.
 TYPO_LINE = re.compile(r"(?:cannot be read as JSON, so the game never loads it \((.*)\)|does not parse, (.*))$")
@@ -160,6 +171,13 @@ RECIPE = "Click Recipe at the top of its page"
 # HyCreator's form shows a field written twice only once, so the fix is in the file's text, which
 # the More file actions button opens.
 RAW = "Click the three dots at the top of its page, then Open JSON. "
+# A name that does not exist, wherever it sits. Inside a table, such as the steps of an attack built
+# on another one, the box of a broken name offers no suggestions, so the file's text is the one route
+# that always works.
+RAW_NAME = RAW + "Change {name} to a name that exists, click Apply, then Save."
+# What the Recipe page cannot do for a new recipe: name the bench tab.
+BENCH_TAB = "If the bench has tabs, pick one under Recipe, BenchRequirement, Categories."
+NEW_RECIPE = "Give it a recipe: click Recipe at the top of its page, then Create recipe. " + BENCH_TAB
 
 RULES = [
     ("itemcheck", r"cannot be read as JSON, so the game never loads it \((?P<detail>.*)\)", *TYPO),
@@ -167,7 +185,7 @@ RULES = [
     ("itemcheck", r"(?P<field>Model|Texture|Icon) (?P<value>.+) exists in neither the mod nor the game",
      lambda m: f"Its {ITEM_FIELD[m['field']]} {m['value']} does not exist.", lambda m: FIELD_FIX[m["field"]]),
     ("itemcheck", r"CustomModel (?P<value>.+) exists in neither the mod nor the game",
-     "Its block model {value} does not exist.", "Pick an existing model in its CustomModel field."),
+     "Its block model {value} does not exist.", "Pick an existing model in its Block Model field."),
     ("itemcheck", r"CustomModelTexture (?P<value>.+) exists in neither the mod nor the game",
      "Its block texture {value} does not exist.", "Pick an existing texture in its CustomModelTexture field."),
     ("itemcheck", r"its recipe asks for the item (?P<value>\S+), which does not exist",
@@ -177,7 +195,7 @@ RULES = [
     ("itemcheck", r"it belongs to the family (?P<value>\S+), which has no family file",
      "Its ResourceTypes names {value}, which does not exist.", "Fix that name in its ResourceTypes."),
     ("itemcheck", r"it plays the (?P<kind>sound|particle|camera effect) (?P<value>.+), which exists in neither the mod nor the game",
-     lambda m: f"Its {m['kind']} {m['value']} does not exist, so it {SHOWS[m['kind']]}.", "Pick a name HyCreator suggests."),
+     lambda m: f"Its {m['kind']} {m['value']} does not exist, so it {SHOWS[m['kind']]}.", RAW_NAME.replace("{name}", "{value}")),
     ("itemcheck", r"its item sound set (?P<value>\S+) does not exist",
      "Its ItemSoundSetId {value} does not exist, so it makes no sound.", "Pick a name HyCreator suggests."),
     ("itemcheck", r"its quality (?P<value>\S+) does not exist",
@@ -219,20 +237,23 @@ RULES = [
     ("recipecheck", r"bench (?P<value>\S+) has (?P<tiers>\d+) tier\(s\), the recipe needs tier (?P<tier>\d+)",
      "Its recipe needs tier {tier} of {value}, which has {tiers}.", RECIPE + " and lower the tier."),
     ("recipecheck", r"no block grants the augment tag (?P<value>\S+)",
-     "Its recipe needs the bench upgrade {value}, which nothing gives.", RECIPE + " and fix that name."),
+     "Its recipe needs the bench upgrade {value}, which nothing gives.",
+     "Open it and fix {value} under Recipe, BenchRequirement, RequiredAugmentTags."),
     ("recipecheck", r"a StructuralCrafting recipe must have exactly one input, it has (?P<count>\d+)",
      "Its recipe takes {count} ingredients, but this bench takes exactly one.", RECIPE + " and keep one ingredient."),
     ("recipecheck", r"stale accepted entry, .*", "This check needs updating.", SEND),
 
     ("familycheck", r"STAT CLOSURE: (?P<count>\d+) distinct profiles across .*",
      "Items of {subject} have {count} different armor stats, so the Alteration Table changes stats as it changes color.",
-     "Give every item of {subject} the same armor stats."),
+     "Open one of them and click Colors at the top. Tick the items whose armor stats differ, then click the Fix button."),
     ("familycheck", r"SLOT CLOSURE: (?P<count>\d+) distinct slots across .*",
      "Items of {subject} are worn on {count} different slots, so the Alteration Table can turn one into another.",
-     "Give each slot its own resource type."),
+     "Right-click {subject} in the file tree and click Duplicate... once for each slot. "
+     "Then give each item the copy for its slot in its ResourceTypes."),
     ("familycheck", r"REACHABILITY: .*",
      "No player can get these items: none is crafted at a bench or found in a chest.",
-     "Give one of them a recipe at a bench, or add one to a chest loot table."),
+     "Give one of them a recipe: click Recipe at the top of its page, then Create recipe. " + BENCH_TAB
+     + " Or add one to a chest loot table."),
     ("familycheck", r"stale accepted violation: .*", "This check needs updating.", SEND),
 
     ("lootcheck", r"cannot be read as JSON, so the game never loads it \((?P<detail>.*)\)", *TYPO),
@@ -415,6 +436,55 @@ def lady_view(checks: list[dict]) -> None:
                     e["says"] += " Some checks wait until it is fixed."
 
 
+def fold_game(checks: list[dict]) -> None:
+    """One card per fact: a gate's line the game check also states is left out, the game check's card says it.
+
+    Two pairs overlap, each measured on her branch: the item check's "changes the stat X, which does not exist" with
+    the game check's name that does not exist, and the family check's "no player can get these items" with the game
+    check's no way in, when every item it lists is one the game check names. A family line naming an item the game
+    check does not name stays whole.
+    """
+    game = next((c for c in checks if c["id"] == "game"), None)
+    if not game:
+        return
+    about = [e["about"] for e in game.get("lady") or [] if e.get("about")]
+    stats = {(a["id"], a["name"]) for a in about if a["rule"] == "names-resolve" and a["form"] == "key"}
+    unreached = {a["id"] for a in about if a["rule"] == "reachable" and a["form"] in ("item", "base outside")}
+    for c in checks:
+        if c["id"] == "itemcheck":
+            def stated(e):
+                m = re.search(r"changes the stat (\S+), which does not exist$", e["line"])
+                return bool(m and e["items"] and (e["items"][0]["label"], m.group(1)) in stats)
+        elif c["id"] == "familycheck":
+            def stated(e):
+                labels = [i["label"] for i in e["items"]]
+                return "REACHABILITY:" in e["line"] and bool(labels) and all(i in unreached for i in labels)
+        else:
+            continue
+        c["lady"] = [e for e in c.get("lady") or [] if not stated(e)]
+
+
+def owner_of_card(check_id: str, e: dict) -> str:
+    """us or mod: whose a card is. A card that hands the work to Larsonix is ours, and the owner table both checks
+    read (game/owners.py) decides the rest: a gate's line by its gate and its words, a finding of the game check by
+    what the game check found."""
+    if e.get("owner") in ("us", "mod"):
+        return e["owner"]
+    if e["do"].startswith("Send Larsonix a screenshot"):
+        return "us"
+    if GAME_DIR not in sys.path:
+        sys.path.insert(0, GAME_DIR)
+    try:
+        import owners
+    except ImportError:
+        # A copy without the game check's folder (main before the checks reach it) still shows every card, as hers.
+        return "mod"
+    item = (e.get("items") or [{}])[0]
+    path = "Server/" + item["open"] if item.get("open") else ""
+    return "us" if owners.owner_of(ident=item.get("label", ""), file=path, gate=check_id, line=e.get("line", ""))[0] == "us" \
+        else "mod"
+
+
 def run_gate(name: str, game: str) -> dict:
     env = dict(os.environ, ARMORY_RESOURCES=RESOURCES, ARMORY_GAME=game, PYTHONDONTWRITEBYTECODE="1",
                PYTHONIOENCODING="utf-8")
@@ -560,6 +630,321 @@ def check_generated(own: list[str] | None, starts: list[str], why: str) -> dict:
     return {"status": "fail" if problems else "pass", "problems": problems, "lady": lady, "output_tail": []}
 
 
+# ---- the game check: her work as the game itself loads it ------------------------------------------
+#
+# The game's own server is booted over her work exactly as her game loads it (the code from
+# Studio/Tools/TheArmory-code.jar, her files from src/main/resources), and every item, effect and recipe
+# is written down as the game holds it. The rules in game/rules.py compare that with vanilla and with
+# the other items of each set. Every finding is shown, every run. When her branch has work of its own,
+# the same is done once for the commit it started from, and what her work added is marked new and
+# comes first. A result is kept per starting commit, so it is computed once.
+
+GAME_DIR = os.path.join(HERE, "game")
+CODE_JAR = os.path.join(REPO, "Studio", "Tools", "TheArmory-code.jar")
+WORK = os.path.join(os.environ.get("LOCALAPPDATA", ""), "TheArmory", "Checks")
+
+# What she reads for each kind of finding: what is wrong in her words, then the one thing to do. A
+# field is named as HyCreator's page shows it: {where} puts a field inside the folding blocks that
+# hold it ("CosmeticsToHide (under Armor)"), never a dotted path. Each step below was done in HyCreator
+# 1.3.9 over the fault it is about, then saved, and the file read back.
+LANGUAGES = ("Open Languages, en-US, server. In the empty row at the bottom, type {short} and its English text, "
+             "click +, then Save.")
+# The Name row's "add translation" button writes the key as that file spells it. Typing the key as the
+# item page shows it, with server. in front, writes a line the game never reads.
+ADD_TRANSLATION = ("Open it and click add translation beside its Name. Type its English name, then click Save in that "
+                   "window and on its page.")
+# Editing the text of a key other items use renames them too, so the item gets a key of its own. A
+# cleared Name offers the item's own official key as a button.
+OWN_NAME = ("Click the remove button beside its Name, then the Use button that appears. Click add translation, type its "
+            "English name, then click Save in that window and on its page.")
+# An empty block shows only a button that unfolds its unset fields.
+UNSET_SHOWN = " If it is not listed, first click the button that shows the unset fields."
+GAME_WORDS = {
+    ("names-resolve", "value"): ("Its {where} names {name}, which does not exist, so that part does nothing in game.",
+                                 RAW_NAME),
+    # An entry's name cannot be edited on the page, so the entry is copied under the right name.
+    ("names-resolve", "key"): ("Its {where} names {name}, which does not exist, so that part does nothing in game.",
+                               "In {where}, right-click {name} and click Copy branch. Add the right name in the Add box, "
+                               "right-click it, click Paste (replace branch), then remove {name}."),
+    ("like-its-kind", "unset"): ("It has no {where}, so {effect}.", "Open it and fill in {where}.{shown}"),
+    ("like-its-kind", "unset", "Icon"): ("It has no Icon, so {effect}.",
+                                         "Open it and set its Icon to the icon of the most basic item of its set."),
+    ("like-its-kind", "default"): ("It keeps the base {where}, so {effect}.",
+                                   "Open it and set {where} to a value of its own.{shown}"),
+    # Unset, the row offers only Reference existing and Create embedded until one is clicked.
+    ("like-its-kind", "default", "PlayerAnimationsId"): ("It keeps the base PlayerAnimationsId, so {effect}.",
+                                                         "Open it and pick a PlayerAnimationsId from its list. If the row "
+                                                         "shows Reference existing, click it first."),
+    ("like-its-siblings", None): ("It has no {where}, which the other items of its set have.",
+                                  "Open it and set {where} like the others of its set."),
+    ("like-its-siblings", "value"): ("Its {where} is {value}, where the other items of its set all have {others}.",
+                                     "Open it and check its {where}."),
+    # A list entry has no remove button: its number's right-click menu removes it.
+    ("foreign-family", "foreign"): ("The Alteration Table can turn it into {of}, another item, and nothing turns it back.",
+                                    "In its ResourceTypes, right-click the number beside {name}, click Remove element, "
+                                    "then Save."),
+    ("reachable", "item"): ("No player can get it: nothing crafts it, drops it or sells it.",
+                            NEW_RECIPE + " Or add it to a chest loot table."),
+    # A colour of a game item: the Colors page puts the game item in its resource type with one patch.
+    ("reachable", "base outside"): ("No player can get it: its base, the vanilla {base}, does not have its resource type yet.",
+                                    "Open it and click Colors at the top, then click the Fix button."),
+    ("reachable", "recipe"): ("Its recipe can never be crafted, so nobody can make it at a bench.",
+                              RECIPE + " and check each ingredient and the bench."),
+    ("names-and-pictures", "no text"): ("It has no English name, so players see a raw name.", ADD_TRANSLATION),
+    # Its name key may be shared with other items, and a key of its own is right either way.
+    ("names-and-pictures", "slot word"): ("It is worn on the {slot}, but its name says {word}.", OWN_NAME),
+    ("names-and-pictures", "shared", "name"): ("It shows the same name as items that look different.", OWN_NAME),
+    ("names-and-pictures", "shared", "icon"): ("It shares its icon with items of another look, so the icon is right for one of them at most.",
+                                               FIELD_FIX["Icon"]),
+    ("common-files", "different"): ("This file has the same name as a vanilla file, so it replaces that file "
+                                    "everywhere in the game.",
+                                    "Right-click it in the file tree and click Rename... to give it a name of its own, "
+                                    "unless replacing it is what you want."),
+    ("common-files", "identical"): ("This file is a copy of a vanilla file with the same name.",
+                                    "Delete your copy, the vanilla file is used anyway."),
+    ("all-loaded", "not loaded"): ("Hytale did not load this file, so it is missing in game.",
+                                   "Read the other messages about this file: they say why."),
+    ("all-loaded", "none loaded"): ("Hytale loaded none of your work, so the whole mod is missing in game.", SEND),
+    ("server-says", "refused"): ("Hytale refuses to start with your work, because some files cannot load.",
+                                 "Fix each file listed here. Each has its own message in this panel."),
+    ("server-says", "failed to load"): ("Hytale cannot load some of your files, so they are missing in game.",
+                                        "Fix each file listed here. Each has its own message in this panel."),
+}
+# The steps of a click, copied whole from another item of its set: its page has no form for them.
+CLICKS = {"Primary": "left click", "Secondary": "right click"}
+CLICK_CHAIN = re.compile(r"^Interactions\.(?P<click>\w+)\.Interactions(\.\*.*)?$")
+COPY_CLICK = ("Its {click} works differently from the other items of its set.",
+              "Open one of them and right-click the number of its entry under Interactions, {slot}. Click Copy element, "
+              "then here at the same place click Paste (replace element), and Save. If asked about the clipboard, click Allow.")
+SERVER_SAYS = [
+    # The page shows a field no schema describes as its own row, with a remove button.
+    (re.compile(r"^Unused key: (?P<key>\S+)$"), "Hytale ignores its field {key}, so it does nothing.",
+     "Its page shows {key} with a remove button. Click it, then Save, and fill in the field you meant instead."),
+    (re.compile(r"^Asset '(?P<name>[^']+)' of type \S+ doesn't exist!$"),
+     "It names {name}, which does not exist, so Hytale cannot load this file.", RAW_NAME),
+    (re.compile(r"^\[LOC\] Key '(?P<key>server\.(?P<short>[^']+))' does not exist in server\.lang!$"),
+     "It uses the name {key}, which has no English text, so players see a raw name.", LANGUAGES),
+]
+
+
+def where(field: str, kind: str = "") -> str:
+    """A field as HyCreator's page shows it: the field, then the folding blocks around it."""
+    parts = [p for p in str(field).split(".") if p and p != "*"]
+    if kind == "BlockType":
+        parts = ["BlockType", *parts]
+    if not parts:
+        return str(field)
+    return parts[-1] + (" (under " + ", ".join(parts[:-1]) + ")" if len(parts) > 1 else "")
+
+
+def game_words(f: dict) -> dict:
+    """One finding of the game check as Lady reads it, in the same shape as the gates' lines."""
+    d = f.get("detail") or {}
+    fields = {k: (", ".join(map(str, v)) if isinstance(v, list) else v) for k, v in d.items()}
+    form = d.get("form")
+    fields["id"] = f["id"]
+    fields["where"] = where(d.get("field") or "", f["kind"])
+    fields["shown"] = UNSET_SHOWN if f["kind"] == "BlockType" else ""
+    words = GAME_WORDS.get((f["rule"], form, d.get("field"))) or GAME_WORDS.get((f["rule"], form)) \
+        or GAME_WORDS.get((f["rule"], None))
+    chain = CLICK_CHAIN.match(d.get("field") or "")
+    if f["rule"] == "like-its-siblings" and chain:
+        words = COPY_CLICK
+        fields["slot"] = chain.group("click")
+        fields["click"] = CLICKS.get(chain.group("click"), chain.group("click") + " action")
+    if f["rule"] == "server-says" and form in ("warning", "error"):
+        for pattern, says, do in SERVER_SAYS:
+            m = pattern.match(d.get("field") or "")
+            if m:
+                words = (says, do)
+                fields.update(m.groupdict())
+                break
+        else:
+            words = None
+    path = f.get("file") or ""
+    items = [{"label": f["id"], "open": path[len("/Server/"):]}] if path.startswith("/Server/") and path.endswith(".json") \
+        else ([{"label": f["id"]}] if f["kind"] not in ("Server", "ServerLog", "ServerFinding") else [])
+    if f["rule"] == "server-says" and form in ("refused", "failed to load"):
+        items = [{"label": i} for i in d.get("files") or []]
+    if not words:
+        return {"says": "Hytale found something the checks cannot explain yet.", "do": SEND, "items": items,
+                "line": f["fact"], "known": False, "detail": f["fact"]}
+    try:
+        says, do = (w.format(**fields) for w in words)
+    except (KeyError, IndexError):
+        return {"says": "Hytale found something the checks cannot explain yet.", "do": SEND, "items": items,
+                "line": f["fact"], "known": False, "detail": f["fact"]}
+    return {"says": says, "do": do, "items": items, "line": f["fact"], "known": True, "owner": f.get("owner", "mod")}
+
+
+def finding_key(f: dict) -> str:
+    d = f.get("detail") or {}
+    return "|".join(str(x) for x in (f["rule"], f["kind"], f["id"], d.get("field"), d.get("form"), d.get("name"),
+                                      d.get("word")))
+
+
+def run_snapshot(out: str, game: str, packs: list[str], jar: str | None) -> tuple[bool, str]:
+    cmd = [sys.executable, os.path.join(GAME_DIR, "snapshot.py"), "--out", out, "--game", game]
+    if jar:
+        cmd += ["--mod", jar]
+    for p in packs:
+        cmd += ["--pack", p]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1200,
+                           stdin=subprocess.DEVNULL, creationflags=NO_WINDOW,
+                           env=dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1"))
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return False, str(exc)
+    return r.returncode == 0, (r.stdout + r.stderr).strip()
+
+
+# Twice the longest a snapshot may run (run_snapshot's timeout): a run's folder older than this was cut off.
+STALE_SECONDS = 2 * 1200
+
+
+def own_folder(name: str) -> str:
+    """A snapshot folder for this run alone, beside the shared one it will replace.
+
+    The hooks start a run after every commit, pull and branch switch, so two runs often overlap. Both once snapshotted
+    into the same folder, and the second refused it ("exists and was not written by this tool"). A run cut off halfway
+    left that folder without its run.json, and every later run refused it the same way, for good. A folder of this
+    kind left by a run that was cut off is removed once it is older than STALE_SECONDS.
+    """
+    import pathlib
+    import snapshot
+    for entry in os.listdir(WORK):
+        path = os.path.join(WORK, entry)
+        if entry.startswith(name + ".") and entry[len(name) + 1:].isdigit() and os.path.isdir(path) \
+                and time.time() - os.path.getmtime(path) > STALE_SECONDS:
+            snapshot.remove_tree(pathlib.Path(path))
+    return os.path.join(WORK, f"{name}.{os.getpid()}")
+
+
+def keep_as(mine: str, shared: str, replace: bool) -> str:
+    """Moves this run's finished snapshot to the shared folder and returns where it is now.
+
+    replace: an older snapshot there gives way. Without it, a finished one there is kept and this run's is dropped,
+    since another run made the same one first. A shared folder with no run.json, left by an older version of these
+    checks that was cut off, always gives way.
+    """
+    import pathlib
+    import snapshot
+    finished = os.path.isfile(os.path.join(shared, "run.json"))
+    if finished and not replace:
+        snapshot.remove_tree(pathlib.Path(mine))
+        return shared
+    if os.path.isdir(shared):
+        snapshot.remove_tree(pathlib.Path(shared))
+    try:
+        os.replace(mine, shared)
+        return shared
+    except OSError:
+        # Another run moved its own there in between, or a file in it is still open: this run's stays where it is,
+        # and a later run removes it once it is stale.
+        return mine
+
+
+def game_findings(vanilla: str, modded: str) -> list[dict]:
+    if GAME_DIR not in sys.path:
+        sys.path.insert(0, GAME_DIR)
+    import model
+    import owners
+    import rules
+    pair = model.Pair(model.Snapshot(vanilla), model.Snapshot(modded))
+    out = []
+    for rule in rules.RULES:
+        for f in rule.run(pair):
+            d = dict(f.detail)
+            # Whose it is comes from the one owner table both checks read. The engine's own loading order is nobody's
+            # to fix. And only what a player meets: a file that differs from the game's own with no proven effect, or a
+            # plain copy of another file, is not a problem to fix.
+            owner = owners.owner_of(f.rule, f.id, f.file or "", d)[0]
+            if owner == "game" or not rules.effect_proven(f):
+                continue
+            out.append({"rule": f.rule, "kind": f.kind, "id": f.id, "file": f.file, "fact": f.fact, "detail": d,
+                        "owner": owner})
+    return out
+
+
+def check_game(own: list[str] | None, starts: list[str], why: str, game: str) -> dict:
+    """Her work as the game loads it: every finding, the ones absent where her branch started marked new and first.
+
+    Before 2026-10-27 only the new ones showed, so a problem already there when her branch started never reached
+    her ("it's better we get everything than we miss some"). A branch with no work of its own has nothing new, and a
+    copy never pulled from GitHub has no start to compare with, so nothing is marked new on either.
+    """
+    changed = bool(git("status", "--porcelain", "--", "src/main/resources"))
+    compare = own is not None and (bool(own) or changed)
+    if not os.path.isfile(os.path.join(GAME_DIR, "snapshot.py")) or not os.path.isfile(CODE_JAR):
+        return {"status": "error", "problems": [], "output_tail": ["the game check's files are missing"]}
+    sys.path.insert(0, GAME_DIR)
+    import snapshot
+    version = snapshot.read_version(os.path.join(game, "Server", "HytaleServer.jar")) or "unknown"
+    os.makedirs(WORK, exist_ok=True)
+    vanilla = os.path.join(WORK, f"vanilla-{version}")
+    if not os.path.isfile(os.path.join(vanilla, "run.json")):
+        mine = own_folder(f"vanilla-{version}")
+        ok, text = run_snapshot(mine, game, [], None)
+        if not ok:
+            return {"status": "error", "problems": [], "output_tail": text.splitlines()[-6:]}
+        vanilla = keep_as(mine, vanilla, replace=False)
+    # What her branch started from, computed once per starting commit, game version and rules.
+    rules_id = git("hash-object", os.path.join(GAME_DIR, "rules.py")) or "?"
+    base_keys: set[str] = set()
+    for start in starts if compare else []:
+        cache = os.path.join(WORK, f"base-{start[:12]}-{version}-{rules_id[:12]}.json")
+        if not os.path.isfile(cache):
+            keys = base_findings(start, game, vanilla)
+            if keys is None:
+                return {"status": "error", "problems": [], "output_tail": [f"the start {start[:12]} could not be read"]}
+            write_json(cache, {"keys": sorted(keys)})
+        with open(cache, encoding="utf-8") as fh:
+            base_keys |= set(json.load(fh)["keys"])
+    mine = own_folder("now")
+    ok, text = run_snapshot(mine, game, [RESOURCES], CODE_JAR)
+    if not ok:
+        return {"status": "error", "problems": [], "output_tail": text.splitlines()[-6:]}
+    found = game_findings(vanilla, mine)
+    # The latest snapshot stays readable as "now", for a person looking into a finding.
+    keep_as(mine, os.path.join(WORK, "now"), replace=True)
+    lady = []
+    for f in found:
+        e = game_words(f)
+        e["new"] = compare and finding_key(f) not in base_keys
+        # What "Normal for me" remembers: the finding itself, never its sentence, whose counts move with the game.
+        e["key"] = "game|" + finding_key(f)
+        d = f.get("detail") or {}
+        # What it is about, so a line another check states about the same thing can be folded into it.
+        e["about"] = {"rule": f["rule"], "id": f["id"], "form": d.get("form"), "name": d.get("name")}
+        lady.append(e)
+    lady.sort(key=lambda e: not e["new"])
+    return {"status": "fail" if found else "pass", "problems": [f["fact"] for f in found], "lady": lady,
+            "new": sum(e["new"] for e in lady), "output_tail": []}
+
+
+def base_findings(start: str, game: str, vanilla: str) -> set[str] | None:
+    """The findings at a commit: its files and its code jar, booted like her own work."""
+    import io
+    import tarfile
+    import tempfile
+    with tempfile.TemporaryDirectory(dir=WORK) as tmp:
+        # Read from git's output, never from a file git writes: the Python a Windows store installs keeps a folder
+        # it creates under AppData to itself, and git cannot see it.
+        r = subprocess.run(["git", "-C", REPO, "archive", "--format=tar", start, "src/main/resources",
+                            "Studio/Tools/TheArmory-code.jar"], capture_output=True, stdin=subprocess.DEVNULL,
+                           creationflags=NO_WINDOW)
+        if r.returncode != 0:
+            return None
+        with tarfile.open(fileobj=io.BytesIO(r.stdout)) as tar:
+            tar.extractall(tmp, filter="data")
+        snap = os.path.join(tmp, "snapshot")
+        ok, _ = run_snapshot(snap, game, [os.path.join(tmp, "src", "main", "resources")],
+                             os.path.join(tmp, "Studio", "Tools", "TheArmory-code.jar"))
+        if not ok:
+            return None
+        return {finding_key(f) for f in game_findings(vanilla, snap)}
+
+
 def run_all() -> dict:
     started = now()
     clock = time.monotonic()
@@ -587,11 +972,18 @@ def run_all() -> dict:
             ("branch", "Your branch", check_branch()),
             ("languages", "Language files", check_languages(own, starts, why)),
             ("generated", "Files our tools make", check_generated(own, starts, why)),
+            ("game", "Your work in the game", check_game(own, starts, why, game)),
         ):
             entry = {"id": name, "title": title, "seconds": None}
             entry.update(outcome)
             result["checks"].append(entry)
         lady_view(result["checks"])
+        fold_game(result["checks"])
+        for c in result["checks"]:
+            for e in c.get("lady") or []:
+                e["owner"] = owner_of_card(c["id"], e)
+                e.setdefault("key", c["id"] + "|" + e["line"])
+        result["normal"] = apply_normal(result["checks"], read_normal())
     result["finished"] = now()
     result["seconds"] = round(time.monotonic() - clock, 1)
     return result
@@ -605,17 +997,51 @@ def write_json(path: str, value: dict) -> None:
     os.replace(temp, path)
 
 
-def groups(result: dict) -> list[dict]:
-    """Every problem of every check, the ones that say the same thing together, the largest first."""
+def read_normal() -> list[dict]:
+    """Her "Normal for me" entries, or none when the file is missing or unreadable (a broken file hides nothing)."""
+    try:
+        with open(NORMAL, encoding="utf-8-sig") as fh:
+            entries = json.load(fh).get("normal")
+    except (OSError, ValueError, AttributeError):
+        return []
+    return [e for e in entries or [] if isinstance(e, dict) and isinstance(e.get("key"), str)]
+
+
+def apply_normal(checks: list[dict], entries: list[dict]) -> dict:
+    """Marks each problem she judged normal as hidden: one entry is one problem on one item, never the same problem on
+    another item, never another problem on the same item. Returns how many are hidden, and the entries that match
+    nothing any more (the problem was fixed or its item renamed), which she can remove."""
+    wanted = {e["key"] + "|" + str(e.get("item") or "") for e in entries}
+    seen = set()
+    for c in checks:
+        for e in c.get("lady") or []:
+            labels = [i["label"] for i in e["items"]] or [""]
+            e["hidden"] = [lab for lab in labels if e["key"] + "|" + lab in wanted]
+            seen |= {e["key"] + "|" + lab for lab in e["hidden"]}
+    stale = [e for e in entries if e["key"] + "|" + str(e.get("item") or "") not in seen]
+    return {"hidden": len(seen), "stale": stale}
+
+
+def groups(result: dict, owner: str | None = None) -> list[dict]:
+    """Every problem of every check, the ones that say the same thing together, new first, then the largest. With an
+    owner, only that owner's. A problem she judged normal is left out."""
     out: dict[tuple[str, str], dict] = {}
     for c in result["checks"]:
         for e in c.get("lady") or []:
-            g = out.setdefault((e["says"], e["do"]), {"says": e["says"], "do": e["do"], "items": [], "count": 0, "details": []})
+            if owner and e.get("owner", "mod") != owner:
+                continue
+            hidden = set(e.get("hidden") or [])
+            items = [i for i in e["items"] if i["label"] not in hidden]
+            if (e["items"] and not items) or (not e["items"] and "" in hidden):
+                continue
+            g = out.setdefault((e["says"], e["do"]), {"says": e["says"], "do": e["do"], "items": [], "count": 0, "details": [],
+                                                      "new": False})
             g["count"] += 1
-            g["items"] += [i["label"] for i in e["items"] if i["label"] not in g["items"]]
+            g["new"] = g["new"] or bool(e.get("new"))
+            g["items"] += [i["label"] for i in items if i["label"] not in g["items"]]
             if e.get("detail"):
                 g["details"].append(e["detail"])
-    return sorted(out.values(), key=lambda g: -max(g["count"], len(g["items"])))
+    return sorted(out.values(), key=lambda g: (not g["new"], -max(g["count"], len(g["items"]))))
 
 
 def when(stamp: str | None) -> str:
@@ -630,14 +1056,30 @@ def summary(result: dict) -> tuple[str, bool]:
     if result["error"]:
         detail = result.get("error_detail")
         return head + "\n" + result["error"] + (f"\nFor Larsonix: {detail}" if detail else ""), False
-    found = groups(result)
+    found = groups(result, "mod")
+    ours = groups(result, "us")
+    stopped = [c for c in result["checks"] if c.get("status") == "error"]
+    normal = result.get("normal") or {}
+    tail = []
+    if ours:
+        tail += ["", "Larsonix's problems, he fixes these:"] + ["  " + (f"{len(g['items'])} items: " if len(g["items"]) > 1 else
+                                                                         (g["items"][0] + ": " if g["items"] else "")) + g["says"]
+                                                                  for g in ours]
+    if normal.get("hidden"):
+        tail += ["", f"Hidden as normal for you: {normal['hidden']}. The checks panel in HyCreator shows them."]
+    if normal.get("stale"):
+        tail += ["", "Marked normal, but no longer found: " + ", ".join(str(e.get("item") or "") for e in normal["stale"][:10])
+                 + ". Remove them in the checks panel."]
+    # Her own open problems fail the run, and so does a check that could not run. Ours never stop her release.
+    ok = not found and not stopped
     if not found:
-        return head + ": everything is fine.", True
+        return head + ": everything of yours is fine." + "\n".join([""] + tail), ok
     total = len(found)
     lines = [head, f"{total} thing{'s' if total != 1 else ''} to fix.", ""]
     for g in found:
         many = len(g["items"]) > 1
-        lines.append((f"{len(g['items'])} items: " if many else (g["items"][0] + ": " if g["items"] else "")) + g["says"])
+        lines.append(("New: " if g["new"] else "") + (f"{len(g['items'])} items: " if many else (g["items"][0] + ": " if g["items"] else ""))
+                     + g["says"])
         lines.append("  To fix: " + g["do"])
         if many:
             shown = ", ".join(g["items"][:10]) + (f" and {len(g['items']) - 10} more" if len(g["items"]) > 10 else "")
@@ -646,7 +1088,7 @@ def summary(result: dict) -> tuple[str, bool]:
             lines.append("  For Larsonix: " + detail.replace("\n", "\n    "))
         lines.append("")
     lines.append("Everything else is fine.")
-    return "\n".join(lines).rstrip(), False
+    return "\n".join(lines + tail).rstrip(), False
 
 
 def spawn() -> int:

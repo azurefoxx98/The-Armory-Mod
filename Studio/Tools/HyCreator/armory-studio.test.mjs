@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups } from './armory-studio.js';
+import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, ladyItems, sortItems, matchesFilter, ITEM_ORDERS, hyCreatorTooOld, NEEDS_HYCREATOR, withMark, withoutMark, sheetColour } from './armory-studio.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const resources = path.resolve(here, '..', '..', '..', 'src', 'main', 'resources');
@@ -226,6 +226,17 @@ const readJson = rel => JSON.parse(fs.readFileSync(path.join(resources, 'Server'
 
 check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && colourKey('Gold Blue.png') === 'Gold_Blue');
 
+// The oldest HyCreator the plugin works in. 1.3.8 is the last one with the empty vanilla listing and
+// the empty file picker, so it alone of these is refused.
+{
+  const old = ['1.3.8', '1.3.0', '1.2.9', '0.9.9'];
+  const fine = ['1.3.9', '1.3.10', '1.4.0', '1.10.0', '2.0.0', '1.4.0-beta.1'];
+  check('HyCreator too old: ' + old.join(', '), old.every(hyCreatorTooOld), old.filter(v => !hyCreatorTooOld(v)).join(', '));
+  check('HyCreator new enough: ' + fine.join(', '), !fine.some(hyCreatorTooOld), fine.filter(hyCreatorTooOld).join(', '));
+  check('HyCreator whose version cannot be read is let through', ![undefined, null, '', 'dev', '1.3'].some(hyCreatorTooOld));
+  check('the floor is 1.3.9', NEEDS_HYCREATOR === '1.3.9');
+}
+
 // Files made by a tool: the 48 patches that put the loot tables in chests and every showcase file,
 // and nothing of Lady's. The four chest loot tables are hers to edit.
 {
@@ -253,6 +264,23 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   const theirs = JSON.parse(answers);
   const differ = asked.filter((p, i) => (madeByTool(p.startsWith('Server/') ? p.slice('Server/'.length) : '../' + p) || null) !== theirs[i]);
   check('made by a tool: the plugin and the checks agree on all ' + asked.length + ' files', differ.length === 0, differ.slice(0, 3).join(', '));
+}
+
+// A texture named for no colour never gives a colour name (the gray Praetorian helm wears Head_Texture.png).
+{
+  check('colour name: Helm_Blue.png is Blue', sheetColour('Items/X/Helm_Blue.png') === 'Blue');
+  check('colour name: Head_Texture.png names no colour', sheetColour('Items/X/Head_Texture.png') === null);
+  check('colour name: a plain colour file is its colour', sheetColour('Items/X/Deep orange.png') === 'Deep_Orange');
+  const a = await analyse(makeReader(io()), 'Item/Items/Praetorian_Helm.json');
+  check('colour name: the Praetorian helm set offers no Praetorian_Helm_Texture', a.set && !a.cells.some(c => c.id === 'Praetorian_Helm_Texture'),
+    a.cells ? a.cells.map(c => c.id).join(', ') : JSON.stringify(a).slice(0, 200));
+  const gray = a.cells && a.cells.find(c => c.items.some(i => i.id === 'Praetorian_Helm_Gray'));
+  check('colour name: the gray helm stays in its own cell, unnamed, with nothing to make', gray && gray.unnamed && !gray.missing);
+  const removed = new Set(['Item/Items/Praetorian_Helm_Gray.json']);
+  const b = await analyse(makeReader(io(new Map(), removed)), 'Item/Items/Praetorian_Helm.json');
+  const empty = b.cells && b.cells.find(c => c.unnamed);
+  check('colour name: without the gray helm its texture is offered as nothing to make', empty && empty.missing
+    && !defaultChoice(b).make.has(null) && plan(b, { make: new Set([null]), fix: new Set() }).create.length === 0);
 }
 
 // The checks panel and its notices, from results shaped as check.py writes them.
@@ -296,6 +324,81 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   check('notice: one thing is spelt singular', /found 1 thing to fix\./.test(noticeFor(null, { ...fail, checks: [fail.checks[0]] }) || ''));
   check('ladyGroups: entries with the same words and fix merge, others stay apart',
     ladyGroups([{ says: 'a', do: 'b', items: [{ label: 'X' }] }, { says: 'a', do: 'b', items: [{ label: 'X' }, { label: 'Y' }] }, { says: 'a', do: 'c', items: [] }]).map(g => g.items.length).join() === '2,0');
+
+  // "Normal for me": one problem on one item, never the same problem on another item, and each can come back.
+  const key = 'itemcheck|' + quality.says;
+  const one = checkView(fail, null, [{ key, item: 'B' }]);
+  const q1 = one.groups.find(g => g.says === quality.says);
+  check('normal: a problem judged normal on one item still shows on the other', q1 && q1.items.map(i => i.label).join() === 'C', JSON.stringify(q1));
+  check('normal: the hidden one is listed to be shown again', one.hidden.length === 1 && one.hidden[0].item === 'B' && one.hidden[0].key === key);
+  const both = checkView(fail, null, [{ key, item: 'B' }, { key, item: 'C' }]);
+  check('normal: a card whose every item is normal leaves her list', !both.groups.some(g => g.says === quality.says) && both.problems === 1);
+  const gone = checkView(fail, null, [{ key: 'itemcheck|gone', item: 'Old' }]);
+  check('normal: a mark matching nothing any more is listed apart', gone.stale.length === 1 && gone.stale[0].item === 'Old' && gone.hidden.length === 0);
+  check('normal: the notice counts only what is still hers', /found 1 thing to fix/.test(noticeFor(null, fail, [{ key, item: 'B' }, { key, item: 'C' }]) || ''));
+  const marks = withMark(withMark([], { key, item: 'B' }), { key, item: 'B', date: 'x' });
+  check('normal: marking twice keeps one mark, and Show again removes it', marks.length === 1 && marks[0].date === 'x'
+    && withoutMark(marks, { key, item: 'B' }).length === 0 && withoutMark(marks, { key, item: 'C' }).length === 1);
+  check('normal: the button carries the key of the item\'s own problem',
+    checkView({ ...fail, checks: [{ id: 'game', status: 'fail', lady: [{ ...quality, key: 'game|k', items: [{ label: 'B' }] }] }] }, null, [])
+      .groups[0].items[0].problem === 'game|k');
+
+  // Larsonix's problems: apart, read only, never counted as hers.
+  const ours = { ...fail, checks: [...fail.checks, { id: 'game', title: 'G', status: 'fail', lady: [
+    { says: 'Uses the stat Volatility.', do: 'x', owner: 'us', items: [{ label: 'Praetorian_Boots' }] }] }] };
+  const ov2 = checkView(ours, null, []);
+  check("ours: Larsonix's problems are kept apart and not counted as hers", ov2.ours.length === 1 && ov2.problems === 2
+    && !ov2.groups.some(g => g.says === 'Uses the stat Volatility.'));
+  const onlyOurs = { ...pass, checks: [{ id: 'game', title: 'G', status: 'fail', lady: [{ says: 'Ours.', do: 'x', owner: 'us', items: [] }] }] };
+  check("ours: with only Larsonix's problems her panel says everything of hers is fine", checkView(onlyOurs, null, []).state === 'pass');
+
+  // What her work added comes first, whatever its size.
+  const order = ladyGroups([{ says: 'big', do: 'x', items: [{ label: '1' }, { label: '2' }, { label: '3' }] }, { says: 'small', do: 'x', items: [{ label: 'a' }], new: true }]);
+  check('new: what her work added comes first', order[0].says === 'small' && order[0].new === true);
+
+  // The view by item: the same problems, each item once with every problem on it, and the same marks.
+  const two = { ...pass, checks: [{ id: 'game', title: 'G', status: 'fail', lady: [
+    { says: 'No icon.', do: 'Generate one.', key: 'game|icon|B', items: [{ label: 'B', open: 'Item/Items/A/B.json' }] },
+    { says: 'No icon.', do: 'Generate one.', key: 'game|icon|C', items: [{ label: 'C', open: 'Item/Items/Z/C.json' }] },
+    { says: 'No name.', do: 'Add one.', key: 'game|name|B', items: [{ label: 'B', open: 'Item/Items/A/B.json' }], new: true },
+    { says: 'Its stat X does not exist.', do: 'x', key: 'game|stat|B', owner: 'us', items: [{ label: 'B' }] },
+    { says: 'The check could not run.', do: 'Send a screenshot.', key: 'branch|run', items: [] }] }] };
+  const bv = checkView(two, null, []);
+  const li = ladyItems(bv.entries);
+  const b = li.items.find(i => i.label === 'B');
+  check('by item: each item once, with every problem on it', li.items.length === 2 && b && b.problems.length === 2 && li.items.find(i => i.label === 'C').problems.length === 1,
+    JSON.stringify(li.items.map(i => [i.label, i.problems.length])));
+  check('by item: an item keeps the file it opens', b.open === 'Item/Items/A/B.json');
+  check('by item: a problem on no item stays a card of its own', li.loose.length === 1 && li.loose[0].says === 'The check could not run.');
+  check('by item: what her work added comes first on the item, and marks the item new', b.new && b.problems[0].says === 'No name.');
+  check('by item: each problem keeps its own key for Normal for me', b.problems.map(p => p.key).sort().join() === 'game|icon|B,game|name|B');
+  check("by item: Larsonix's problems stay apart", !li.items.some(i => i.problems.some(p => p.says.startsWith('Its stat')))
+    && ladyItems(bv.ourEntries).items.length === 1 && ladyItems(bv.ourEntries).items[0].problems[0].says === 'Its stat X does not exist.');
+  const marked = checkView(two, null, [{ key: 'game|icon|B', item: 'B' }]);
+  const mb = ladyItems(marked.entries).items.find(i => i.label === 'B');
+  check('by item: a mark made in either view hides that one problem on that item in both', mb.problems.length === 1 && mb.problems[0].key === 'game|name|B'
+    && marked.groups.find(g => g.says === 'No icon.').items.map(i => i.label).join() === 'C');
+  const allMarked = checkView(two, null, [{ key: 'game|icon|B', item: 'B' }, { key: 'game|name|B', item: 'B' }]);
+  check('by item: an item whose every problem is normal leaves the list', !ladyItems(allMarked.entries).items.some(i => i.label === 'B'));
+
+  // The orders, each breaking its ties by name.
+  const it = (label, n, isNew = false, open) => ({ label, open, new: isNew, problems: Array(n).fill({}) });
+  const list = [it('b', 1), it('A', 2), it('c', 3, true), it('a10', 1), it('a9', 1), it('d', 2, false, 'Item/Items/Z/d.json'), it('e', 2, false, 'Item/Items/B/e.json')];
+  const names = order => sortItems(list, order).map(i => i.label).join();
+  check('sort: by name, A to Z, any case, numbers as numbers', names('name') === 'A,a9,a10,b,c,d,e', names('name'));
+  check('sort: most problems first, ties by name', names('count') === 'c,A,d,e,a9,a10,b', names('count'));
+  check('sort: new first, then most problems, then name', names('new') === 'c,A,d,e,a9,a10,b', names('new'));
+  check('sort: by folder, then name', names('folder').startsWith('A,a9,a10,b,c,e,d'), names('folder'));
+  check('sort: an unknown order falls back to new first', names('nonsense') === names('new'));
+  check('sort: the list given is never reordered', list.map(i => i.label).join() === 'b,A,c,a10,a9,d,e');
+  check('sort: every order offered exists', ITEM_ORDERS.every(o => sortItems(list, o.id).length === list.length) && ITEM_ORDERS.map(o => o.id).join() === 'new,count,name,folder');
+
+  // The filter: every word typed, any case, any order, a space for an underscore.
+  check('filter: words in any order and case', matchesFilter('Praetorian_Boots_Gray', 'gray PRAETORIAN') && matchesFilter('Praetorian_Boots_Gray', 'praetorian boots'));
+  check('filter: an underscore typed counts as a space', matchesFilter('Praetorian_Boots_Gray', 'praetorian_gray'));
+  check('filter: every word must be there',!matchesFilter('Praetorian_Boots_Gray', 'praetorian red'));
+  check('filter: empty keeps everything', matchesFilter('X', '') && matchesFilter('X', '   ') && matchesFilter('X', null));
+  check('filter: a path is found by its file name', matchesFilter('UI/Custom/Common/Buttons/Disabled@2x.png', 'disabled'));
 }
 
 // The guide in the repository is the panel's text, word for word.

@@ -302,7 +302,202 @@ SAMPLES = [
 ]
 
 
+# One finding of each kind the game check reports, as game/rules.py makes it, and what Lady reads.
+GAME_SAMPLES = [
+    ({"rule": "names-resolve", "kind": "Item", "id": "Praetorian_Boots", "file": "/Server/Item/Items/Praetorian_Boots.json",
+      "fact": "x", "detail": {"field": "Armor.StatModifiers", "name": "Volatility", "form": "key"}}, "names Volatility"),
+    ({"rule": "like-its-kind", "kind": "BlockType", "id": "Scribing_Table", "file": "/Server/Item/Items/Scribing_Table.json",
+      "fact": "x", "detail": {"field": "ParticleColor", "form": "unset", "effect": "the world map draws it white"}},
+     "It has no ParticleColor (under BlockType), so the world map draws it white"),
+    ({"rule": "like-its-kind", "kind": "BlockType", "id": "Dice_D6", "file": "",
+      "fact": "x", "detail": {"field": "BlockSoundSetId", "form": "default", "effect": "it makes no sound when placed or broken"}},
+     "keeps the base BlockSoundSetId (under BlockType), so it makes no sound"),
+    ({"rule": "like-its-kind", "kind": "ResourceType", "id": "RookEliteHelm", "file": "/Server/Item/ResourceTypes/R.json",
+      "fact": "x", "detail": {"field": "Icon", "form": "unset", "effect": "the crafting window shows an empty square for it"}},
+     "icon of the most basic item"),
+    ({"rule": "like-its-siblings", "kind": "Item", "id": "Praetorian_Boots_Gray", "file": "/Server/Item/Items/B.json",
+      "fact": "x", "detail": {"field": "SoundEventId", "set": "Praetorian"}}, "the other items of its set have"),
+    ({"rule": "like-its-siblings", "kind": "Item", "id": "RookEliteBootsCharred", "file": "",
+      "fact": "x", "detail": {"field": "Armor.X", "form": "value", "value": 19, "others": 15}}, "is 19, where"),
+    ({"rule": "foreign-family", "kind": "Item", "id": "BramblekinBracers", "file": "/Server/Item/Items/B.json", "fact": "x",
+      "detail": {"field": "ResourceTypes", "form": "foreign", "name": "Resource_Armor_Iron_Hands", "of": "Armor_Iron_Hands"}},
+     "beside Resource_Armor_Iron_Hands, click Remove element"),
+    ({"rule": "reachable", "kind": "Item", "id": "Praetorian_Helm", "file": "", "fact": "x",
+      "detail": {"form": "item", "makers": []}}, "No player can get it"),
+    ({"rule": "reachable", "kind": "Item", "id": "Armor_Thorium_Chest_Black", "file": "", "fact": "x",
+      "detail": {"form": "base outside", "makers": [], "base": "Armor_Thorium_Chest", "name": "Resource_Thorium_Chest"}},
+     "the vanilla Armor_Thorium_Chest, does not have its resource type yet"),
+    ({"rule": "reachable", "kind": "CraftingRecipe", "id": "R", "file": "", "fact": "x",
+      "detail": {"form": "recipe", "output": "A"}}, "can never be crafted"),
+    ({"rule": "names-and-pictures", "kind": "Item", "id": "Goblin_Skirt", "file": "", "fact": "x",
+      "detail": {"field": "name", "form": "no text"}}, "no English name"),
+    ({"rule": "names-and-pictures", "kind": "Item", "id": "A", "file": "", "fact": "x",
+      "detail": {"field": "name", "form": "slot word", "word": "chestplate", "slot": "Head"}}, "its name says chestplate"),
+    ({"rule": "names-and-pictures", "kind": "Item", "id": "A", "file": "", "fact": "x",
+      "detail": {"field": "icon", "form": "shared", "with": ["B"]}}, "shares its icon"),
+    ({"rule": "names-and-pictures", "kind": "Item", "id": "A", "file": "", "fact": "x",
+      "detail": {"field": "name", "form": "shared", "with": ["B"]}}, "the same name"),
+    ({"rule": "common-files", "kind": "CommonFile", "id": "Icons/X.png", "file": "Icons/X.png", "fact": "x",
+      "detail": {"field": "replace", "form": "different"}}, "replaces that file"),
+    ({"rule": "all-loaded", "kind": "Item", "id": "Mirror_Shield", "file": "/Server/Item/Items/M.json", "fact": "x",
+      "detail": {"field": "file", "form": "not loaded"}}, "did not load this file"),
+    ({"rule": "all-loaded", "kind": "Mod", "id": "x.jar", "file": "", "fact": "x",
+      "detail": {"field": "files", "form": "none loaded", "count": 9}}, "loaded none of your work"),
+    ({"rule": "server-says", "kind": "Server", "id": "refuses to start", "file": "", "fact": "x",
+      "detail": {"field": "boot", "form": "refused", "files": ["Mirror_Shield"]}}, "refuses to start"),
+    ({"rule": "server-says", "kind": "ServerFinding", "id": "Mirror_Shield", "file": "/Server/Item/Items/M.json", "fact": "x",
+      "detail": {"field": "Asset 'Mirror_Distortion_System_Glow' of type com.x.ParticleSystem doesn't exist!",
+                 "form": "error"}}, "names Mirror_Distortion_System_Glow"),
+    ({"rule": "server-says", "kind": "ServerFinding", "id": "S", "file": "/Server/Item/Interactions/S.json", "fact": "x",
+      "detail": {"field": "Unused key: Config.Particles.0.ParticleColor", "form": "warning"}}, "ignores its field"),
+    ({"rule": "server-says", "kind": "ServerFinding", "id": "M", "file": "/Server/Item/Items/M.json", "fact": "x",
+      "detail": {"field": "[LOC] Key 'server.items.Wyrm_Shield.name' does not exist in server.lang!", "form": "warning"}},
+     "no English text"),
+    # The language file spells its keys without server. in front, so that is what she types.
+    ({"rule": "server-says", "kind": "ServerFinding", "id": "M", "file": "/Server/Item/Items/M.json", "fact": "x",
+      "detail": {"field": "[LOC] Key 'server.items.Wyrm_Shield.name' does not exist in server.lang!", "form": "warning"}},
+     "type items.Wyrm_Shield.name and its English text"),
+    ({"rule": "names-and-pictures", "kind": "Item", "id": "Goblin_Skirt", "file": "", "fact": "x",
+      "detail": {"field": "name", "form": "no text"}}, "click add translation beside its Name"),
+    ({"rule": "names-and-pictures", "kind": "Item", "id": "Relentless", "file": "", "fact": "x",
+      "detail": {"field": "name", "form": "shared", "with": ["B"]}}, "then the Use button that appears"),
+    ({"rule": "like-its-siblings", "kind": "Item", "id": "StandingArmorVerdan", "file": "", "fact": "x",
+      "detail": {"field": "Interactions.Secondary.Interactions.*.{Next, Type}"}}, "Its right click works differently"),
+    ({"rule": "like-its-siblings", "kind": "Item", "id": "Voidhood_Goblin", "file": "", "fact": "x",
+      "detail": {"field": "Armor.StatModifiers.Mana.*.Amount", "form": "value", "value": 18.0, "others": 5.0}},
+     "check its Amount (under Armor, StatModifiers, Mana)"),
+    ({"rule": "like-its-kind", "kind": "Item", "id": "KanohiHau", "file": "", "fact": "x",
+      "detail": {"field": "PlayerAnimationsId", "form": "default", "effect": "x"}}, "If the row shows Reference existing, click it first"),
+    ({"rule": "like-its-kind", "kind": "BlockType", "id": "Dice_D6", "file": "", "fact": "x",
+      "detail": {"field": "BlockParticleSetId", "form": "unset", "effect": "x"}}, "the button that shows the unset fields"),
+    ({"rule": "names-resolve", "kind": "Item", "id": "X", "file": "", "fact": "x",
+      "detail": {"field": "Interactions.Primary.Interactions.*.Effects.WorldSoundEventId", "name": "SFX_Ghost", "form": "value"}},
+     "Open JSON. Change SFX_Ghost to a name that exists"),
+]
+
+
+def own_folders(expect) -> None:
+    """Two game check runs at once, or one cut off halfway, never stop the next one (the shared snapshot folder did)."""
+    work = tempfile.mkdtemp(prefix="armory-work-")
+    saved = check.WORK
+    check.WORK = work
+    try:
+        # What a run cut off halfway left behind: a shared folder with no run.json, and its own folder, long stale.
+        os.makedirs(os.path.join(work, "now", "server"))
+        stale = os.path.join(work, "now.4242")
+        os.makedirs(os.path.join(stale, "server"))
+        os.utime(stale, (time.time() - check.STALE_SECONDS - 60,) * 2)
+        live = os.path.join(work, "now.4343")
+        os.makedirs(live)
+        mine = check.own_folder("now")
+        expect("a run snapshots into a folder of its own", os.path.basename(mine) == f"now.{os.getpid()}")
+        expect("a folder left by a run cut off long ago is removed", not os.path.exists(stale))
+        expect("a folder of a run still going is left alone", os.path.isdir(live))
+        os.makedirs(os.path.join(mine, "stores"))
+        with open(os.path.join(mine, "run.json"), "w", encoding="utf-8") as fh:
+            fh.write("{}")
+        kept = check.keep_as(mine, os.path.join(work, "now"), replace=True)
+        expect("the finished snapshot replaces the half-written shared folder", kept == os.path.join(work, "now")
+               and os.path.isfile(os.path.join(work, "now", "run.json")) and not os.path.exists(mine))
+        # The game alone, already made by another run: this run's own copy is dropped and theirs is read.
+        van = os.path.join(work, "vanilla-x")
+        os.makedirs(van)
+        with open(os.path.join(van, "run.json"), "w", encoding="utf-8") as fh:
+            fh.write('{"run": "first"}')
+        other = check.own_folder("vanilla-x")
+        os.makedirs(other)
+        with open(os.path.join(other, "run.json"), "w", encoding="utf-8") as fh:
+            fh.write('{"run": "second"}')
+        kept = check.keep_as(other, van, replace=False)
+        with open(os.path.join(van, "run.json"), encoding="utf-8") as fh:
+            first = json.load(fh).get("run") == "first"
+        expect("a finished game-alone snapshot made first by another run is kept, this run's dropped",
+               kept == van and first and not os.path.exists(other))
+    finally:
+        check.WORK = saved
+        shutil.rmtree(work, ignore_errors=True)
+
+
 def words(expect) -> None:
+    wrong = []
+    for finding, part in GAME_SAMPLES:
+        e = check.game_words(finding)
+        if not e["known"] or part not in e["says"] + " " + e["do"]:
+            wrong.append(f"{finding['rule']} {finding['detail'].get('form')} -> {e['says']} / {e['do']}")
+    expect(f"each of the {len(GAME_SAMPLES)} kinds of game finding reads as Lady's words", not wrong, "\n      ".join(wrong))
+    odd = check.game_words({"rule": "server-says", "kind": "ServerLog", "id": "x", "file": "", "fact": "a new line",
+                            "detail": {"field": "a new line", "form": "log"}})
+    expect("a game finding no text knows is kept whole for Larsonix", not odd["known"] and odd["do"] == check.SEND
+           and odd["detail"] == "a new line", odd)
+    sys.path.insert(0, check.GAME_DIR)
+    import owners
+    tool_files = ["Server/Item/Items/Armory_Showcase/X.json", "Server/Models/Showcase_Theatre/Y.json",
+                  "Server/Drops/Prefabs/Zone1_Goblin_Tier1.patch"]
+    wrong = [p for p in tool_files if check.made_by(p) and owners.owner_of(file=p)[0] != "us"]
+    expect("every file our tools rewrite is ours in the owner table", not wrong and all(check.made_by(p) for p in tool_files),
+           str(wrong))
+    stat = check.for_lady("itemcheck", "Server/Item/Items/Praetorian_Boots.json: its Armor changes the stat Volatility, which does not exist")
+    quality = check.for_lady("itemcheck", "Server/Item/Items/A/B.json: its quality Ghostly does not exist")
+    expect("a stat only code adds is Larsonix's, a missing quality is hers",
+           check.owner_of_card("itemcheck", stat) == "us" and check.owner_of_card("itemcheck", quality) == "mod",
+           f"{check.owner_of_card('itemcheck', stat)} {check.owner_of_card('itemcheck', quality)}")
+    hitbox = check.for_lady("assetcheck", "Bench_X.json references HitboxType 'ArmoryGhost' which we do not ship")
+    expect("a card that hands the work to Larsonix is his", check.owner_of_card("assetcheck", hitbox) == "us")
+    game_stat = check.game_words({"rule": "names-resolve", "kind": "Item", "id": "Praetorian_Boots", "file": "", "fact": "x",
+                                  "owner": "us", "detail": {"field": "Armor.StatModifiers", "name": "Volatility", "form": "key"}})
+    expect("a game finding keeps the owner the table gave it", check.owner_of_card("game", game_stat) == "us")
+    # One card per fact: the item check's missing stat and the family check's unreachable items fold into the game
+    # check's card when it states the same thing, and stay whole when it does not.
+    stat_line = "Server/Item/Items/Praetorian_Boots.json: its Armor changes the stat Volatility, which does not exist"
+    other_stat = "Server/Item/Items/Praetorian_Boots.json: its Armor changes the stat Ghost_Stat, which does not exist"
+    reach_line = ("Resource_PraetorianBoots: REACHABILITY: no owning item has a non-alteration recipe or appears in Server/Drops "
+                  "owning items: Praetorian_Boots, Praetorian_Boots_Gray")
+    checks = [{"id": "itemcheck", "lady": [check.for_lady("itemcheck", stat_line), check.for_lady("itemcheck", other_stat)]},
+              {"id": "familycheck", "lady": [check.for_lady("familycheck", reach_line)]},
+              {"id": "game", "lady": [
+                  {"about": {"rule": "names-resolve", "id": "Praetorian_Boots", "form": "key", "name": "Volatility"}},
+                  {"about": {"rule": "reachable", "id": "Praetorian_Boots", "form": "item", "name": None}},
+                  {"about": {"rule": "reachable", "id": "Praetorian_Boots_Gray", "form": "item", "name": None}}]}]
+    check.fold_game(checks)
+    expect("a stat the game check names is one card, a stat it does not name stays",
+           [e["line"] for e in checks[0]["lady"]] == [other_stat], [e["line"] for e in checks[0]["lady"]])
+    expect("unreachable items the game check names are one card", checks[1]["lady"] == [], checks[1]["lady"])
+    checks[2]["lady"].pop()
+    checks[1]["lady"] = [check.for_lady("familycheck", reach_line)]
+    check.fold_game(checks)
+    expect("a family line naming an item the game check does not name stays whole", len(checks[1]["lady"]) == 1)
+    order = check.groups({"checks": [{"lady": [
+        {"says": "old and big", "do": "x", "items": [{"label": str(i)} for i in range(9)], "new": False},
+        {"says": "new and small", "do": "x", "items": [{"label": "a"}], "new": True}]}]})
+    expect("what her work added comes first, whatever its size", [g["says"] for g in order] == ["new and small", "old and big"],
+           [g["says"] for g in order])
+    # "Normal for me": one entry hides one problem on one item, never the same problem on another item.
+    reach = check.for_lady("familycheck", reach_line)
+    reach["key"], reach["owner"] = "familycheck|" + reach_line, "mod"
+    stat = {"says": "Uses a stat", "do": "x", "items": [{"label": "Praetorian_Boots"}], "line": "s", "key": "game|stat",
+            "owner": "us"}
+    result = {"finished": "2026-10-27T18:00:00", "error": None,
+              "checks": [{"id": "familycheck", "status": "fail", "lady": [reach]}, {"id": "game", "status": "fail", "lady": [stat]}]}
+    marks = [{"key": reach["key"], "item": "Praetorian_Boots", "by": "Lady"},
+             {"key": "familycheck|gone", "item": "Old_Item", "by": "Lady"}]
+    result["normal"] = check.apply_normal(result["checks"], marks)
+    mine = check.groups(result, "mod")
+    expect("a problem judged normal on one item still shows on the other item",
+           len(mine) == 1 and mine[0]["items"] == ["Praetorian_Boots_Gray"], mine)
+    expect("a mark matching nothing any more is named, and the hidden ones are counted",
+           [e["item"] for e in result["normal"]["stale"]] == ["Old_Item"] and result["normal"]["hidden"] == 1, result["normal"])
+    _, ok = check.summary(result)
+    expect("her own open problem fails the run", not ok)
+    marks.append({"key": reach["key"], "item": "Praetorian_Boots_Gray", "by": "Lady"})
+    result["normal"] = check.apply_normal(result["checks"], marks)
+    text, ok = check.summary(result)
+    expect("Larsonix's problems never fail her run, and the window names them as his",
+           ok and "Larsonix's problems" in text and "Uses a stat" in text and "Hidden as normal for you: 2" in text, text)
+    result["checks"].append({"id": "recipecheck", "status": "error", "lady": []})
+    expect("a check that could not run still fails the run", not check.summary(result)[1])
+    opened = check.game_words(GAME_SAMPLES[0][0])
+    expect("a game finding about an item opens its file",
+           opened["items"] == [{"label": "Praetorian_Boots", "open": "Item/Items/Praetorian_Boots.json"}], opened["items"])
     now = gate_strings()
     added = sorted(set(now) - set(GATE_STRINGS))
     gone = sorted(set(GATE_STRINGS) - set(now))
@@ -391,6 +586,7 @@ def main(argv: list[str]) -> int:
             failures.append(label)
 
     words(expect)
+    own_folders(expect)
     if argv == ["--words"]:
         print(f"check_test: {len(failures)} failure(s)")
         return 1 if failures else 0
@@ -410,6 +606,8 @@ def main(argv: list[str]) -> int:
         for name in os.listdir(HERE):
             if name.endswith(".py"):
                 shutil.copyfile(os.path.join(HERE, name), os.path.join(target, name))
+        shutil.copytree(os.path.join(HERE, "game"), os.path.join(target, "game"), dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns("__pycache__"))
         git(clone, "add", "Studio/Tools/Checks")
         git(clone, "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-q", "--allow-empty",
             "-m", "The checks as they stand")
@@ -418,9 +616,19 @@ def main(argv: list[str]) -> int:
 
         code, result = run(clone)
         checks = by_id(result)
-        expect("a branch made from ours passes every check",
-               code == 0 and not result["error"] and all(c["status"] == "pass" for c in result["checks"]),
+        # The checks that read the whole mod report what the branch already holds (since her October import, the
+        # Praetorian stats and families), so a branch of her own is judged on what it adds, never on that.
+        before = {k: set(v["problems"]) for k, v in checks.items()}
+        own = ("branch", "languages", "generated")
+        expect("a branch made from ours shows no problem of its own, and no check stops",
+               not result["error"] and all(checks[k]["status"] == "pass" for k in own)
+               and all(v["status"] != "error" for v in checks.values()),
                json.dumps({k: (v["status"], v["problems"][:2], v["output_tail"][-3:]) for k, v in checks.items()}))
+        start_game = checks.get("game", {})
+        expect("the game check runs on a branch with nothing of its own, shows what the game finds, and marks nothing new",
+               start_game.get("status") in ("pass", "fail") and start_game.get("new") == 0
+               and not any(e.get("new") for e in start_game.get("lady", [])),
+               json.dumps({k: start_game.get(k) for k in ("status", "new", "output_tail")})[:800])
         expect("it finds the game and counts no commit as hers", bool(result["game"]) and result.get("own_commits") == 0,
                f"game {result['game']}, own commits {result.get('own_commits')}")
 
@@ -474,9 +682,28 @@ def main(argv: list[str]) -> int:
                and not any("Armory_Zone1_Loot" in p for p in checks["generated"]["problems"]), checks["generated"])
         expect("the misspelled chest item is named", checks["lootcheck"]["status"] == "fail"
                and any("Mace_Iron_Rustyy" in p for p in checks["lootcheck"]["problems"]), checks["lootcheck"])
-        expect("the checks with nothing planted still pass",
-               all(checks[k]["status"] == "pass" for k in ("recipecheck", "familycheck", "assetcheck", "branch")),
-               {k: checks[k]["status"] for k in checks})
+        game = checks.get("game", {})
+        expect("the game check names the item whose sound set does not exist, in her words",
+               game.get("status") == "fail" and any(os.path.splitext(os.path.basename(rel_item))[0] in
+                                                    [i["label"] for i in e["items"]] for e in game.get("lady", [])),
+               json.dumps({k: game.get(k) for k in ("status", "problems", "output_tail")})[:1500])
+        # Four changes were planted, and the branch's start already holds hundreds of findings. All of them show, and
+        # only the lines her commit caused are new: a handful, listed first.
+        new = [e for e in game.get("lady", []) if e.get("new")]
+        expect("the game check marks only what her commit changed as new",
+               0 < len(new) <= 12 and game.get("new") == len(new), [e["says"] for e in new])
+        expect("and still shows every finding the start already held",
+               len(game.get("problems", [])) >= len(start_game.get("problems", [])), (len(game.get("problems", [])),
+                                                                                       len(start_game.get("problems", []))))
+        expect("what is new comes first", all(e.get("new") for e in game.get("lady", [])[:len(new)]))
+        # The comparison below can fail: the item check, where a sound set was planted, holds new lines.
+        expect("the comparison with the branch's start sees what was planted",
+               any("ISS_Ghost" in p for p in set(checks["itemcheck"]["problems"]) - before["itemcheck"]),
+               sorted(set(checks["itemcheck"]["problems"]) - before["itemcheck"])[:3])
+        quiet = ("recipecheck", "familycheck", "assetcheck", "branch")
+        expect("the checks with nothing planted find nothing new and still run",
+               all(checks[k]["status"] != "error" and set(checks[k]["problems"]) <= before[k] for k in quiet),
+               {k: (checks[k]["status"], sorted(set(checks[k]["problems"]) - before[k])[:3]) for k in quiet})
 
         # Something no check expects, a language file that is not text, must still leave a result
         # saying the run stopped, never the last one standing in for it.

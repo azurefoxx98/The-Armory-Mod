@@ -476,8 +476,13 @@ def main(argv: list[str]) -> int:
 
         code, result = run(clone)
         checks = by_id(result)
-        expect("a branch made from ours passes every check",
-               code == 0 and not result["error"] and all(c["status"] == "pass" for c in result["checks"]),
+        # The checks that read the whole mod report what the branch already holds (since her October import, the
+        # Praetorian stats and families), so a branch of her own is judged on what it adds, never on that.
+        before = {k: set(v["problems"]) for k, v in checks.items()}
+        own = ("branch", "languages", "generated", "game")
+        expect("a branch made from ours shows no problem of its own, and no check stops",
+               not result["error"] and all(checks[k]["status"] == "pass" for k in own)
+               and all(v["status"] != "error" for v in checks.values()),
                json.dumps({k: (v["status"], v["problems"][:2], v["output_tail"][-3:]) for k, v in checks.items()}))
         expect("it finds the game and counts no commit as hers", bool(result["game"]) and result.get("own_commits") == 0,
                f"game {result['game']}, own commits {result.get('own_commits')}")
@@ -541,9 +546,14 @@ def main(argv: list[str]) -> int:
         # her commit caused may show: a handful, never the start's own.
         expect("the game check shows only what her commit changed, not what was there before it",
                0 < len(game.get("problems", [])) <= 12, game.get("problems"))
-        expect("the checks with nothing planted still pass",
-               all(checks[k]["status"] == "pass" for k in ("recipecheck", "familycheck", "assetcheck", "branch")),
-               {k: checks[k]["status"] for k in checks})
+        # The comparison below can fail: the item check, where a sound set was planted, holds new lines.
+        expect("the comparison with the branch's start sees what was planted",
+               any("ISS_Ghost" in p for p in set(checks["itemcheck"]["problems"]) - before["itemcheck"]),
+               sorted(set(checks["itemcheck"]["problems"]) - before["itemcheck"])[:3])
+        quiet = ("recipecheck", "familycheck", "assetcheck", "branch")
+        expect("the checks with nothing planted find nothing new and still run",
+               all(checks[k]["status"] != "error" and set(checks[k]["problems"]) <= before[k] for k in quiet),
+               {k: (checks[k]["status"], sorted(set(checks[k]["problems"]) - before[k])[:3]) for k in quiet})
 
         # Something no check expects, a language file that is not text, must still leave a result
         # saying the run stopped, never the last one standing in for it.

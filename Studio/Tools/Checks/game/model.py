@@ -95,6 +95,7 @@ class Snapshot:
         if not self.run.get('complete'):
             raise SystemExit(f'the snapshot at {self.folder} is not complete; take it again')
         self._stores: dict[str, dict[str, Asset]] = {}
+        self.learned: dict = {}
 
     @cached_property
     def store_names(self) -> dict[str, str]:
@@ -160,8 +161,13 @@ class Pair:
     def vanilla_assets(self, kind: str) -> dict[str, Asset]:
         return self.vanilla.store(kind)
 
-    @cached_property
+    @property
     def reference_targets(self) -> dict[tuple[str, str], str]:
+        if 'targets' not in self.vanilla.learned:
+            self.vanilla.learned['targets'] = self._reference_targets()
+        return self.vanilla.learned['targets']
+
+    def _reference_targets(self) -> dict[tuple[str, str], str]:
         ids_by_store = {short(n): set(self.vanilla.store(n)) for n in self.vanilla.store_names.values()}
         targets: dict[tuple[str, str], str] = {}
         for kind in ids_by_store:
@@ -182,8 +188,13 @@ class Pair:
                     targets[kind, path] = best
         return targets
 
-    @cached_property
+    @property
     def reference_paths(self) -> dict[tuple[str, str, str], dict]:
+        if 'paths' not in self.vanilla.learned:
+            self.vanilla.learned['paths'] = self._reference_paths()
+        return self.vanilla.learned['paths']
+
+    def _reference_paths(self) -> dict[tuple[str, str, str], dict]:
         ids_by_store = {short(n): set(self.vanilla.store(n)) for n in self.vanilla.store_names.values()}
         out: dict[tuple[str, str, str], dict] = {}
         for kind in ids_by_store:
@@ -203,6 +214,12 @@ class Pair:
         return out
 
     def referrers(self, snap: Snapshot) -> dict[tuple[str, str], list[tuple[str, str, str]]]:
+        key = ('referrers', str(self.vanilla.folder))
+        if key not in snap.learned:
+            snap.learned[key] = self._referrers(snap)
+        return snap.learned[key]
+
+    def _referrers(self, snap: Snapshot) -> dict[tuple[str, str], list[tuple[str, str, str]]]:
         out: dict[tuple[str, str], list[tuple[str, str, str]]] = {}
         by_kind: dict[str, list[str]] = {}
         for (kind, path), target in self.reference_targets.items():

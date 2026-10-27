@@ -31,9 +31,37 @@ class Rule:
     truth: str
     not_modelled: list[str]
     run: Callable[[Pair], list[Finding]]
+
+    def __post_init__(self) -> None:
+        rule = self.run
+
+        def run(pair: Pair) -> list[Finding]:
+            return defining_files(rule(pair), pair)
+        self.run = run
+
+def effect_proven(f: Finding) -> bool:
+    return not ('effect' in f.detail and f.detail['effect'] is None)
+
+def defining_files(findings: list[Finding], pair: Pair) -> list[Finding]:
+    items = pair.modded.store('Item')
+    for f in findings:
+        if f.file or f.kind != 'BlockType':
+            continue
+        item = items.get(f.id.lstrip('*').split('_State_Definitions_')[0])
+        if item is not None and getattr(item, 'path', ''):
+            f.file = item.path
+    return findings
 KIND_MIN_GROUP = 20
 KIND_PRESENT_SHARE = 0.95
 KIND_DEFAULT_SHARE = 0.05
+KIND_EFFECTS = {('BlockType', 'ParticleColor', 'unset'): 'the world map draws it white', ('BlockType', 'BlockParticleSetId', 'unset'): 'nothing stepping on it or hitting it raises particles', ('BlockType', 'BlockSoundSetId', 'default'): 'it makes no sound when placed or broken', ('Item', 'Categories', 'unset'): 'it shows in no tab of the creative inventory', ('Item', 'PlayerAnimationsId', 'default'): "a player holds it in a pose the game's own items of that use never have", ('ResourceType', 'Icon', 'unset'): 'the crafting window shows an empty square for it'}
+
+def _shown_ingredient(pair: Pair) -> set[str]:
+    out: set[str] = set()
+    for r in pair.modded.store('CraftingRecipe').values():
+        if any((isinstance(b, dict) and b.get('Type') == 'Crafting' for b in r.asset.get('BenchRequirement') or [])):
+            out |= {i['ResourceTypeId'] for i in r.asset.get('Input') or [] if isinstance(i, dict) and i.get('ResourceTypeId')}
+    return out
 
 def top_present(asset: dict) -> set[str]:
 
@@ -76,6 +104,8 @@ def like_its_kind(pair: Pair) -> list[Finding]:
         for a in vanilla.values():
             for c in _contexts(vrefs, kind, a.id):
                 groups.setdefault(c, []).append(a)
+        shown = _shown_ingredient(pair) if kind == 'ResourceType' else set()
+        effect = lambda p, form, ident: None if (kind, p) == ('ResourceType', 'Icon') and ident not in shown else KIND_EFFECTS.get((kind, p, form))
         defaults = pair.vanilla.defaults(kind)
         default_leaves = {p: v for p, v in defaults.items() if not isinstance(v, (dict, list))}
         stats_cache: dict[tuple, tuple[dict, dict]] = {}
@@ -117,11 +147,11 @@ def like_its_kind(pair: Pair) -> list[Finding]:
             for p, why in sorted(missing.items()):
                 if len(why) != len(ctxs):
                     continue
-                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} sets no {p}, which the game's own {kind} assets of the same use set: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'unset'}))
+                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} sets no {p}, which the game's own {kind} assets of the same use set: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'unset', 'effect': effect(p, 'unset', a.id)}))
             for p, why in sorted(defaulted.items()):
                 if len(why) != len(ctxs):
                     continue
-                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} leaves {p} at the engine's default {default_leaves[p]!r}, which the game's own {kind} assets of the same use almost never hold: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'default'}))
+                findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} leaves {p} at the engine's default {default_leaves[p]!r}, which the game's own {kind} assets of the same use almost never hold: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'default', 'effect': effect(p, 'default', a.id)}))
     return findings
 SIBLING_MIN_FAMILY = 4
 SIBLING_PRESENT_SHARE = 0.9
@@ -292,24 +322,34 @@ def names_and_pictures(pair: Pair) -> list[Finding]:
             other_slot, n = said[w]
             if other_slot and other_slot != slot(i):
                 findings.append(Finding('names-and-pictures', 'Item', i, items[i].path, f'{i} is worn on the {slot(i)} and its name "{name_of(i)}" says "{w}", a word the {n} other items using it are all worn on the {other_slot}.', family=f'name says another slot: {w}', detail={'field': 'name', 'form': 'slot word', 'word': w}))
+    game = pair.vanilla_assets('Item')
     kind = lambda i: 'armor' if slot(i) else 'weapon' if items[i].asset.get('Weapon') is not None else None
+    model = lambda i: items[i].asset.get('Model')
+    family = lambda i: {r for r in values_at(items[i].asset, 'ResourceTypes.*.Id') if isinstance(r, str)}
     for shown, ids in sorted(by_text.items()):
         for i in sorted((x for x in ids if x in mod)):
             if not kind(i):
                 continue
-            others = sorted((x for x in ids if x != i and kind(x) == kind(i) and (sub(x) != sub(i) or not sub(i)) and (items[x].asset.get('Model') != items[i].asset.get('Model'))))
+            holders = [x for x in ids if x in game and kind(x) == kind(i)]
+            if any((model(x) == model(i) for x in holders)):
+                continue
+            others = sorted((x for x in ids if x != i and kind(x) == kind(i) and (sub(x) != sub(i) or not sub(i)) and (model(x) != model(i)) and (x in game or not family(x) & family(i))))
             if others:
                 findings.append(Finding('names-and-pictures', 'Item', i, items[i].path, f'''{i} shows the name "{name_of(i)}", which {len(others)} {kind(i)} item(s) of another set or of the game, with another model, also show: {', '.join(others[:6])}''' + (' ...' if len(others) > 6 else '') + '.', family=f'same name across sets: {shown}', detail={'field': 'name', 'form': 'shared', 'with': others}))
+    own = lambda i: _stem(items[i].asset.get('Icon')) == i
     for icon, ids in sorted(by_icon.items()):
         mine = sorted((x for x in ids if x in mod))
         if len({look(x) for x in ids}) < 2 or not mine:
             continue
         for i in mine:
             others = sorted((x for x in ids if look(x) != look(i)))
-            if not others:
+            if not others or own(i):
                 continue
-            findings.append(Finding('names-and-pictures', 'Item', i, items[i].path, f"{i} shows the icon {icon}, and so do {len(others)} item(s) with another model or texture: {', '.join(others[:6])}" + (' ...' if len(others) > 6 else '') + '.', family=f'same icon, other look: {icon}', detail={'field': 'icon', 'form': 'shared', 'with': others}))
+            findings.append(Finding('names-and-pictures', 'Item', i, items[i].path, f"{i} shows the icon {icon}, and so do {len(others)} item(s) with another model or texture: {', '.join(others[:6])}" + (' ...' if len(others) > 6 else '') + '. One icon can be right for one look at most.', family=f'same icon, other look: {icon}', detail={'field': 'icon', 'form': 'shared', 'with': others}))
     return findings
+
+def _stem(path) -> str:
+    return path.rsplit('/', 1)[-1].rsplit('.', 1)[0] if isinstance(path, str) else ''
 
 def _drop_items(value: Any) -> set[str]:
     out = set()
@@ -367,6 +407,14 @@ def reachable(pair: Pair) -> list[Finding]:
                     changed = True
     findings: list[Finding] = []
     states = 0
+    game_ways = {o for r in pair.vanilla.store('CraftingRecipe').values() for o in outputs(r)}
+    for kind in ('ItemDropList', 'BarterShopAsset', 'ShopAsset'):
+        for d in pair.vanilla.store(kind).values():
+            game_ways |= set(_drop_items(d.asset))
+    wearers: dict[str, set[str]] = {}
+    for g, v in vanilla_items.items():
+        if g in items and isinstance(items[g].asset.get('Model'), str):
+            wearers.setdefault(items[g].asset['Model'], set()).add(g)
     for i, a in sorted(mod_items.items()):
         if a.asset.get('Armor') is None and a.asset.get('Weapon') is None:
             continue
@@ -380,7 +428,16 @@ def reachable(pair: Pair) -> list[Finding]:
             fact = f'{i} has no way in: no recipe makes it, no drop list names it and no shop sells it, in the game as loaded with the mod.'
         else:
             fact = f'{i} has no way in: ' + '; '.join((f'{r.id}: ' + '; '.join(blockers(r)) for r in makers)) + '.'
-        findings.append(Finding('reachable', 'Item', i, a.path, fact, family=f"set:{a.asset.get('SubCategory') or '-'}", detail={'form': 'item', 'makers': [r.id for r in makers]}))
+        detail = {'form': 'item', 'makers': [r.id for r in makers]}
+        roots = sorted((g for g in wearers.get(a.asset.get('Model'), ()) if not re.search('npc', g, re.I) and vanilla_items[g].parent not in wearers.get(a.asset.get('Model'), ())))
+        base = roots[0] if len(roots) == 1 and roots[0] in game_ways else None
+        wanted = {inp['ResourceTypeId'] for r in makers for inp in r.asset.get('Input') or [] if inp.get('ResourceTypeId')}
+        if base and len(wanted) == 1 and makers and all((b.startswith('it takes the resource type ') for r in makers for b in blockers(r))):
+            family = wanted.pop()
+            if family not in values_at(items[base].asset, 'ResourceTypes.*.Id'):
+                detail = {'form': 'base outside', 'makers': [r.id for r in makers], 'base': base, 'name': family}
+                fact += f" Its base, the game's {base}, has a way in but does not carry {family}."
+        findings.append(Finding('reachable', 'Item', i, a.path, fact, family=f"set:{a.asset.get('SubCategory') or '-'}", detail=detail))
     unreachable_items = {f.id for f in findings}
     for r in recipes:
         outs = outputs(r)
@@ -391,6 +448,36 @@ def reachable(pair: Pair) -> list[Finding]:
             out = outs[0]
             findings.append(Finding('reachable', 'CraftingRecipe', r.id, items[out].path if out in items else '', f'{r.id} can never be made, so {out} cannot be crafted (it has another way in: {reach.get(out)}): ' + '; '.join(blocked) + '.', family=f"set:{items[out].asset.get('SubCategory') or '-'}" if out in items else '', detail={'form': 'recipe', 'output': out}))
     pair.notes['reachable'] = [f"{states} item state(s) left to their item: a stack becomes a state only when an interaction or the mod's code switches it"] if states else []
+    return findings
+ALTERATION_BENCH = 'ArmoryAlteration'
+
+def foreign_family(pair: Pair) -> list[Finding]:
+    items = pair.modded.store('Item')
+    game = pair.vanilla_assets('Item')
+    mod = pair.mod_assets('Item')
+    colours: dict[str, set[str]] = {}
+    for r in pair.modded.store('CraftingRecipe').values():
+        if not any((isinstance(b, dict) and b.get('Id') == ALTERATION_BENCH for b in r.asset.get('BenchRequirement') or [])):
+            continue
+        outs = [o for o in values_at(r.asset, 'Output.*.ItemId') + values_at(r.asset, 'PrimaryOutput.ItemId') if isinstance(o, str)]
+        for inp in r.asset.get('Input') or []:
+            if isinstance(inp, dict) and inp.get('ResourceTypeId'):
+                colours.setdefault(inp['ResourceTypeId'], set()).update(outs)
+    own = lambda a: {r for r in values_at(a.asset, 'ResourceTypes.*.Id') if isinstance(r, str)}
+    findings: list[Finding] = []
+    for fam, made in sorted(colours.items()):
+        looks = {items[c].asset.get('Model') for c in made if c in items}
+        wearers = sorted((g for g, a in game.items() if a.asset.get('Model') in looks))
+        owners = [g for g in wearers if fam in own(game[g])] or wearers
+        if not owners:
+            continue
+        for i, a in sorted(mod.items()):
+            parent = items.get(a.parent) if a.parent else None
+            if fam not in own(a) or (parent is not None and fam in own(parent)):
+                continue
+            if i in made or a.asset.get('Model') in looks:
+                continue
+            findings.append(Finding('foreign-family', 'Item', i, a.path, f"{i} names the colour family {fam}, the colours of the game's {', '.join(owners[:3])}, but wears another model ({a.asset.get('Model')}): the Alteration Table turns it into one of those colours, and no recipe turns it back.", family=f'foreign family: {fam}', detail={'field': 'ResourceTypes', 'form': 'foreign', 'name': fam, 'of': owners[0]}))
     return findings
 
 def names_resolve(pair: Pair) -> list[Finding]:
@@ -507,7 +594,7 @@ def common_files(pair: Pair) -> list[Finding]:
                 continue
             replaced.add((f['pack'], f['name']))
             same = hash_of.get((f['pack'], f['name'])) is not None and hash_of.get((f['pack'], f['name'])) == hash_of.get((game[0]['pack'], game[0]['name']))
-            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"The mod ships {f['name']} under the game's own file name, so it replaces the game's file everywhere the game uses it" + (', with identical bytes (no visible change)' if same else ", with different bytes (the game's own items or pages change too)") + '.', family='replaces a game file' + (' (identical)' if same else ''), detail={'field': 'replace', 'form': 'identical' if same else 'different', 'pack': f['pack']}))
+            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"The mod ships {f['name']} under the game's own file name, so it replaces the game's file everywhere the game uses it" + (', with identical bytes (no visible change)' if same else ", with different bytes (the game's own items or pages change too)") + '.', family='replaces a game file' + (' (identical)' if same else ''), detail={'field': 'replace', 'form': 'identical' if same else 'different', 'pack': f['pack'], 'effect': None if same else "the game's own items and pages using it change too"}))
     for group in data['sameBytes']:
         files = group['files']
         mine = [f for f in files if not is_game(f) and (f['pack'], f['name']) not in replaced]
@@ -516,7 +603,7 @@ def common_files(pair: Pair) -> list[Finding]:
         others = [f for f in files if f not in mine]
         for f in mine:
             twin = (others or [x for x in mine if x is not f])[0]
-            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"{f['name']} has the same bytes as {twin['name']} ({('the game' if is_game(twin) else 'the mod')}): {len(files) - 1} other file(s) hold the same bytes.", family='same bytes as another file', detail={'field': 'copy', 'form': 'game' if any((is_game(x) for x in files)) else 'mod', 'twin': twin['name'], 'group': sorted((x['name'] for x in mine))}))
+            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"{f['name']} has the same bytes as {twin['name']} ({('the game' if is_game(twin) else 'the mod')}): {len(files) - 1} other file(s) hold the same bytes.", family='same bytes as another file', detail={'field': 'copy', 'form': 'game' if any((is_game(x) for x in files)) else 'mod', 'twin': twin['name'], 'group': sorted((x['name'] for x in mine)), 'effect': None}))
     return findings
 
 def duplicates_added(findings: list[Finding]) -> int:
@@ -631,4 +718,4 @@ def fold_generated(findings: list[Finding], pair: Pair) -> list[Finding]:
         if n:
             f.fact += f' The same holds for {n} of its generated states.'
     return kept
-RULES = [Rule('all-loaded', 'Every file the mod ships where the game loads files was loaded', 'A', 'G', ['files outside the folders an asset store loads (prefabs, worlds, language files, common files)', "a file loaded but then replaced by another pack's file with the same id"], all_loaded), Rule('density-imports', 'Every density a world file imports is exported somewhere', 'A', 'R + engine source', ['pattern, prop assignment and position imports (each resolves by its own rule, not yet read)', 'whether the generator ever reaches the import (a biome no world uses)'], density_imports_resolve), Rule('names-resolve', 'Every name a file gives leads to something in the game', 'A', 'R', ['a name in a place the game itself never uses for names', 'names inside Java code', 'language keys (the text shown for a name)', 'files the engine reads outside its asset stores (prefabs, world gen output, NPC roles)'], names_resolve), Rule('server-says', "What the game's own server reports with the mod and not without it", 'A, E', 'G', ['anything the server does not print in a bare boot (worlds, players, prefab and world gen validation, which need --validate-assets)', 'which mod file causes a line that names none'], server_says), Rule('common-files', "A mod file that replaces a game file by name, or repeats another file's bytes", 'G', 'G', ['whether a replacement is wanted', 'files the engine does not register as common (Server data)'], common_files), Rule('names-and-pictures', 'An item whose name has no text, or that shows the same name or icon as another', 'A, B', 'S', ['names built at run time by Java (tooltips, the Scribing Table)', 'languages other than English', 'pictures that differ in file but look alike'], names_and_pictures), Rule('like-its-kind', "A field the game's own assets of the same use always set", 'C', 'V', ['what the default does in play', 'assets nothing points at (no use, so no kind)', 'kinds with fewer than 20 game assets of that use', 'a value the kind uses rarely but not by default'], lambda pair: fold_generated(like_its_kind(pair), pair)), Rule('like-its-siblings', 'One item of a set differs from all the others', 'B, C', 'S', ['sets of fewer than 4 items', 'items with no SubCategory', 'a field that differs in value, not presence', 'a field more than a tenth of the group lacks (beyond one member)', "recipes (the reachable rule's question)", 'numbers of weapons and of pieces outside a set and slot', 'a number two or more pieces differ on'], lambda pair: like_its_siblings(pair) + sibling_values(pair)), Rule('reachable', 'A wearable or wieldable item a player can obtain, and a recipe that can be made', 'D', 'R + loaded game', ['whether a drop list is ever rolled', 'items handed out by Java code or commands', 'creatures wearing an item (NPC roles are not in the snapshot)', "whether a recipe's category is offered by its bench", 'a bench a block provides but no player can build', 'blocks and other items that are not armour or weapons'], reachable)]
+RULES = [Rule('all-loaded', 'Every file the mod ships where the game loads files was loaded', 'A', 'G', ['files outside the folders an asset store loads (prefabs, worlds, language files, common files)', "a file loaded but then replaced by another pack's file with the same id"], all_loaded), Rule('density-imports', 'Every density a world file imports is exported somewhere', 'A', 'R + engine source', ['pattern, prop assignment and position imports (each resolves by its own rule, not yet read)', 'whether the generator ever reaches the import (a biome no world uses)'], density_imports_resolve), Rule('names-resolve', 'Every name a file gives leads to something in the game', 'A', 'R', ['a name in a place the game itself never uses for names', 'names inside Java code', 'language keys (the text shown for a name)', 'files the engine reads outside its asset stores (prefabs, world gen output, NPC roles)'], names_resolve), Rule('server-says', "What the game's own server reports with the mod and not without it", 'A, E', 'G', ['anything the server does not print in a bare boot (worlds, players, prefab and world gen validation, which need --validate-assets)', 'which mod file causes a line that names none'], server_says), Rule('common-files', "A mod file that replaces a game file by name, or repeats another file's bytes", 'G', 'G', ['whether a replacement is wanted', 'files the engine does not register as common (Server data)'], common_files), Rule('names-and-pictures', 'An item whose name has no text, or that shows the same name or icon as another', 'A, B', 'S', ['names built at run time by Java (tooltips, the Scribing Table)', 'languages other than English', 'pictures that differ in file but look alike'], names_and_pictures), Rule('like-its-kind', "A field the game's own assets of the same use always set", 'C', 'V', ['what the default does in play', 'assets nothing points at (no use, so no kind)', 'kinds with fewer than 20 game assets of that use', 'a value the kind uses rarely but not by default'], lambda pair: fold_generated(like_its_kind(pair), pair)), Rule('like-its-siblings', 'One item of a set differs from all the others', 'B, C', 'S', ['sets of fewer than 4 items', 'items with no SubCategory', 'a field that differs in value, not presence', 'a field more than a tenth of the group lacks (beyond one member)', "recipes (the reachable rule's question)", 'numbers of weapons and of pieces outside a set and slot', 'a number two or more pieces differ on'], lambda pair: like_its_siblings(pair) + sibling_values(pair)), Rule('reachable', 'A wearable or wieldable item a player can obtain, and a recipe that can be made', 'D', 'R + loaded game', ['whether a drop list is ever rolled', 'items handed out by Java code or commands', 'creatures wearing an item (NPC roles are not in the snapshot)', "whether a recipe's category is offered by its bench", 'a bench a block provides but no player can build', 'blocks and other items that are not armour or weapons'], reachable), Rule('foreign-family', 'A mod item naming the colour family of a game item it is not', 'B', 'R + loaded game', ["a family the mod's own pieces make (no game item wears its colours' model)", 'an item that only inherits the family (the table refuses it since 2026-10-27)'], foreign_family)]

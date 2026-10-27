@@ -97,11 +97,17 @@ export function pieceSlot(name) {
   return null;
 }
 
+// Words a texture's name uses for no colour at all: Head_Texture.png names a helmet's picture, not
+// a colour called Texture.
+const NO_COLOUR_WORDS = new Set(['texture', 'textures', 'tex', 'base', 'default', 'main', 'diffuse', 'albedo', 'color', 'colour', 'skin', 'map']);
+
 // The colour a sheet stands for, as a version's id spells it. A leading piece word is not part
-// of the colour: Helm_Blue.png is the colour Blue of a helmet.
+// of the colour: Helm_Blue.png is the colour Blue of a helmet. A name with no colour word left
+// (Head_Texture.png) stands for no colour, and null says so: the page never invents a name from it.
 export function sheetColour(sheet) {
   const words = stem(sheet).split(/[\s_]+/).filter(Boolean);
   if (words.length > 1 && pieceSlot(words[0])) words.shift();
+  if (!words.length || words.every(w => NO_COLOUR_WORDS.has(w.toLowerCase()))) return null;
   return colourKey(words.join('_'));
 }
 
@@ -262,6 +268,7 @@ export function makeReader(io) {
 // Two ways the mod spells a version's id. A: Atlantean_Chest_Red_Alt. B: Atlantean_Chest_Alt_Red.
 function idFor(set, sheet, shape, order) {
   if (sheet === set.defaultSheet && shape === set.baseShape) return set.defaultId;
+  if (sheet !== set.defaultSheet && sheetColour(sheet) === null) return null;
   const colour = sheet === set.defaultSheet ? '' : '_' + sheetColour(sheet);
   const suffix = shape === set.baseShape ? '' : stem(shape).slice(stem(set.baseShape).length);
   return set.base + (order === 'A' ? colour + suffix : suffix + colour);
@@ -519,7 +526,7 @@ export async function analyse(reader, openRel, options = {}) {
   if (gameDefault && members.length) {
     const prefixes = members.map(m => {
       const colour = sheetColour(m.eff.Texture);
-      return m.id.endsWith('_' + colour) ? m.id.slice(0, -(colour.length + 1)) : null;
+      return colour && m.id.endsWith('_' + colour) ? m.id.slice(0, -(colour.length + 1)) : null;
     });
     base = majority(prefixes) || base;
     setQuality = majority(members.map(m => m.eff.Quality)) ?? setQuality;
@@ -560,7 +567,10 @@ export async function analyse(reader, openRel, options = {}) {
 
   const icons = new Set((await reader.list('../Common/' + ICON_FOLDER, ['png'])).map(common));
   const expected = new Map();
-  for (const sheet of orderedSheets) for (const shape of orderedShapes) expected.set(idFor(set, sheet, shape, set.order), { sheet, shape });
+  for (const sheet of orderedSheets) for (const shape of orderedShapes) {
+    const id = idFor(set, sheet, shape, set.order);
+    if (id) expected.set(id, { sheet, shape });
+  }
 
   // The grid, and every fault in it.
   const cells = new Map();
@@ -586,7 +596,10 @@ export async function analyse(reader, openRel, options = {}) {
       if (alike.length) item.faults.push({ kind: 'shared', text: 'Looks exactly like ' + alike.map(i => i.id).join(', ') + ', on the same slot.', fix: null });
     }
     cell.missing = cell.items.length === 0;
-    cell.clash = cell.missing && index.has(cell.id) ? index.get(cell.id) : null;
+    // A texture whose name says no colour: an item already wearing it keeps its own name, and none
+    // is made from it, since its name would be invented.
+    cell.unnamed = cell.id === null;
+    cell.clash = cell.missing && cell.id && index.has(cell.id) ? index.get(cell.id) : null;
   }
 
   // A light per colour: the one its versions already use, otherwise the default's.
@@ -725,7 +738,7 @@ export function plan(analysis, choice) {
 
   for (const cell of analysis.cells) {
     if (cell.missing) {
-      if (!choice.make.has(cell.id) || cell.clash) continue;
+      if (cell.unnamed || !choice.make.has(cell.id) || cell.clash) continue;
       const doc = { Parent: set.defaultId };
       if (set.defaultQuality !== undefined) doc.Quality = set.defaultQuality;
       doc.Icon = ICON_FOLDER + cell.id + '.png';
@@ -761,7 +774,7 @@ export function defaultChoice(analysis) {
   const fix = new Set();
   if ((analysis.set.inheritors && analysis.set.inheritors.length) || (analysis.set.coOwners && analysis.set.coOwners.length)) return { make, fix, lights: { ...analysis.lights } };
   for (const cell of analysis.cells) {
-    if (cell.missing && analysis.memberCount === 0 && !cell.clash) make.add(cell.id);
+    if (cell.missing && analysis.memberCount === 0 && !cell.clash && !cell.unnamed) make.add(cell.id);
     for (const item of cell.items) for (const f of item.faults) if (f.fix && f.byDefault) fix.add(item.id + '|' + f.kind);
   }
   return { make, fix, lights: { ...analysis.lights } };
@@ -958,7 +971,7 @@ function ColoursPage({ rel }) {
     setChoice({ ...choice, fix: next });
   };
   const tickAllMissing = on => {
-    const make = new Set(on ? cells.filter(c => c.missing && !c.clash).map(c => c.id) : []);
+    const make = new Set(on ? cells.filter(c => c.missing && !c.clash && !c.unnamed).map(c => c.id) : []);
     setChoice({ ...choice, make });
   };
   const press = async () => {
@@ -992,7 +1005,7 @@ function ColoursPage({ rel }) {
       }
     }
   }
-  const missing = cells.filter(c => c.missing && !c.clash);
+  const missing = cells.filter(c => c.missing && !c.clash && !c.unnamed);
   const versions = steps.create.filter(f => f.rel.startsWith('Item/Items/') && f.rel.endsWith('.json')).length;
   const fixedFiles = steps.edit.length + steps.create.filter(f => f.rel.endsWith('.patch')).length;
   const parts = [];
@@ -1016,6 +1029,7 @@ function ColoursPage({ rel }) {
   const cellView = cell => {
     if (!cell) return null;
     if (cell.missing) {
+      if (cell.unnamed) return h('span', { style: tagStyle(LOOK.dim) }, 'missing: rename this texture to its color to make it');
       if (cell.clash) return h('span', { title: cell.clash, style: tagStyle(LOOK.danger) }, 'missing, but the name ' + cell.id + ' is taken');
       const on = choice.make.has(cell.id);
       return h('label', { style: { cursor: 'pointer' } },
@@ -1124,50 +1138,81 @@ function MadeByToolPage({ rel }) {
 // own file access, the same route HyCreator uses for its own files.
 export const CHECK_RESULT = 'Studio/Tools/Checks/last-check.json';
 export const CHECK_RUNNING = 'Studio/Tools/Checks/last-check.running.json';
+// The problems she judged normal for her work, one problem on one item each, committed with her work.
+// check.py reads the same file (NORMAL), so its window and her release leave them out too.
+export const CHECK_NORMAL = 'Studio/Checks/normal.json';
 
-// What the panel shows, from the result and the running marker, as plain data. Every problem comes
-// as check.py translated it for Lady: what is wrong, the one thing to change, the items it is about.
-// A result written before that translation existed shows each line whole until the next check.
-export function checkView(result, running) {
+// What the panel shows, from the result, the running marker and her "Normal for me" marks, as plain
+// data. Every problem comes as check.py translated it for Lady: what is wrong, the one thing to change,
+// the items it is about, and whose it is. Hers come first, as cards to fix; Larsonix's come apart, read
+// only; the ones she judged normal sit behind one closed line. A result written before that
+// translation existed shows each line whole until the next check.
+export function checkView(result, running, marks) {
   if (!result || typeof result !== 'object') {
-    return { state: running ? 'running' : 'none', groups: [], problems: 0 };
+    return { state: running ? 'running' : 'none', groups: [], ours: [], hidden: [], stale: [], problems: 0 };
   }
-  const entries = [];
+  const wanted = new Map((Array.isArray(marks) ? marks : []).filter(m => m && typeof m.key === 'string').map(m => [m.key + '|' + (m.item || ''), m]));
+  const seen = new Set();
+  const mine = [], ours = [], hidden = [];
   for (const c of Array.isArray(result.checks) ? result.checks : []) {
     if (c.status === 'pass') continue;
-    if (Array.isArray(c.lady)) {
-      entries.push(...c.lady);
-      continue;
+    const entries = [];
+    if (Array.isArray(c.lady)) entries.push(...c.lady);
+    else {
+      for (const line of c.problems || []) {
+        const open = fileIn(line);
+        entries.push({ says: line, do: '', items: open ? [{ label: stem(open), open }] : [] });
+      }
+      if (c.status === 'error') entries.push({ says: 'The check "' + c.title + '" could not run.', do: 'Send Larsonix a screenshot of this panel.', items: [] });
     }
-    for (const line of c.problems || []) {
-      const open = fileIn(line);
-      entries.push({ says: line, do: '', items: open ? [{ label: stem(open), open }] : [] });
+    for (const e of entries) {
+      if (e.owner === 'us') { ours.push(e); continue; }
+      const key = e.key || (c.id + '|' + (e.line || e.says));
+      const items = (e.items || []).length ? e.items : [null];
+      const kept = [];
+      for (const i of items) {
+        const k = key + '|' + (i ? i.label : '');
+        if (wanted.has(k)) { seen.add(k); hidden.push({ key, item: i ? i.label : '', open: i, says: e.says }); } else kept.push(i);
+      }
+      if (kept.length) mine.push({ ...e, key, items: kept.filter(Boolean) });
     }
-    if (c.status === 'error') entries.push({ says: 'The check "' + c.title + '" could not run.', do: 'Send Larsonix a screenshot of this panel.', items: [] });
   }
-  const groups = ladyGroups(entries);
+  const groups = ladyGroups(mine);
+  const ourGroups = ladyGroups(ours);
   const state = result.error ? 'error' : groups.length ? 'problems' : 'pass';
   // A marker newer than the result means a later run is still going.
   const busy = !!running && (!result.finished || String(running.started || '') > String(result.finished));
   return {
-    state, busy, groups, problems: groups.length, error: result.error || null, errorDetail: result.error_detail || null,
+    state, busy, groups, ours: ourGroups, hidden, stale: [...wanted.entries()].filter(([k]) => !seen.has(k)).map(([, m]) => m),
+    problems: groups.length, error: result.error || null, errorDetail: result.error_detail || null,
     finished: result.finished || null, branch: result.branch || null,
   };
 }
 
-// The problems that say the same thing and ask for the same fix, as one, the largest first. The same
-// grouping as check.py's own window.
+// The problems that say the same thing and ask for the same fix, as one: what her work added first, then
+// the largest. The same grouping as check.py's own window. Each item keeps the key of its own problem,
+// which is what "Normal for me" remembers.
 export function ladyGroups(entries) {
   const groups = new Map();
   for (const e of entries) {
     const key = e.says + '|' + (e.do || '');
-    if (!groups.has(key)) groups.set(key, { key, says: e.says, do: e.do || '', items: [], details: [], count: 0 });
+    if (!groups.has(key)) groups.set(key, { key, says: e.says, do: e.do || '', items: [], details: [], count: 0, new: false, problems: [] });
     const g = groups.get(key);
     g.count++;
-    for (const i of e.items || []) if (!g.items.some(x => x.label === i.label)) g.items.push(i);
+    g.new = g.new || !!e.new;
+    if (!(e.items || []).length) g.problems.push(e.key || null);
+    for (const i of e.items || []) if (!g.items.some(x => x.label === i.label)) g.items.push({ ...i, problem: e.key || null });
     if (e.detail) g.details.push(e.detail);
   }
-  return [...groups.values()].sort((a, b) => Math.max(b.count, b.items.length) - Math.max(a.count, a.items.length));
+  return [...groups.values()].sort((a, b) => (b.new - a.new) || (Math.max(b.count, b.items.length) - Math.max(a.count, a.items.length)));
+}
+
+// Her marks as the file holds them, with one more or one less. The file is written whole each time.
+export function withMark(marks, mark) {
+  return [...(marks || []).filter(m => !(m.key === mark.key && (m.item || '') === (mark.item || ''))), mark];
+}
+export function withoutMark(marks, mark) {
+  return (marks || []).filter(m => !(m.key === mark.key && (m.item || '') === (mark.item || '')));
 }
 
 // The item file a check line names, as HyCreator opens it: relative to the Server folder.
@@ -1179,10 +1224,10 @@ export function fileIn(text) {
 // The notice for a new result, or null when there is nothing to say. Only a change is announced:
 // a pass after something else, or a list of problems that differs from the last one, so a pull
 // that leaves the same problem in place does not repeat it.
-export function noticeFor(previous, next) {
+export function noticeFor(previous, next, marks) {
   if (!next || !next.finished || (previous && previous.finished === next.finished)) return null;
-  const view = checkView(next, null);
-  const before = previous ? checkView(previous, null) : null;
+  const view = checkView(next, null, marks);
+  const before = previous ? checkView(previous, null, marks) : null;
   if (view.state === 'error') {
     return before && before.state === 'error' && before.error === view.error ? null : 'The Armory checks could not run. Click ! at the top to see why.';
   }
@@ -1219,6 +1264,24 @@ async function readRepoText(api, rel) {
   }
 }
 
+// Writes a file of the mod's own folder outside Server and Common, through the app's own file access,
+// the route readRepoText reads by. Proven in a hidden HyCreator 1.3.9: the folder is made and the file
+// written where git sees it.
+async function writeRepoText(api, rel, text) {
+  const current = api.workspace.current();
+  const tauri = globalThis.__TAURI_INTERNALS__;
+  if (!current || current.kind !== 'folder' || !tauri || typeof tauri.invoke !== 'function') return false;
+  const root = String(current.root).replace(/\\/g, '/').replace(/\/$/, '');
+  const path = root + '/' + rel;
+  try {
+    await tauri.invoke('plugin:fs|mkdir', { path: path.slice(0, path.lastIndexOf('/')), options: { recursive: true } });
+    await tauri.invoke('plugin:fs|write_text_file', new TextEncoder().encode(text), { headers: { path: encodeURIComponent(path), options: JSON.stringify({}) } });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function readJson(api, rel) {
   const r = await readRepoText(api, rel);
   if (r.text === undefined) return r;
@@ -1239,8 +1302,9 @@ function ChecksPanel() {
   useEffect(() => {
     let alive = true;
     const load = async () => {
-      const [result, running, studio] = await Promise.all([readJson(api, CHECK_RESULT), readJson(api, CHECK_RUNNING), hasStudio(api)]);
-      if (alive) setData({ result: result.value || null, running: running.value || null, studio, unreadable: !!result.unreadable });
+      const [result, running, studio, normal] = await Promise.all([readJson(api, CHECK_RESULT), readJson(api, CHECK_RUNNING), hasStudio(api), readJson(api, CHECK_NORMAL)]);
+      const marks = normal.value && Array.isArray(normal.value.normal) ? normal.value.normal : [];
+      if (alive) setData({ result: result.value || null, running: running.value || null, studio, marks, unreadable: !!result.unreadable });
     };
     load();
     const timer = setInterval(load, 4000);
@@ -1254,6 +1318,15 @@ function ChecksPanel() {
     if (rel) api.session.openFile(rel);
     else api.ui.notify(s.label + ' is not in your files: it is a vanilla one.');
   };
+  // "Normal for me": one problem on one item, written to her file at once and shown so before the next check.
+  const saveMarks = async marks => {
+    const ok = await writeRepoText(api, CHECK_NORMAL, JSON.stringify({ normal: marks }, null, 1) + '\n');
+    if (ok) setData(d => ({ ...d, marks }));
+    else api.ui.notify('This could not be saved. Send Larsonix a screenshot of this panel.');
+  };
+  const today = () => new Date().toISOString().slice(0, 10);
+  const markNormal = (key, item, says) => saveMarks(withMark(data.marks, { key, item, says, by: 'Lady', date: today() }));
+  const showAgain = m => saveMarks(withoutMark(data.marks, m));
   const when = text => {
     const date = new Date(text);
     return isNaN(date) ? String(text || '') : date.toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -1265,7 +1338,7 @@ function ChecksPanel() {
   if (data.loading) return box([h('p', { key: 'l' }, 'Reading the last check...')]);
   if (data.unreadable) return box([h('p', { key: 'u' }, 'This HyCreator cannot show the checks. Double-click Check.cmd in the Studio folder to see them.'), foot]);
   if (data.studio === false) return box([h('p', { key: 's' }, 'Open your whole copy of the mod in HyCreator, the folder that holds Studio, to see the checks.')]);
-  const view = checkView(data.result, data.running);
+  const view = checkView(data.result, data.running, data.marks);
   if (view.state === 'none' || view.state === 'running') {
     return box([h('p', { key: 'n' }, view.state === 'running' ? 'Checking...' : 'No check yet. The first one runs when you commit, or double-click Check.cmd in the Studio folder.'), foot]);
   }
@@ -1280,20 +1353,61 @@ function ChecksPanel() {
     view.error ? h('div', { style: { color: LOOK.danger, marginTop: 4 } }, view.error) : null,
     view.errorDetail ? h('div', { style: { fontSize: 11.5, color: LOOK.dim } }, 'For Larsonix: ' + view.errorDetail) : null)];
 
+  const small = { padding: '0 8px', fontSize: 11.5 };
+  const normalButton = (key, item, says) => h('button', { className: 'btn slim', style: { ...small, color: LOOK.dim },
+    title: 'Hide this problem on ' + (item || 'this card') + ' only. It stays on every other item, and you can show it again below.',
+    onClick: () => markNormal(key, item, says) }, 'Normal for me');
   for (const g of view.groups) {
     const all = opened[g.key];
     const shown = all ? g.items : g.items.slice(0, 12);
     items.push(h('div', { key: g.key, style: cardStyle({ borderColor: tint(LOOK.danger, 45) }) },
       h('div', { style: { fontWeight: 600, color: LOOK.strong } },
+        g.new ? h('span', { style: tagStyle(LOOK.accent) }, 'new') : null,
         g.items.length > 1 ? h('span', { style: tagStyle(LOOK.warn) }, plural(g.items.length, 'item', 'items')) : null, g.says),
       g.do ? h('div', { style: { marginTop: 4 } }, h('span', { style: { color: LOOK.dim } }, 'To fix: '), g.do) : null,
-      shown.length ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 } },
-        shown.map((s, i) => h('button', { key: i, className: 'btn slim', style: { padding: '0 8px', fontSize: 11.5 }, title: 'Open ' + s.label, onClick: () => openSubject(s) }, s.label)),
-        g.items.length > 12 ? h('button', { className: 'btn slim', style: { padding: '0 8px', fontSize: 11.5, color: LOOK.accent }, onClick: () => setOpened({ ...opened, [g.key]: !all }) },
+      shown.length ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, marginTop: 6 } },
+        shown.map((s, i) => h('div', { key: i, style: { display: 'flex', gap: 4 } },
+          h('button', { className: 'btn slim', style: small, title: 'Open ' + s.label, onClick: () => openSubject(s) }, s.label),
+          s.problem ? normalButton(s.problem, s.label, g.says) : null)),
+        g.items.length > 12 ? h('button', { className: 'btn slim', style: { ...small, color: LOOK.accent, alignSelf: 'flex-start' }, onClick: () => setOpened({ ...opened, [g.key]: !all }) },
           all ? 'Show fewer' : '+' + (g.items.length - 12) + ' more') : null) : null,
+      !g.items.length && g.problems.length === 1 && g.problems[0] ? h('div', { style: { marginTop: 6 } }, normalButton(g.problems[0], '', g.says)) : null,
       g.details.map((d, i) => h('div', { key: i, style: { fontSize: 11.5, color: LOOK.dim, wordBreak: 'break-word', whiteSpace: 'pre-wrap', marginTop: 4 } }, 'For Larsonix: ' + d))));
   }
   if (view.state === 'problems') items.push(h('p', { key: 'rest', style: { fontSize: 12, color: LOOK.ok } }, 'Everything else is fine.'));
+
+  // Larsonix's: the file is ours, or only code can fix it. Read only, nothing to click.
+  if (view.ours.length) {
+    items.push(h('div', { key: 'ours-head', style: { fontSize: 13, fontWeight: 600, color: LOOK.strong, margin: '14px 0 4px' } },
+      "Larsonix's problems: he fixes these. Nothing to do for you."));
+    for (const g of view.ours) {
+      items.push(h('div', { key: 'ours-' + g.key, style: cardStyle({ borderColor: tint(LOOK.dim, 45) }) },
+        h('div', { style: { color: LOOK.text } },
+          g.items.length > 1 ? h('span', { style: tagStyle(LOOK.dim) }, plural(g.items.length, 'item', 'items')) : null, g.says),
+        g.items.length ? h('div', { style: { fontSize: 11.5, color: LOOK.dim, marginTop: 4 } },
+          g.items.slice(0, 12).map(s => s.label).join(', ') + (g.items.length > 12 ? ' and ' + (g.items.length - 12) + ' more' : '')) : null));
+    }
+  }
+
+  // What she judged normal: one closed line, opened to show each one again.
+  const hiddenCount = view.hidden.length + view.stale.length;
+  if (hiddenCount) {
+    const open = !!opened['hidden'];
+    items.push(h('button', { key: 'hidden', className: 'btn slim', style: { ...small, marginTop: 12 }, onClick: () => setOpened({ ...opened, hidden: !open }) },
+      (open ? 'Hide again ' : '') + 'Hidden: ' + view.hidden.length));
+    if (open) {
+      for (const [n, x] of view.hidden.entries()) {
+        items.push(h('div', { key: 'h' + n, style: { display: 'flex', gap: 6, alignItems: 'baseline', fontSize: 12, marginTop: 4 } },
+          h('button', { className: 'btn slim', style: small, onClick: () => showAgain({ key: x.key, item: x.item }) }, 'Show again'),
+          h('span', null, (x.item ? x.item + ': ' : '') + x.says)));
+      }
+      for (const [n, m] of view.stale.entries()) {
+        items.push(h('div', { key: 's' + n, style: { display: 'flex', gap: 6, alignItems: 'baseline', fontSize: 12, marginTop: 4, color: LOOK.dim } },
+          h('button', { className: 'btn slim', style: small, onClick: () => showAgain(m) }, 'Remove'),
+          h('span', null, 'No longer found: ' + (m.item ? m.item + ': ' : '') + (m.says || ''))));
+      }
+    }
+  }
   items.push(foot);
   return box(items);
 }
@@ -1315,7 +1429,8 @@ function watchChecks(api) {
     const r = await readJson(api, CHECK_RESULT);
     if (!primed) { primed = true; last = r.value || null; return; }
     if (r.value && (!last || r.value.finished !== last.finished)) {
-      const text = noticeFor(last, r.value);
+      const normal = await readJson(api, CHECK_NORMAL);
+      const text = noticeFor(last, r.value, normal.value && Array.isArray(normal.value.normal) ? normal.value.normal : []);
       if (text) api.ui.notify(text);
       last = r.value;
     }
@@ -1348,6 +1463,8 @@ export const GUIDE = [
   { title: 'The checks', steps: [
     'The checks run by themselves each time you commit. When they find something, a notice appears.',
     'Click ! at the top to see what to fix. Click an item to open it.',
+    'If a problem is how you want that item, click Normal for me beside it. It hides that problem on that item only. Hidden, at the bottom, shows it again.',
+    "Larsonix's problems are his to fix. Nothing to do for you.",
     'You can always push, even with things to fix.',
   ] },
   { title: 'Where your files go', steps: [

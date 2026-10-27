@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, hyCreatorTooOld, NEEDS_HYCREATOR } from './armory-studio.js';
+import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, hyCreatorTooOld, NEEDS_HYCREATOR, withMark, withoutMark, sheetColour } from './armory-studio.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const resources = path.resolve(here, '..', '..', '..', 'src', 'main', 'resources');
@@ -266,6 +266,23 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   check('made by a tool: the plugin and the checks agree on all ' + asked.length + ' files', differ.length === 0, differ.slice(0, 3).join(', '));
 }
 
+// A texture named for no colour never gives a colour name (the gray Praetorian helm wears Head_Texture.png).
+{
+  check('colour name: Helm_Blue.png is Blue', sheetColour('Items/X/Helm_Blue.png') === 'Blue');
+  check('colour name: Head_Texture.png names no colour', sheetColour('Items/X/Head_Texture.png') === null);
+  check('colour name: a plain colour file is its colour', sheetColour('Items/X/Deep orange.png') === 'Deep_Orange');
+  const a = await analyse(makeReader(io()), 'Item/Items/Praetorian_Helm.json');
+  check('colour name: the Praetorian helm set offers no Praetorian_Helm_Texture', a.set && !a.cells.some(c => c.id === 'Praetorian_Helm_Texture'),
+    a.cells ? a.cells.map(c => c.id).join(', ') : JSON.stringify(a).slice(0, 200));
+  const gray = a.cells && a.cells.find(c => c.items.some(i => i.id === 'Praetorian_Helm_Gray'));
+  check('colour name: the gray helm stays in its own cell, unnamed, with nothing to make', gray && gray.unnamed && !gray.missing);
+  const removed = new Set(['Item/Items/Praetorian_Helm_Gray.json']);
+  const b = await analyse(makeReader(io(new Map(), removed)), 'Item/Items/Praetorian_Helm.json');
+  const empty = b.cells && b.cells.find(c => c.unnamed);
+  check('colour name: without the gray helm its texture is offered as nothing to make', empty && empty.missing
+    && !defaultChoice(b).make.has(null) && plan(b, { make: new Set([null]), fix: new Set() }).create.length === 0);
+}
+
 // The checks panel and its notices, from results shaped as check.py writes them.
 {
   const pass = { finished: '2026-10-25T21:00:00+01:00', commit: 'abcdef1234', branch: 'lady', error: null,
@@ -307,6 +324,37 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   check('notice: one thing is spelt singular', /found 1 thing to fix\./.test(noticeFor(null, { ...fail, checks: [fail.checks[0]] }) || ''));
   check('ladyGroups: entries with the same words and fix merge, others stay apart',
     ladyGroups([{ says: 'a', do: 'b', items: [{ label: 'X' }] }, { says: 'a', do: 'b', items: [{ label: 'X' }, { label: 'Y' }] }, { says: 'a', do: 'c', items: [] }]).map(g => g.items.length).join() === '2,0');
+
+  // "Normal for me": one problem on one item, never the same problem on another item, and each can come back.
+  const key = 'itemcheck|' + quality.says;
+  const one = checkView(fail, null, [{ key, item: 'B' }]);
+  const q1 = one.groups.find(g => g.says === quality.says);
+  check('normal: a problem judged normal on one item still shows on the other', q1 && q1.items.map(i => i.label).join() === 'C', JSON.stringify(q1));
+  check('normal: the hidden one is listed to be shown again', one.hidden.length === 1 && one.hidden[0].item === 'B' && one.hidden[0].key === key);
+  const both = checkView(fail, null, [{ key, item: 'B' }, { key, item: 'C' }]);
+  check('normal: a card whose every item is normal leaves her list', !both.groups.some(g => g.says === quality.says) && both.problems === 1);
+  const gone = checkView(fail, null, [{ key: 'itemcheck|gone', item: 'Old' }]);
+  check('normal: a mark matching nothing any more is listed apart', gone.stale.length === 1 && gone.stale[0].item === 'Old' && gone.hidden.length === 0);
+  check('normal: the notice counts only what is still hers', /found 1 thing to fix/.test(noticeFor(null, fail, [{ key, item: 'B' }, { key, item: 'C' }]) || ''));
+  const marks = withMark(withMark([], { key, item: 'B' }), { key, item: 'B', date: 'x' });
+  check('normal: marking twice keeps one mark, and Show again removes it', marks.length === 1 && marks[0].date === 'x'
+    && withoutMark(marks, { key, item: 'B' }).length === 0 && withoutMark(marks, { key, item: 'C' }).length === 1);
+  check('normal: the button carries the key of the item\'s own problem',
+    checkView({ ...fail, checks: [{ id: 'game', status: 'fail', lady: [{ ...quality, key: 'game|k', items: [{ label: 'B' }] }] }] }, null, [])
+      .groups[0].items[0].problem === 'game|k');
+
+  // Larsonix's problems: apart, read only, never counted as hers.
+  const ours = { ...fail, checks: [...fail.checks, { id: 'game', title: 'G', status: 'fail', lady: [
+    { says: 'Uses the stat Volatility.', do: 'x', owner: 'us', items: [{ label: 'Praetorian_Boots' }] }] }] };
+  const ov2 = checkView(ours, null, []);
+  check("ours: Larsonix's problems are kept apart and not counted as hers", ov2.ours.length === 1 && ov2.problems === 2
+    && !ov2.groups.some(g => g.says === 'Uses the stat Volatility.'));
+  const onlyOurs = { ...pass, checks: [{ id: 'game', title: 'G', status: 'fail', lady: [{ says: 'Ours.', do: 'x', owner: 'us', items: [] }] }] };
+  check("ours: with only Larsonix's problems her panel says everything of hers is fine", checkView(onlyOurs, null, []).state === 'pass');
+
+  // What her work added comes first, whatever its size.
+  const order = ladyGroups([{ says: 'big', do: 'x', items: [{ label: '1' }, { label: '2' }, { label: '3' }] }, { says: 'small', do: 'x', items: [{ label: 'a' }], new: true }]);
+  check('new: what her work added comes first', order[0].says === 'small' && order[0].new === true);
 }
 
 // The guide in the repository is the panel's text, word for word.

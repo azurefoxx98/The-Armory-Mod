@@ -74,7 +74,7 @@ public final class NumberTileSystems {
             TransformComponent eye = viewer != null && viewer.isValid()
                     ? commandBuffer.getComponent(viewer, TransformComponent.getComponentType()) : null;
             if (tile.age >= tile.life || eye == null) {
-                commandBuffer.removeEntity(ref, RemoveReason.REMOVE);
+                commandBuffer.tryRemoveEntity(ref, RemoveReason.REMOVE);
                 return;
             }
             tile.age++;

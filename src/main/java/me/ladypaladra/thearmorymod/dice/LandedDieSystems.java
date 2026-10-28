@@ -76,7 +76,7 @@ public final class LandedDieSystems {
             }
             if (DiceModule.ledger().consumeCollected(pair)) {
                 die.claim();
-                commandBuffer.removeEntity(ref, RemoveReason.REMOVE);
+                commandBuffer.tryRemoveEntity(ref, RemoveReason.REMOVE);
                 return;
             }
             PAIRS.computeIfAbsent(pair, k -> new ConcurrentHashMap<>()).put(ref, Boolean.TRUE);
@@ -114,7 +114,7 @@ public final class LandedDieSystems {
             Ref<EntityStore> partner = partner(pair, null);
             LandedDie other = partner != null ? commandBuffer.getComponent(partner, DiceModule.landedType()) : null;
             if (other != null && other.claim()) {
-                commandBuffer.removeEntity(partner, RemoveReason.REMOVE);
+                commandBuffer.tryRemoveEntity(partner, RemoveReason.REMOVE);
             } else if (partner == null) {
                 DiceModule.ledger().pairCollected(pair);
             } else {

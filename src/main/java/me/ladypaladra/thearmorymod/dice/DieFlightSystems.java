@@ -130,7 +130,7 @@ public final class DieFlightSystems {
                 // chunk that cannot be loaded before this system sees it.
                 double next = transform.getPosition().y + physics.getVelocity().y * step * 1.5;
                 if (transform.getPosition().y < OUT_OF_WORLD_Y || next < OUT_OF_WORLD_Y) {
-                    commandBuffer.removeEntity(ref, RemoveReason.REMOVE);
+                    commandBuffer.tryRemoveEntity(ref, RemoveReason.REMOVE);
                     return;
                 }
                 flight.motion.tick(flight.spin, step);
@@ -257,7 +257,7 @@ public final class DieFlightSystems {
         if (accessor instanceof CommandBuffer<EntityStore> commandBuffer) {
             for (Ref<EntityStore> orphan : orphans) {
                 if (orphan.isValid() && claim(orphan, commandBuffer)) {
-                    commandBuffer.removeEntity(orphan, RemoveReason.REMOVE);
+                    commandBuffer.tryRemoveEntity(orphan, RemoveReason.REMOVE);
                 }
             }
             if (group.claimFinished()) {
@@ -301,7 +301,7 @@ public final class DieFlightSystems {
                                  @Nonnull TransformComponent transform, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         flight.phase = DieFlight.Phase.DONE;
         flight.handedOver = true;
-        commandBuffer.removeEntity(ref, RemoveReason.REMOVE);
+        commandBuffer.tryRemoveEntity(ref, RemoveReason.REMOVE);
 
         ThrowGroup group = flight.group;
         if (group.isLost(flight.member)) {

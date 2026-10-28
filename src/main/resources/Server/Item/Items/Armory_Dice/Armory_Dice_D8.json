@@ -1,0 +1,37 @@
+{
+  "Parent": "Template_Armory_Dice",
+  "TranslationProperties": {
+    "Name": "server.items.Armory_Dice_D8.name"
+  },
+  "Quality": "Rare",
+  "Model": "Items/Armory_Dice/Armory_Dice_D8_Held.blockymodel",
+  "Texture": "Items/Armory_Dice/Armory_Dice_D8_Texture.png",
+  "Icon": "Icons/ItemsGenerated/Armory_Dice_D8.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Rune_Shard",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Rock_Gem_Emerald",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Rock_Stone_Cobble",
+        "Quantity": 3
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Arcanebench",
+        "Type": "Crafting",
+        "Categories": [
+          "Arcane_Misc"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 2
+  }
+}

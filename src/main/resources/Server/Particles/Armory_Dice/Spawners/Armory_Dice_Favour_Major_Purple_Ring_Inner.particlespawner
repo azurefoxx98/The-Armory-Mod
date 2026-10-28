@@ -1,0 +1,109 @@
+{
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "None",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 3.6,
+    "Max": 3.6
+  },
+  "Shape": "Sphere",
+  "Particle": {
+    "Texture": "Particles/Textures/Impacts/Runes1.png",
+    "Animation": {
+      "0": {
+        "Scale": {
+          "X": {
+            "Min": 1.6,
+            "Max": 1.6
+          },
+          "Y": {
+            "Min": 1.6,
+            "Max": 1.6
+          }
+        },
+        "Opacity": 0.0,
+        "Color": "#f8dcff",
+        "Rotation": {
+          "X": {
+            "Min": 90,
+            "Max": 90
+          },
+          "Z": {
+            "Min": 0,
+            "Max": 0
+          }
+        }
+      },
+      "18": {
+        "Scale": {
+          "X": {
+            "Min": 1.0,
+            "Max": 1.0
+          },
+          "Y": {
+            "Min": 1.0,
+            "Max": 1.0
+          }
+        },
+        "Opacity": 1.0,
+        "Color": "#ba4ee8"
+      },
+      "100": {
+        "Scale": {
+          "X": {
+            "Min": 0.96,
+            "Max": 0.96
+          },
+          "Y": {
+            "Min": 0.96,
+            "Max": 0.96
+          }
+        },
+        "Opacity": 0.0,
+        "Rotation": {
+          "X": {
+            "Min": 90,
+            "Max": 90
+          },
+          "Z": {
+            "Min": -200,
+            "Max": -200
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.3375,
+          "Max": 0.3375
+        },
+        "Y": {
+          "Min": 0.3375,
+          "Max": 0.3375
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#ba4ee8",
+      "Rotation": {
+        "X": {
+          "Min": 90,
+          "Max": 90
+        }
+      }
+    },
+    "ScaleRatioConstraint": "OneToOne",
+    "SoftParticles": "Disable"
+  },
+  "TotalParticles": {
+    "Min": 1,
+    "Max": 1
+  },
+  "MaxConcurrentParticles": 1,
+  "SpawnRate": {
+    "Min": 1,
+    "Max": 1
+  },
+  "SpawnBurst": true
+}

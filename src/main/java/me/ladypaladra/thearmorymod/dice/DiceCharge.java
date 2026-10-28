@@ -30,8 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * The charge as the hand shows it. While a die's throw is held, the player's stat {@value #STAT} climbs from 0 to 100
  * with the throw's own strength, and the die in the hand follows it: the item's appearance conditions light its marks
- * brighter and gather motes round it, step by step (the dice item files). At 100 the server flashes once at the hand,
- * a burst of the die's colour and a chime. Releasing or cancelling puts the stat back to 0.
+ * brighter and gather motes round it, step by step (the dice item files). At 100 the die's full look bursts once in its
+ * colour and the server plays a chime. Releasing or cancelling puts the stat back to 0.
  *
  * <p>The stat is shared, so every player near sees the glow, and hidden from the item tooltip. Nothing reads it but the
  * dice's own appearance: it changes no play.</p>
@@ -121,19 +121,16 @@ final class DiceCharge {
     }
 
     /**
-     * The flash at full strength: a burst in the die's colour at the hand, and a chime with a shimmer under it, both
-     * heard and seen by everyone near.
+     * The chime at full strength, with a shimmer under it, heard by everyone near. The flash itself is part of the die's
+     * full look (the dice item files), so it bursts on the die wherever the wind-up has taken the hand: a burst placed
+     * here could only guess where the hand is, and the guess showed beside the player.
      */
     private static void flash(@Nonnull Ref<EntityStore> ref, @Nullable ItemStack held,
                               @Nonnull CommandBuffer<EntityStore> commandBuffer) {
-        DieType type = held != null ? DieType.byItemId(held.getItemId()) : null;
-        DiceCatalog catalog = DiceModule.catalog();
-        if (type == null || catalog == null) {
+        if (held == null || DieType.byItemId(held.getItemId()) == null) {
             return;
         }
         Vector3d hand = hand(ref, commandBuffer);
-        String colour = RollBand.capitalise(catalog.shapesOf(type).get(0).colour());
-        DiceShow.particles("Armory_Dice_Charge_Flash_" + colour, hand, 1.0f, commandBuffer);
         DiceShow.sound(SOUND_FULL, hand, 0.55f, 1.7f, commandBuffer);
         DiceShow.sound(SOUND_FULL_SHIMMER, hand, 0.45f, 1.5f, commandBuffer);
     }

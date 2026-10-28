@@ -5,10 +5,14 @@
 from __future__ import annotations
 import json
 import re
+import sys
 from collections import Counter
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
 from model import Asset, Pair, leaves, map_keys, normal_path, present_paths, short, values_at
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from pairedmods import paired_mod_of_stat
 
 @dataclass
 class Finding:
@@ -487,6 +491,7 @@ def names_resolve(pair: Pair) -> list[Finding]:
     for (form, kind, path), spec in pair.reference_paths.items():
         by_kind.setdefault(kind, []).append((form, path, spec))
     findings: list[Finding] = []
+    paired: dict[str, set[str]] = {}
     for kind, specs in sorted(by_kind.items()):
         base = pair.vanilla.store(kind)
         for a in snap.store(kind).values():
@@ -499,8 +504,12 @@ def names_resolve(pair: Pair) -> list[Finding]:
                 for n in names:
                     if n in spec['seen'] or any((n in ids[t] for t in spec['targets'])):
                         continue
+                    if 'EntityStatType' in spec['targets'] and paired_mod_of_stat(n):
+                        paired.setdefault(f"{paired_mod_of_stat(n)}'s {n}", set()).add(a.id)
+                        continue
                     where = ' or '.join(sorted(spec['targets']))
                     findings.append(Finding('names-resolve', kind, a.id, a.path, f"{a.id} names {n!r} {('as a key of' if form == 'key' else 'at')} {path}, where the game names a {where}; no {where} called {n!r} exists in the game as loaded with the mod.", family=f'{kind}:{path}', detail={'field': path, 'name': n, 'form': form}))
+    pair.notes['names-resolve'] = [f'{name}, named by {len(users)} asset(s): a stat of a mod this one is made to run beside (pairedmods.py)' for name, users in sorted(paired.items())]
     return findings
 _LOG_LINE = re.compile('\\[[0-9/ :]+\\s+(WARN|SEVERE|WARNING)\\]\\s+(.*)')
 _SHUTDOWN = re.compile('\\[HytaleServer\\] Shutdown triggered')

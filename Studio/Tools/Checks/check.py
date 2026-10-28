@@ -631,6 +631,87 @@ def check_generated(own: list[str] | None, starts: list[str], why: str) -> dict:
     return {"status": "fail" if problems else "pass", "problems": problems, "lady": lady, "output_tail": []}
 
 
+# The showcase world dresses a figure in every piece she can wear, and its stands name what each figure wears. A piece
+# she adds stands nowhere until we add it, which is ours to do, so it is a card for us and never one of her problems.
+SHOWCASE = os.path.join(RESOURCES, "Server", "Prefabs", "Armory_Showcase")
+SHOWCASE_STAND = "ArmoryShowcaseFigureStand"
+# A developer test item, kept out of the showcase on purpose.
+NOT_SHOWN = {"TestBroom"}
+
+
+def item_json(text: str) -> dict:
+    return json.loads(re.sub(r"(?m)^\s*//.*$", "", text))
+
+
+def wearable_items(game: str) -> set[str]:
+    """Every armour piece, weapon and shield of the mod, read as the showcase reads them: an armour slot or a weapon
+    block on the item or on a parent, in the mod or in the game, or a parent that is a game weapon."""
+    import zipfile
+    items = {}
+    for dirpath, _dirs, files in os.walk(os.path.join(RESOURCES, "Server", "Item", "Items")):
+        for f in files:
+            if f.endswith(".json"):
+                try:
+                    with open(os.path.join(dirpath, f), encoding="utf-8-sig") as fh:
+                        items[f[:-5]] = item_json(fh.read())
+                except (OSError, ValueError):
+                    continue  # a file that does not parse is the item check's to name
+    with zipfile.ZipFile(os.path.join(game, "Assets.zip")) as archive:
+        vanilla = {n.rsplit("/", 1)[1][:-5]: n for n in archive.namelist()
+                   if n.startswith("Server/Item/Items/") and n.endswith(".json")}
+
+        def data(item_id: str) -> dict | None:
+            if item_id in items:
+                return items[item_id]
+            if item_id in vanilla:
+                try:
+                    return item_json(archive.read(vanilla[item_id]).decode("utf-8-sig"))
+                except ValueError:
+                    return None
+            return None
+
+        def resolve(item_id: str, key: str):
+            for _ in range(13):
+                d = data(item_id)
+                if d is None:
+                    return None
+                if key in d:
+                    return d[key]
+                item_id = d.get("Parent")
+                if not item_id:
+                    return None
+            return None
+
+        out = set()
+        for item_id, d in items.items():
+            armor = resolve(item_id, "Armor")
+            parent = d.get("Parent") or ""
+            if (isinstance(armor, dict) and armor.get("ArmorSlot")) or resolve(item_id, "Weapon") is not None \
+                    or parent.startswith(("Weapon_", "Template_Weapon_")):
+                out.add(item_id)
+    return out - NOT_SHOWN
+
+
+def check_showcase(game: str) -> dict:
+    """Pieces she can wear that no figure of the showcase world wears yet."""
+    if not os.path.isdir(SHOWCASE):
+        return {"status": "pass", "problems": [], "output_tail": ["this copy holds no showcase world"]}
+    shown = set()
+    for dirpath, _dirs, files in os.walk(SHOWCASE):
+        for f in files:
+            if f.endswith(".prefab.json"):
+                with open(os.path.join(dirpath, f), encoding="utf-8-sig") as fh:
+                    for block in json.load(fh).get("blocks") or []:
+                        worn = ((block.get("components") or {}).get("Components") or {}).get(SHOWCASE_STAND) or {}
+                        shown |= {v for v in worn.values() if isinstance(v, str)}
+    missing = sorted(wearable_items(game) - shown)
+    problems = [f"{item} stands on no figure of the showcase world" for item in missing]
+    lady = [{"says": "No figure in the showcase world wears it yet.", "do": "Nothing to do. Larsonix adds it to the showcase.",
+             "items": [{"label": item, "find": "Item/Items/"}], "line": line, "known": True, "owner": "us"}
+            for item, line in zip(missing, problems)]
+    return {"status": "fail" if problems else "pass", "problems": problems, "lady": lady, "output_tail": []}
+
+
 # ---- the game check: her work as the game itself loads it ------------------------------------------
 #
 # The game's own server is booted over her work exactly as her game loads it (the code from
@@ -980,6 +1061,7 @@ def run_all() -> dict:
             ("branch", "Your branch", check_branch()),
             ("languages", "Language files", check_languages(own, starts, why)),
             ("generated", "Files our tools make", check_generated(own, starts, why)),
+            ("showcase", "The showcase world", check_showcase(game)),
             ("game", "Your work in the game", check_game(own, starts, why, game)),
         ):
             entry = {"id": name, "title": title, "seconds": None}

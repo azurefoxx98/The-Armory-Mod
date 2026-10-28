@@ -639,7 +639,7 @@ def main(argv: list[str]) -> int:
         # The checks that read the whole mod report what the branch already holds (since her October import, the
         # Praetorian stats and families), so a branch of her own is judged on what it adds, never on that.
         before = {k: set(v["problems"]) for k, v in checks.items()}
-        own = ("branch", "languages", "generated")
+        own = ("branch", "languages", "generated", "showcase")
         expect("a branch made from ours shows no problem of its own, and no check stops",
                not result["error"] and all(checks[k]["status"] == "pass" for k in own)
                and all(v["status"] != "error" for v in checks.values()),
@@ -690,6 +690,21 @@ def main(argv: list[str]) -> int:
         drops = os.path.join(res, "Server", "Drops", "Prefabs")
         loot = os.path.join(drops, sorted(n for n in os.listdir(drops) if n.endswith(".patch"))[0])
         edit(loot, lambda t: t + "\n")
+        # A piece that stood on one figure of the showcase alone now stands nowhere: its stand wears another piece.
+        stands: dict[str, list[str]] = {}
+        for dirpath, _dirs, files in os.walk(os.path.join(res, "Server", "Prefabs", "Armory_Showcase")):
+            for f in files:
+                if f.endswith(".prefab.json"):
+                    with open(os.path.join(dirpath, f), encoding="utf-8") as fh:
+                        for block in json.load(fh)["blocks"]:
+                            worn = ((block.get("components") or {}).get("Components") or {}).get(check.SHOWCASE_STAND) or {}
+                            for v in worn.values():
+                                stands.setdefault(v, []).append(os.path.join(dirpath, f))
+        # Never the item the sound set was planted in: that one is rightly among her problems for the sound.
+        planted = os.path.splitext(os.path.basename(rel_item))[0]
+        unshown = sorted(i for i, at in stands.items() if len(at) == 1 and i.startswith("Atlantean") and i != planted)[0]
+        other = sorted(i for i, at in stands.items() if len(at) > 1)[0]
+        edit(stands[unshown][0], lambda t: t.replace(f'"{unshown}"', f'"{other}"', 1))
         # Her own loot table, edited the way she now may, with one item misspelled.
         table = os.path.join(res, "Server", "Drops", "TheArmory", "Armory_Zone1_Loot.json")
         edit(table, lambda t: t.replace('"ItemId": "Mace_Iron_Rusty"', '"ItemId": "Mace_Iron_Rustyy"', 1))
@@ -709,6 +724,12 @@ def main(argv: list[str]) -> int:
         expect("the edited chest patch is named, and her edited loot table is not", checks["generated"]["status"] == "fail"
                and any(os.path.basename(loot) in p for p in checks["generated"]["problems"])
                and not any("Armory_Zone1_Loot" in p for p in checks["generated"]["problems"]), checks["generated"])
+        showcase = checks["showcase"]
+        expect("the piece no figure wears any more is named, as ours alone",
+               showcase["status"] == "fail" and [e["items"][0]["label"] for e in showcase["lady"]] == [unshown]
+               and all(e["owner"] == "us" for e in showcase["lady"]), showcase)
+        expect("and it is not among her problems", not any(unshown in g["items"] for g in check.groups(result, "mod")),
+               [g["says"] for g in check.groups(result, "mod") if unshown in g["items"]])
         expect("the misspelled chest item is named", checks["lootcheck"]["status"] == "fail"
                and any("Mace_Iron_Rustyy" in p for p in checks["lootcheck"]["problems"]), checks["lootcheck"])
         game = checks.get("game", {})

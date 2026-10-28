@@ -86,6 +86,16 @@ final class EngineDieWorld extends BlockDataProvider implements DieWorld {
         }
     }
 
+    /**
+     * Reads one cell whole and returns its block's id. After it, {@link #getBlockType()} is the block and
+     * {@link #getFluid()} the fluid in that cell.
+     */
+    int readCell(int x, int y, int z) {
+        clear();
+        read(x, y, z);
+        return blockId;
+    }
+
     @Override
     public double fluidTop(int x, int y, int z) {
         clear();

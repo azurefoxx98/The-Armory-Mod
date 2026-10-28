@@ -33,5 +33,133 @@
     ],
     "KnowledgeRequired": false,
     "TimeSeconds": 2
+  },
+  "ItemAppearanceConditions": {
+    "Armory_Dice_Charge": [
+      {
+        "Condition": [
+          1,
+          39
+        ],
+        "Model": "Items/Armory_Dice/Armory_Dice_D6_Held_Lit.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_D6_Texture_Charge_1.png",
+        "Particles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Faint_Cyan",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            }
+          }
+        ],
+        "FirstPersonParticles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Faint_Cyan",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            },
+            "Scale": 0.7
+          }
+        ]
+      },
+      {
+        "Condition": [
+          40,
+          79
+        ],
+        "Model": "Items/Armory_Dice/Armory_Dice_D6_Held_Lit.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_D6_Texture_Charge_2.png",
+        "Particles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Gather_Cyan",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            }
+          }
+        ],
+        "FirstPersonParticles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Gather_Cyan",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            },
+            "Scale": 0.7
+          }
+        ]
+      },
+      {
+        "Condition": [
+          80,
+          99
+        ],
+        "Model": "Items/Armory_Dice/Armory_Dice_D6_Held_Lit.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_D6_Texture_Charge_3.png",
+        "Particles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Swirl_Cyan",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            }
+          }
+        ],
+        "FirstPersonParticles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Swirl_Cyan",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            },
+            "Scale": 0.7
+          }
+        ]
+      },
+      {
+        "Condition": [
+          100,
+          100
+        ],
+        "Model": "Items/Armory_Dice/Armory_Dice_D6_Held_Lit.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_D6_Texture.png",
+        "Particles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Full_Cyan",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            }
+          }
+        ],
+        "FirstPersonParticles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Full_Cyan",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            },
+            "Scale": 0.7
+          }
+        ]
+      }
+    ]
   }
 }

@@ -13,6 +13,7 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.camera.CameraEffect;
 import com.hypixel.hytale.protocol.ColorLight;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
+import com.hypixel.hytale.server.core.asset.type.model.config.ModelParticle;
 import com.hypixel.hytale.server.core.asset.type.particle.config.ParticleSystem;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.modules.entity.EntityModule;
@@ -98,7 +99,7 @@ public final class DiceShow {
      */
     static void resolve() {
         for (String sound : List.of(SOUND_BOUNCE, SOUND_AWAKEN, SOUND_PICK_UP, SOUND_FAVOUR, SOUND_FAVOUR_NEAR,
-                SOUND_VEIL, SOUND_VEIL_STRIKE)) {
+                SOUND_VEIL, SOUND_VEIL_STRIKE, DiceCharge.SOUND_FULL, DiceCharge.SOUND_FULL_SHIMMER)) {
             if (SoundEvent.getAssetMap().getIndex(sound) == SoundEvent.EMPTY_ID) {
                 warnOnce("sound " + sound);
             }
@@ -108,15 +109,20 @@ public final class DiceShow {
         }
     }
 
-    static void bounce(@Nonnull DieShape shape, @Nonnull Vector3d at, double struck,
+    /**
+     * The die's own part of a bounce: its rune sparks, and its stone clack where the ground gave no sound of its own.
+     * Over a block that answered, the sparks are smaller, so the block's own dust leads.
+     */
+    static void bounce(@Nonnull DieShape shape, @Nonnull Vector3d at, double struck, boolean groundAnswered,
                        @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         if (struck < 1.0) {
             return;
         }
-        float volume = (float) Math.max(0.15, Math.min(0.8, struck / 7.0));
-        float pitch = 1.35f + ThreadLocalRandom.current().nextFloat() * 0.45f;
-        sound(SOUND_BOUNCE, at, volume, pitch, commandBuffer);
-        particles("Armory_Dice_Bounce_" + colour(shape), at, 1.0f, commandBuffer);
+        if (!groundAnswered) {
+            float pitch = 1.35f + ThreadLocalRandom.current().nextFloat() * 0.45f;
+            sound(SOUND_BOUNCE, at, GroundSound.volume(struck), pitch, commandBuffer);
+        }
+        particles("Armory_Dice_Bounce_" + colour(shape), at, groundAnswered ? 0.65f : 1.0f, commandBuffer);
     }
 
     static void awaken(@Nonnull DieShape shape, @Nonnull Vector3d spot, @Nonnull DieShape.Face face,
@@ -366,7 +372,7 @@ public final class DiceShow {
         }
     }
 
-    private static void particles(@Nonnull String name, @Nonnull Vector3d at, float scale,
+    static void particles(@Nonnull String name, @Nonnull Vector3d at, float scale,
                                   @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         if (ParticleSystem.getAssetMap().getAsset(name) == null) {
             warnOnce("particle system " + name);
@@ -375,7 +381,7 @@ public final class DiceShow {
         ParticleUtil.spawnParticleEffect(name, at, 0.0f, 0.0f, 0.0f, scale, 0.0f, commandBuffer);
     }
 
-    private static void sound(@Nonnull String name, @Nonnull Vector3d at, float volume, float pitch,
+    static void sound(@Nonnull String name, @Nonnull Vector3d at, float volume, float pitch,
                               @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         int index = SoundEvent.getAssetMap().getIndex(name);
         if (index == SoundEvent.EMPTY_ID) {
@@ -424,6 +430,40 @@ public final class DiceShow {
                 m.getCamera(), light, m.getParticles(), m.getTrails(), m.getPhysicsValues(),
                 m.getDetailBoxes(), m.getPhobia(), m.getPhobiaModelAssetId());
     }
+
+    /**
+     * The same model with its trail swapped for the {@code band} one of the same colour, such as
+     * {@code Armory_Dice_Trail_Cyan} for {@code Armory_Dice_Trail_Bright_Cyan}. A trail whose swap is missing stays as
+     * it is, with one warning.
+     */
+    @Nonnull
+    static Model withTrail(@Nonnull Model m, @Nonnull String band) {
+        ModelParticle[] particles = m.getParticles();
+        if (particles == null || particles.length == 0) {
+            return m;
+        }
+        ModelParticle[] swapped = new ModelParticle[particles.length];
+        for (int i = 0; i < particles.length; i++) {
+            ModelParticle particle = particles[i].clone();
+            String id = particle.getSystemId();
+            if (id != null && id.startsWith(TRAIL)) {
+                String banded = TRAIL + band + "_" + id.substring(TRAIL.length());
+                if (ParticleSystem.getAssetMap().getAsset(banded) != null) {
+                    particle.setSystemId(banded);
+                } else {
+                    warnOnce("particle system " + banded);
+                }
+            }
+            swapped[i] = particle;
+        }
+        return new Model(m.getModelAssetId(), m.getScale(), m.getRandomAttachmentIds(), m.getAttachments(),
+                m.getBoundingBox(), m.getModel(), m.getTexture(), m.getGradientSet(), m.getGradientId(),
+                m.getEyeHeight(), m.getCrouchOffset(), m.getSittingOffset(), m.getSleepingOffset(),
+                m.getAnimationSetMap(), m.getCamera(), m.getLight(), swapped, m.getTrails(), m.getPhysicsValues(),
+                m.getDetailBoxes(), m.getPhobia(), m.getPhobiaModelAssetId());
+    }
+
+    private static final String TRAIL = "Armory_Dice_Trail_";
 
     @Nonnull
     private static String colour(@Nonnull DieShape shape) {

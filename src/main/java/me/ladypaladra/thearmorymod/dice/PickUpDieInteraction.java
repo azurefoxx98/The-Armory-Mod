@@ -14,6 +14,7 @@ import com.hypixel.hytale.server.core.inventory.container.SimpleItemContainer;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.SimpleInstantInteraction;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
@@ -64,11 +65,17 @@ public final class PickUpDieInteraction extends SimpleInstantInteraction {
             return;
         }
 
+        Ref<EntityStore> player = context.getEntity();
+        PlayerRef taker = commandBuffer.getComponent(player, PlayerRef.getComponentType());
         UUID pair = die.pair();
         if (pair != null) {
             Ref<EntityStore> partner = LandedDieSystems.partner(pair, target);
             LandedDie other = partner != null ? commandBuffer.getComponent(partner, DiceModule.landedType()) : null;
             if (other != null && other.claim()) {
+                if (taker != null) {
+                    PickUpFlight.launch(partner, player, taker.getUuid(), PickUpFlight.colourOf(other), false,
+                            commandBuffer);
+                }
                 removeNextTick(partner, commandBuffer);
             } else if (partner == null) {
                 // The other die lies in an unloaded chunk: it is cleared when that chunk loads.
@@ -77,12 +84,14 @@ public final class PickUpDieInteraction extends SimpleInstantInteraction {
         }
 
         TransformComponent at = commandBuffer.getComponent(target, TransformComponent.getComponentType());
+        // The die flies into the hand and is heard arriving; without its copy it is heard where it lay.
+        boolean flies = taker != null
+                && PickUpFlight.launch(target, player, taker.getUuid(), PickUpFlight.colourOf(die), true, commandBuffer);
         removeNextTick(target, commandBuffer);
 
-        Ref<EntityStore> player = context.getEntity();
         var inventory = InventoryComponent.getCombined(commandBuffer, player, InventoryComponent.HOTBAR_STORAGE_BACKPACK);
         SimpleItemContainer.addOrDropItemStack(commandBuffer, player, inventory, new ItemStack(die.item(), 1));
-        if (at != null) {
+        if (!flies && at != null) {
             DiceShow.pickedUp(at.getPosition(), commandBuffer);
         }
     }

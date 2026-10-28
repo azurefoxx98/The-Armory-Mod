@@ -37,6 +37,7 @@ public final class DiceModule {
     private static ComponentType<EntityStore, LandedDie> landedType;
     private static ComponentType<EntityStore, NumberTile> tileType;
     private static ComponentType<EntityStore, DieGlow> glowType;
+    private static ComponentType<EntityStore, PickUpFlight> pickUpType;
 
     @Nullable
     private static DiceCatalog catalog;
@@ -58,6 +59,11 @@ public final class DiceModule {
                 PickUpDieInteraction.class,
                 PickUpDieInteraction.CODEC
         );
+        plugin.getCodecRegistry(Interaction.CODEC).register(
+                "ArmoryDiceCharge",
+                DiceChargeInteraction.class,
+                DiceChargeInteraction.CODEC
+        );
 
         ComponentRegistryProxy<EntityStore> registry = plugin.getEntityStoreRegistry();
         flightType = registry.registerComponent(DieFlight.class, () -> {
@@ -70,6 +76,9 @@ public final class DiceModule {
         glowType = registry.registerComponent(DieGlow.class, () -> {
             throw new UnsupportedOperationException("A die's glow is made by its landing");
         });
+        pickUpType = registry.registerComponent(PickUpFlight.class, () -> {
+            throw new UnsupportedOperationException("A pickup's flight is made by the pickup");
+        });
 
         registry.registerSystem(new DieFlightSystems.Turn());
         registry.registerSystem(new DieFlightSystems.Lost());
@@ -79,6 +88,10 @@ public final class DiceModule {
         registry.registerSystem(new NumberTileSystems.Latecomers());
         registry.registerSystem(new NumberTileSystems.OnlyItsViewer());
         registry.registerSystem(new DiceReturnSystem());
+        registry.registerSystem(new DiceCharge.Stale());
+        registry.registerSystem(new DiceCharge.Joined());
+        registry.registerSystem(new PickUpFlight.Fly());
+        registry.registerSystem(new DiceFidgets());
 
         try {
             catalog = DiceCatalog.load();
@@ -134,6 +147,11 @@ public final class DiceModule {
     @Nonnull
     static ComponentType<EntityStore, DieGlow> glowType() {
         return require(glowType, "DieGlow");
+    }
+
+    @Nonnull
+    static ComponentType<EntityStore, PickUpFlight> pickUpType() {
+        return require(pickUpType, "PickUpFlight");
     }
 
     private static <T> T require(@Nullable T type, String name) {

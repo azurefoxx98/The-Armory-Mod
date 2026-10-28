@@ -99,6 +99,10 @@ final class DiePhysics {
          */
         final Vector3d struckNormal = new Vector3d();
         /**
+         * Where that strike touched: the die's point inside the struck block, so the block can be read.
+         */
+        final Vector3d struckPoint = new Vector3d();
+        /**
          * Whether any part of the die was under water.
          */
         boolean inWater;
@@ -617,6 +621,7 @@ final class DiePhysics {
             if (-vn > report.hardest) {
                 report.hardest = -vn;
                 report.struckNormal.set(n);
+                report.struckPoint.set(s.px[c], s.py[c], s.pz[c]);
             }
             s.ln[c] = 0.0;
             s.l1[c] = 0.0;

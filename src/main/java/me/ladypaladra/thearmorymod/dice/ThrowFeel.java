@@ -4,6 +4,7 @@ import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.random.RandomGenerator;
 
 /**
@@ -50,7 +51,25 @@ public final class ThrowFeel {
     static final double STRENGTH_SPREAD = 0.06;
     static final double AIM_SPREAD = Math.toRadians(3.0);
 
+    /**
+     * A throw weaker than this leaves a faint trail, and one at least this strong a bright one; between, the die's
+     * own trail.
+     */
+    static final double FAINT_BELOW = 0.2;
+    static final double BRIGHT_FROM = 0.7;
+
     private ThrowFeel() {
+    }
+
+    /**
+     * The trail a throw of {@code power} leaves: "Faint", "Bright", or null for the die's own.
+     */
+    @Nullable
+    static String trail(double power) {
+        if (power < FAINT_BELOW) {
+            return "Faint";
+        }
+        return power >= BRIGHT_FROM ? "Bright" : null;
     }
 
     /**

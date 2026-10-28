@@ -11,6 +11,7 @@ import com.hypixel.hytale.component.dependency.Order;
 import com.hypixel.hytale.component.dependency.SystemDependency;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
+import com.hypixel.hytale.protocol.ColorLight;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
@@ -94,7 +95,7 @@ public final class NumberTileSystems {
 
             float scale = scale(tile);
             if (Math.abs(scale - tile.shownScale) > 1.0E-3) {
-                Model model = tileModel(tile.modelAsset, tile.texture, scale);
+                Model model = tileModel(tile.modelAsset, tile.texture, scale, tile.show.light(scale / SCALE));
                 if (model != null) {
                     commandBuffer.putComponent(ref, ModelComponent.getComponentType(), new ModelComponent(model));
                 }
@@ -194,16 +195,16 @@ public final class NumberTileSystems {
     }
 
     /**
-     * A digit tile's model in a band's texture. The tiles are never saved, so the texture chosen here is never
-     * reloaded from a model reference, which would bring back the model's own.
+     * A digit tile's model in a band's texture, casting the band's light. The tiles are never saved, so the texture
+     * and light chosen here are never reloaded from a model reference, which would bring back the model's own.
      */
     @Nullable
-    static Model tileModel(@Nonnull String modelAsset, @Nonnull String texture, float scale) {
+    static Model tileModel(@Nonnull String modelAsset, @Nonnull String texture, float scale, @Nonnull ColorLight light) {
         ModelAsset asset = ModelAsset.getAssetMap().getAsset(modelAsset);
         if (asset == null) {
             return null;
         }
-        return DiceShow.retextured(Model.createScaledModel(asset, scale), texture);
+        return DiceShow.retextured(Model.createScaledModel(asset, scale), texture, light);
     }
 
     private static double height(@Nonnull NumberTile tile) {

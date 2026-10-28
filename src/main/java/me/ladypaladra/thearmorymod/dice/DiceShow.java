@@ -11,6 +11,7 @@ import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.protocol.packets.interface_.EventTitleStyle;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.camera.CameraEffect;
+import com.hypixel.hytale.protocol.ColorLight;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.particle.config.ParticleSystem;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
@@ -26,6 +27,7 @@ import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import org.joml.Vector3d;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -257,7 +259,18 @@ public final class DiceShow {
         int life = type == DieType.D100 ? GRAND_LIFE
                 : band == RollBand.FAVOUR || band == RollBand.VEIL ? EXTREME_LIFE : NUMBER_LIFE;
         Vector3d anchor = new Vector3d(roll.at()).add(0.0, 0.45, 0.0);
-        NumberShow show = new NumberShow(anchor, digits, texture, band, life);
+        // The digit's burn follows the band: the Avatar's gold, the Veil's crimson, the die's own colour between,
+        // dimmer the lower the roll, as the numbers' textures are.
+        DieShape.Rgb glow = band == RollBand.FAVOUR ? DieGlow.GOLD : band == RollBand.VEIL ? DieGlow.CRIMSON : lead.glow();
+        double strength = switch (band) {
+            case FAVOUR, VERY_HIGH -> 1.0;
+            case HIGH -> 0.9;
+            case MIDDLE -> 0.8;
+            case LOW, VEIL -> 0.65;
+            case VERY_LOW -> 0.45;
+        };
+        int radius = band == RollBand.FAVOUR ? 4 : band == RollBand.VERY_LOW || band == RollBand.LOW ? 2 : 3;
+        NumberShow show = new NumberShow(anchor, digits, texture, band, life, glow, strength, radius);
         for (Ref<EntityStore> viewer : playersNear(roll.at(), NUMBER_RANGE, commandBuffer)) {
             numberFor(show, viewer, commandBuffer);
         }
@@ -280,7 +293,8 @@ public final class DiceShow {
         }
         for (int place = 0; place < show.digits.length(); place++) {
             String asset = "Armory_Dice_Number_" + show.digits.charAt(place);
-            Model model = NumberTileSystems.tileModel(asset, show.texture, NumberTileSystems.SCALE * 0.35f);
+            Model model = NumberTileSystems.tileModel(asset, show.texture, NumberTileSystems.SCALE * 0.35f,
+                    show.light(0.35));
             if (model == null) {
                 warnOnce("number model " + asset);
                 return;
@@ -395,10 +409,19 @@ public final class DiceShow {
      */
     @Nonnull
     static Model retextured(@Nonnull Model m, @Nonnull String texture) {
+        return retextured(m, texture, m.getLight());
+    }
+
+    /**
+     * The same model wearing another texture and casting its own light. The light goes to every player with the
+     * model, as the game's glowing creatures carry theirs.
+     */
+    @Nonnull
+    static Model retextured(@Nonnull Model m, @Nonnull String texture, @Nullable ColorLight light) {
         return new Model(m.getModelAssetId(), m.getScale(), m.getRandomAttachmentIds(), m.getAttachments(),
                 m.getBoundingBox(), m.getModel(), texture, m.getGradientSet(), m.getGradientId(), m.getEyeHeight(),
                 m.getCrouchOffset(), m.getSittingOffset(), m.getSleepingOffset(), m.getAnimationSetMap(),
-                m.getCamera(), m.getLight(), m.getParticles(), m.getTrails(), m.getPhysicsValues(),
+                m.getCamera(), light, m.getParticles(), m.getTrails(), m.getPhysicsValues(),
                 m.getDetailBoxes(), m.getPhobia(), m.getPhobiaModelAssetId());
     }
 

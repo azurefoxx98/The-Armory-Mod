@@ -46009,12 +46009,12 @@
     }
    ]
   },
-  "be6415d3-a8d1-531c-9ca5-7d294e0d6bc6": {
-   "Name": "act3.walkup.-43,113,6",
+  "42fb8e51-cf36-55a8-b7f2-3327258f6a1a": {
+   "Name": "act3.walkup.-43,113,4",
    "Position": {
     "X": -42.5,
     "Y": 114.5,
-    "Z": 6.5
+    "Z": 4.5
    },
    "Shape": {
     "Type": "Box",
@@ -46053,12 +46053,12 @@
     "moment": "walkup"
    }
   },
-  "4e2c1e25-1134-5ed4-9311-279982521727": {
-   "Name": "act3.walkup.-42,113,8",
+  "be6415d3-a8d1-531c-9ca5-7d294e0d6bc6": {
+   "Name": "act3.walkup.-43,113,6",
    "Position": {
-    "X": -41.5,
+    "X": -42.5,
     "Y": 114.5,
-    "Z": 8.5
+    "Z": 6.5
    },
    "Shape": {
     "Type": "Box",
@@ -46096,6 +46096,78 @@
     "act": "3",
     "moment": "walkup"
    }
+  },
+  "560c9cbf-e589-5965-9e77-3c561b581f90": {
+   "Name": "act3.placard.-42,113,8",
+   "Position": {
+    "X": -41.5,
+    "Y": 114.5,
+    "Z": 8.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -0.5,
+     "Y": -1.5,
+     "Z": -0.5
+    },
+    "Max": {
+     "X": 0.5,
+     "Y": 1.5,
+     "Z": 0.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.Armor_Thorium_Head.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 3.0,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Shield_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "d95ea5a2-f6ef-5c86-886b-e92646431b18": {
    "Name": "act3.placard.-42,113,10",
@@ -49193,8 +49265,8 @@
     }
    ]
   },
-  "1f143433-90d1-54df-a18d-a13d9ed6c6f6": {
-   "Name": "act3.walkup.38,113,17",
+  "b920c389-e62a-5c34-a4de-25ccb3c777db": {
+   "Name": "act3.placard.38,113,17",
    "Position": {
     "X": 38.5,
     "Y": 114.5,
@@ -49203,28 +49275,50 @@
    "Shape": {
     "Type": "Box",
     "Min": {
-     "X": -1.5,
+     "X": -0.5,
      "Y": -1.5,
-     "Z": -1.5
+     "Z": -0.5
     },
     "Max": {
-     "X": 1.5,
+     "X": 0.5,
      "Y": 1.5,
-     "Z": 1.5
+     "Z": 0.5
     }
    },
    "Conditions": [],
    "Effects": [
     {
      "Type": "ShowEventTitle",
-     "Event": "ENTER",
+     "Event": "SIGNAL_RECEIVED",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
+     "PrimaryTitle": "server.items.Praetorian_Elite_Helm.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
-     "Duration": 2.5,
+     "Duration": 3.0,
      "FadeInDuration": 0.3,
-     "FadeOutDuration": 0.8
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Shield_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
     }
    ],
    "TargetTypes": [
@@ -49234,8 +49328,14 @@
    "KeepLoaded": false,
    "Tags": {
     "act": "3",
-    "moment": "walkup"
-   }
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "1d51adee-24e2-50ed-8602-11c03125e6bb": {
    "Name": "act3.walkup.39,113,15",
@@ -49263,7 +49363,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
+     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -49307,7 +49407,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorPile.name",
+     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -49351,7 +49451,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -49395,7 +49495,95 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
+     "PrimaryTitle": "server.items.ScrapArmorPile.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 2.5,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "walkup"
+   }
+  },
+  "f45903bd-a5ef-5437-bb4f-cac7e6ad7d40": {
+   "Name": "act3.walkup.42,113,5",
+   "Position": {
+    "X": 42.5,
+    "Y": 114.5,
+    "Z": 5.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -1.5,
+     "Y": -1.5,
+     "Z": -1.5
+    },
+    "Max": {
+     "X": 1.5,
+     "Y": 1.5,
+     "Z": 1.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "ENTER",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 2.5,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "walkup"
+   }
+  },
+  "ffbf4b14-b22e-5956-8be3-1a169409436d": {
+   "Name": "act3.walkup.-46,115,3",
+   "Position": {
+    "X": -45.5,
+    "Y": 116.5,
+    "Z": 3.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -1.5,
+     "Y": -1.5,
+     "Z": -1.5
+    },
+    "Max": {
+     "X": 1.5,
+     "Y": 1.5,
+     "Z": 1.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "ENTER",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.SlumberingRubble.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -49439,7 +49627,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -49615,7 +49803,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
+     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -49659,50 +49847,6 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
-     "Style": "Default",
-     "Recipient": "TriggeringPlayer",
-     "Duration": 2.5,
-     "FadeInDuration": 0.3,
-     "FadeOutDuration": 0.8
-    }
-   ],
-   "TargetTypes": [
-    "Player"
-   ],
-   "Enabled": true,
-   "KeepLoaded": false,
-   "Tags": {
-    "act": "3",
-    "moment": "walkup"
-   }
-  },
-  "848550bb-a295-5ff9-8064-1d712b48df93": {
-   "Name": "act3.walkup.-42,115,19",
-   "Position": {
-    "X": -41.5,
-    "Y": 116.5,
-    "Z": 19.5
-   },
-   "Shape": {
-    "Type": "Box",
-    "Min": {
-     "X": -1.5,
-     "Y": -1.5,
-     "Z": -1.5
-    },
-    "Max": {
-     "X": 1.5,
-     "Y": 1.5,
-     "Z": 1.5
-    }
-   },
-   "Conditions": [],
-   "Effects": [
-    {
-     "Type": "ShowEventTitle",
-     "Event": "ENTER",
-     "Delay": 0.0,
      "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
@@ -49720,6 +49864,78 @@
     "act": "3",
     "moment": "walkup"
    }
+  },
+  "dea65181-ac26-550c-887d-a951cef3551b": {
+   "Name": "act3.placard.-42,115,19",
+   "Position": {
+    "X": -41.5,
+    "Y": 116.5,
+    "Z": 19.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -0.5,
+     "Y": -1.5,
+     "Z": -0.5
+    },
+    "Max": {
+     "X": 0.5,
+     "Y": 1.5,
+     "Z": 0.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.Armor_Thorium_Head.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 3.0,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "a728b182-84d7-5681-b860-1f8fa5b717f9": {
    "Name": "act3.placard.-41,115,21",
@@ -52889,8 +53105,8 @@
     }
    ]
   },
-  "bf000a6f-adc3-546e-89f0-957477e59aa0": {
-   "Name": "act3.walkup.44,115,8",
+  "8416dd99-4fa9-5729-bf27-8e27772cc96d": {
+   "Name": "act3.placard.44,115,8",
    "Position": {
     "X": 44.5,
     "Y": 116.5,
@@ -52899,28 +53115,50 @@
    "Shape": {
     "Type": "Box",
     "Min": {
-     "X": -1.5,
+     "X": -0.5,
      "Y": -1.5,
-     "Z": -1.5
+     "Z": -0.5
     },
     "Max": {
-     "X": 1.5,
+     "X": 0.5,
      "Y": 1.5,
-     "Z": 1.5
+     "Z": 0.5
     }
    },
    "Conditions": [],
    "Effects": [
     {
      "Type": "ShowEventTitle",
-     "Event": "ENTER",
+     "Event": "SIGNAL_RECEIVED",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
+     "PrimaryTitle": "server.items.Praetorian_Helm.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
-     "Duration": 2.5,
+     "Duration": 3.0,
      "FadeInDuration": 0.3,
-     "FadeOutDuration": 0.8
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
     }
    ],
    "TargetTypes": [
@@ -52930,8 +53168,14 @@
    "KeepLoaded": false,
    "Tags": {
     "act": "3",
-    "moment": "walkup"
-   }
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "cbd269c7-12db-584a-9036-3cdde296644f": {
    "Name": "act3.placard.44,115,10",
@@ -53005,12 +53249,144 @@
     }
    ]
   },
+  "7b422b80-6f2e-5a12-aed8-a7c5ab1a941e": {
+   "Name": "act3.walkup.45,115,4",
+   "Position": {
+    "X": 45.5,
+    "Y": 116.5,
+    "Z": 4.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -1.5,
+     "Y": -1.5,
+     "Z": -1.5
+    },
+    "Max": {
+     "X": 1.5,
+     "Y": 1.5,
+     "Z": 1.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "ENTER",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 2.5,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "walkup"
+   }
+  },
   "5c6cdad2-f04d-5cf0-88b5-ce3e4dada02b": {
    "Name": "act3.walkup.45,115,6",
    "Position": {
     "X": 45.5,
     "Y": 116.5,
     "Z": 6.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -1.5,
+     "Y": -1.5,
+     "Z": -1.5
+    },
+    "Max": {
+     "X": 1.5,
+     "Y": 1.5,
+     "Z": 1.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "ENTER",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 2.5,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "walkup"
+   }
+  },
+  "1a2189c5-53f5-5b06-97f2-60ad3d36b531": {
+   "Name": "act3.walkup.-49,117,1",
+   "Position": {
+    "X": -48.5,
+    "Y": 118.5,
+    "Z": 1.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -1.5,
+     "Y": -1.5,
+     "Z": -1.5
+    },
+    "Max": {
+     "X": 1.5,
+     "Y": 1.5,
+     "Z": 1.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "ENTER",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 2.5,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "walkup"
+   }
+  },
+  "f66c6f61-1760-521b-93bc-2d1484cfa0ba": {
+   "Name": "act3.walkup.-49,117,3",
+   "Position": {
+    "X": -48.5,
+    "Y": 118.5,
+    "Z": 3.5
    },
    "Shape": {
     "Type": "Box",
@@ -53075,7 +53451,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -53119,7 +53495,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -53251,7 +53627,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
+     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -53295,94 +53671,6 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
-     "Style": "Default",
-     "Recipient": "TriggeringPlayer",
-     "Duration": 2.5,
-     "FadeInDuration": 0.3,
-     "FadeOutDuration": 0.8
-    }
-   ],
-   "TargetTypes": [
-    "Player"
-   ],
-   "Enabled": true,
-   "KeepLoaded": false,
-   "Tags": {
-    "act": "3",
-    "moment": "walkup"
-   }
-  },
-  "3325930b-9370-51a2-a0bd-0fe8c6fc556f": {
-   "Name": "act3.walkup.-45,117,18",
-   "Position": {
-    "X": -44.5,
-    "Y": 118.5,
-    "Z": 18.5
-   },
-   "Shape": {
-    "Type": "Box",
-    "Min": {
-     "X": -1.5,
-     "Y": -1.5,
-     "Z": -1.5
-    },
-    "Max": {
-     "X": 1.5,
-     "Y": 1.5,
-     "Z": 1.5
-    }
-   },
-   "Conditions": [],
-   "Effects": [
-    {
-     "Type": "ShowEventTitle",
-     "Event": "ENTER",
-     "Delay": 0.0,
-     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
-     "Style": "Default",
-     "Recipient": "TriggeringPlayer",
-     "Duration": 2.5,
-     "FadeInDuration": 0.3,
-     "FadeOutDuration": 0.8
-    }
-   ],
-   "TargetTypes": [
-    "Player"
-   ],
-   "Enabled": true,
-   "KeepLoaded": false,
-   "Tags": {
-    "act": "3",
-    "moment": "walkup"
-   }
-  },
-  "c32fc204-601d-5f78-b741-7c47c651c5d5": {
-   "Name": "act3.walkup.-45,117,20",
-   "Position": {
-    "X": -44.5,
-    "Y": 118.5,
-    "Z": 20.5
-   },
-   "Shape": {
-    "Type": "Box",
-    "Min": {
-     "X": -1.5,
-     "Y": -1.5,
-     "Z": -1.5
-    },
-    "Max": {
-     "X": 1.5,
-     "Y": 1.5,
-     "Z": 1.5
-    }
-   },
-   "Conditions": [],
-   "Effects": [
-    {
-     "Type": "ShowEventTitle",
-     "Event": "ENTER",
-     "Delay": 0.0,
      "PrimaryTitle": "server.items.ScrapArmorSitting.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
@@ -53400,6 +53688,150 @@
     "act": "3",
     "moment": "walkup"
    }
+  },
+  "71a53953-ad12-54c9-9908-b939ee346b08": {
+   "Name": "act3.placard.-45,117,18",
+   "Position": {
+    "X": -44.5,
+    "Y": 118.5,
+    "Z": 18.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -0.5,
+     "Y": -1.5,
+     "Z": -0.5
+    },
+    "Max": {
+     "X": 0.5,
+     "Y": 1.5,
+     "Z": 0.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.Armor_Thorium_Head.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 3.0,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
+  },
+  "8ed55467-6bdf-53ff-9a63-aa99d9bbf905": {
+   "Name": "act3.placard.-45,117,20",
+   "Position": {
+    "X": -44.5,
+    "Y": 118.5,
+    "Z": 20.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -0.5,
+     "Y": -1.5,
+     "Z": -0.5
+    },
+    "Max": {
+     "X": 0.5,
+     "Y": 1.5,
+     "Z": 0.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.Armor_Thorium_Head.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 3.0,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "48a86927-bbf7-5a92-aa8a-a04d37c3b54c": {
    "Name": "act3.placard.-44,117,22",
@@ -57027,7 +57459,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
+     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -57071,7 +57503,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
+     "PrimaryTitle": "server.items.StandingArmorVerdan.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -57089,12 +57521,84 @@
     "moment": "walkup"
    }
   },
-  "9dbd1d8e-bb03-55a4-8969-3c469baa4549": {
-   "Name": "act3.walkup.47,117,11",
+  "a2d067d4-2a58-5a7c-b230-dada14d7a537": {
+   "Name": "act3.placard.47,117,11",
    "Position": {
     "X": 47.5,
     "Y": 118.5,
     "Z": 11.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -0.5,
+     "Y": -1.5,
+     "Z": -0.5
+    },
+    "Max": {
+     "X": 0.5,
+     "Y": 1.5,
+     "Z": 0.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.Praetorian_Helm.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 3.0,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
+  },
+  "73851b61-58ab-59d1-8418-1218094a644b": {
+   "Name": "act3.walkup.48,117,3",
+   "Position": {
+    "X": 48.5,
+    "Y": 118.5,
+    "Z": 3.5
    },
    "Shape": {
     "Type": "Box",
@@ -57115,7 +57619,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.StandingArmorVerdan.name",
+     "PrimaryTitle": "server.items.ScrapArmorHelm.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -57159,7 +57663,51 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorHelm.name",
+     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 2.5,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "walkup"
+   }
+  },
+  "834c0a15-0249-59a4-a706-073c2b9d9a4a": {
+   "Name": "act3.walkup.-52,119,2",
+   "Position": {
+    "X": -51.5,
+    "Y": 120.5,
+    "Z": 2.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -1.5,
+     "Y": -1.5,
+     "Z": -1.5
+    },
+    "Max": {
+     "X": 1.5,
+     "Y": 1.5,
+     "Z": 1.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "ENTER",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.SlumberingRubble.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -57247,7 +57795,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "PrimaryTitle": "server.items.ScrapArmorPile.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -57291,7 +57839,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorPile.name",
+     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -57335,7 +57883,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
+     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -57379,7 +57927,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
+     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -57423,7 +57971,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
+     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -57511,50 +58059,6 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
-     "Style": "Default",
-     "Recipient": "TriggeringPlayer",
-     "Duration": 2.5,
-     "FadeInDuration": 0.3,
-     "FadeOutDuration": 0.8
-    }
-   ],
-   "TargetTypes": [
-    "Player"
-   ],
-   "Enabled": true,
-   "KeepLoaded": false,
-   "Tags": {
-    "act": "3",
-    "moment": "walkup"
-   }
-  },
-  "ae38b5bf-eb85-58bb-98fc-cf3645e7a0a2": {
-   "Name": "act3.walkup.-47,119,21",
-   "Position": {
-    "X": -46.5,
-    "Y": 120.5,
-    "Z": 21.5
-   },
-   "Shape": {
-    "Type": "Box",
-    "Min": {
-     "X": -1.5,
-     "Y": -1.5,
-     "Z": -1.5
-    },
-    "Max": {
-     "X": 1.5,
-     "Y": 1.5,
-     "Z": 1.5
-    }
-   },
-   "Conditions": [],
-   "Effects": [
-    {
-     "Type": "ShowEventTitle",
-     "Event": "ENTER",
-     "Delay": 0.0,
      "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
@@ -57572,6 +58076,78 @@
     "act": "3",
     "moment": "walkup"
    }
+  },
+  "162158df-6b81-5479-bc70-4c9c7ff8592b": {
+   "Name": "act3.placard.-47,119,21",
+   "Position": {
+    "X": -46.5,
+    "Y": 120.5,
+    "Z": 21.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -0.5,
+     "Y": -1.5,
+     "Z": -0.5
+    },
+    "Max": {
+     "X": 0.5,
+     "Y": 1.5,
+     "Z": 0.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.Armor_Thorium_Head.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 3.0,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "a079bace-2a3b-5a01-be0a-66f097ce657f": {
    "Name": "act3.placard.-46,119,23",
@@ -61271,50 +61847,6 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
-     "Style": "Default",
-     "Recipient": "TriggeringPlayer",
-     "Duration": 2.5,
-     "FadeInDuration": 0.3,
-     "FadeOutDuration": 0.8
-    }
-   ],
-   "TargetTypes": [
-    "Player"
-   ],
-   "Enabled": true,
-   "KeepLoaded": false,
-   "Tags": {
-    "act": "3",
-    "moment": "walkup"
-   }
-  },
-  "ce522163-09fb-5f62-99c1-1d6f15265d36": {
-   "Name": "act3.walkup.49,119,14",
-   "Position": {
-    "X": 49.5,
-    "Y": 120.5,
-    "Z": 14.5
-   },
-   "Shape": {
-    "Type": "Box",
-    "Min": {
-     "X": -1.5,
-     "Y": -1.5,
-     "Z": -1.5
-    },
-    "Max": {
-     "X": 1.5,
-     "Y": 1.5,
-     "Z": 1.5
-    }
-   },
-   "Conditions": [],
-   "Effects": [
-    {
-     "Type": "ShowEventTitle",
-     "Event": "ENTER",
-     "Delay": 0.0,
      "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
@@ -61332,6 +61864,78 @@
     "act": "3",
     "moment": "walkup"
    }
+  },
+  "b31e8cb0-3a75-5a91-bf52-028e3b37f1aa": {
+   "Name": "act3.placard.49,119,14",
+   "Position": {
+    "X": 49.5,
+    "Y": 120.5,
+    "Z": 14.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -0.5,
+     "Y": -1.5,
+     "Z": -0.5
+    },
+    "Max": {
+     "X": 0.5,
+     "Y": 1.5,
+     "Z": 0.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.Praetorian_Helm.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 3.0,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "93ab84a7-9f02-5dfa-892b-5fa76b899d11": {
    "Name": "act3.walkup.50,119,8",
@@ -61421,6 +62025,50 @@
     "moment": "walkup"
    }
   },
+  "f575be04-aed1-591f-bebf-24933570cfad": {
+   "Name": "act3.walkup.51,119,2",
+   "Position": {
+    "X": 51.5,
+    "Y": 120.5,
+    "Z": 2.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -1.5,
+     "Y": -1.5,
+     "Z": -1.5
+    },
+    "Max": {
+     "X": 1.5,
+     "Y": 1.5,
+     "Z": 1.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "ENTER",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 2.5,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "walkup"
+   }
+  },
   "8a24534d-14a4-52b1-801c-f252e67bce7d": {
    "Name": "act3.walkup.51,119,4",
    "Position": {
@@ -61447,7 +62095,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "PrimaryTitle": "server.items.ScrapArmorHelm.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -61491,7 +62139,95 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorHelm.name",
+     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 2.5,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "walkup"
+   }
+  },
+  "4805ee0a-12f0-5fac-a5d6-ba962cf43138": {
+   "Name": "act3.walkup.-55,121,0",
+   "Position": {
+    "X": -54.5,
+    "Y": 122.5,
+    "Z": 0.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -1.5,
+     "Y": -1.5,
+     "Z": -1.5
+    },
+    "Max": {
+     "X": 1.5,
+     "Y": 1.5,
+     "Z": 1.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "ENTER",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 2.5,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "walkup"
+   }
+  },
+  "0b32615b-9128-5443-98d3-c85c2a849327": {
+   "Name": "act3.walkup.-55,121,2",
+   "Position": {
+    "X": -54.5,
+    "Y": 122.5,
+    "Z": 2.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -1.5,
+     "Y": -1.5,
+     "Z": -1.5
+    },
+    "Max": {
+     "X": 1.5,
+     "Y": 1.5,
+     "Z": 1.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "ENTER",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -61535,7 +62271,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "PrimaryTitle": "server.items.ScrapArmorHelm.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -61623,7 +62359,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorHelm.name",
+     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -61641,8 +62377,8 @@
     "moment": "walkup"
    }
   },
-  "30802ae5-f0e3-5617-82eb-5214ba4b437c": {
-   "Name": "act3.walkup.-54,121,10",
+  "e90b606b-bf28-582d-addb-6b2548804ece": {
+   "Name": "act3.placard.-54,121,10",
    "Position": {
     "X": -53.5,
     "Y": 122.5,
@@ -61651,28 +62387,50 @@
    "Shape": {
     "Type": "Box",
     "Min": {
-     "X": -1.5,
+     "X": -0.5,
      "Y": -1.5,
-     "Z": -1.5
+     "Z": -0.5
     },
     "Max": {
-     "X": 1.5,
+     "X": 0.5,
      "Y": 1.5,
-     "Z": 1.5
+     "Z": 0.5
     }
    },
    "Conditions": [],
    "Effects": [
     {
      "Type": "ShowEventTitle",
-     "Event": "ENTER",
+     "Event": "SIGNAL_RECEIVED",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
+     "PrimaryTitle": "server.items.Armor_Thorium_Head.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
-     "Duration": 2.5,
+     "Duration": 3.0,
      "FadeInDuration": 0.3,
-     "FadeOutDuration": 0.8
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
     }
    ],
    "TargetTypes": [
@@ -61682,11 +62440,17 @@
    "KeepLoaded": false,
    "Tags": {
     "act": "3",
-    "moment": "walkup"
-   }
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
-  "50b11376-d94f-5912-a70f-9b6e76b51869": {
-   "Name": "act3.walkup.-54,121,12",
+  "5a81f76c-92d7-584c-ae47-41755a1eeee1": {
+   "Name": "act3.placard.-54,121,12",
    "Position": {
     "X": -53.5,
     "Y": 122.5,
@@ -61695,28 +62459,50 @@
    "Shape": {
     "Type": "Box",
     "Min": {
-     "X": -1.5,
+     "X": -0.5,
      "Y": -1.5,
-     "Z": -1.5
+     "Z": -0.5
     },
     "Max": {
-     "X": 1.5,
+     "X": 0.5,
      "Y": 1.5,
-     "Z": 1.5
+     "Z": 0.5
     }
    },
    "Conditions": [],
    "Effects": [
     {
      "Type": "ShowEventTitle",
-     "Event": "ENTER",
+     "Event": "SIGNAL_RECEIVED",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
+     "PrimaryTitle": "server.items.Armor_Thorium_Head.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
-     "Duration": 2.5,
+     "Duration": 3.0,
      "FadeInDuration": 0.3,
-     "FadeOutDuration": 0.8
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
     }
    ],
    "TargetTypes": [
@@ -61726,8 +62512,14 @@
    "KeepLoaded": false,
    "Tags": {
     "act": "3",
-    "moment": "walkup"
-   }
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "69c275f8-16ec-5dd3-944d-a54d21f3493d": {
    "Name": "act3.placard.-53,121,14",
@@ -66121,12 +66913,12 @@
     }
    ]
   },
-  "c901bf1b-ba47-584d-b05f-e37a7c4be5cf": {
-   "Name": "act3.walkup.54,121,4",
+  "9b3f37fd-6e4c-5b0c-adff-1daa1eb9c603": {
+   "Name": "act3.walkup.54,121,2",
    "Position": {
     "X": 54.5,
     "Y": 122.5,
-    "Z": 4.5
+    "Z": 2.5
    },
    "Shape": {
     "Type": "Box",
@@ -66164,6 +66956,78 @@
     "act": "3",
     "moment": "walkup"
    }
+  },
+  "9e13d477-0398-5afc-8f61-e4a78433b742": {
+   "Name": "act3.placard.54,121,4",
+   "Position": {
+    "X": 54.5,
+    "Y": 122.5,
+    "Z": 4.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -0.5,
+     "Y": -1.5,
+     "Z": -0.5
+    },
+    "Max": {
+     "X": 0.5,
+     "Y": 1.5,
+     "Z": 0.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.Praetorian_Helm.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 3.0,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "7a44c92d-6543-56d2-80b6-1489fe05aeac": {
    "Name": "act3.placard.54,121,6",
@@ -66237,6 +67101,50 @@
     }
    ]
   },
+  "ebf3b045-8175-5731-9134-1cf8343a7f01": {
+   "Name": "act3.walkup.-58,123,1",
+   "Position": {
+    "X": -57.5,
+    "Y": 124.5,
+    "Z": 1.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -1.5,
+     "Y": -1.5,
+     "Z": -1.5
+    },
+    "Max": {
+     "X": 1.5,
+     "Y": 1.5,
+     "Z": 1.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "ENTER",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 2.5,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "walkup"
+   }
+  },
   "33fe4e8e-8fcc-5b6e-add8-3d7e77e10090": {
    "Name": "act3.walkup.-58,123,3",
    "Position": {
@@ -66307,7 +67215,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -66351,7 +67259,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
+     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -66439,7 +67347,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
+     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -66483,7 +67391,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapSwordUpright.name",
+     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -66545,8 +67453,8 @@
     "moment": "walkup"
    }
   },
-  "b6430451-14b4-5cfc-a3e0-e3d569ebde9e": {
-   "Name": "act3.walkup.-55,123,19",
+  "1716acef-9a48-516f-9441-bd543c906e3b": {
+   "Name": "act3.placard.-55,123,19",
    "Position": {
     "X": -54.5,
     "Y": 124.5,
@@ -66555,28 +67463,50 @@
    "Shape": {
     "Type": "Box",
     "Min": {
-     "X": -1.5,
+     "X": -0.5,
      "Y": -1.5,
-     "Z": -1.5
+     "Z": -0.5
     },
     "Max": {
-     "X": 1.5,
+     "X": 0.5,
      "Y": 1.5,
-     "Z": 1.5
+     "Z": 0.5
     }
    },
    "Conditions": [],
    "Effects": [
     {
      "Type": "ShowEventTitle",
-     "Event": "ENTER",
+     "Event": "SIGNAL_RECEIVED",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
+     "PrimaryTitle": "server.items.Armor_Thorium_Head.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
-     "Duration": 2.5,
+     "Duration": 3.0,
      "FadeInDuration": 0.3,
-     "FadeOutDuration": 0.8
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
     }
    ],
    "TargetTypes": [
@@ -66586,8 +67516,14 @@
    "KeepLoaded": false,
    "Tags": {
     "act": "3",
-    "moment": "walkup"
-   }
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "5affd5bb-5bad-57c7-ae9b-07ebfee4c68c": {
    "Name": "act3.placard.-54,123,21",
@@ -71007,7 +71943,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
+     "PrimaryTitle": "server.items.StandingArmorVerdan.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -71025,12 +71961,84 @@
     "moment": "walkup"
    }
   },
-  "96eee673-1de1-5d8f-9023-38ec1a94a1ff": {
-   "Name": "act3.walkup.56,123,11",
+  "f6f42c8f-9e08-5d38-9086-ae997882cd75": {
+   "Name": "act3.placard.56,123,11",
    "Position": {
     "X": 56.5,
     "Y": 124.5,
     "Z": 11.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -0.5,
+     "Y": -1.5,
+     "Z": -0.5
+    },
+    "Max": {
+     "X": 0.5,
+     "Y": 1.5,
+     "Z": 0.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.Praetorian_Helm.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 3.0,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
+  },
+  "ff290003-a049-5cdb-b141-f6d1601ed6e0": {
+   "Name": "act3.walkup.57,123,1",
+   "Position": {
+    "X": 57.5,
+    "Y": 124.5,
+    "Z": 1.5
    },
    "Shape": {
     "Type": "Box",
@@ -71051,7 +72059,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.StandingArmorVerdan.name",
+     "PrimaryTitle": "server.items.ScrapArmorHelm.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -71095,7 +72103,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorHelm.name",
+     "PrimaryTitle": "server.items.SlumberingRubble.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -71139,7 +72147,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "PrimaryTitle": "server.items.ScrapArmorHelm.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -71183,7 +72191,51 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorHelm.name",
+     "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 2.5,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "walkup"
+   }
+  },
+  "248d91e6-fd59-5628-a803-99052855388c": {
+   "Name": "act3.walkup.-61,125,0",
+   "Position": {
+    "X": -60.5,
+    "Y": 126.5,
+    "Z": 0.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -1.5,
+     "Y": -1.5,
+     "Z": -1.5
+    },
+    "Max": {
+     "X": 1.5,
+     "Y": 1.5,
+     "Z": 1.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "ENTER",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.SlumberingRubble.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -71227,7 +72279,7 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.SlumberingRubble.name",
+     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
      "Duration": 2.5,
@@ -71271,50 +72323,6 @@
      "Type": "ShowEventTitle",
      "Event": "ENTER",
      "Delay": 0.0,
-     "PrimaryTitle": "server.items.ScrapArmorSitting.name",
-     "Style": "Default",
-     "Recipient": "TriggeringPlayer",
-     "Duration": 2.5,
-     "FadeInDuration": 0.3,
-     "FadeOutDuration": 0.8
-    }
-   ],
-   "TargetTypes": [
-    "Player"
-   ],
-   "Enabled": true,
-   "KeepLoaded": false,
-   "Tags": {
-    "act": "3",
-    "moment": "walkup"
-   }
-  },
-  "b492d706-6d8f-599e-a044-d40a4edb8a32": {
-   "Name": "act3.walkup.-61,125,6",
-   "Position": {
-    "X": -60.5,
-    "Y": 126.5,
-    "Z": 6.5
-   },
-   "Shape": {
-    "Type": "Box",
-    "Min": {
-     "X": -1.5,
-     "Y": -1.5,
-     "Z": -1.5
-    },
-    "Max": {
-     "X": 1.5,
-     "Y": 1.5,
-     "Z": 1.5
-    }
-   },
-   "Conditions": [],
-   "Effects": [
-    {
-     "Type": "ShowEventTitle",
-     "Event": "ENTER",
-     "Delay": 0.0,
      "PrimaryTitle": "server.items.DecorativeScrapMedium.name",
      "Style": "Default",
      "Recipient": "TriggeringPlayer",
@@ -71332,6 +72340,78 @@
     "act": "3",
     "moment": "walkup"
    }
+  },
+  "f16854bb-6c41-53f5-81c9-25636f174f82": {
+   "Name": "act3.placard.-61,125,6",
+   "Position": {
+    "X": -60.5,
+    "Y": 126.5,
+    "Z": 6.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -0.5,
+     "Y": -1.5,
+     "Z": -0.5
+    },
+    "Max": {
+     "X": 0.5,
+     "Y": 1.5,
+     "Z": 0.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.Armor_Thorium_Head.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 3.0,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "48b445c3-f22f-518a-8593-edd098cc2613": {
    "Name": "act3.placard.-60,125,8",
@@ -76661,12 +77741,12 @@
     }
    ]
   },
-  "470d5407-d6ae-5c28-b799-35a74b6b098a": {
-   "Name": "act3.walkup.60,125,2",
+  "2ad25c5d-97e9-58c5-a2a5-50fdcd0364be": {
+   "Name": "act3.walkup.60,125,0",
    "Position": {
     "X": 60.5,
     "Y": 126.5,
-    "Z": 2.5
+    "Z": 0.5
    },
    "Shape": {
     "Type": "Box",
@@ -76705,12 +77785,12 @@
     "moment": "walkup"
    }
   },
-  "8aa5f9f0-21cf-523d-aa6f-7f06e259acd4": {
-   "Name": "act3.walkup.60,125,4",
+  "470d5407-d6ae-5c28-b799-35a74b6b098a": {
+   "Name": "act3.walkup.60,125,2",
    "Position": {
     "X": 60.5,
     "Y": 126.5,
-    "Z": 4.5
+    "Z": 2.5
    },
    "Shape": {
     "Type": "Box",
@@ -76748,6 +77828,78 @@
     "act": "3",
     "moment": "walkup"
    }
+  },
+  "817554fd-fb84-50ce-b115-be1abe63f493": {
+   "Name": "act3.placard.60,125,4",
+   "Position": {
+    "X": 60.5,
+    "Y": 126.5,
+    "Z": 4.5
+   },
+   "Shape": {
+    "Type": "Box",
+    "Min": {
+     "X": -0.5,
+     "Y": -1.5,
+     "Z": -0.5
+    },
+    "Max": {
+     "X": 0.5,
+     "Y": 1.5,
+     "Z": 0.5
+    }
+   },
+   "Conditions": [],
+   "Effects": [
+    {
+     "Type": "ShowEventTitle",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "PrimaryTitle": "server.items.Praetorian_Helm.name",
+     "Style": "Default",
+     "Recipient": "TriggeringPlayer",
+     "Duration": 3.0,
+     "FadeInDuration": 0.3,
+     "FadeOutDuration": 0.8,
+     "SecondaryTitle": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    },
+    {
+     "Type": "PlayVfx",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "ParticleSystem": "Dust_Sparkles_Fine",
+     "Anchor": "Volume",
+     "Offset": {
+      "X": 0.0,
+      "Y": -0.20000000000000284,
+      "Z": 0.0
+     },
+     "Scale": 1.0,
+     "Duration": 0.0
+    },
+    {
+     "Type": "PlaySound",
+     "Event": "SIGNAL_RECEIVED",
+     "Delay": 0.0,
+     "SoundEvent": "SFX_MemoryMote",
+     "Location": "Player"
+    }
+   ],
+   "TargetTypes": [
+    "Player"
+   ],
+   "Enabled": true,
+   "KeepLoaded": false,
+   "Tags": {
+    "act": "3",
+    "moment": "placard"
+   },
+   "Rules": [
+    {
+     "Type": "NoUse",
+     "Target": "Self"
+    }
+   ]
   },
   "8fb01404-86c0-5ec8-9dce-157530f8c1f0": {
    "Name": "act3.placard.60,125,6",

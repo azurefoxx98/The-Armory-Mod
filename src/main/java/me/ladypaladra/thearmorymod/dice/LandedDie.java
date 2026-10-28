@@ -109,7 +109,16 @@ public final class LandedDie implements Component<EntityStore> {
     }
 
     /**
-     * Claims the die for one pickup. Returns false when it was already taken.
+     * Whether a player took the die, or the dice code itself removed it on purpose. A landed die removed while
+     * unclaimed was taken by the world, and its owner gets it back.
+     */
+    boolean claimed() {
+        return claimed;
+    }
+
+    /**
+     * Claims the die for one pickup, or for a removal the dice code makes on purpose. Returns false when it was
+     * already taken.
      */
     boolean claim() {
         if (claimed) {

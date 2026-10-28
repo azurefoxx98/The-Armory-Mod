@@ -6,5 +6,32 @@
   "Quality": "Rare",
   "Model": "Items/Armory_Dice/Armory_Dice_D4_Held.blockymodel",
   "Texture": "Items/Armory_Dice/Armory_Dice_D4_Texture.png",
-  "Icon": "Icons/ItemsGenerated/Armory_Dice_D4.png"
+  "Icon": "Icons/ItemsGenerated/Armory_Dice_D4.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Rune_Shard",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Rock_Gem_Ruby",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Rock_Stone_Cobble",
+        "Quantity": 2
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Arcanebench",
+        "Type": "Crafting",
+        "Categories": [
+          "Arcane_Misc"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 2
+  }
 }

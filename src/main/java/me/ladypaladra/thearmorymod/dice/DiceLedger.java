@@ -119,6 +119,21 @@ public final class DiceLedger {
     }
 
     /**
+     * Owes {@code owner} a die that had already landed and was then taken by the world instead of a player: a die laid
+     * down where no chunk can hold it, or removed by anything but a pickup.
+     */
+    public synchronized void owe(@Nonnull UUID owner, @Nonnull String item) {
+        Entry e = new Entry();
+        e.id = UUID.randomUUID();
+        e.owner = owner;
+        e.item = item;
+        e.owed = true;
+        entries.put(e.id, e);
+        anyOwed = true;
+        save();
+    }
+
+    /**
      * A cheap test a system can run every tick before asking for anything.
      */
     public boolean anyOwed() {

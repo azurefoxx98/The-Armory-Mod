@@ -39,7 +39,7 @@ public final class LandedDieSystems {
      * The other die of {@code pair} that is loaded, other than {@code self}, or null.
      */
     @Nullable
-    static Ref<EntityStore> partner(@Nonnull UUID pair, @Nonnull Ref<EntityStore> self) {
+    static Ref<EntityStore> partner(@Nonnull UUID pair, @Nullable Ref<EntityStore> self) {
         Map<Ref<EntityStore>, Boolean> dice = PAIRS.get(pair);
         if (dice == null) {
             return null;
@@ -75,6 +75,7 @@ public final class LandedDieSystems {
                 return;
             }
             if (DiceModule.ledger().consumeCollected(pair)) {
+                die.claim();
                 commandBuffer.removeEntity(ref, RemoveReason.REMOVE);
                 return;
             }
@@ -85,14 +86,45 @@ public final class LandedDieSystems {
         public void onEntityRemove(@Nonnull Ref<EntityStore> ref, @Nonnull RemoveReason reason,
                                    @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
             LandedDie die = store.getComponent(ref, DiceModule.landedType());
-            UUID pair = die != null ? die.pair() : null;
-            if (pair == null) {
+            if (die == null) {
                 return;
             }
-            PAIRS.computeIfPresent(pair, (k, dice) -> {
-                dice.remove(ref);
-                return dice.isEmpty() ? null : dice;
-            });
+            UUID pair = die.pair();
+            if (pair != null) {
+                PAIRS.computeIfPresent(pair, (k, dice) -> {
+                    dice.remove(ref);
+                    return dice.isEmpty() ? null : dice;
+                });
+            }
+            if (reason == RemoveReason.REMOVE && !die.claimed()) {
+                returnToOwner(die, pair, commandBuffer);
+            }
+        }
+    }
+
+    /**
+     * A landed die the world removed rather than a player: laid where no chunk can hold it, or cleared by anything but
+     * a pickup. Its owner gets the item back, once, and a D100's other die leaves with it, since the item is the pair.
+     * Unloading is not removal: an unloaded die is saved with its chunk.
+     */
+    private static void returnToOwner(@Nonnull LandedDie die, @Nullable UUID pair,
+                                      @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        die.claim();
+        if (pair != null) {
+            Ref<EntityStore> partner = partner(pair, null);
+            LandedDie other = partner != null ? commandBuffer.getComponent(partner, DiceModule.landedType()) : null;
+            if (other != null && other.claim()) {
+                commandBuffer.removeEntity(partner, RemoveReason.REMOVE);
+            } else if (partner == null) {
+                DiceModule.ledger().pairCollected(pair);
+            } else {
+                // The other die was already being taken: the pair is accounted for there.
+                return;
+            }
+        }
+        UUID owner = die.owner();
+        if (owner != null && die.item() != null) {
+            DiceModule.ledger().owe(owner, die.item());
         }
     }
 

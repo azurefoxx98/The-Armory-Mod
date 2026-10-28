@@ -14,6 +14,7 @@ import com.hypixel.hytale.server.core.inventory.container.SimpleItemContainer;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.SimpleInstantInteraction;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
@@ -22,10 +23,10 @@ import java.util.UUID;
 /**
  * Picks a landed die up with F: anyone may take any die.
  *
- * <p>The die is claimed and removed before the item is given. Giving first would change the held item while the
- * chain still runs, which the engine treats as a swap and cancels, leaving the die on the ground as a duplicate
- * (measured on 0.7.4). Claiming in the same instant also stops two players pressing F in one tick from both getting
- * it. Taking either die of a D100 takes the pair.</p>
+ * <p>The die is claimed and its removal scheduled before the item is given. Giving first would change the held item
+ * while the chain still runs, which the engine treats as a swap and cancels, leaving the die on the ground as a
+ * duplicate (measured on 0.7.4). Claiming in the same instant also stops two players pressing F in one tick from both
+ * getting it. Taking either die of a D100 takes the pair.</p>
  */
 public final class PickUpDieInteraction extends SimpleInstantInteraction {
 
@@ -68,7 +69,7 @@ public final class PickUpDieInteraction extends SimpleInstantInteraction {
             Ref<EntityStore> partner = LandedDieSystems.partner(pair, target);
             LandedDie other = partner != null ? commandBuffer.getComponent(partner, DiceModule.landedType()) : null;
             if (other != null && other.claim()) {
-                commandBuffer.removeEntity(partner, RemoveReason.REMOVE);
+                removeNextTick(partner, commandBuffer);
             } else if (partner == null) {
                 // The other die lies in an unloaded chunk: it is cleared when that chunk loads.
                 DiceModule.ledger().pairCollected(pair);
@@ -76,7 +77,7 @@ public final class PickUpDieInteraction extends SimpleInstantInteraction {
         }
 
         TransformComponent at = commandBuffer.getComponent(target, TransformComponent.getComponentType());
-        commandBuffer.removeEntity(target, RemoveReason.REMOVE);
+        removeNextTick(target, commandBuffer);
 
         Ref<EntityStore> player = context.getEntity();
         var inventory = InventoryComponent.getCombined(commandBuffer, player, InventoryComponent.HOTBAR_STORAGE_BACKPACK);
@@ -84,5 +85,21 @@ public final class PickUpDieInteraction extends SimpleInstantInteraction {
         if (at != null) {
             DiceShow.pickedUp(at.getPosition(), commandBuffer);
         }
+    }
+
+    /**
+     * Removes a claimed die on the next tick, as the game's own entity removal does. A die whose light is still
+     * fading has an update queued for every player watching it this tick, and removing it now leaves those updates
+     * pointing at nothing, which the engine reports as a warning per player (measured on 0.7.4). The claim already
+     * stops anyone else taking it in between, and the removal is scheduled before the die is given, so nothing the
+     * chain does after can keep it on the ground.
+     */
+    private static void removeNextTick(@Nonnull Ref<EntityStore> die, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        World world = commandBuffer.getExternalData().getWorld();
+        world.execute(() -> {
+            if (die.isValid()) {
+                world.getEntityStore().getStore().removeEntity(die, RemoveReason.REMOVE);
+            }
+        });
     }
 }

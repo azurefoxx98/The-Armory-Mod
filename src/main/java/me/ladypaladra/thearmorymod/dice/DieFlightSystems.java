@@ -15,6 +15,7 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
@@ -69,9 +70,12 @@ public final class DieFlightSystems {
     static final int TOPPLE_TICKS = 7;
 
     /**
-     * Below this height a die has fallen out of the world.
+     * Below this height a die has fallen out of the world: the world's floor, under which no chunk exists to hold an
+     * entity. The engine deletes anything that comes to rest down there, so a die must never be laid down below it
+     * (measured on 0.7.4: a die thrown down a shaft to the bottom stopped under the floor, was laid down, and the engine
+     * removed it as being in a chunk that cannot be loaded).
      */
-    static final double OUT_OF_WORLD_Y = -32.0;
+    static final double OUT_OF_WORLD_Y = ChunkUtil.MIN_Y;
 
     /**
      * A die bouncing off a creature keeps this much of its speed, and leaves it a little upward.
@@ -122,7 +126,10 @@ public final class DieFlightSystems {
             flight.age++;
 
             if (flight.phase == DieFlight.Phase.FLYING) {
-                if (transform.getPosition().y < OUT_OF_WORLD_Y) {
+                // Caught a tick before it crosses the floor: once under it, the engine warns that the die moved into a
+                // chunk that cannot be loaded before this system sees it.
+                double next = transform.getPosition().y + physics.getVelocity().y * step * 1.5;
+                if (transform.getPosition().y < OUT_OF_WORLD_Y || next < OUT_OF_WORLD_Y) {
                     commandBuffer.removeEntity(ref, RemoveReason.REMOVE);
                     return;
                 }
@@ -246,9 +253,10 @@ public final class DieFlightSystems {
         }
         DiceModule.ledger().lost(group.ledgerId(flight.member));
         List<Ref<EntityStore>> orphans = group.lose(flight.member);
+        // The orphans are claimed first: their pair is already owed back, so their removal must not owe it again.
         if (accessor instanceof CommandBuffer<EntityStore> commandBuffer) {
             for (Ref<EntityStore> orphan : orphans) {
-                if (orphan.isValid()) {
+                if (orphan.isValid() && claim(orphan, commandBuffer)) {
                     commandBuffer.removeEntity(orphan, RemoveReason.REMOVE);
                 }
             }
@@ -257,11 +265,16 @@ public final class DieFlightSystems {
             }
         } else if (accessor instanceof Store<EntityStore> store) {
             for (Ref<EntityStore> orphan : orphans) {
-                if (orphan.isValid()) {
+                if (orphan.isValid() && claim(orphan, store)) {
                     store.removeEntity(orphan, RemoveReason.REMOVE);
                 }
             }
         }
+    }
+
+    private static boolean claim(@Nonnull Ref<EntityStore> landed, @Nonnull ComponentAccessor<EntityStore> accessor) {
+        LandedDie die = accessor.getComponent(landed, DiceModule.landedType());
+        return die != null && die.claim();
     }
 
     private static void beginSettle(@Nonnull DieFlight flight, @Nonnull StandardPhysicsProvider physics,

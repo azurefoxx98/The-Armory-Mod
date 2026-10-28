@@ -1,6 +1,7 @@
 # The Armory's window on Lady's USB key. Start The Armory.cmd, at the top of the key, runs it.
 #
 # What it does, in order:
+#   0. Stops with a plain message when the key was unzipped only in part.
 #   1. Opens once per key: starting it again brings the open window forward.
 #   2. Gives the key's folder the letter L:, and points every program it starts at the key: their
 #      settings, her sign-in and her copy of the mod all stay on it, and nothing is written to the computer.
@@ -44,6 +45,8 @@ $Key = Get-KeyFolder $Key
 $testing = [bool]$env:ARMORY_KEY_TEST
 
 function Show-Message([string] $text, [string] $buttons = 'OK') {
+    # Tests read what a message said from this file, since no window shows on a hidden desktop.
+    if ($testing -and $env:ARMORY_KEY_TEST_SAID) { [IO.File]::AppendAllText($env:ARMORY_KEY_TEST_SAID, "$text`n", $KeyUtf8) }
     if ($testing) { if ($env:ARMORY_KEY_TEST_ANSWER) { return $env:ARMORY_KEY_TEST_ANSWER } else { return 'Yes' } }
     return [string][Windows.Forms.MessageBox]::Show($text, $title, $buttons)
 }
@@ -54,6 +57,24 @@ function Invoke-Safely([scriptblock] $block) {
     try { & $block } catch {
         [void](Show-Message "The Armory stopped on something unexpected. Send Larsonix a screenshot of this window.`n`nFor Larsonix: $($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)")
     }
+}
+
+# 0. A key unzipped only in part, because the unzip stopped or the key ran out of room, says so before
+# anything starts. Otherwise it reads as one program gone, and its button would be tried again.
+$missing = @()
+$listed = Read-KeyJson (Join-Path $PSScriptRoot 'programs.json')
+foreach ($program in @($listed.programs)) {
+    if (-not $program) { continue }
+    $place = Join-Path $Key "Programs\$($program.folder)"
+    if ($program.exe) { $place = Join-Path $place $program.exe }
+    if (-not (Test-Path -LiteralPath $place)) { $missing += $program.name }
+}
+if (-not (Test-Path -LiteralPath (Join-Path $Key 'Programs\Python\python.exe'))) { $missing += 'Python' }
+if (-not (Test-Path -LiteralPath (Join-Path $Key 'The-Armory-Mod\.git'))) { $missing += 'your copy of the mod' }
+if ($missing.Count) {
+    $names = if ($missing.Count -eq 1) { $missing[0] } else { ($missing[0..($missing.Count - 2)] -join ', ') + ' and ' + $missing[-1] }
+    [void](Show-Message "This key is not fully unzipped. Missing: $names.`n`nDelete the folder The Armory key from the key. Then unzip the zip onto the key again, and wait until Windows has finished.`n`nThe key needs at least 7 GB free: 2 GB for this, and 5 GB for Hytale's files later.`n`nIf it happens again, send Larsonix a screenshot of this window.")
+    exit 0
 }
 
 # 1. One window per key.

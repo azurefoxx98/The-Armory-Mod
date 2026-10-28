@@ -42,6 +42,10 @@ RESULT = os.path.join(HERE, "last-check.json")
 # The single problems she judged normal for her work, written by the panel's "Normal for me" button and
 # committed with her work, so we see her judgments too. One entry hides one problem on one item.
 NORMAL = os.path.join(REPO, "Studio", "Checks", "normal.json")
+# The problems judged as meant to be, each with who decided and why. Written by us, never by the panel, so a problem
+# in it leaves her cards for good. A file that replaces a game file is keyed with its hash, so a changed file is a
+# problem again.
+ACCEPTED = os.path.join(REPO, "Studio", "Checks", "accepted.json")
 RUNNING = os.path.join(HERE, "last-check.running.json")
 # 2 adds "lady" to each check: its problems as she reads them.
 FORMAT = 2
@@ -861,8 +865,9 @@ def game_words(f: dict) -> dict:
 
 def finding_key(f: dict) -> str:
     d = f.get("detail") or {}
+    # The hash goes last and only where a finding carries one, so every other key stays as her marks recorded it.
     return "|".join(str(x) for x in (f["rule"], f["kind"], f["id"], d.get("field"), d.get("form"), d.get("name"),
-                                      d.get("word")))
+                                      d.get("word")) + ((d["hash"],) if d.get("hash") else ()))
 
 
 def run_snapshot(out: str, game: str, packs: list[str], jar: str | None) -> tuple[bool, str]:
@@ -1074,6 +1079,7 @@ def run_all() -> dict:
                 e["owner"] = owner_of_card(c["id"], e)
                 e.setdefault("key", c["id"] + "|" + e["line"])
         result["normal"] = apply_normal(result["checks"], read_normal())
+        result["accepted"] = apply_accepted(result["checks"], read_normal(ACCEPTED, "accepted"))
     result["finished"] = now()
     result["seconds"] = round(time.monotonic() - clock, 1)
     return result
@@ -1087,11 +1093,12 @@ def write_json(path: str, value: dict) -> None:
     os.replace(temp, path)
 
 
-def read_normal() -> list[dict]:
-    """Her "Normal for me" entries, or none when the file is missing or unreadable (a broken file hides nothing)."""
+def read_normal(path: str = NORMAL, name: str = "normal") -> list[dict]:
+    """Her "Normal for me" entries, or none when the file is missing or unreadable (a broken file hides nothing). The
+    same for the accepted ones, from their own file."""
     try:
-        with open(NORMAL, encoding="utf-8-sig") as fh:
-            entries = json.load(fh).get("normal")
+        with open(path, encoding="utf-8-sig") as fh:
+            entries = json.load(fh).get(name)
     except (OSError, ValueError, AttributeError):
         return []
     return [e for e in entries or [] if isinstance(e, dict) and isinstance(e.get("key"), str)]
@@ -1110,6 +1117,36 @@ def apply_normal(checks: list[dict], entries: list[dict]) -> dict:
             seen |= {e["key"] + "|" + lab for lab in e["hidden"]}
     stale = [e for e in entries if e["key"] + "|" + str(e.get("item") or "") not in seen]
     return {"hidden": len(seen), "stale": stale}
+
+
+def apply_accepted(checks: list[dict], entries: list[dict]) -> dict:
+    """Takes each problem judged as meant to be off its item, as a mark of hers hides one, but for good: the panel never
+    shows it. An entry that matches nothing any more (the problem was fixed, or the file it judged changed) becomes a
+    card for us, and we remove it. Returns how many are accepted and the entries that matched nothing."""
+    wanted = {e["key"] + "|" + str(e.get("item") or ""): e for e in entries}
+    seen = set()
+    for c in checks:
+        kept = []
+        for e in c.get("lady") or []:
+            labels = [i["label"] for i in e["items"]] or [""]
+            hit = {lab for lab in labels if e["key"] + "|" + lab in wanted}
+            seen |= {e["key"] + "|" + lab for lab in hit}
+            rest = [i for i in e["items"] if i["label"] not in hit]
+            if not hit:
+                kept.append(e)
+            elif rest:
+                kept.append(dict(e, items=rest))
+        c["lady"] = kept
+    stale = [e for k, e in wanted.items() if k not in seen]
+    if stale:
+        checks.append({"id": "accepted", "title": "Problems meant to be", "status": "fail", "seconds": None,
+                       "problems": [e["key"] for e in stale], "output_tail": [], "lady": [
+                           {"says": "A problem marked as meant to be is no longer found, so its mark can go.",
+                            "do": "Nothing to do for you. Larsonix removes it.",
+                            "items": [{"label": str(e.get("item") or "")}] if e.get("item") else [], "line": e["key"],
+                            "known": True, "owner": "us", "key": "accepted|" + e["key"], "hidden": []}
+                           for e in stale]})
+    return {"accepted": len(seen), "stale": stale}
 
 
 def groups(result: dict, owner: str | None = None) -> list[dict]:
@@ -1157,6 +1194,9 @@ def summary(result: dict) -> tuple[str, bool]:
                                                                   for g in ours]
     if normal.get("hidden"):
         tail += ["", f"Hidden as normal for you: {normal['hidden']}. The checks panel in HyCreator shows them."]
+    accepted = (result.get("accepted") or {}).get("accepted")
+    if accepted:
+        tail += ["", f"Meant to be, so not shown: {accepted}."]
     if normal.get("stale"):
         tail += ["", "Marked normal, but no longer found: " + ", ".join(str(e.get("item") or "") for e in normal["stale"][:10])
                  + ". Remove them in the checks panel."]

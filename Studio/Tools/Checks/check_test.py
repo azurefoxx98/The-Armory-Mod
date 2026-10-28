@@ -515,6 +515,34 @@ def words(expect) -> None:
            ok and "Larsonix's problems" in text and "Uses a stat" in text and "Hidden as normal for you: 2" in text, text)
     result["checks"].append({"id": "recipecheck", "status": "error", "lady": []})
     expect("a check that could not run still fails the run", not check.summary(result)[1])
+    # Problems meant to be (accepted.json): taken off her cards for good, and a judgment matching nothing any more is a
+    # card for us. A file that replaces a game file is judged by its hash, so a changed file is a problem again.
+    picture = {"rule": "common-files", "kind": "CommonFile", "id": "Icons/A.png", "file": "Icons/A.png", "fact": "f",
+               "detail": {"field": "replace", "form": "different", "hash": "h1"}}
+    key = "game|" + check.finding_key(picture)
+    expect("a replacement's key ends with its file's hash, and other keys are as before",
+           key.endswith("|h1") and check.finding_key(dict(picture, detail={"field": "x"})).count("|") == 6, key)
+    unreached = {"says": "No player can get it", "do": "x", "items": [{"label": "RookHelmGhost"}, {"label": "Ruined_Sword_Gold"}],
+                 "line": "r", "key": "game|reach", "owner": "mod"}
+    replaced = {"says": "Replaces a game file", "do": "x", "items": [{"label": "Icons/A.png"}], "line": "p", "key": key,
+                "owner": "mod"}
+    result = {"finished": "2026-10-28T18:00:00", "error": None,
+              "checks": [{"id": "game", "status": "fail", "lady": [unreached, replaced]}]}
+    accepted = [{"key": "game|reach", "item": "RookHelmGhost", "by": "Lady"}, {"key": key, "item": "Icons/A.png", "by": "Larsonix"}]
+    result["accepted"] = check.apply_accepted(result["checks"], accepted)
+    mine = check.groups(result, "mod")
+    expect("an accepted problem leaves her cards, the same problem on another item stays",
+           [g["items"] for g in mine] == [["Ruined_Sword_Gold"]] and result["accepted"]["accepted"] == 2, mine)
+    text, _ = check.summary(result)
+    expect("the window counts what is meant to be", "Meant to be, so not shown: 2." in text, text)
+    changed = "game|" + check.finding_key(dict(picture, detail=dict(picture["detail"], hash="h2")))
+    result = {"finished": "2026-10-28T18:00:00", "error": None, "checks": [{"id": "game", "status": "fail", "lady": [
+        dict(replaced, key=changed)]}]}
+    result["accepted"] = check.apply_accepted(result["checks"], accepted)
+    expect("a changed file is her problem again, and the judgment that no longer matches is Larsonix's",
+           [g["items"] for g in check.groups(result, "mod")] == [["Icons/A.png"]]
+           and [g["items"] for g in check.groups(result, "us")] == [["RookHelmGhost", "Icons/A.png"]]
+           and check.summary(result)[1] is False, check.groups(result))
     opened = check.game_words(GAME_SAMPLES[0][0])
     expect("a game finding about an item opens its file",
            opened["items"] == [{"label": "Praetorian_Boots", "open": "Item/Items/Praetorian_Boots.json"}], opened["items"])

@@ -1,0 +1,128 @@
+{
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 1.8,
+    "Max": 2.6
+  },
+  "Shape": "Sphere",
+  "Particle": {
+    "Texture": "Particles/Textures/Shapes/Octagon_runic.png",
+    "Animation": {
+      "0": {
+        "Opacity": 0.0,
+        "Color": "#ffe6c8",
+        "Scale": {
+          "X": {
+            "Min": 0.4,
+            "Max": 0.4
+          },
+          "Y": {
+            "Min": 0.4,
+            "Max": 0.4
+          }
+        }
+      },
+      "20": {
+        "Opacity": 1.0,
+        "Color": "#ee542e",
+        "Scale": {
+          "X": {
+            "Min": 1.0,
+            "Max": 1.0
+          },
+          "Y": {
+            "Min": 1.0,
+            "Max": 1.0
+          }
+        }
+      },
+      "75": {
+        "Opacity": 0.8,
+        "Color": "#ffc94a"
+      },
+      "100": {
+        "Opacity": 0.0,
+        "Color": "#e2881a",
+        "Scale": {
+          "X": {
+            "Min": 0.7,
+            "Max": 0.7
+          },
+          "Y": {
+            "Min": 0.7,
+            "Max": 0.7
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.21,
+          "Max": 0.21
+        },
+        "Y": {
+          "Min": 0.21,
+          "Max": 0.21
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#ee542e",
+      "Rotation": {
+        "Z": {
+          "Min": -20,
+          "Max": 20
+        }
+      }
+    },
+    "ScaleRatioConstraint": "OneToOne"
+  },
+  "MaxConcurrentParticles": 16,
+  "SpawnRate": {
+    "Min": 4.0,
+    "Max": 6.0
+  },
+  "EmitOffset": {
+    "X": {
+      "Min": 0.7,
+      "Max": 1.1
+    },
+    "Y": {
+      "Min": 0.0,
+      "Max": 0.2
+    },
+    "Z": {
+      "Min": 0.7,
+      "Max": 1.1
+    }
+  },
+  "InitialVelocity": {
+    "Pitch": {
+      "Min": 90,
+      "Max": 90
+    },
+    "Speed": {
+      "Min": 0.7,
+      "Max": 1.1
+    }
+  },
+  "Attractors": [
+    {
+      "RadialTangentImpulse": 1.1,
+      "RadialAxis": {
+        "Y": 1.0
+      }
+    },
+    {
+      "DampingMultiplier": {
+        "X": 0.98,
+        "Y": 0.99,
+        "Z": 0.98
+      }
+    }
+  ],
+  "LifeSpan": 2.6
+}

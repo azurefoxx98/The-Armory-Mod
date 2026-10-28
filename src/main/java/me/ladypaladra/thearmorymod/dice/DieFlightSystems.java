@@ -323,7 +323,7 @@ public final class DieFlightSystems {
         holder.addComponent(NetworkId.getComponentType(),
                 new NetworkId(commandBuffer.getExternalData().takeNextNetworkId()));
         holder.addComponent(DiceModule.landedType(), new LandedDie(flight.type.itemId(), flight.shape.key(),
-                flight.face.index(), group.owner(), group.pairId(flight.member)));
+                flight.face.index(), group.owner(), group.pairId(flight.member), spot.y, flight.restYaw));
         holder.addComponent(DiceModule.glowType(), new DieGlow(flight.shape.glow()));
         Ref<EntityStore> landed = commandBuffer.addEntity(holder, AddReason.SPAWN);
 

@@ -8,6 +8,7 @@ import com.hypixel.hytale.component.spatial.SpatialResource;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.protocol.SoundCategory;
+import com.hypixel.hytale.protocol.packets.interface_.EventTitleStyle;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.camera.CameraEffect;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
@@ -21,6 +22,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.ParticleUtil;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import org.joml.Vector3d;
 
 import javax.annotation.Nonnull;
@@ -58,6 +60,15 @@ public final class DiceShow {
 
     static final String ROLLED = "server.armoryDice.rolled";
     static final String ROLLED_MANY = "server.armoryDice.rolledMany";
+    static final String TITLE_FAVOUR = "server.armoryDice.favourTitle";
+    static final String TITLE_VEIL = "server.armoryDice.veilTitle";
+
+    /**
+     * Seconds a D100 extreme's title stays on screen, and fades in and out: about as long as its grand show.
+     */
+    static final float TITLE_SECONDS = 4.0f;
+    static final float TITLE_FADE_IN = 0.5f;
+    static final float TITLE_FADE_OUT = 1.5f;
 
     static final String SOUND_BOUNCE = "SFX_Stone_Hit";
     static final String SOUND_AWAKEN = "SFX_MemoryMote";
@@ -128,11 +139,79 @@ public final class DiceShow {
         DiceCatalog catalog = DiceModule.catalog();
         DieShape lead = catalog != null ? catalog.shapesOf(type).get(0) : null;
         chat(group, rolls, commandBuffer);
+        // What a handful must play once however many of its dice hit an extreme: the stinger and the title.
+        Set<String> once = new HashSet<>();
         for (ThrowGroup.Roll roll : rolls) {
             RollBand band = RollBand.of(roll.value(), type.sides());
+            RollBand.Tier tier = RollBand.Tier.of(type);
             if (lead != null) {
                 number(roll, band, lead, type, commandBuffer);
-                bandShow(roll.at(), band, RollBand.Tier.of(type), lead, commandBuffer);
+                bandShow(roll.at(), band, tier, lead, once, commandBuffer);
+            }
+            if (band == RollBand.FAVOUR || band == RollBand.VEIL) {
+                takeOver(roll.dice(), band == RollBand.FAVOUR ? DieGlow.Style.FAVOUR : DieGlow.Style.VEIL, tier,
+                        commandBuffer);
+                if (tier == RollBand.Tier.GRAND && once.add("title")) {
+                    title(group, roll, band, commandBuffer);
+                }
+            }
+        }
+    }
+
+    /**
+     * Gives an extreme's dice their part of the show: the Favour's gold light and lift, the Veil's crimson gutter,
+     * shudder and dark marks (DieGlow). It runs once the buffer has added the dice, since the last die of a throw
+     * lands in the same instant it is read.
+     */
+    private static void takeOver(@Nonnull List<Ref<EntityStore>> dice, @Nonnull DieGlow.Style style,
+                                 @Nonnull RollBand.Tier tier, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        DiceCatalog catalog = DiceModule.catalog();
+        if (catalog == null) {
+            return;
+        }
+        for (Ref<EntityStore> ref : dice) {
+            commandBuffer.run(store -> {
+                if (!ref.isValid()) {
+                    return;
+                }
+                LandedDie die = store.getComponent(ref, DiceModule.landedType());
+                TransformComponent where = store.getComponent(ref, TransformComponent.getComponentType());
+                DieShape shape = die != null && die.shape() != null ? catalog.shapes().get(die.shape()) : null;
+                if (where == null || shape == null) {
+                    return;
+                }
+                DieGlow glow = store.getComponent(ref, DiceModule.glowType());
+                DieGlow fresh = glow != null ? glow : new DieGlow(shape.glow());
+                fresh.begin(style, tier, where.getPosition(), where.getRotation().yaw(), shape.texture(),
+                        shape.darkTexture());
+                if (glow == null) {
+                    store.putComponent(ref, DiceModule.glowType(), fresh);
+                }
+            });
+        }
+    }
+
+    /**
+     * A D100's extreme puts its name on the screen of every player near, and of the thrower wherever they are: the
+     * Favour in the game's major style, the Veil in its void style. The roll's chat line is the title's second line.
+     */
+    private static void title(@Nonnull ThrowGroup group, @Nonnull ThrowGroup.Roll roll, @Nonnull RollBand band,
+                              @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        boolean favour = band == RollBand.FAVOUR;
+        Message primary = Message.translation(favour ? TITLE_FAVOUR : TITLE_VEIL);
+        Message secondary = Message.translation(ROLLED).param("player", group.ownerName())
+                .param("die", group.type().name()).param("result", roll.value());
+        EventTitleStyle style = favour ? EventTitleStyle.Major : EventTitleStyle.VoidEviction;
+        Set<Ref<EntityStore>> shown = new HashSet<>(playersNear(roll.at(), NUMBER_RANGE, commandBuffer));
+        Ref<EntityStore> thrower = commandBuffer.getExternalData().getRefFromUUID(group.owner());
+        if (thrower != null && thrower.isValid()) {
+            shown.add(thrower);
+        }
+        for (Ref<EntityStore> ref : shown) {
+            PlayerRef player = commandBuffer.getComponent(ref, PlayerRef.getComponentType());
+            if (player != null) {
+                EventTitleUtil.showEventTitleToPlayer(player, primary, secondary, style, null, TITLE_SECONDS,
+                        TITLE_FADE_IN, TITLE_FADE_OUT);
             }
         }
     }
@@ -203,7 +282,8 @@ public final class DiceShow {
     }
 
     private static void bandShow(@Nonnull Vector3d at, @Nonnull RollBand band, @Nonnull RollBand.Tier tier,
-                                 @Nonnull DieShape lead, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+                                 @Nonnull DieShape lead, @Nonnull Set<String> once,
+                                 @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         String colour = colour(lead);
         switch (band) {
             case FAVOUR -> {
@@ -211,7 +291,7 @@ public final class DiceShow {
                 if (tier != RollBand.Tier.MINOR) {
                     sound(SOUND_FAVOUR, at, 1.0f, 1.0f, commandBuffer);
                     int stinger = SoundEvent.getAssetMap().getIndex(SOUND_FAVOUR_NEAR);
-                    if (stinger != SoundEvent.EMPTY_ID) {
+                    if (stinger != SoundEvent.EMPTY_ID && once.add("stinger")) {
                         for (Ref<EntityStore> ref : playersNear(at, STINGER_RANGE, commandBuffer)) {
                             PlayerRef player = commandBuffer.getComponent(ref, PlayerRef.getComponentType());
                             if (player != null) {
@@ -288,6 +368,19 @@ public final class DiceShow {
         if (player != null) {
             player.sendMessage(line);
         }
+    }
+
+    /**
+     * The same model wearing another texture. The live model only: a saved entity reloads its model asset's own
+     * texture, whatever was swapped in.
+     */
+    @Nonnull
+    static Model retextured(@Nonnull Model m, @Nonnull String texture) {
+        return new Model(m.getModelAssetId(), m.getScale(), m.getRandomAttachmentIds(), m.getAttachments(),
+                m.getBoundingBox(), m.getModel(), texture, m.getGradientSet(), m.getGradientId(), m.getEyeHeight(),
+                m.getCrouchOffset(), m.getSittingOffset(), m.getSleepingOffset(), m.getAnimationSetMap(),
+                m.getCamera(), m.getLight(), m.getParticles(), m.getTrails(), m.getPhysicsValues(),
+                m.getDetailBoxes(), m.getPhobia(), m.getPhobiaModelAssetId());
     }
 
     @Nonnull

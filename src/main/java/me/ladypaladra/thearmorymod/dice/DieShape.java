@@ -18,11 +18,14 @@ import java.util.List;
  * @param colour      the glow colour every model and effect of this die is drawn in
  * @param glow        that colour's edge as red, green and blue from 0 to 255, the colour the die's light is cast in
  * @param flyingModel the model asset of the die in flight
+ * @param texture     the texture every model of the die wears
+ * @param darkTexture the same texture with every awake mark put out, worn while the Veil holds the die
  * @param radius      blocks from the die's middle to its farthest corner
  * @param faces       one entry per result the die can show
  */
 public record DieShape(@Nonnull String key, @Nonnull String colour, @Nonnull Rgb glow, @Nonnull String flyingModel,
-                       double radius, @Nonnull List<Face> faces) {
+                       @Nonnull String texture, @Nonnull String darkTexture, double radius,
+                       @Nonnull List<Face> faces) {
 
     /**
      * A colour, each channel from 0 to 255.

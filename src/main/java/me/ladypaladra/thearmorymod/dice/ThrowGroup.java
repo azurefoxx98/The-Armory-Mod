@@ -138,13 +138,17 @@ public final class ThrowGroup {
                 continue;
             }
             List<String> labels = new ArrayList<>();
+            List<Ref<EntityStore>> dice = new ArrayList<>();
             Vector3d middle = new Vector3d();
             for (int p = 0; p < faces[m].length; p++) {
                 labels.add(faces[m][p].label());
                 middle.add(positions[m][p]);
+                if (landed[m][p] != null) {
+                    dice.add(landed[m][p]);
+                }
             }
             middle.div(faces[m].length);
-            out.add(new Roll(type.read(labels), middle));
+            out.add(new Roll(type.read(labels), middle, List.copyOf(dice)));
         }
         return out;
     }
@@ -159,8 +163,9 @@ public final class ThrowGroup {
     }
 
     /**
-     * One item's result and where its number rises: above the die, or between a D100's two dice.
+     * One item's result, where its number rises (above the die, or between a D100's two dice), and the landed dice
+     * that show it, which the extremes light, lift or darken.
      */
-    record Roll(int value, @Nonnull Vector3d at) {
+    record Roll(int value, @Nonnull Vector3d at, @Nonnull List<Ref<EntityStore>> dice) {
     }
 }

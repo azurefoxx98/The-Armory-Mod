@@ -33,6 +33,9 @@ class DiceCatalogTest {
             for (DieShape.Face face : shape.faces()) {
                 assertModel(face.restModel());
             }
+            // A texture swapped in at run time is never checked by the asset loader: a wrong path draws nothing.
+            assertNotNull(DiceCatalogTest.class.getResource("/Common/" + shape.texture()), shape.texture());
+            assertNotNull(DiceCatalogTest.class.getResource("/Common/" + shape.darkTexture()), shape.darkTexture());
         }
     }
 

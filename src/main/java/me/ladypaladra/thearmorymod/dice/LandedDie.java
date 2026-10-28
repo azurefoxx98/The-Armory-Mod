@@ -30,6 +30,10 @@ public final class LandedDie implements Component<EntityStore> {
             .add()
             .append(new KeyedCodec<>("Pair", Codec.STRING), (d, v) -> d.pair = v, d -> d.pair)
             .add()
+            .append(new KeyedCodec<>("RestY", Codec.DOUBLE), (d, v) -> d.restY = v, d -> d.restY)
+            .add()
+            .append(new KeyedCodec<>("RestYaw", Codec.DOUBLE), (d, v) -> d.restYaw = v, d -> d.restYaw)
+            .add()
             .build();
 
     private String item;
@@ -40,6 +44,13 @@ public final class LandedDie implements Component<EntityStore> {
     private String pair;
 
     /**
+     * Where the die came to rest: its height and its turn. The Favour lifts and turns a die and the Veil shakes it,
+     * so a world saved in the middle of one would keep the die floating or askew. It is put back here when it loads.
+     */
+    private double restY = Double.NaN;
+    private double restYaw = Double.NaN;
+
+    /**
      * Set the instant a player takes the die, so a second F in the same tick finds it gone. Never saved: a die
      * claimed is removed in the same tick.
      */
@@ -48,12 +59,29 @@ public final class LandedDie implements Component<EntityStore> {
     public LandedDie() {
     }
 
-    LandedDie(@Nonnull String item, @Nonnull String shape, int face, @Nonnull UUID owner, @Nullable UUID pair) {
+    LandedDie(@Nonnull String item, @Nonnull String shape, int face, @Nonnull UUID owner, @Nullable UUID pair,
+              double restY, double restYaw) {
         this.item = item;
         this.shape = shape;
         this.face = face;
         this.owner = owner.toString();
         this.pair = pair != null ? pair.toString() : null;
+        this.restY = restY;
+        this.restYaw = restYaw;
+    }
+
+    /**
+     * The height the die rests at, or NaN when it was saved without one.
+     */
+    public double restY() {
+        return restY;
+    }
+
+    /**
+     * The yaw the die rests at, in radians, or NaN when it was saved without one.
+     */
+    public double restYaw() {
+        return restYaw;
     }
 
     @Nullable
@@ -100,6 +128,8 @@ public final class LandedDie implements Component<EntityStore> {
         copy.face = face;
         copy.owner = owner;
         copy.pair = pair;
+        copy.restY = restY;
+        copy.restYaw = restYaw;
         copy.claimed = claimed;
         return copy;
     }

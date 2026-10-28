@@ -165,12 +165,7 @@ public final class NumberTileSystems {
         if (asset == null) {
             return null;
         }
-        Model m = Model.createScaledModel(asset, scale);
-        return new Model(m.getModelAssetId(), m.getScale(), m.getRandomAttachmentIds(), m.getAttachments(),
-                m.getBoundingBox(), m.getModel(), texture, m.getGradientSet(), m.getGradientId(), m.getEyeHeight(),
-                m.getCrouchOffset(), m.getSittingOffset(), m.getSleepingOffset(), m.getAnimationSetMap(),
-                m.getCamera(), m.getLight(), m.getParticles(), m.getTrails(), m.getPhysicsValues(),
-                m.getDetailBoxes(), m.getPhobia(), m.getPhobiaModelAssetId());
+        return DiceShow.retextured(Model.createScaledModel(asset, scale), texture);
     }
 
     private static double height(@Nonnull NumberTile tile) {

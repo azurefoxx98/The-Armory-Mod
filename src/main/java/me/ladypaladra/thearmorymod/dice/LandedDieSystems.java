@@ -10,7 +10,10 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.protocol.ColorLight;
+import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.modules.entity.component.DynamicLight;
+import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
@@ -64,6 +67,9 @@ public final class LandedDieSystems {
         public void onEntityAdded(@Nonnull Ref<EntityStore> ref, @Nonnull AddReason reason,
                                   @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
             LandedDie die = commandBuffer.getComponent(ref, DiceModule.landedType());
+            if (die != null && reason == AddReason.LOAD) {
+                settle(die, commandBuffer.getComponent(ref, TransformComponent.getComponentType()));
+            }
             UUID pair = die != null ? die.pair() : null;
             if (pair == null) {
                 return;
@@ -91,7 +97,23 @@ public final class LandedDieSystems {
     }
 
     /**
-     * Fades each freshly landed die's light, then takes the light away.
+     * A die saved in the middle of a lift or a shudder is put back where it came to rest.
+     */
+    static void settle(@Nonnull LandedDie die, @Nullable TransformComponent transform) {
+        if (transform == null) {
+            return;
+        }
+        if (!Double.isNaN(die.restY())) {
+            transform.getPosition().y = die.restY();
+        }
+        if (!Double.isNaN(die.restYaw())) {
+            transform.getRotation().set(0.0f, (float) die.restYaw(), 0.0f);
+        }
+    }
+
+    /**
+     * Plays each landed die's moment of show (DieGlow): its light, and for the extremes its lift or shudder and its
+     * dark marks. When the show ends the die lies exactly where it came to rest, lit, and the show's state goes.
      */
     public static final class Glow extends EntityTickingSystem<EntityStore> {
 
@@ -109,33 +131,81 @@ public final class LandedDieSystems {
                 return;
             }
             Ref<EntityStore> ref = chunk.getReferenceTo(index);
-            double b = glow.brightness();
-            glow.age++;
             DynamicLight light = chunk.getComponent(index, DynamicLight.getComponentType());
-            if (b <= 0.0) {
+            TransformComponent transform = chunk.getComponent(index, TransformComponent.getComponentType());
+            ModelComponent model = chunk.getComponent(index, ModelComponent.getComponentType());
+
+            if (glow.over()) {
+                if (glow.movesTheDie()) {
+                    place(glow, transform, 0.0, 0.0);
+                    marks(ref, glow, model, false, commandBuffer);
+                }
                 commandBuffer.removeComponent(ref, DiceModule.glowType());
                 if (light != null) {
                     commandBuffer.removeComponent(ref, DynamicLight.getComponentType());
                 }
                 return;
             }
-            ColorLight colour = light(glow.colour, b * Math.min(1.5, glow.strength));
-            if (light == null) {
-                commandBuffer.addComponent(ref, DynamicLight.getComponentType(), new DynamicLight(colour));
+
+            double b = glow.brightness();
+            if (b <= 0.0) {
+                if (light != null) {
+                    commandBuffer.removeComponent(ref, DynamicLight.getComponentType());
+                }
             } else {
-                light.setColorLight(colour);
+                ColorLight colour = light(glow.colour(), b, glow.radius());
+                if (light == null) {
+                    commandBuffer.addComponent(ref, DynamicLight.getComponentType(), new DynamicLight(colour));
+                } else {
+                    light.setColorLight(colour);
+                }
             }
+            if (glow.movesTheDie()) {
+                place(glow, transform, glow.lift(), glow.turn());
+                marks(ref, glow, model, glow.marksDark(), commandBuffer);
+            }
+            glow.age++;
         }
+    }
+
+    private static void place(@Nonnull DieGlow glow, @Nullable TransformComponent transform, double lift, double turn) {
+        if (transform == null || glow.rest == null) {
+            return;
+        }
+        transform.getPosition().set(glow.rest).add(0.0, lift, 0.0);
+        transform.getRotation().set(0.0f, (float) wrap(glow.restYaw + turn), 0.0f);
+    }
+
+    /**
+     * An angle brought into -pi to pi, the range every yaw the engine computes lies in, so the Favour's full turn
+     * ends on the same value it started from instead of one turn away.
+     */
+    static double wrap(double angle) {
+        double a = Math.IEEEremainder(angle, Math.PI * 2.0);
+        return a <= -Math.PI ? a + Math.PI * 2.0 : a;
+    }
+
+    /**
+     * Swaps the live model's texture when the marks go dark or light again. Only the live model changes: the saved one
+     * always reloads lit.
+     */
+    private static void marks(@Nonnull Ref<EntityStore> ref, @Nonnull DieGlow glow, @Nullable ModelComponent model,
+                              boolean dark, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        if (model == null || dark == glow.shownDark || glow.texture == null || glow.darkTexture == null) {
+            return;
+        }
+        glow.shownDark = dark;
+        Model now = DiceShow.retextured(model.getModel(), dark ? glow.darkTexture : glow.texture);
+        commandBuffer.putComponent(ref, ModelComponent.getComponentType(), new ModelComponent(now));
     }
 
     /**
      * The engine's light: a radius in blocks and each channel from 0 to 15.
      */
     @Nonnull
-    static ColorLight light(@Nonnull DieShape.Rgb rgb, double brightness) {
+    static ColorLight light(@Nonnull DieShape.Rgb rgb, double brightness, int radius) {
         double b = Math.max(0.0, Math.min(1.0, brightness));
-        int radius = (int) Math.round(DieGlow.PEAK_RADIUS * Math.min(1.5, brightness));
-        return new ColorLight((byte) Math.max(1, radius), channel(rgb.red(), b), channel(rgb.green(), b),
+        return new ColorLight((byte) Math.max(1, Math.min(15, radius)), channel(rgb.red(), b), channel(rgb.green(), b),
                 channel(rgb.blue(), b));
     }
 

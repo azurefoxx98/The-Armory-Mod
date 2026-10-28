@@ -115,6 +115,8 @@ public final class DiceCatalog {
                 json.get("colour").getAsString(),
                 new DieShape.Rgb(glow.get(0).getAsInt(), glow.get(1).getAsInt(), glow.get(2).getAsInt()),
                 json.get("model").getAsString(),
+                json.get("texture").getAsString(),
+                json.get("darkTexture").getAsString(),
                 json.get("radius").getAsDouble(),
                 List.copyOf(faces)
         );

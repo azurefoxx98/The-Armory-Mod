@@ -58,6 +58,11 @@ def defining_files(findings: list[Finding], pair: Pair) -> list[Finding]:
 KIND_MIN_GROUP = 20
 KIND_PRESENT_SHARE = 0.95
 KIND_DEFAULT_SHARE = 0.05
+KIND_FAMILY_MIN = 5
+
+def _family(ident: str) -> str | None:
+    head, sep, _ = ident.lstrip('*').partition('_')
+    return head if sep and head else None
 KIND_EFFECTS = {('BlockType', 'ParticleColor', 'unset'): 'the world map draws it white', ('BlockType', 'BlockParticleSetId', 'unset'): 'nothing stepping on it or hitting it raises particles', ('BlockType', 'BlockSoundSetId', 'default'): 'it makes no sound when placed or broken', ('Item', 'Categories', 'unset'): 'it shows in no tab of the creative inventory', ('Item', 'PlayerAnimationsId', 'default'): "a player holds it in a pose the game's own items of that use never have", ('ResourceType', 'Icon', 'unset'): 'the crafting window shows an empty square for it'}
 
 def _shown_ingredient(pair: Pair) -> set[str]:
@@ -96,6 +101,7 @@ def _context_text(ctx: tuple) -> str:
 
 def like_its_kind(pair: Pair) -> list[Finding]:
     findings: list[Finding] = []
+    left: list[str] = []
     vrefs = pair.referrers(pair.vanilla)
     mrefs = pair.referrers(pair.modded)
     for kind_full in pair.modded.store_names.values():
@@ -113,6 +119,16 @@ def like_its_kind(pair: Pair) -> list[Finding]:
         defaults = pair.vanilla.defaults(kind)
         default_leaves = {p: v for p, v in defaults.items() if not isinstance(v, (dict, list))}
         stats_cache: dict[tuple, tuple[dict, dict]] = {}
+        families: dict[str, list[Asset]] = {}
+        for v in vanilla.values():
+            if _family(v.id):
+                families.setdefault(_family(v.id), []).append(v)
+
+        def family_agrees(a: Asset, does) -> list[Asset] | None:
+            fam = families.get(_family(a.id) or '', [])
+            if len(fam) < KIND_FAMILY_MIN:
+                return None
+            return fam if sum((1 for v in fam if does(v))) / len(fam) >= KIND_PRESENT_SHARE else None
 
         def stats(c: tuple) -> tuple[dict, dict]:
             if c not in stats_cache:
@@ -151,11 +167,20 @@ def like_its_kind(pair: Pair) -> list[Finding]:
             for p, why in sorted(missing.items()):
                 if len(why) != len(ctxs):
                     continue
+                fam = family_agrees(a, lambda v: p not in top_present(v.asset))
+                if fam:
+                    left.append(f"{a.id} sets no {p}, as {len(fam)} of the game's {_family(a.id)}_ {kind} assets do")
+                    continue
                 findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} sets no {p}, which the game's own {kind} assets of the same use set: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'unset', 'effect': effect(p, 'unset', a.id)}))
             for p, why in sorted(defaulted.items()):
                 if len(why) != len(ctxs):
                     continue
+                fam = family_agrees(a, lambda v: v.asset.get(p) == default_leaves[p])
+                if fam:
+                    left.append(f"{a.id} leaves {p} at {default_leaves[p]!r}, as {len(fam)} of the game's {_family(a.id)}_ {kind} assets do")
+                    continue
                 findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} leaves {p} at the engine's default {default_leaves[p]!r}, which the game's own {kind} assets of the same use almost never hold: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'default', 'effect': effect(p, 'default', a.id)}))
+    pair.notes['like-its-kind'] = left
     return findings
 SIBLING_MIN_FAMILY = 4
 SIBLING_PRESENT_SHARE = 0.9

@@ -37,6 +37,7 @@ import com.hypixel.hytale.server.core.modules.projectile.system.StandardPhysicsT
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.joml.Quaterniond;
+import org.joml.Quaterniondc;
 import org.joml.Vector3d;
 
 import javax.annotation.Nonnull;
@@ -481,10 +482,13 @@ public final class DieFlightSystems {
         }
         Model model = Model.createRandomScaleModel(asset);
         Vector3d spot = new Vector3d(transform.getPosition().x, flight.floorY, transform.getPosition().z);
+        // The yaw as sent, so the resting model is drawn turned exactly as the die finished its fall. Everything that
+        // later turns or restores a landed die (its show, its reload) works from this sent value.
+        double sentYaw = sentRestYaw(flight.restYaw);
 
         Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
         holder.addComponent(TransformComponent.getComponentType(),
-                new TransformComponent(spot, new Rotation3f(0.0f, (float) flight.restYaw, 0.0f)));
+                new TransformComponent(spot, new Rotation3f(0.0f, (float) sentYaw, 0.0f)));
         holder.ensureComponent(UUIDComponent.getComponentType());
         holder.addComponent(PersistentModel.getComponentType(), new PersistentModel(model.toReference()));
         holder.addComponent(ModelComponent.getComponentType(), new ModelComponent(model));
@@ -499,7 +503,7 @@ public final class DieFlightSystems {
         holder.addComponent(NetworkId.getComponentType(),
                 new NetworkId(commandBuffer.getExternalData().takeNextNetworkId()));
         holder.addComponent(DiceModule.landedType(), new LandedDie(flight.type.itemId(), flight.shape.key(),
-                flight.face.index(), group.owner(), group.pairId(flight.member), spot.y, flight.restYaw));
+                flight.face.index(), group.owner(), group.pairId(flight.member), spot.y, sentYaw));
         holder.addComponent(DiceModule.glowType(), new DieGlow(flight.shape.glow()));
         Ref<EntityStore> landed = commandBuffer.addEntity(holder, AddReason.SPAWN);
 
@@ -513,10 +517,37 @@ public final class DieFlightSystems {
     }
 
     /**
-     * Writes a turn as the engine's yaw, pitch and roll, the inverse of how the engine composes them.
+     * Writes a turn as the engine's yaw, pitch and roll, so the game draws the die exactly as the physics holds it.
      */
     static void write(@Nonnull Quaterniond orientation, @Nonnull TransformComponent transform) {
-        Vector3d e = orientation.getEulerAnglesYXZ(new Vector3d());
+        Vector3d e = sentAngles(orientation);
         transform.getRotation().set((float) e.x, (float) e.y, (float) e.z);
     }
+
+    /**
+     * The pitch, yaw and roll to send for a die held at {@code orientation}.
+     *
+     * <p>The game draws a model half a turn about its own upright axis from the turn it is sent: an entity faces the
+     * heading of its yaw, which for yaw 0 is -Z, while a model's front is its +Z. So the turn sent is the die's own
+     * turn followed by that half turn, which the game's half turn then undoes. Seen in game before this: a die drawn
+     * landing on 11 was read as 16, then jumped to its resting model when that swapped in, while the D3, whose
+     * opposite faces carry the same number, never showed it.</p>
+     */
+    @Nonnull
+    static Vector3d sentAngles(@Nonnull Quaterniondc orientation) {
+        Quaterniond sent = new Quaterniond(orientation).mul(DRAWN_HALF_TURN);
+        return sent.getEulerAnglesYXZ(new Vector3d());
+    }
+
+    /**
+     * The yaw to send for a landed die resting at {@code restYaw}: the same half turn, about the vertical.
+     */
+    static double sentRestYaw(double restYaw) {
+        return LandedDieSystems.wrap(restYaw + Math.PI);
+    }
+
+    /**
+     * Half a turn about a model's own upright axis, the difference between the turn sent and the turn drawn.
+     */
+    static final Quaterniondc DRAWN_HALF_TURN = new Quaterniond().rotationY(Math.PI);
 }

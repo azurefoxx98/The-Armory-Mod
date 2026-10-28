@@ -81,12 +81,16 @@ public final class NumberTileSystems {
             tile.show.age = Math.max(tile.show.age, tile.age);
 
             Vector3d toViewer = new Vector3d(eye.getPosition()).add(0.0, EYE, 0.0).sub(tile.anchor);
-            double yaw = Math.atan2(toViewer.x, toViewer.z);
-            Vector3d right = new Vector3d(Math.cos(yaw), 0.0, -Math.sin(yaw));
+            // The viewer's right, seen from the viewer: the line the digits are laid along, in reading order.
+            double towards = Math.atan2(toViewer.x, toViewer.z);
+            Vector3d right = new Vector3d(Math.cos(towards), 0.0, -Math.sin(towards));
             double across = (tile.place - (tile.places - 1) / 2.0) * SPACING;
 
             transform.getPosition().set(tile.anchor).add(0.0, height(tile), 0.0).fma(across, right);
-            transform.getRotation().set(0.0f, (float) yaw, 0.0f);
+            // An entity faces the way its yaw heads, and the game heads yaw 0 to -Z, so a tile whose carved face is
+            // its model's +Z turns to the viewer with the heading of the direction to the viewer, half a turn from
+            // the angle above. Seen in game: with the angle above, every tile showed its back.
+            transform.getRotation().set(0.0f, (float) Math.atan2(-toViewer.x, -toViewer.z), 0.0f);
 
             float scale = scale(tile);
             if (Math.abs(scale - tile.shownScale) > 1.0E-3) {

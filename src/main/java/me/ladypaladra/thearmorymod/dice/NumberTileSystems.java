@@ -78,6 +78,7 @@ public final class NumberTileSystems {
                 return;
             }
             tile.age++;
+            tile.show.age = Math.max(tile.show.age, tile.age);
 
             Vector3d toViewer = new Vector3d(eye.getPosition()).add(0.0, EYE, 0.0).sub(tile.anchor);
             double yaw = Math.atan2(toViewer.x, toViewer.z);
@@ -94,6 +95,39 @@ public final class NumberTileSystems {
                     commandBuffer.putComponent(ref, ModelComponent.getComponentType(), new ModelComponent(model));
                 }
                 tile.shownScale = scale;
+            }
+        }
+    }
+
+    /**
+     * Gives a showing number to players who come within reach after it rose: every few ticks, each number looks once
+     * for players near it who have no tiles of it yet. A number about to fade is not offered.
+     */
+    public static final class Latecomers extends EntityTickingSystem<EntityStore> {
+
+        static final int EVERY = 10;
+        static final int TOO_LATE = 15;
+
+        @Nonnull
+        @Override
+        public Query<EntityStore> getQuery() {
+            return DiceModule.tileType();
+        }
+
+        @Override
+        public void tick(float dt, int index, @Nonnull ArchetypeChunk<EntityStore> chunk, @Nonnull Store<EntityStore> store,
+                         @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+            NumberTile tile = chunk.getComponent(index, DiceModule.tileType());
+            if (tile == null) {
+                return;
+            }
+            NumberShow show = tile.show;
+            if (show.age % EVERY != 0 || show.checkedAt == show.age || show.life - show.age < TOO_LATE) {
+                return;
+            }
+            show.checkedAt = show.age;
+            for (Ref<EntityStore> player : DiceShow.playersNear(show.anchor, DiceShow.NUMBER_RANGE, commandBuffer)) {
+                DiceShow.numberFor(show, player, commandBuffer);
             }
         }
     }

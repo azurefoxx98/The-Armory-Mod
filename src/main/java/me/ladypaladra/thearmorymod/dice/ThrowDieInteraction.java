@@ -20,6 +20,7 @@ import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.SimpleInstantInteraction;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.projectile.ProjectileModule;
 import com.hypixel.hytale.server.core.modules.projectile.config.ProjectileConfig;
 import com.hypixel.hytale.server.core.modules.projectile.config.StandardPhysicsProvider;
@@ -144,14 +145,14 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
                 slot++;
                 Vector3d start = new Vector3d(eye).fma(offset, across);
                 Vector3d launch = ThrowFeel.launchVelocity(power, aim, carried, crouching, sprinting, airborne, rng);
-                launch(commandBuffer, thrower, dieType, shape, group, member, part, start, launch, rng);
+                launch(commandBuffer, thrower, dieType, shape, group, member, part, start, launch, eye, rng);
             }
         }
     }
 
     private static void launch(@Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull Ref<EntityStore> thrower,
                                @Nonnull DieType type, @Nonnull DieShape shape, @Nonnull ThrowGroup group, int member,
-                               int part, @Nonnull Vector3d start, @Nonnull Vector3d launch,
+                               int part, @Nonnull Vector3d start, @Nonnull Vector3d launch, @Nonnull Vector3d eye,
                                @Nonnull RandomGenerator rng) {
         String configId = "Armory_Dice_Throw_" + shape.key();
         ProjectileConfig config = ProjectileConfig.getAssetMap().getAsset(configId);
@@ -167,20 +168,33 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
 
         DieFlight flight = new DieFlight(type, shape, DiceModule.MOTION, group, member, part);
         DiceModule.MOTION.launch(flight.spin, launch, rng);
+        flight.origin.set(eye);
+        Vector3d velocity = new Vector3d(launch);
 
         Ref<EntityStore> ref = ProjectileModule.get().spawnProjectile(thrower, commandBuffer, config, start, direction,
                 1.0f, multiplier);
         // The projectile exists once the buffer runs: its flight and its handlers go on it then.
-        commandBuffer.run(store -> attach(store, ref, flight));
+        commandBuffer.run(store -> attach(store, ref, flight, velocity));
     }
 
     private static void attach(@Nonnull Store<EntityStore> store, @Nonnull Ref<EntityStore> ref,
-                               @Nonnull DieFlight flight) {
+                               @Nonnull DieFlight flight, @Nonnull Vector3d velocity) {
         if (!ref.isValid()) {
             DieFlightSystems.lose(flight, store);
             return;
         }
         StandardPhysicsProvider physics = store.getComponent(ref, StandardPhysicsProvider.getComponentType());
+        TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
+        DiceCatalog catalog = DiceModule.catalog();
+        if (DiceModule.TRUE_PHYSICS && physics != null && transform != null && catalog != null) {
+            // The engine lets go of the die: an inactive projectile is never moved or collided by it, only has its
+            // velocity held at zero, and the die's own rigid body flies it from where the engine spawned it.
+            physics.setState(StandardPhysicsProvider.STATE.INACTIVE);
+            physics.getVelocity().zero();
+            flight.rigid = new RigidFlight(flight.shape, catalog.hull(flight.shape.key()), flight.spin,
+                    transform.getPosition(), velocity);
+            flight.group.bodies.add(flight.rigid);
+        }
         if (physics != null) {
             // These replace the engine's own handlers, which would delete the die if its thrower logged off.
             physics.setBounceConsumer((self, position, commandBuffer) ->

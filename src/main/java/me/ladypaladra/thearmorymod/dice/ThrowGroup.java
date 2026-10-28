@@ -33,6 +33,12 @@ public final class ThrowGroup {
     private final boolean[] lost;
     private boolean done;
 
+    /**
+     * The rigid bodies of every die thrown together, so they knock against one another instead of passing through.
+     * Only the world thread that flies them touches it.
+     */
+    final List<RigidFlight> bodies = new ArrayList<>();
+
     @SuppressWarnings("unchecked")
     ThrowGroup(@Nonnull DieType type, @Nonnull UUID owner, @Nonnull String ownerName, int members) {
         this.type = type;

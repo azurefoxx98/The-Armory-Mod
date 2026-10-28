@@ -15,12 +15,14 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.math.shape.Box;
 import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
+import com.hypixel.hytale.server.core.modules.collision.EntityRefCollisionProvider;
 import com.hypixel.hytale.server.core.modules.entity.component.BoundingBox;
 import com.hypixel.hytale.server.core.modules.entity.component.Interactable;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
@@ -32,6 +34,7 @@ import com.hypixel.hytale.server.core.modules.entity.tracker.NetworkId;
 import com.hypixel.hytale.server.core.modules.interaction.Interactions;
 import com.hypixel.hytale.server.core.modules.projectile.config.StandardPhysicsProvider;
 import com.hypixel.hytale.server.core.modules.projectile.system.StandardPhysicsTickSystem;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
@@ -43,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.random.RandomGenerator;
 
 /**
  * A die from the moment it leaves the hand to the moment it lies on the ground as a landed die.
@@ -70,6 +74,19 @@ public final class DieFlightSystems {
     static final int TOPPLE_TICKS = 7;
 
     /**
+     * Ticks a die flown by its own physics takes to settle onto its resting model's exact turn: it already lies flat,
+     * within a few degrees, so this is a snap no one sees.
+     */
+    static final int SNAP_TICKS = 3;
+
+    /**
+     * A strike harder than this, in blocks per second, clacks, and two clacks of one die are at least this many ticks
+     * apart, so a die rattling across a corner does not clack every tick.
+     */
+    static final double CLACK_SPEED = 1.2;
+    static final int CLACK_GAP = 3;
+
+    /**
      * Below this height a die has fallen out of the world: the world's floor, under which no chunk exists to hold an
      * entity. The engine deletes anything that comes to rest down there, so a die must never be laid down below it
      * (measured on 0.7.4: a die thrown down a shaft to the bottom stopped under the floor, was laid down, and the engine
@@ -82,6 +99,18 @@ public final class DieFlightSystems {
      */
     static final double CREATURE_BOUNCE = 0.35;
     static final double CREATURE_LIFT = 1.2;
+
+    /**
+     * Ticks a creature a die just bounced off is left out of its path, and how far past this tick's path creatures
+     * are looked for.
+     */
+    static final int CREATURE_GRACE = 10;
+    static final double CREATURE_SEARCH = 8.0;
+
+    /**
+     * The least sideways speed, blocks per second, a die is knocked off a creature with.
+     */
+    static final double CREATURE_KNOCK = 1.8;
 
     static final String PICK_UP_INTERACTION = "Armory_Dice_PickUp";
     static final String PICK_UP_HINT = "server.armoryDice.pickUpHint";
@@ -125,6 +154,10 @@ public final class DieFlightSystems {
             double step = 1.0 / 30.0;
             flight.age++;
 
+            if (flight.phase == DieFlight.Phase.FLYING && flight.rigid != null) {
+                flyRigid(ref, flight, physics, transform, store, commandBuffer);
+                return;
+            }
             if (flight.phase == DieFlight.Phase.FLYING) {
                 // Caught a tick before it crosses the floor: once under it, the engine warns that the die moved into a
                 // chunk that cannot be loaded before this system sees it.
@@ -150,7 +183,7 @@ public final class DieFlightSystems {
 
             // Toppling: ease from where the die stopped onto its face, lowering its middle to its resting height.
             flight.toppleTick++;
-            double t = Math.min(1.0, (double) flight.toppleTick / TOPPLE_TICKS);
+            double t = Math.min(1.0, (double) flight.toppleTick / flight.toppleTicks);
             double ease = t * t * (3.0 - 2.0 * t);
             Quaterniond now = new Quaterniond(flight.toppleFrom).slerp(flight.toppleTo, ease);
             write(now, transform);
@@ -248,6 +281,8 @@ public final class DieFlightSystems {
      */
     static void lose(@Nonnull DieFlight flight, @Nonnull ComponentAccessor<EntityStore> accessor) {
         ThrowGroup group = flight.group;
+        // A lost die is no longer anywhere for the others to knock against.
+        group.bodies.remove(flight.rigid);
         if (group.isLost(flight.member)) {
             return;
         }
@@ -291,6 +326,134 @@ public final class DieFlightSystems {
         flight.floorY = transform.getPosition().y - flight.shape.radius();
         flight.phase = DieFlight.Phase.TOPPLING;
         flight.toppleTick = 0;
+        flight.toppleTicks = TOPPLE_TICKS;
+    }
+
+    /**
+     * One tick of a die flown by its own rigid body: the physics moves and turns it, a creature in its way knocks it
+     * back, a hard strike clacks, and once it lies flat on a face it is laid down as that face.
+     */
+    private static void flyRigid(@Nonnull Ref<EntityStore> ref, @Nonnull DieFlight flight,
+                                 @Nonnull StandardPhysicsProvider physics, @Nonnull TransformComponent transform,
+                                 @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        RigidFlight rigid = flight.rigid;
+        World world = store.getExternalData().getWorld();
+        EngineDieWorld blocks = EngineDieWorld.on(world);
+        RandomGenerator rng = ThreadLocalRandom.current();
+        double dt = 1.0 / world.getTps();
+        if (flight.age == 1) {
+            rigid.unstick(blocks, flight.origin);
+        }
+
+        rigid.knockAgainst(flight.group.bodies, rng);
+        Vector3d before = new Vector3d(rigid.body.position);
+        RigidFlight.Status status = rigid.tick(blocks, dt, rng);
+        Vector3d middle = rigid.modelPosition(new Vector3d());
+        if (middle.y < OUT_OF_WORLD_Y || middle.y + rigid.body.velocity.y * dt * 1.5 < OUT_OF_WORLD_Y) {
+            commandBuffer.tryRemoveEntity(ref, RemoveReason.REMOVE);
+            return;
+        }
+        if (status == RigidFlight.Status.FLYING && creature(ref, flight, rigid, physics, before, store, commandBuffer)) {
+            rigid.modelPosition(middle);
+        }
+        transform.getPosition().set(middle);
+        write(rigid.body.spin.orientation, transform);
+
+        flight.sinceClack++;
+        double struck = rigid.report.hardest;
+        if (struck > CLACK_SPEED && flight.sinceClack >= CLACK_GAP) {
+            flight.sinceClack = 0;
+            DiceShow.bounce(flight.shape, middle, struck, commandBuffer);
+        }
+
+        if (status == RigidFlight.Status.FLYING) {
+            return;
+        }
+        physics.getVelocity().zero();
+        if (status == RigidFlight.Status.LANDED) {
+            // Already flat on its face: the settle only snaps it onto the resting model's exact turn and height.
+            flight.face = rigid.face();
+            flight.toppleTicks = SNAP_TICKS;
+        } else {
+            // Stuck cocked: laid on the face nearest up, as the tumble lays a die down.
+            flight.face = DieOrientation.topFace(rigid.body.spin.orientation, flight.shape);
+            flight.toppleTicks = TOPPLE_TICKS;
+            LOGGER.atInfo().log("A %s stayed cocked after %d nudges, laid on its face nearest up", flight.shape.key(),
+                    rigid.nudges);
+        }
+        flight.restYaw = DieOrientation.restYaw(rigid.body.spin.orientation, flight.face);
+        flight.toppleFrom.set(rigid.body.spin.orientation);
+        DieOrientation.resting(flight.restYaw, flight.face, flight.toppleTo);
+        flight.toppleStart.set(middle);
+        flight.floorY = rigid.floorY();
+        flight.phase = DieFlight.Phase.TOPPLING;
+        flight.toppleTick = 0;
+    }
+
+    /**
+     * Sweeps the die's box along this tick's path through the creatures and players around it, with the engine's own
+     * test and filter, the thrower left out as the engine leaves out a projectile's creator. A die that meets one is
+     * knocked back off it, a little up, keeping a third of its speed.
+     *
+     * @return whether the die met one and was moved
+     */
+    private static boolean creature(@Nonnull Ref<EntityStore> ref, @Nonnull DieFlight flight, @Nonnull RigidFlight rigid,
+                                    @Nonnull StandardPhysicsProvider physics, @Nonnull Vector3d before,
+                                    @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        Vector3d movement = new Vector3d(rigid.body.position).sub(before);
+        if (movement.lengthSquared() < 1.0E-10) {
+            return false;
+        }
+        Vector3d min = new Vector3d();
+        Vector3d max = new Vector3d();
+        rigid.bounds(min, max);
+        Ref<EntityStore> creator = physics.getCreatorUuid() != null
+                ? store.getExternalData().getRefFromUUID(physics.getCreatorUuid()) : null;
+        EntityRefCollisionProvider provider = physics.getEntityCollisionProvider();
+        provider.clear();
+        // The creature just bounced off is left out for a moment: a die still overlapping it would otherwise be
+        // knocked back off it again every tick and hang there.
+        Ref<EntityStore> recent = flight.age - flight.lastHitAge <= CREATURE_GRACE ? flight.lastHit : null;
+        double hit = provider.computeNearest(commandBuffer, before, movement, new Box(min, max),
+                movement.length() + CREATURE_SEARCH,
+                (other, buffer) -> EntityRefCollisionProvider.defaultEntityFilter(other, buffer) && !other.equals(recent),
+                ref, creator);
+        // At the very start of the path the die is already inside the creature: it passes through and falls, where a
+        // knock from inside would juggle it there for good.
+        if (hit <= 1.0E-6 || hit > 1.0 || provider.getCount() == 0) {
+            provider.clear();
+            return false;
+        }
+        Ref<EntityStore> target = provider.getContact(0).getEntityReference();
+        provider.clear();
+        TransformComponent other = target != null && target.isValid()
+                ? commandBuffer.getComponent(target, TransformComponent.getComponentType()) : null;
+        Vector3d at = new Vector3d(before).fma(Math.max(0.0, hit - 0.05), movement);
+        Vector3d away = other != null ? new Vector3d(at).sub(other.getPosition()) : new Vector3d(movement).negate();
+        away.y = 0.0;
+        if (away.lengthSquared() < 1.0E-6) {
+            away.set(movement).negate();
+            away.y = 0.0;
+        }
+        if (away.lengthSquared() < 1.0E-6) {
+            away.set(1.0, 0.0, 0.0);
+        }
+        away.normalize();
+        // A die already moving away from the creature, one that started inside it or dropped onto it from above, is
+        // let go its way.
+        if (movement.x * away.x + movement.z * away.z > 0.0) {
+            return false;
+        }
+        flight.lastHit = target;
+        flight.lastHitAge = flight.age;
+        // Never less than a firm sideways knock, so a die dropped on a head is thrown off it, not bounced in place.
+        double speed = Math.max(CREATURE_KNOCK, rigid.body.velocity.length() * CREATURE_BOUNCE);
+        rigid.body.position.set(at);
+        rigid.body.velocity.set(away).mul(speed).add(0.0, CREATURE_LIFT, 0.0);
+        rigid.body.spin.angularVelocity.add(TumbleMotion.randomUnit(ThreadLocalRandom.current(), new Vector3d())
+                .mul(TumbleMotion.KNOCK * speed));
+        rigid.stillTicks = 0;
+        return true;
     }
 
     /**

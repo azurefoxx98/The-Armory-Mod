@@ -21,8 +21,15 @@ public final class DiceModule {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
     /**
-     * The motion every die flies with. The free tumble turns a die on all three axes. The flat spin is the fallback
-     * for a client that does not draw an entity's roll, and swapping it in changes nothing else.
+     * Whether a die flies as a rigid body on its true shape, landing on a face by its own physics. Off, the engine
+     * flies it as a projectile box and {@link #MOTION} turns it and lays it on the face nearest up.
+     */
+    static final boolean TRUE_PHYSICS = true;
+
+    /**
+     * The motion that turns a die. With true physics it only gives the die its starting turn and spin as it leaves
+     * the hand. Without, the free tumble turns it on all three axes, and the flat spin is the fallback for a client
+     * that does not draw an entity's roll, swapped in without changing anything else.
      */
     static final DieMotion MOTION = new TumbleMotion();
 
@@ -69,6 +76,7 @@ public final class DiceModule {
         registry.registerSystem(new LandedDieSystems.Loaded());
         registry.registerSystem(new LandedDieSystems.Glow());
         registry.registerSystem(new NumberTileSystems.Animate());
+        registry.registerSystem(new NumberTileSystems.Latecomers());
         registry.registerSystem(new NumberTileSystems.OnlyItsViewer());
         registry.registerSystem(new DiceReturnSystem());
 

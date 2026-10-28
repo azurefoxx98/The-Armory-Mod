@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -145,7 +146,7 @@ public final class DiceShow {
             RollBand band = RollBand.of(roll.value(), type.sides());
             RollBand.Tier tier = RollBand.Tier.of(type);
             if (lead != null) {
-                number(roll, band, lead, type, commandBuffer);
+                number(roll, band, lead, type, group.owner(), commandBuffer);
                 bandShow(roll.at(), band, tier, lead, once, commandBuffer);
             }
             if (band == RollBand.FAVOUR || band == RollBand.VEIL) {
@@ -249,35 +250,53 @@ public final class DiceShow {
      * Raises the big number over a roll, one set of carved tiles per player near, each facing its player.
      */
     private static void number(@Nonnull ThrowGroup.Roll roll, @Nonnull RollBand band, @Nonnull DieShape lead,
-                               @Nonnull DieType type, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+                               @Nonnull DieType type, @Nonnull UUID owner,
+                               @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         String digits = Integer.toString(roll.value());
         String texture = band.numberTexture(lead.colour());
         int life = type == DieType.D100 ? GRAND_LIFE
                 : band == RollBand.FAVOUR || band == RollBand.VEIL ? EXTREME_LIFE : NUMBER_LIFE;
         Vector3d anchor = new Vector3d(roll.at()).add(0.0, 0.45, 0.0);
+        NumberShow show = new NumberShow(anchor, digits, texture, band, life);
         for (Ref<EntityStore> viewer : playersNear(roll.at(), NUMBER_RANGE, commandBuffer)) {
-            PlayerRef player = commandBuffer.getComponent(viewer, PlayerRef.getComponentType());
-            if (player == null) {
-                continue;
+            numberFor(show, viewer, commandBuffer);
+        }
+        // The thrower always sees their own number, however far the die went, as they always read its chat line.
+        Ref<EntityStore> thrower = commandBuffer.getExternalData().getRefFromUUID(owner);
+        if (thrower != null && thrower.isValid()) {
+            numberFor(show, thrower, commandBuffer);
+        }
+    }
+
+    /**
+     * Gives one player their own tiles of a showing number, in step with the tiles already up. Does nothing for a
+     * player who already has them.
+     */
+    static void numberFor(@Nonnull NumberShow show, @Nonnull Ref<EntityStore> viewer,
+                          @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        PlayerRef player = commandBuffer.getComponent(viewer, PlayerRef.getComponentType());
+        if (player == null || !show.viewers.add(player.getUuid())) {
+            return;
+        }
+        for (int place = 0; place < show.digits.length(); place++) {
+            String asset = "Armory_Dice_Number_" + show.digits.charAt(place);
+            Model model = NumberTileSystems.tileModel(asset, show.texture, NumberTileSystems.SCALE * 0.35f);
+            if (model == null) {
+                warnOnce("number model " + asset);
+                return;
             }
-            for (int place = 0; place < digits.length(); place++) {
-                String asset = "Armory_Dice_Number_" + digits.charAt(place);
-                Model model = NumberTileSystems.tileModel(asset, texture, NumberTileSystems.SCALE * 0.35f);
-                if (model == null) {
-                    warnOnce("number model " + asset);
-                    return;
-                }
-                Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
-                holder.addComponent(TransformComponent.getComponentType(),
-                        new TransformComponent(anchor, new Rotation3f()));
-                holder.addComponent(ModelComponent.getComponentType(), new ModelComponent(model));
-                holder.addComponent(NetworkId.getComponentType(),
-                        new NetworkId(commandBuffer.getExternalData().takeNextNetworkId()));
-                holder.addComponent(DiceModule.tileType(), new NumberTile(player.getUuid(), anchor, place,
-                        digits.length(), asset, texture, band, life));
-                holder.ensureComponent(EntityStore.REGISTRY.getNonSerializedComponentType());
-                commandBuffer.addEntity(holder, AddReason.SPAWN);
-            }
+            Holder<EntityStore> holder = EntityStore.REGISTRY.newHolder();
+            holder.addComponent(TransformComponent.getComponentType(),
+                    new TransformComponent(show.anchor, new Rotation3f()));
+            holder.addComponent(ModelComponent.getComponentType(), new ModelComponent(model));
+            holder.addComponent(NetworkId.getComponentType(),
+                    new NetworkId(commandBuffer.getExternalData().takeNextNetworkId()));
+            NumberTile tile = new NumberTile(show, player.getUuid(), show.anchor, place, show.digits.length(), asset,
+                    show.texture, show.band, show.life);
+            tile.age = show.age;
+            holder.addComponent(DiceModule.tileType(), tile);
+            holder.ensureComponent(EntityStore.REGISTRY.getNonSerializedComponentType());
+            commandBuffer.addEntity(holder, AddReason.SPAWN);
         }
     }
 
@@ -353,7 +372,7 @@ public final class DiceShow {
     }
 
     @Nonnull
-    private static List<Ref<EntityStore>> playersNear(@Nonnull Vector3d at, double range,
+    static List<Ref<EntityStore>> playersNear(@Nonnull Vector3d at, double range,
                                                       @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         var players = commandBuffer.getResource(EntityModule.get().getPlayerSpatialResourceType());
         List<Ref<EntityStore>> found = SpatialResource.getThreadLocalReferenceList();

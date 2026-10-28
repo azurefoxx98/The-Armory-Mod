@@ -23,11 +23,13 @@ public final class NumberTile implements Component<EntityStore> {
     final String texture;
     final RollBand band;
     final int life;
+    final NumberShow show;
     int age;
     float shownScale = -1.0f;
 
-    NumberTile(@Nonnull UUID viewer, @Nonnull Vector3d anchor, int place, int places, @Nonnull String modelAsset,
-               @Nonnull String texture, @Nonnull RollBand band, int life) {
+    NumberTile(@Nonnull NumberShow show, @Nonnull UUID viewer, @Nonnull Vector3d anchor, int place, int places,
+               @Nonnull String modelAsset, @Nonnull String texture, @Nonnull RollBand band, int life) {
+        this.show = show;
         this.viewer = viewer;
         this.anchor = new Vector3d(anchor);
         this.place = place;

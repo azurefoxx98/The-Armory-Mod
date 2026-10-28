@@ -162,6 +162,12 @@ public final class LandedDieSystems {
             if (glow == null) {
                 return;
             }
+            // A die picked up is removed shortly, and any change sent between the pickup and the removal would reach
+            // the players after the die is gone, which the engine reports as a warning per player. It stops glowing.
+            LandedDie die = chunk.getComponent(index, DiceModule.landedType());
+            if (die != null && die.claimed()) {
+                return;
+            }
             Ref<EntityStore> ref = chunk.getReferenceTo(index);
             DynamicLight light = chunk.getComponent(index, DynamicLight.getComponentType());
             TransformComponent transform = chunk.getComponent(index, TransformComponent.getComponentType());

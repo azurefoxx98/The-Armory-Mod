@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
+import org.joml.Vector3dc;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -36,9 +37,22 @@ public final class DiceCatalog {
     private static final double UNIT_TOLERANCE = 1.0E-4;
 
     private final Map<String, DieShape> shapes;
+    private final Map<String, DieHull> hulls = new LinkedHashMap<>();
 
     private DiceCatalog(@Nonnull Map<String, DieShape> shapes) {
         this.shapes = Collections.unmodifiableMap(shapes);
+    }
+
+    /**
+     * The solid the physics flies for {@code key}, built once when the data is read.
+     */
+    @Nonnull
+    public DieHull hull(@Nonnull String key) {
+        DieHull hull = hulls.get(key);
+        if (hull == null) {
+            throw new IllegalArgumentException("No die shape " + key);
+        }
+        return hull;
     }
 
     @Nonnull
@@ -109,6 +123,11 @@ public final class DiceCatalog {
                     face.get("model").getAsString()
             ));
         }
+        List<Vector3dc> corners = new ArrayList<>();
+        for (JsonElement element : json.getAsJsonArray("hull")) {
+            JsonArray c = element.getAsJsonArray();
+            corners.add(new Vector3d(c.get(0).getAsDouble(), c.get(1).getAsDouble(), c.get(2).getAsDouble()));
+        }
         JsonArray glow = json.getAsJsonArray("glow");
         return new DieShape(
                 key,
@@ -118,6 +137,7 @@ public final class DiceCatalog {
                 json.get("texture").getAsString(),
                 json.get("darkTexture").getAsString(),
                 json.get("radius").getAsDouble(),
+                List.copyOf(corners),
                 List.copyOf(faces)
         );
     }
@@ -134,6 +154,36 @@ public final class DiceCatalog {
                 if (shape.radius() <= 0) {
                     throw new IllegalStateException(shape.key() + " has no size");
                 }
+                // The solid the physics flies must be the die the art drew: as many corners as its kind has, and
+                // reaching exactly as far as its radius.
+                if (shape.corners().size() != expectedCorners(shape.key())) {
+                    throw new IllegalStateException(shape.key() + " has " + shape.corners().size()
+                            + " corners, a " + shape.key() + " has " + expectedCorners(shape.key()));
+                }
+                double reach = 0.0;
+                for (Vector3dc corner : shape.corners()) {
+                    reach = Math.max(reach, corner.length());
+                }
+                if (Math.abs(reach - shape.radius()) > 2.0E-3) {
+                    throw new IllegalStateException(shape.key() + "'s corners reach " + reach + ", its radius is "
+                            + shape.radius());
+                }
+                // The solid found from the corners must have the die's own faces: a D4 four, a D20 twenty, the D3 its
+                // cube's six. A corner out of place would give a solid with other faces, and a die that lands wrongly.
+                DieHull hull = DieHull.of(shape);
+                int solidFaces = shape.key().equals("D4") ? 4 : expectedFaces(shape.key());
+                if (hull.normals.length != solidFaces) {
+                    throw new IllegalStateException(shape.key() + "'s corners make a solid of " + hull.normals.length
+                            + " faces, not " + solidFaces);
+                }
+                // Every edge must be found too, or a die edge could pass through a block unseen: a closed solid has
+                // as many edges as corners and faces together, less two.
+                int edges = hull.corners.length + solidFaces - 2;
+                if (hull.edges.length != edges) {
+                    throw new IllegalStateException(shape.key() + "'s solid has " + hull.edges.length + " edges, not "
+                            + edges);
+                }
+                hulls.put(shape.key(), hull);
                 for (DieShape.Face face : shape.faces()) {
                     checkFace(shape, face);
                 }
@@ -168,6 +218,16 @@ public final class DiceCatalog {
         if (face.restMiddle() <= 0 || face.restHeight() <= face.restMiddle()) {
             throw new IllegalStateException(where + ": its resting heights are not a die lying on the ground");
         }
+    }
+
+    private static int expectedCorners(String key) {
+        return switch (key) {
+            case "D3", "D6" -> 8;
+            case "D4" -> 4;
+            case "D8" -> 6;
+            case "D10", "D100_Tens", "D100_Units", "D20" -> 12;
+            default -> throw new IllegalStateException("Unknown die shape " + key);
+        };
     }
 
     private static int expectedFaces(String key) {

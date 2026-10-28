@@ -1,6 +1,7 @@
 package me.ladypaladra.thearmorymod.dice;
 
 import com.hypixel.hytale.component.Component;
+import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
@@ -32,6 +33,27 @@ public final class DieFlight implements Component<EntityStore> {
     int age;
     int stillTicks;
 
+    /**
+     * The die's own rigid body, when the flight is ours and not the engine's: set once the projectile exists.
+     */
+    RigidFlight rigid;
+
+    /**
+     * Where the throw started, the thrower's eye: open air, so a die released inside a wall is drawn back towards it.
+     */
+    final Vector3d origin = new Vector3d();
+
+    /**
+     * Ticks of flight since the last bounce sound, so a die rattling on a corner does not clack every tick.
+     */
+    int sinceClack;
+
+    /**
+     * The creature the die last bounced off, and when, so it is not struck again while still touching it.
+     */
+    Ref<EntityStore> lastHit;
+    int lastHitAge;
+
     // Set when the die stops: the face it shows and how it lies down.
     DieShape.Face face;
     double restYaw;
@@ -40,6 +62,7 @@ public final class DieFlight implements Component<EntityStore> {
     final Vector3d toppleStart = new Vector3d();
     double floorY;
     int toppleTick;
+    int toppleTicks;
 
     /**
      * Set once the die has been laid down as a landed die, so its projectile's removal is not taken for a loss.

@@ -21,11 +21,12 @@ import java.util.List;
  * @param texture     the texture every model of the die wears
  * @param darkTexture the same texture with every awake mark put out, worn while the Veil holds the die
  * @param radius      blocks from the die's middle to its farthest corner
+ * @param corners     the die's true corners in blocks, about its middle: the solid the physics flies
  * @param faces       one entry per result the die can show
  */
 public record DieShape(@Nonnull String key, @Nonnull String colour, @Nonnull Rgb glow, @Nonnull String flyingModel,
                        @Nonnull String texture, @Nonnull String darkTexture, double radius,
-                       @Nonnull List<Face> faces) {
+                       @Nonnull List<Vector3dc> corners, @Nonnull List<Face> faces) {
 
     /**
      * A colour, each channel from 0 to 255.

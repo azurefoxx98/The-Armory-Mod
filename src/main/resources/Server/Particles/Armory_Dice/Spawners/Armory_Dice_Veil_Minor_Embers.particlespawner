@@ -1,0 +1,87 @@
+{
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 0.6,
+    "Max": 1.1
+  },
+  "Shape": "Sphere",
+  "Particle": {
+    "Texture": "Particles/Textures/Fire/Ember.png",
+    "Animation": {
+      "0": {
+        "Color": "#ffb0b8"
+      },
+      "30": {
+        "Color": "#ff2440"
+      },
+      "100": {
+        "Color": "#000000",
+        "Opacity": 0.0,
+        "Scale": {
+          "X": {
+            "Min": 0.3,
+            "Max": 0.3
+          },
+          "Y": {
+            "Min": 0.3,
+            "Max": 0.3
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.1,
+          "Max": 0.18
+        },
+        "Y": {
+          "Min": 0.1,
+          "Max": 0.1
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#ff2440"
+    },
+    "ScaleRatioConstraint": "OneToOne"
+  },
+  "TotalParticles": {
+    "Min": 16,
+    "Max": 16
+  },
+  "MaxConcurrentParticles": 16,
+  "SpawnRate": {
+    "Min": 300,
+    "Max": 300
+  },
+  "SpawnBurst": true,
+  "InitialVelocity": {
+    "Pitch": {
+      "Min": 40,
+      "Max": 90
+    },
+    "Yaw": {
+      "Min": 0,
+      "Max": 360
+    },
+    "Speed": {
+      "Min": 0.8250000000000001,
+      "Max": 1.7600000000000002
+    }
+  },
+  "Attractors": [
+    {
+      "LinearAcceleration": {
+        "Y": -3.3000000000000003
+      },
+      "DampingMultiplier": {
+        "X": 0.95,
+        "Y": 0.95,
+        "Z": 0.95
+      }
+    }
+  ]
+}

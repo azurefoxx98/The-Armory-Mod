@@ -146,8 +146,8 @@ function Install-Tools {
 # ---- the version -----------------------------------------------------------------------------
 
 function Read-ModVersion {
-    $text = [IO.File]::ReadAllText((Join-Path $repo 'build.gradle'))
-    if ($text -notmatch "(?m)^version = '([0-9]+\.[0-9]+\.[0-9]+)'") { Stop-Release "The mod's version was not found. $send" 'no version line in the build file' }
+    $text = [IO.File]::ReadAllText((Join-Path $repo 'gradle.properties'))
+    if ($text -notmatch "(?m)^version\s*=\s*([0-9]+\.[0-9]+\.[0-9]+)\s*$") { Stop-Release "The mod's version was not found. $send" 'no version line in gradle.properties' }
     return $Matches[1]
 }
 
@@ -160,7 +160,7 @@ function Compare-Version([string] $a, [string] $b) {
 
 function Set-ModVersion([string] $old, [string] $new) {
     $files = @(
-        @{ Path = 'build.gradle'; From = "version = '$old'"; To = "version = '$new'" },
+        @{ Path = 'gradle.properties'; From = "= $old"; To = "= $new" },
         @{ Path = 'src\main\resources\manifest.json'; From = "`"Version`": `"$old`""; To = "`"Version`": `"$new`"" },
         @{ Path = '.hytale\project.json'; From = "`"version`": `"$old`""; To = "`"version`": `"$new`"" },
         @{ Path = '.hytale\project.json'; From = "TheArmoryMod-$old.jar"; To = "TheArmoryMod-$new.jar" }
@@ -275,10 +275,8 @@ try {
         $built = $Jar
     } else {
         $python = Install-Tools
-        # The engine jar is copied from the installed game only when missing, so an old copy would be
-        # compiled against after a game update. Take the installed one every time.
-        $engine = Join-Path $repo 'libs\HytaleServer.jar'
-        if (Test-Path -LiteralPath $engine) { Remove-Item -LiteralPath $engine -Force }
+        # The build fetches the newest release of the game's server from Hypixel by itself, so there
+        # is no engine copy here to fall behind after a game update.
         $env:JAVA_HOME = $javaHome
         $tools = (Join-Path $repo 'Studio\Tools\Release') -replace '\\', '/'
         Write-Host 'Building the release. This takes a few minutes.'
@@ -300,13 +298,13 @@ try {
         if (-not (Test-Path -LiteralPath $built)) { throw "no release jar at $built" }
     }
 } catch {
-    [void](Invoke-Git @('checkout', '--', 'build.gradle', 'src/main/resources/manifest.json', '.hytale/project.json'))
+    [void](Invoke-Git @('checkout', '--', 'gradle.properties', 'src/main/resources/manifest.json', '.hytale/project.json'))
     Stop-Release "The release could not be built, so nothing was released. $send" $_.Exception.Message
 }
 Write-Host 'Built.'
 
 # The version files, and the code-only jar when the build rewrote it (it changes only with the code).
-$paths = @('build.gradle', 'src/main/resources/manifest.json', '.hytale/project.json', 'Studio/Tools/TheArmory-code.jar')
+$paths = @('gradle.properties', 'src/main/resources/manifest.json', '.hytale/project.json', 'Studio/Tools/TheArmory-code.jar')
 if ((Invoke-Git (@('status', '--porcelain', '--') + $paths)).Out) {
     $commit = Invoke-Git (@('commit', '-q', '-m', "Release $Version", '--') + $paths)
     if ($commit.Code -ne 0) { Stop-Release "The version could not be committed. $send" $commit.Text }

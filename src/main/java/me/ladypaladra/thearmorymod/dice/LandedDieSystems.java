@@ -19,6 +19,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,7 +33,18 @@ public final class LandedDieSystems {
      */
     private static final Map<UUID, Map<Ref<EntityStore>, Boolean>> PAIRS = new ConcurrentHashMap<>();
 
+    /**
+     * Every landed die loaded in any world, so a pickup aimed through a plant can find the die in that plant's cell
+     * without walking the whole store.
+     */
+    private static final Set<Ref<EntityStore>> LOADED = ConcurrentHashMap.newKeySet();
+
     private LandedDieSystems() {
+    }
+
+    @Nonnull
+    static Iterable<Ref<EntityStore>> loaded() {
+        return LOADED;
     }
 
     /**
@@ -70,6 +82,7 @@ public final class LandedDieSystems {
             if (die != null && reason == AddReason.LOAD) {
                 settle(die, commandBuffer.getComponent(ref, TransformComponent.getComponentType()));
             }
+            LOADED.add(ref);
             UUID pair = die != null ? die.pair() : null;
             if (pair == null) {
                 return;
@@ -85,6 +98,7 @@ public final class LandedDieSystems {
         @Override
         public void onEntityRemove(@Nonnull Ref<EntityStore> ref, @Nonnull RemoveReason reason,
                                    @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+            LOADED.remove(ref);
             LandedDie die = store.getComponent(ref, DiceModule.landedType());
             if (die == null) {
                 return;

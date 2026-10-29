@@ -19,6 +19,7 @@ import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.SimpleInstantInteraction;
+import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.projectile.ProjectileModule;
@@ -134,6 +135,9 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
         RandomGenerator rng = ThreadLocalRandom.current();
         double power = ThrowFeel.power(hold);
         List<DieShape> shapes = catalog.shapesOf(dieType);
+        // The die's light leaves the hand with it: barely a glint for a drop, a burst for a hard throw.
+        DiceShow.particles("Armory_Dice_Release_" + RollBand.capitalise(shapes.get(0).colour()),
+                DiceCharge.hand(thrower, commandBuffer), (float) (0.5 + 0.9 * power), commandBuffer);
         ThrowGroup group = new ThrowGroup(dieType, playerRef.getUuid(), playerRef.getUsername(), count);
         int dice = count * shapes.size();
         int slot = 0;
@@ -145,7 +149,7 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
                 slot++;
                 Vector3d start = new Vector3d(eye).fma(offset, across);
                 Vector3d launch = ThrowFeel.launchVelocity(power, aim, carried, crouching, sprinting, airborne, rng);
-                launch(commandBuffer, thrower, dieType, shape, group, member, part, start, launch, eye, rng);
+                launch(commandBuffer, thrower, dieType, shape, group, member, part, start, launch, eye, power, rng);
             }
         }
     }
@@ -153,7 +157,7 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
     private static void launch(@Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull Ref<EntityStore> thrower,
                                @Nonnull DieType type, @Nonnull DieShape shape, @Nonnull ThrowGroup group, int member,
                                int part, @Nonnull Vector3d start, @Nonnull Vector3d launch, @Nonnull Vector3d eye,
-                               @Nonnull RandomGenerator rng) {
+                               double power, @Nonnull RandomGenerator rng) {
         String configId = "Armory_Dice_Throw_" + shape.key();
         ProjectileConfig config = ProjectileConfig.getAssetMap().getAsset(configId);
         if (config == null || config.getLaunchForce() <= 0) {
@@ -174,14 +178,21 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
         Ref<EntityStore> ref = ProjectileModule.get().spawnProjectile(thrower, commandBuffer, config, start, direction,
                 1.0f, multiplier);
         // The projectile exists once the buffer runs: its flight and its handlers go on it then.
-        commandBuffer.run(store -> attach(store, ref, flight, velocity));
+        commandBuffer.run(store -> attach(store, ref, flight, velocity, power));
     }
 
     private static void attach(@Nonnull Store<EntityStore> store, @Nonnull Ref<EntityStore> ref,
-                               @Nonnull DieFlight flight, @Nonnull Vector3d velocity) {
+                               @Nonnull DieFlight flight, @Nonnull Vector3d velocity, double power) {
         if (!ref.isValid()) {
             DieFlightSystems.lose(flight, store);
             return;
+        }
+        // Before the die is first sent, so no player ever sees it with the wrong trail.
+        ModelComponent drawn = store.getComponent(ref, ModelComponent.getComponentType());
+        String trail = ThrowFeel.trail(power);
+        if (drawn != null && trail != null) {
+            store.putComponent(ref, ModelComponent.getComponentType(),
+                    new ModelComponent(DiceShow.withTrail(drawn.getModel(), trail)));
         }
         StandardPhysicsProvider physics = store.getComponent(ref, StandardPhysicsProvider.getComponentType());
         TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());

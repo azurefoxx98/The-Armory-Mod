@@ -86,6 +86,13 @@ final class RigidFlight {
      * Set once the die lies still on a face, from which the dice still flying knock against it as a fixed body.
      */
     boolean landed;
+    /**
+     * Whether the die was in water after the last tick, whether that tick took it in, and how fast it was falling
+     * then, blocks per second: what the splash is made from.
+     */
+    boolean inWater;
+    boolean enteredWater;
+    double entrySpeed;
     private final Matrix3d turn = new Matrix3d();
 
     /**
@@ -107,7 +114,13 @@ final class RigidFlight {
     @Nonnull
     Status tick(@Nonnull DieWorld world, double dt, @Nonnull RandomGenerator rng) {
         ticks++;
+        double falling = Math.max(0.0, -body.velocity.y);
         DiePhysics.tick(body, hull, world, dt, SCRATCH.get(), report);
+        enteredWater = report.inWater && !inWater;
+        if (enteredWater) {
+            entrySpeed = falling;
+        }
+        inWater = report.inWater;
         boolean still = report.touching && body.velocity.length() < STILL_SPEED
                 && body.spin.angularVelocity.length() < STILL_SPIN;
         stillTicks = still ? stillTicks + 1 : 0;

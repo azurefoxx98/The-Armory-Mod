@@ -242,7 +242,7 @@ public final class DieFlightSystems {
             normal.normalize();
         }
         flight.motion.bounce(flight.spin, before, after, normal, flight.shape.radius(), ThreadLocalRandom.current());
-        DiceShow.bounce(flight.shape, position, Math.abs(before.dot(normal)), commandBuffer);
+        DiceShow.bounce(flight.shape, position, Math.abs(before.dot(normal)), false, commandBuffer);
     }
 
     /**
@@ -364,7 +364,15 @@ public final class DieFlightSystems {
         double struck = rigid.report.hardest;
         if (struck > CLACK_SPEED && flight.sinceClack >= CLACK_GAP) {
             flight.sinceClack = 0;
-            DiceShow.bounce(flight.shape, middle, struck, commandBuffer);
+            boolean answered = GroundFeel.strike(world, blocks, rigid.report.struckPoint, rigid.report.struckNormal,
+                    struck, commandBuffer, rng);
+            DiceShow.bounce(flight.shape, middle, struck, answered, commandBuffer);
+        }
+        if (rigid.enteredWater) {
+            GroundFeel.splash(blocks, middle, rigid.entrySpeed, commandBuffer, rng);
+        }
+        if (rigid.inWater && status == RigidFlight.Status.FLYING && flight.age % GroundFeel.BUBBLE_EVERY == 0) {
+            GroundFeel.bubbles(middle, commandBuffer);
         }
 
         if (status == RigidFlight.Status.FLYING) {

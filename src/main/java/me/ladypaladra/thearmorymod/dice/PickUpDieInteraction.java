@@ -14,6 +14,7 @@ import com.hypixel.hytale.server.core.inventory.container.SimpleItemContainer;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.SimpleInstantInteraction;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
@@ -23,10 +24,11 @@ import java.util.UUID;
 /**
  * Picks a landed die up with F: anyone may take any die.
  *
- * <p>The die is claimed and its removal scheduled before the item is given. Giving first would change the held item
- * while the chain still runs, which the engine treats as a swap and cancels, leaving the die on the ground as a
- * duplicate (measured on 0.7.4). Claiming in the same instant also stops two players pressing F in one tick from both
- * getting it. Taking either die of a D100 takes the pair.</p>
+ * <p>The die is claimed and its removal scheduled at once, and the item reaches the inventory when the die's flying
+ * copy reaches the hand (PickUpFlight). Giving it during the chain would change the held item while the chain still
+ * runs, which the engine treats as a swap and cancels, leaving the die on the ground as a duplicate (measured on
+ * 0.7.4). Claiming in the same instant also stops two players pressing F in one tick from both getting it. Taking
+ * either die of a D100 takes the pair.</p>
  */
 public final class PickUpDieInteraction extends SimpleInstantInteraction {
 
@@ -51,24 +53,41 @@ public final class PickUpDieInteraction extends SimpleInstantInteraction {
             @Nonnull InteractionContext context,
             @Nonnull CooldownHandler cooldownHandler
     ) {
-        context.getState().state = InteractionState.Finished;
         CommandBuffer<EntityStore> commandBuffer = context.getCommandBuffer();
         Ref<EntityStore> target = context.getTargetEntity();
-        if (commandBuffer == null || target == null || !target.isValid()) {
-            context.getState().state = InteractionState.Failed;
-            return;
+        boolean taken = commandBuffer != null && target != null
+                && take(context.getEntity(), target, commandBuffer);
+        context.getState().state = taken ? InteractionState.Finished : InteractionState.Failed;
+    }
+
+    /**
+     * {@code player} takes the landed die {@code target}, and with it the other die of a D100. The die is claimed and
+     * leaves the ground at once; a copy flies it into the hand and hands it over on arrival. Without a copy (no model
+     * to copy) it is given on the spot and heard where it lay.
+     *
+     * @return false when there is no die to take: not a landed die, or already claimed
+     */
+    static boolean take(@Nonnull Ref<EntityStore> player, @Nonnull Ref<EntityStore> target,
+                        @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        if (!target.isValid()) {
+            return false;
         }
         LandedDie die = commandBuffer.getComponent(target, DiceModule.landedType());
         if (die == null || die.item() == null || !die.claim()) {
-            context.getState().state = InteractionState.Failed;
-            return;
+            return false;
         }
 
+        PlayerRef taker = commandBuffer.getComponent(player, PlayerRef.getComponentType());
         UUID pair = die.pair();
         if (pair != null) {
             Ref<EntityStore> partner = LandedDieSystems.partner(pair, target);
             LandedDie other = partner != null ? commandBuffer.getComponent(partner, DiceModule.landedType()) : null;
             if (other != null && other.claim()) {
+                if (taker != null) {
+                    // The pair is one item, carried by the first die's copy: this one only shows the way.
+                    PickUpFlight.launch(partner, player, taker.getUuid(), PickUpFlight.colourOf(other), false, null,
+                            commandBuffer);
+                }
                 removeNextTick(partner, commandBuffer);
             } else if (partner == null) {
                 // The other die lies in an unloaded chunk: it is cleared when that chunk loads.
@@ -77,14 +96,18 @@ public final class PickUpDieInteraction extends SimpleInstantInteraction {
         }
 
         TransformComponent at = commandBuffer.getComponent(target, TransformComponent.getComponentType());
+        boolean flies = taker != null && PickUpFlight.launch(target, player, taker.getUuid(),
+                PickUpFlight.colourOf(die), true, die.item(), commandBuffer);
         removeNextTick(target, commandBuffer);
 
-        Ref<EntityStore> player = context.getEntity();
-        var inventory = InventoryComponent.getCombined(commandBuffer, player, InventoryComponent.HOTBAR_STORAGE_BACKPACK);
-        SimpleItemContainer.addOrDropItemStack(commandBuffer, player, inventory, new ItemStack(die.item(), 1));
-        if (at != null) {
-            DiceShow.pickedUp(at.getPosition(), commandBuffer);
+        if (!flies) {
+            var inventory = InventoryComponent.getCombined(commandBuffer, player, InventoryComponent.HOTBAR_STORAGE_BACKPACK);
+            SimpleItemContainer.addOrDropItemStack(commandBuffer, player, inventory, new ItemStack(die.item(), 1));
+            if (at != null) {
+                DiceShow.pickedUp(at.getPosition(), commandBuffer);
+            }
         }
+        return true;
     }
 
     /**

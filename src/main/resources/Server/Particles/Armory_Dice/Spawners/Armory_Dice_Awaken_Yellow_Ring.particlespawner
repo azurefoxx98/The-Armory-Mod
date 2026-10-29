@@ -1,6 +1,6 @@
 {
   "RenderMode": "BlendAdd",
-  "ParticleRotationInfluence": "None",
+  "ParticleRotationInfluence": "Billboard",
   "LinearFiltering": true,
   "ParticleRotateWithSpawner": false,
   "ParticleLifeSpan": {
@@ -25,10 +25,6 @@
         "Opacity": 1.0,
         "Color": "#fffad6",
         "Rotation": {
-          "X": {
-            "Min": 90,
-            "Max": 90
-          },
           "Z": {
             "Min": 0,
             "Max": 0
@@ -52,10 +48,6 @@
         },
         "Opacity": 0.0,
         "Rotation": {
-          "X": {
-            "Min": 90,
-            "Max": 90
-          },
           "Z": {
             "Min": 60,
             "Max": 60
@@ -75,13 +67,7 @@
         }
       },
       "Opacity": 1.0,
-      "Color": "#f0ce3e",
-      "Rotation": {
-        "X": {
-          "Min": 90,
-          "Max": 90
-        }
-      }
+      "Color": "#f0ce3e"
     },
     "ScaleRatioConstraint": "OneToOne",
     "SoftParticles": "Disable"

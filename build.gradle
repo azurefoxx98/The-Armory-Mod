@@ -5,6 +5,9 @@ plugins {
     // from Hypixel's own repository, so the mod builds on any machine without the game installed,
     // and it writes manifest.json from gradle.properties. Every setting it reads is there.
     id 'com.azuredoom.hytale-tools' version '1.0.51'
+    // AzureDoom's publisher. It uploads a release to CurseForge with one command, see the
+    // hytalePublisher block below.
+    id 'com.azuredoom.hytalepublisher' version '1.1.13'
 }
 
 group = 'me.ladypaladra.thearmorymod'
@@ -320,6 +323,55 @@ def studioCodeJar = tasks.register('studioCodeJar', Jar) {
 
 tasks.named('build') {
     dependsOn studioCodeJar
+}
+
+// Uploading a release to CurseForge: gradlew publishToCurseForge -PcurseforgeChangelog=<notes file>
+//
+// The API token is read from the CURSE_KEY environment variable or from curseKey in key.properties
+// beside this file. key.properties is ignored by git, so the token never reaches this public
+// repository. GitHub releases stay with Studio/Tools/release.ps1, so only CurseForge is enabled.
+//
+// The publisher always uploads build/libs/<name>-<version>.jar, which is the plain jar, and every
+// release must hand out the smaller releaseJar output instead. stageCurseForgeJar copies the release
+// jar into a folder of its own laid out the way the publisher expects, and the upload is pointed
+// there. The publisher also writes an empty changelog when the file is missing and uploads it, so
+// the upload refuses to start without real release notes.
+def curseforgeDirectory = layout.buildDirectory.dir('curseforge')
+def curseforgeName = 'The Armory'
+def curseforgeChangelog = providers.gradleProperty('curseforgeChangelog')
+
+hytalePublisher {
+    releaseType = 'release'
+    changelogFile = curseforgeChangelog.orElse('build/curseforge/changelog.md').get()
+    curseforge {
+        enabled = true
+        projectId = '1448501'
+    }
+}
+
+def stageCurseForgeJar = tasks.register('stageCurseForgeJar', Copy) {
+    dependsOn 'releaseJar'
+    from(releaseJarFile)
+    into(curseforgeDirectory.map { it.dir('libs') })
+    rename { "${curseforgeName}-${project.version}.jar" }
+}
+
+// The publisher registers its task in an afterEvaluate of its own and sets the name and folder in
+// that registration, which runs after any configureEach and overwrote them when tried. Configuring
+// the registered task from a later afterEvaluate is what makes these settings stick.
+afterEvaluate {
+  tasks.named('publishToCurseForge').configure {
+    dependsOn stageCurseForgeJar
+    projectName.set(curseforgeName)
+    buildDirectory.set(curseforgeDirectory)
+    doFirst {
+        def notes = file(changelogFile.get())
+        def text = notes.isFile() ? notes.getText('UTF-8') : ''
+        if (text.replaceAll(/(?m)^#\s*Changelog\s*$/, '').trim().isEmpty()) {
+            throw new GradleException("No release notes in ${notes}. Pass -PcurseforgeChangelog=<file> holding them.")
+        }
+    }
+  }
 }
 
 tasks.named('test') {

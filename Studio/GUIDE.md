@@ -73,6 +73,7 @@ The same guide is in HyCreator: click ? at the top.
 
 ## See it in Hytale
 
+- On the USB key, click Set up once on each computer. Hytale then plays your work from the key until you click Done.
 - Start a world with The Armory turned on in its mods list.
 - A file you save in HyCreator changes in the running world. If an item still looks the same, take it off and put it on again, or rejoin the world.
 - To get an item in your world, click /give at the top of its page, then paste it in Hytale's chat.

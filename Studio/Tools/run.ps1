@@ -10,6 +10,8 @@
 #   -Task setup-report    what setup would move, so the panel can ask before anything moves
 #   -Task setup           setup, once she agreed (setup.ps1 -Yes)
 #
+# On her USB key both setup tasks run Studio\Key\play.ps1 instead, which links this computer's Hytale to the key.
+#
 # Any other argument is passed on to the task's script. Only tests use that.
 #
 # Each task runs as a process of its own, so a task that stops in any way still leaves its result here. One task runs
@@ -68,10 +70,8 @@ foreach ($other in Get-ChildItem -LiteralPath $runs -Filter '*.json' -File) {
 }
 Save-Result
 
-# The USB key sets up its own copy. Its checks wait only for Hytale's files, which the key copies from her computer.
-if ($env:ARMORY_KEY -and $Task -like 'setup*') {
-    Stop-Run "This copy is on your USB key, which sets itself up. If the checks are missing, Hytale's files are not on the key yet. Plug the key into your own computer once, with Hytale installed, and it copies them."
-}
+# On the USB key, Set up links this computer's Hytale to the mod on the key. The key sets up everything else itself.
+if ($env:ARMORY_KEY -and $Task -like 'setup*') { $tasks[$Task] = '..\Key\play.ps1' }
 
 $arguments = New-Object System.Collections.Generic.List[string]
 switch ($Task) {

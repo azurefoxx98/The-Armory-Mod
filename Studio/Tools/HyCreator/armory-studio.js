@@ -1645,9 +1645,11 @@ export function parseGitConfig(text) {
   return out;
 }
 
-// none: setup never ran on this copy. nochecks: it ran, but the checks are missing. ready: everything is there.
+// none: setup never ran on this copy, or on the USB key, this computer's Hytale does not play the key yet.
+// nochecks: it ran, but the checks are missing. ready: everything is there. Setup on a computer always writes
+// where the game's mods are, and the key writes it only while it plays this computer's game.
 export function setupState(config) {
-  if (!config || !config.hooksPath) return 'none';
+  if (!config || !config.hooksPath || !config.mods) return 'none';
   return config.python ? 'ready' : 'nochecks';
 }
 
@@ -1975,7 +1977,8 @@ function StudioPanel() {
     const others = data && Array.isArray(data.others) ? data.others : [];
     if (others.length) {
       const ok = await api.ui.confirmDanger({ title: 'Move other copies of The Armory', confirmLabel: 'Move them',
-        body: 'Hytale can load only one copy of The Armory. These move to ' + data.setAside + ', where you can find them again. Nothing is deleted.',
+        body: 'Hytale can load only one copy of The Armory. These move to ' + data.setAside + ', where you can find them again. Nothing is deleted.'
+          + (data.back ? ' Done on the key puts them back.' : ''),
         items: others });
       if (!ok) { setNote('Set up stopped, and nothing was moved.'); return; }
     }
@@ -2251,6 +2254,7 @@ export const GUIDE = [
     'Do not use Bake all icons (batch): it remakes every icon of the mod.',
   ] },
   { title: 'See it in Hytale', steps: [
+    'On the USB key, click Set up once on each computer. Hytale then plays your work from the key until you click Done.',
     'Start a world with The Armory turned on in its mods list.',
     'A file you save in HyCreator changes in the running world. If an item still looks the same, take it off and put it on again, or rejoin the world.',
     'To get an item in your world, click /give at the top of its page, then paste it in Hytale\'s chat.',

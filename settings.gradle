@@ -1,1 +1,8 @@
+plugins {
+    // Lets Gradle download the Java it needs when the machine lacks it. AzureDoom's Hytale plugin
+    // runs inside Gradle itself and needs Java 25 there, which gradle/gradle-daemon-jvm.properties
+    // asks for, so a machine whose default Java is older still builds.
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
 rootProject.name = 'TheArmoryMod'

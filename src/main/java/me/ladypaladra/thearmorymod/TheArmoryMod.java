@@ -90,6 +90,8 @@ public class TheArmoryMod extends JavaPlugin {
     protected void shutdown() {
         LOGGER.atInfo().log("Shutting down...");
 
+        ArmoryStatsModule.unregister();
+
         ArmoryTelemetry.shutdown();
     }
 }

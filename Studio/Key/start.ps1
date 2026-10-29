@@ -10,9 +10,11 @@
 #   4. Rewrites the paths kept in plain files for the letter in use.
 #   5. Looks for Hytale on this computer and copies its files to the key, in the background, when the
 #      key has none or older ones.
-#   6. Shows the window and starts HyCreator. Its buttons start the programs and Get updates, with the
-#      key's Git. Her Update, Check and Release are buttons of The Armory panel inside HyCreator.
-#   7. Done: closes the programs normally, sends her committed work, removes the letter and ejects the key.
+#   6. On a computer where she clicked Set up once, links its Hytale to the mod on the key (key.ps1).
+#   7. Shows the window and starts HyCreator. Its buttons start the programs and Get updates, with the
+#      key's Git. Her Update, Check, Release and Set up are buttons of The Armory panel inside HyCreator.
+#   8. Done: closes the programs normally, sends her committed work, puts this computer's Hytale back as it
+#      was, removes the letter and ejects the key. An unplugged key puts Hytale back too.
 param(
     # The key's folder as this computer sees it.
     [Parameter(Mandatory)] [string] $Key
@@ -93,6 +95,8 @@ if (-not $letter) {
 $root = Get-KeyRoot $letter
 $elsewhere = $letter -ne $KeyMainLetter
 Set-KeyEnvironment $root
+# The key's folder by its own drive, for the link from this computer's game, which must not depend on the letter.
+$env:ARMORY_KEY_FOLDER = $Key
 # The window itself holds no folder of the key open, so the key can be ejected at Done.
 Set-Location -LiteralPath $env:SystemRoot
 
@@ -161,6 +165,25 @@ if ($pcGame -and (Test-PcGameNewer $pcGame $root)) {
         try { Copy-KeyGame $from $root $state } finally { $state.Finished = $true }
     }).AddArgument((Join-Path $PSScriptRoot 'key.ps1')).AddArgument($pcGame).AddArgument($root).AddArgument($state)
     $script:copy = @{ State = $state; Shell = $shell; Handle = $shell.BeginInvoke(); Reported = $false }
+}
+
+# 6. This computer's Hytale. After her yes here (Set up in The Armory panel), the key links the game to its mod
+# at every start. Elsewhere the key's copy forgets any earlier computer's game, so the panel offers Set up.
+# While Hytale is open its files are in use, so the link waits until it closes.
+$script:playWaiting = $false
+$script:playError = $null
+function Start-KeyPlay {
+    $script:playWaiting = $false
+    if (-not (Test-KeyComputerAllowed $root) -or -not (Test-Path -LiteralPath (Get-PcUserData))) { Clear-KeyGamePath $root; return }
+    if (Test-HytaleRunning) { $script:playWaiting = $true; return }
+    try { [void](Connect-KeyGame $root $Key); $script:playError = $null } catch { $script:playError = "$($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)" }
+}
+Start-KeyPlay
+
+# What the game plays now: the key's mod, or not, read from the computer itself, since Set up runs apart.
+function Test-KeyPlaying {
+    $target = Get-KeyLinkTarget (Join-Path (Get-PcUserData) 'Mods\TheArmory')
+    return ($target -and $target -ieq (Join-Path $Key 'The-Armory-Mod\src\main\resources'))
 }
 
 # ---- starting things ------------------------------------------------------------------------
@@ -244,6 +267,7 @@ $buttons.Done.Font = New-Object Drawing.Font('Segoe UI', 10, [Drawing.FontStyle]
 # ---- what the window says ------------------------------------------------------------------------
 
 $script:work = Get-KeyWork $root
+$script:playing = Test-KeyPlaying
 $script:online = Test-KeyOnline $root
 $script:lastWork = Get-Date
 $script:lastOnline = Get-Date
@@ -284,10 +308,24 @@ function Get-GameLines {
     return $lines
 }
 
+function Get-PlayLines {
+    if (-not (Test-Path -LiteralPath (Get-PcUserData))) { return @() }
+    if ($script:playing) { return @('Hytale plays The Armory from this key. Done puts this computer back as it was.') }
+    if ($script:playWaiting) { return @('Hytale is open. When you close it, the key links Hytale to your work.') }
+    if ($script:playError) {
+        return @('Hytale could not be linked to this key. Close Hytale, then click Set up in The Armory panel.', "For Larsonix: $($script:playError)")
+    }
+    return @('To play your work from this key, click Set up in The Armory panel in HyCreator.')
+}
+
 function Update-Window {
     if ($script:busy) { return }
     $now = Get-Date
-    if (($now - $script:lastWork).TotalSeconds -ge 10) { $script:work = Get-KeyWork $root; $script:lastWork = $now }
+    if (($now - $script:lastWork).TotalSeconds -ge 10) {
+        $script:work = Get-KeyWork $root; $script:lastWork = $now
+        $script:playing = Test-KeyPlaying
+        if ($script:playWaiting -and -not (Test-HytaleRunning)) { Start-KeyPlay; $script:playing = Test-KeyPlaying }
+    }
     if (($now - $script:lastOnline).TotalSeconds -ge 60) { $script:online = Test-KeyOnline $root; $script:lastOnline = $now }
     $lines = @()
     if ($elsewhere) {
@@ -295,6 +333,7 @@ function Update-Window {
         $lines += "Blockbench opens here without The Armory's tools."
     }
     $lines += Get-GameLines
+    $lines += Get-PlayLines
     $unsent = $script:work.Unsent
     if ($unsent -eq 1) { $lines += 'One commit is not on GitHub yet. Done sends it.' }
     elseif ($unsent -gt 1) { $lines += "$unsent commits are not on GitHub yet. Done sends them." }
@@ -377,6 +416,11 @@ function Invoke-Done {
         $answer = Show-Message "Some of your changes are not committed, so Done cannot send them.`n`nYes goes on, and they stay on this key. No lets you commit them first in HyCreator." 'YesNo'
         if ($answer -ne 'Yes') { return }
     }
+    # The game holds the key's files open while it runs, so it closes before the key leaves it.
+    if ((Test-KeyPlaying) -and (Test-HytaleRunning)) {
+        [void](Show-Message "Hytale is open, and it plays The Armory from this key.`n`nClose Hytale, then click Done again.")
+        return
+    }
     if ($script:copy -and -not $script:copy.State.Finished) {
         $answer = Show-Message "Hytale's files are still being copied.`n`nYes stops the copy, and it starts again the next time. No keeps the window open." 'YesNo'
         if ($answer -ne 'Yes') { return }
@@ -404,6 +448,11 @@ function Invoke-Done {
             if ($answer -ne 'Yes') { Set-Busy $false ''; return }
         }
     }
+    if (-not (Disconnect-KeyGame)) {
+        $answer = Show-Message "Hytale could not be put back as it was before the key. Close Hytale if it is open.`n`nYes ends anyway, and the next start of the key puts it back. No keeps the window open." 'YesNo'
+        if ($answer -ne 'Yes') { Set-Busy $false ''; return }
+    }
+    Clear-KeyGamePath $root
     if ($elsewhere) { Restore-KeyPages $root }
     Dismount-KeyLetter $letter $Key
     $drive = New-Object IO.DriveInfo $Key.Substring(0, 1)
@@ -425,15 +474,33 @@ function Invoke-Done {
 $script:closing = $false
 $form.Add_FormClosing({
     param($sender, $e)
-    # Windows closing or signing out closes the programs itself, and must not wait on this window.
-    if ($e.CloseReason -eq 'WindowsShutDown') { return }
+    # Windows closing or signing out closes the programs itself, and must not wait on this window. The game
+    # is put back first, so this computer never starts with a link to a key that may be gone.
+    if ($e.CloseReason -eq 'WindowsShutDown') { try { [void](Disconnect-KeyGame) } catch { }; return }
     if (-not $script:closing) { $e.Cancel = $true; Invoke-Safely { Invoke-Done } }
 })
 
 $timer = New-Object Windows.Forms.Timer
 $timer.Interval = 2000
+$script:unplugged = $false
 $timer.Add_Tick({
     Invoke-Safely {
+        # The key pulled out without Done. Nothing on it can run now, but the computer's record of the game
+        # can: the game is put back, and the window closes once it is, or waits while Hytale holds it.
+        if ($script:unplugged -or -not (Test-Path -LiteralPath $Key)) {
+            if (-not $script:unplugged) {
+                $script:unplugged = $true
+                $buttons.Values | ForEach-Object { $_.Enabled = $false }
+            }
+            if (Disconnect-KeyGame) {
+                $script:closing = $true
+                $timer.Stop()
+                $form.Close()
+            } else {
+                $status.Text = 'The key was unplugged. Close Hytale, and this computer goes back as it was.'
+            }
+            return
+        }
         Update-Window
         # Tests drive the window through a file, since no hand can click on a hidden desktop.
         if ($testing -and -not $script:busy) {

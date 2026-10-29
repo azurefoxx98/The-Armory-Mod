@@ -122,6 +122,21 @@ if ($fromMain -and -not $Report) {
     Write-Host "Your copy is now on your branch, $Branch."
 }
 
+# 1c. Her USB key links this computer's game to the mod on the key while it is plugged in, and Done on the key
+# puts it back. A key unplugged without Done leaves the game linked to nothing, so setup puts it back here,
+# from the record the key keeps on this computer.
+$keyRecord = Join-Path $UserData 'Armory set aside\key.json'
+if (Test-Path -LiteralPath $keyRecord) {
+    . (Join-Path $PSScriptRoot '..\Key\key.ps1')
+    $fromKey = Read-KeyJson $keyRecord
+    if ($fromKey -and $fromKey.key -and (Test-Path -LiteralPath $fromKey.key)) {
+        Stop-Setup 'Hytale plays The Armory from your USB key now. Click Done on the key first, then click Set up again.'
+    }
+    if (-not $Report -and -not (Disconnect-KeyGame $UserData)) {
+        Stop-Setup 'Close Hytale, then click Set up again.'
+    }
+}
+
 if (-not $Report) { New-Item -ItemType Directory -Force -Path $mods | Out-Null }
 $identity = Read-Identity $resources
 $ourLink = Join-Path $mods 'TheArmory'

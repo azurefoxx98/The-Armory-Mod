@@ -429,3 +429,223 @@ function Expand-KeyGradle([string] $root) {
     Remove-Item -LiteralPath $archive -Force
     return $true
 }
+
+# ---- this computer's Hytale playing the mod on the key -------------------------------------------
+#
+# Set up in The Armory panel (play.ps1) links this computer's Hytale to the mod on the key, the way setup.ps1
+# links it to her copy on her own computer. Any other copy of the mod moves aside meanwhile, because the game
+# shuts a world down when two packs share one name. Done puts everything back. So does an unplugged key,
+# through the window that still runs, the next start of the key, or Set up on her own computer. Everything
+# to put back is written on the computer, in the record below, so it can be put back once the key is gone.
+
+$KeyPlayAside = 'Armory set aside\While the key plays'
+$KeyPlayRecord = 'Armory set aside\key.json'
+
+# Where this computer's Hytale keeps its mods and worlds. Only tests point it elsewhere.
+function Get-PcUserData {
+    if ($env:ARMORY_KEY_TEST_USERDATA) { return $env:ARMORY_KEY_TEST_USERDATA }
+    $roaming = $env:ARMORY_PC_APPDATA
+    if (-not $roaming) { $roaming = $env:APPDATA }
+    return Join-Path $roaming 'Hytale\UserData'
+}
+
+# This computer and this Windows user, so a yes given on one computer never links the game of another.
+function Get-KeyComputerId {
+    $user = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    return "$env:COMPUTERNAME|$user"
+}
+
+function Test-KeyComputerAllowed([string] $root) {
+    $list = Read-KeyJson (Join-Path $root 'Key\computers.json')
+    return ($list -and @($list.computers) -contains (Get-KeyComputerId))
+}
+
+function Add-KeyComputer([string] $root) {
+    $path = Join-Path $root 'Key\computers.json'
+    $list = Read-KeyJson $path
+    $ids = @(); if ($list) { $ids = @($list.computers | Where-Object { $_ }) }
+    $id = Get-KeyComputerId
+    if ($ids -notcontains $id) { Write-KeyText $path (@{ computers = @($ids + $id) } | ConvertTo-Json) }
+}
+
+# The game's own name for a mod, Group and Name in its manifest.json, as setup.ps1 reads it.
+function Read-KeyModIdentity([string] $path) {
+    try {
+        $item = Get-Item -LiteralPath $path -Force
+        if ($item.PSIsContainer) {
+            $file = Join-Path $path 'manifest.json'
+            if (-not (Test-Path -LiteralPath $file)) { return $null }
+            $text = [IO.File]::ReadAllText($file)
+        } elseif ($item.Extension -in '.jar', '.zip') {
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            $zip = [IO.Compression.ZipFile]::OpenRead($item.FullName)
+            try {
+                $entry = $zip.GetEntry('manifest.json')
+                if (-not $entry) { return $null }
+                $reader = New-Object IO.StreamReader($entry.Open())
+                $text = $reader.ReadToEnd()
+                $reader.Close()
+            } finally { $zip.Dispose() }
+        } else {
+            return $null
+        }
+        $manifest = $text | ConvertFrom-Json
+        return "$($manifest.Group):$($manifest.Name)"
+    } catch { return $null }
+}
+
+# Where a link points, or nothing for a plain file or folder. It reads a link whose folder is gone too.
+function Get-KeyLinkTarget([string] $path) {
+    $item = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+    if (-not $item -or -not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $null }
+    return [string]($item.Target | Select-Object -First 1)
+}
+
+function Test-KeyExists([string] $path) { return [bool](Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue) }
+
+# The game holds the mod's files and its code open while it runs, so the link changes only while it is closed.
+function Test-HytaleRunning {
+    if ($env:ARMORY_KEY_TEST_HYTALE) { return $env:ARMORY_KEY_TEST_HYTALE -eq 'running' }
+    return [bool](Get-Process -Name 'HytaleClient' -ErrorAction SilentlyContinue)
+}
+
+# What linking this computer's game to the key needs: the game's folders, and every other copy of the mod in
+# them, in the shared mods folder and in each world's own. Returns nothing when this computer has no Hytale.
+function Get-KeyPlayPlan([string] $keyFolder, [string] $userData = (Get-PcUserData)) {
+    if (-not (Test-Path -LiteralPath $userData)) { return $null }
+    $mods = Join-Path $userData 'Mods'
+    $plan = [ordered]@{
+        UserData = $userData; Mods = $mods
+        Resources = Join-Path $keyFolder 'The-Armory-Mod\src\main\resources'
+        Link = Join-Path $mods 'TheArmory'; Jar = Join-Path $mods 'TheArmory-code.jar'
+        RecordPath = Join-Path $userData $KeyPlayRecord; Record = Read-KeyJson (Join-Path $userData $KeyPlayRecord)
+        Others = @()
+    }
+    $identity = Read-KeyModIdentity $plan.Resources
+    $folders = @(@($mods) | Where-Object { Test-Path -LiteralPath $_ })
+    $saves = Join-Path $userData 'Saves'
+    if (Test-Path -LiteralPath $saves) {
+        $folders += Get-ChildItem -LiteralPath $saves -Directory | ForEach-Object { Join-Path $_.FullName 'mods' } |
+            Where-Object { Test-Path -LiteralPath $_ }
+    }
+    foreach ($folder in $folders) {
+        foreach ($entry in Get-ChildItem -LiteralPath $folder -Force) {
+            if ($entry.FullName -ieq $plan.Jar) { continue }
+            if ($entry.FullName -ieq $plan.Link) {
+                $target = Get-KeyLinkTarget $plan.Link
+                # The key's own link: already right, or left by an earlier start of the key and replaced below.
+                if ($target -and ($target -ieq $plan.Resources -or ($plan.Record -and $target -ieq $plan.Record.target))) { continue }
+                # Anything else at the key's name has to move, or the link cannot be made.
+                $plan.Others += $entry.FullName
+                continue
+            }
+            if ($identity -and (Read-KeyModIdentity $entry.FullName) -eq $identity) { $plan.Others += $entry.FullName }
+        }
+    }
+    return $plan
+}
+
+function Save-KeyPlayRecord($plan, $record) {
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $plan.RecordPath) | Out-Null
+    Write-KeyText $plan.RecordPath ($record | ConvertTo-Json -Depth 5)
+}
+
+# Links this computer's game to the key: the other copies aside, the computer's own code jar aside, the key's
+# code jar in, the link to the key's mod. The record is written before each step, so a key unplugged halfway
+# still leaves everything findable. Returns the plan, with Done set when the link is in place.
+function Connect-KeyGame([string] $root, [string] $keyFolder, [string] $userData = (Get-PcUserData)) {
+    $plan = Get-KeyPlayPlan $keyFolder $userData
+    if (-not $plan) { return $null }
+    $record = $plan.Record
+    if (-not $record) { $record = [pscustomobject]@{ target = $null; key = $keyFolder; moved = @(); jar = $null; ourJar = $false } }
+    $record.key = $keyFolder
+    $aside = Join-Path $plan.UserData $KeyPlayAside
+    foreach ($path in $plan.Others) {
+        $parent = Split-Path -Parent $path
+        $from = if ($parent -ieq $plan.Mods) { 'Mods' } else { 'World ' + (Split-Path -Leaf (Split-Path -Parent $parent)) }
+        $place = Join-Path $aside ($from + ' - ' + (Split-Path -Leaf $path))
+        if (Test-KeyExists $place) { $place += ' (' + (Get-Date -Format 'yyyy-MM-dd HH-mm-ss') + ')' }
+        $record.moved = @($record.moved) + [pscustomobject]@{ from = $path; to = $place }
+        Save-KeyPlayRecord $plan $record
+        New-Item -ItemType Directory -Force -Path $aside | Out-Null
+        Move-Item -LiteralPath $path -Destination $place
+    }
+    # The code jar has one fixed name, so the computer's own is kept aside once and comes back at the end.
+    if (-not $record.ourJar) {
+        if (Test-KeyExists $plan.Jar) {
+            $record.jar = Join-Path $aside ('Mods - ' + (Split-Path -Leaf $plan.Jar))
+            Save-KeyPlayRecord $plan $record
+            New-Item -ItemType Directory -Force -Path $aside | Out-Null
+            Move-Item -LiteralPath $plan.Jar -Destination $record.jar -Force
+        }
+        $record.ourJar = $true
+        Save-KeyPlayRecord $plan $record
+    }
+    New-Item -ItemType Directory -Force -Path $plan.Mods | Out-Null
+    Copy-Item -LiteralPath (Join-Path $keyFolder 'The-Armory-Mod\Studio\Tools\TheArmory-code.jar') -Destination $plan.Jar -Force
+    if ((Get-KeyLinkTarget $plan.Link) -ine $plan.Resources) {
+        if (Test-KeyExists $plan.Link) { [IO.Directory]::Delete($plan.Link, $false) }
+        $record.target = $plan.Resources
+        Save-KeyPlayRecord $plan $record
+        New-Item -ItemType Junction -Path $plan.Link -Target $plan.Resources | Out-Null
+    }
+    $record.target = $plan.Resources
+    Save-KeyPlayRecord $plan $record
+    # The key's copy copies its code jar to the game after each update, as her own computer's copy does.
+    [void](Invoke-KeyGit $root @('config', '--file', (Join-Path $root 'The-Armory-Mod\.git\config'), 'armory.mods', $plan.Mods))
+    $plan.Record = $record
+    $plan.Done = $true
+    return $plan
+}
+
+# Puts this computer's game back as it was before the key: the key's link and code jar out, everything moved
+# aside back in its place. Needs only the record, so it works with the key gone. Returns $true when nothing is
+# left to put back. What cannot move yet (the game holds its code jar open) stays in the record for next time.
+function Disconnect-KeyGame([string] $userData = (Get-PcUserData)) {
+    $recordPath = Join-Path $userData $KeyPlayRecord
+    $record = Read-KeyJson $recordPath
+    if (-not $record) { return $true }
+    $mods = Join-Path $userData 'Mods'
+    $link = Join-Path $mods 'TheArmory'
+    $jar = Join-Path $mods 'TheArmory-code.jar'
+    $left = $false
+    $target = Get-KeyLinkTarget $link
+    if ($target -and $record.target -and $target -ieq $record.target) {
+        try { [IO.Directory]::Delete($link, $false) } catch { $left = $true }
+    }
+    if ($record.ourJar) {
+        try {
+            if (Test-KeyExists $jar) { Remove-Item -LiteralPath $jar -Force }
+            if ($record.jar -and (Test-KeyExists $record.jar)) { Move-Item -LiteralPath $record.jar -Destination $jar }
+            $record.ourJar = $false; $record.jar = $null
+        } catch { $left = $true }
+    }
+    $still = @()
+    foreach ($m in @($record.moved | Where-Object { $_ })) {
+        # Gone from aside, or its place taken again meanwhile (Set up on her own computer remakes its link):
+        # either way it stays where it is, in the set aside folder, and nothing is overwritten.
+        if (-not (Test-KeyExists $m.to) -or (Test-KeyExists $m.from)) { continue }
+        try {
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $m.from) | Out-Null
+            Move-Item -LiteralPath $m.to -Destination $m.from
+        } catch { $still += $m; $left = $true }
+    }
+    $record.moved = $still
+    if ($left) {
+        try { Write-KeyText $recordPath ($record | ConvertTo-Json -Depth 5) } catch { }
+        return $false
+    }
+    Remove-Item -LiteralPath $recordPath -Force -ErrorAction SilentlyContinue
+    $aside = Join-Path $userData $KeyPlayAside
+    if ((Test-Path -LiteralPath $aside) -and -not (Get-ChildItem -LiteralPath $aside -Force)) { Remove-Item -LiteralPath $aside -Force }
+    return $true
+}
+
+# The key's copy forgets this computer's game, so after Done or on another computer the panel shows Set up again.
+function Clear-KeyGamePath([string] $root) {
+    $repoConfig = Join-Path $root 'The-Armory-Mod\.git\config'
+    if (-not (Test-Path -LiteralPath $repoConfig)) { return }
+    if ((Invoke-KeyGit $root @('config', '--file', $repoConfig, '--get', 'armory.mods')).Text) {
+        [void](Invoke-KeyGit $root @('config', '--file', $repoConfig, '--unset-all', 'armory.mods'))
+    }
+}

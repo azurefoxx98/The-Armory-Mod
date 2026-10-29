@@ -1,10 +1,13 @@
 plugins {
     id 'java'
     id 'com.gradleup.shadow' version '8.3.0'
+    // AzureDoom's Hytale plugin, the build most Hytale mods share. It fetches the game's server
+    // from Hypixel's own repository, so the mod builds on any machine without the game installed,
+    // and it writes manifest.json from gradle.properties. Every setting it reads is there.
+    id 'com.azuredoom.hytale-tools' version '1.0.51'
 }
 
 group = 'me.ladypaladra.thearmorymod'
-version = '1.24.2'
 
 repositories {
     mavenCentral()
@@ -12,28 +15,30 @@ repositories {
     maven { url = uri('https://maven.hytalemodding.dev/releases') }
 }
 
-def serverJarPath = file('libs/HytaleServer.jar')
-def projectServerJar = file('server/HytaleServer.jar')
-def siblingServerJar = file('../server/HytaleServer.jar')
+hytaleTools {
+    // The plugin would otherwise shade its asset editor library into the jar. This mod never
+    // calls it, and verifyBundledRuntime below refuses a jar that carries it.
+    bundleAssetEditorRuntime = false
+}
 
-// One home for the engine jar. The four way cascade used to be written out once for the
-// compile classpath and would have had to be repeated for the test classpath, and copies
-// of one path are how they drift apart.
-def engineJar = [serverJarPath, projectServerJar, siblingServerJar].find { it.exists() }
-        ?: file('libs/HytaleServer.jar')
-
-dependencies {
-    compileOnly files(engineJar)
-
+configurations {
     // The engine belongs on the test classpath, and deliberately not as compileOnly.
     // ScribingSeal and ScribingWrite both work on ItemStack and BsonDocument, and both
     // types reach this project only through this jar. Without it the properties the sealed
     // inscription rests on cannot be asserted at all: that a seal survives a round trip,
     // that inscribing refuses a sealed item, and above all that writing an inscription
     // preserves every unrelated metadata key. Those were being carried on a code read.
-    // Nothing ships from here, shadowJar already excludes the com.hypixel group.
-    testImplementation files(engineJar)
+    // Nothing ships from here, shadowJar already excludes the com.hypixel group. The plugin
+    // puts the engine on compileOnly through its vineServerJar configuration, so the tests
+    // take the very same jar from there.
+    testImplementation.extendsFrom(vineServerJar)
 
+    // bundleAssetEditorRuntime only keeps the asset editor library out of the plain jar. The plugin
+    // still feeds it into implementation, where shadowJar would pick it up. Detach it entirely.
+    implementation.setExtendsFrom(implementation.extendsFrom - [hytaleBundledRuntime])
+}
+
+dependencies {
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
     implementation 'com.google.code.gson:gson:2.10.1'
     // The engine requires a whole vanilla asset to change one field, which left this mod
@@ -211,31 +216,6 @@ tasks.named('test') {
     // The package matters and the exception does not give it. The class is under
     // logger.backend, not logger.
     systemProperty 'java.util.logging.manager', 'com.hypixel.hytale.logger.backend.HytaleLogManager'
-}
-
-tasks.register('copyServerJar') {
-    doLast {
-        def destJar = file('libs/HytaleServer.jar')
-        if (!destJar.exists()) {
-            def sources = [file('server/HytaleServer.jar'), file('../server/HytaleServer.jar')]
-            def appData = System.getenv('APPDATA')
-            if (appData) {
-                sources.add(file("${appData}/Hytale/install/release/package/game/latest/Server/HytaleServer.jar"))
-            }
-            def sourceJar = sources.find { it.isFile() }
-            if (sourceJar == null) {
-                throw new GradleException('No Hytale server jar was found. Install the release channel or provide server/HytaleServer.jar.')
-            }
-            copy {
-                from sourceJar
-                into 'libs'
-            }
-        }
-    }
-}
-
-tasks.named('compileJava') {
-    dependsOn 'copyServerJar'
 }
 
 tasks.register('deployToServer', Copy) {

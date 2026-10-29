@@ -152,7 +152,7 @@ class FidgetClockTest {
 
     private static final FidgetClock.Fidget PASS = new FidgetClock.Fidget("Fidget_TwoHand_Pass", 3.0);
     private static final List<FidgetClock.Fidget> WITH_PASS = List.of(
-            new FidgetClock.Fidget("Fidget_Hop", 2.2), new FidgetClock.Fidget("Fidget_Roll", 2.7), PASS,
+            new FidgetClock.Fidget("Fidget_Hop", 2.2), new FidgetClock.Fidget("Fidget_Spin", 2.6), PASS,
             new FidgetClock.Fidget("Fidget_Toss", 2.0));
 
     @Test
@@ -194,7 +194,7 @@ class FidgetClockTest {
         clock.showcase(true);
         List<String> played = new ArrayList<>();
         run(clock, new SplittableRandom(11), 0, 30, DIE, WITH_PASS, true, true, false, played);
-        assertEquals(List.of("Fidget_Hop", "Fidget_Roll", "Fidget_Toss", "Fidget_Hop"), played.subList(0, 4));
+        assertEquals(List.of("Fidget_Hop", "Fidget_Spin", "Fidget_Toss", "Fidget_Hop"), played.subList(0, 4));
         List<String> all = new ArrayList<>();
         run(clock, new SplittableRandom(11), 30_000_000_000L, 30, DIE, WITH_PASS, true, true, true, all);
         assertTrue(all.contains(PASS.name()), all.toString());

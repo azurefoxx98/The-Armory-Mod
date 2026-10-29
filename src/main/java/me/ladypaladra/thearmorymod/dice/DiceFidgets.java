@@ -36,8 +36,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * The die's life in an idle hand. Standing still with a die, now and then a player tosses it, weighs it, spins it on
- * the palm, lifts it to read it, rolls it over the back of the hand or tosses it to the other hand and back (the
- * D100's pair has gestures of its own), seen by everyone near, the holder too. When is {@link FidgetClock}'s.
+ * the palm, lifts it to read it or tosses it to the other hand and back (the D100's pair has gestures of its own),
+ * seen by everyone near, the holder too. When is {@link FidgetClock}'s.
  *
  * <p>The fidgets are the held item's animation set's entries named {@value #PREFIX}, and how long each plays is read
  * from its clip, the way the engine times an interaction's animation. Each die turns about its own middle because its

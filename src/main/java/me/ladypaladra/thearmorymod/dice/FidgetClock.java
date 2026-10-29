@@ -23,6 +23,12 @@ final class FidgetClock {
     static final double MAX_WAIT = 24.0;
 
     /**
+     * The wait between fidgets in the showcase a tester turns on ({@code /dicefidgets}): every fidget in turn, one
+     * after another, so all of them can be judged in seconds.
+     */
+    static final double SHOWCASE_WAIT = 1.0;
+
+    /**
      * One fidget of the held item's animation set, and how long it plays.
      */
     record Fidget(@Nonnull String name, double seconds) {
@@ -37,6 +43,17 @@ final class FidgetClock {
     private String item;
     @Nullable
     private String last;
+    private boolean showcase;
+
+    /**
+     * Turns the showcase on or off. A change starts the wait again, so the new pace applies at once.
+     */
+    void showcase(boolean on) {
+        if (on != showcase) {
+            showcase = on;
+            calm = false;
+        }
+    }
 
     /**
      * Advances the clock to {@code now}.
@@ -69,15 +86,15 @@ final class FidgetClock {
         }
         if (!calm) {
             calm = true;
-            due = now + seconds(wait(rng));
+            due = now + seconds(showcase ? SHOWCASE_WAIT : wait(rng));
         }
         if (playing || now < due) {
             return Act.NONE;
         }
-        Fidget next = pick(fidgets, rng);
+        Fidget next = showcase ? following(fidgets) : pick(fidgets, rng);
         last = next.name();
         playingUntil = now + seconds(next.seconds());
-        due = playingUntil + seconds(wait(rng));
+        due = playingUntil + seconds(showcase ? SHOWCASE_WAIT : wait(rng));
         return Act.PLAY;
     }
 
@@ -110,6 +127,19 @@ final class FidgetClock {
             next = fidgets.get(rng.nextInt(fidgets.size()));
         } while (next.name().equals(last));
         return next;
+    }
+
+    /**
+     * The fidget after the one before, in the set's order, round and round: the showcase shows every one in turn.
+     */
+    @Nonnull
+    private Fidget following(@Nonnull List<Fidget> fidgets) {
+        for (int i = 0; i < fidgets.size(); i++) {
+            if (fidgets.get(i).name().equals(last)) {
+                return fidgets.get((i + 1) % fidgets.size());
+            }
+        }
+        return fidgets.get(0);
     }
 
     static double wait(@Nonnull RandomGenerator rng) {

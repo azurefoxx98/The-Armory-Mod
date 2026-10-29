@@ -95,6 +95,7 @@ public final class DiceModule {
         registry.registerSystem(new PickUpThroughPlants());
         registry.registerSystem(new DiceFidgets());
         registry.registerSystem(new DiceFidgets.Left());
+        plugin.getCommandRegistry().registerCommand(new DiceFidgetsCommand());
 
         try {
             catalog = DiceCatalog.load();

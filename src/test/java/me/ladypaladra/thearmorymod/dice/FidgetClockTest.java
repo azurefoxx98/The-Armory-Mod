@@ -119,6 +119,28 @@ class FidgetClockTest {
     }
 
     @Test
+    void theShowcasePlaysEveryFidgetInTurnASecondApart() {
+        FidgetClock clock = new FidgetClock();
+        clock.showcase(true);
+        List<String> played = new ArrayList<>();
+        List<double[]> acts = run(clock, new SplittableRandom(8), 0, 20, DIE, FIDGETS, true, true, played);
+        assertTrue(played.size() >= FIDGETS.size(), played.toString());
+        for (int i = 0; i < FIDGETS.size(); i++) {
+            assertEquals(FIDGETS.get(i).name(), played.get(i));
+        }
+        // The tick a die first appears in the hand counts as the item changing, so the wait starts one tick later.
+        assertTrue(acts.get(0)[0] <= FidgetClock.SHOWCASE_WAIT + TICK / 1e9 + 0.05, "first at " + acts.get(0)[0]);
+        for (int i = 1; i < acts.size(); i++) {
+            double gap = acts.get(i)[0] - acts.get(i - 1)[0] - FIDGETS.get((i - 1) % FIDGETS.size()).seconds();
+            assertTrue(Math.abs(gap - FidgetClock.SHOWCASE_WAIT) < 0.05, "a gap of " + gap + " s after the clip");
+        }
+        clock.showcase(false);
+        List<double[]> calm = run(clock, new SplittableRandom(8), 20_000_000_000L, 10, DIE, FIDGETS, true, true,
+                new ArrayList<>());
+        assertTrue(calm.isEmpty(), "turned off, the next fidget waits the usual 12 s at least");
+    }
+
+    @Test
     void aSetWithOneFidgetPlaysItEveryTime() {
         FidgetClock clock = new FidgetClock();
         List<FidgetClock.Fidget> one = List.of(new FidgetClock.Fidget("Fidget_Toss", 2.0));

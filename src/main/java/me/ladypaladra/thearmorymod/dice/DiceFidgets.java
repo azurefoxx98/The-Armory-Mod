@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -48,6 +49,20 @@ public final class DiceFidgets extends EntityTickingSystem<EntityStore> {
 
     private static final Map<UUID, FidgetClock> CLOCKS = new ConcurrentHashMap<>();
     private static final Map<String, List<FidgetClock.Fidget>> SETS = new ConcurrentHashMap<>();
+    private static final Set<UUID> SHOWCASE = ConcurrentHashMap.newKeySet();
+
+    /**
+     * Turns the showcase on or off for one player: every fidget in turn, a second apart.
+     *
+     * @return whether it is now on
+     */
+    static boolean toggleShowcase(@Nonnull UUID player) {
+        if (SHOWCASE.remove(player)) {
+            return false;
+        }
+        SHOWCASE.add(player);
+        return true;
+    }
 
     @Nonnull
     @Override
@@ -75,6 +90,7 @@ public final class DiceFidgets extends EntityTickingSystem<EntityStore> {
             clock = new FidgetClock();
             CLOCKS.put(id, clock);
         }
+        clock.showcase(SHOWCASE.contains(id));
         String set = die ? held.getItem().getPlayerAnimationsId() : null;
         List<FidgetClock.Fidget> fidgets = set == null ? List.of() : fidgets(set);
         InteractionManager interactions = commandBuffer.getComponent(ref,
@@ -169,6 +185,7 @@ public final class DiceFidgets extends EntityTickingSystem<EntityStore> {
             PlayerRef player = store.getComponent(ref, PlayerRef.getComponentType());
             if (player != null) {
                 CLOCKS.remove(player.getUuid());
+                SHOWCASE.remove(player.getUuid());
             }
         }
     }

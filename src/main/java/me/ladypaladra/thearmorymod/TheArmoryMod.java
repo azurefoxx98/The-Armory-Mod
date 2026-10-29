@@ -96,6 +96,8 @@ public class TheArmoryMod extends JavaPlugin {
         LOGGER.atInfo().log("Shutting down...");
         DiceModule.shutdown();
 
+        ArmoryStatsModule.unregister();
+
         ArmoryTelemetry.shutdown();
     }
 }

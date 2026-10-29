@@ -36,8 +36,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * The die's life in an idle hand. Standing still with a die, now and then a player tosses it, weighs it, spins it on
- * the palm or lifts it to read it (the D100's pair has gestures of its own), seen by everyone near, the holder too.
- * When is {@link FidgetClock}'s.
+ * the palm, lifts it to read it, rolls it over the back of the hand or tosses it to the other hand and back (the
+ * D100's pair has gestures of its own), seen by everyone near, the holder too. When is {@link FidgetClock}'s.
  *
  * <p>The fidgets are the held item's animation set's entries named {@value #PREFIX}, and how long each plays is read
  * from its clip, the way the engine times an interaction's animation. Each die turns about its own middle because its
@@ -96,8 +96,12 @@ public final class DiceFidgets extends EntityTickingSystem<EntityStore> {
         InteractionManager interactions = commandBuffer.getComponent(ref,
                 InteractionModule.get().getInteractionManagerComponent());
         boolean free = interactions == null || interactions.getChains().isEmpty();
+        // The off hand holds what its active utility slot holds, and the toss to the left hand needs it empty.
+        InventoryComponent.Utility utility = commandBuffer.getComponent(ref,
+                InventoryComponent.Utility.getComponentType());
+        boolean offHand = utility == null || ItemStack.isEmpty(utility.getActiveItem());
         FidgetClock.Act act = clock.tick(System.nanoTime(), die ? held.getItemId() : null, fidgets,
-                still(movement.getMovementStates()), free, ThreadLocalRandom.current());
+                still(movement.getMovementStates()), free, offHand, ThreadLocalRandom.current());
         switch (act) {
             case PLAY -> AnimationUtils.playAnimation(ref, AnimationSlot.Action, set, clock.chosen(), true,
                     commandBuffer);

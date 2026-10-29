@@ -16,6 +16,9 @@ import java.util.random.RandomGenerator;
  * <p>A fidget playing is stopped when the player moves or the hand changes item. It is never stopped when the hand
  * starts something else, such as a throw: that action plays its own animation in the same place and takes over, and a
  * stop sent then could cut that animation instead.</p>
+ *
+ * <p>A fidget that uses both hands, tossing the die to the left hand and back, plays only while the off hand holds
+ * nothing, and stops at once if something is put in it while it plays.</p>
  */
 final class FidgetClock {
 
@@ -29,9 +32,22 @@ final class FidgetClock {
     static final double SHOWCASE_WAIT = 1.0;
 
     /**
+     * The name every fidget that uses both hands starts with. The recipes name them so, and the animation set's entry
+     * is the only thing the server reads about a fidget besides its length.
+     */
+    static final String BOTH_HANDS = DiceFidgets.PREFIX + "TwoHand_";
+
+    /**
      * One fidget of the held item's animation set, and how long it plays.
      */
     record Fidget(@Nonnull String name, double seconds) {
+
+        /**
+         * Whether it uses the off hand too, and so needs it empty.
+         */
+        boolean bothHands() {
+            return name.startsWith(BOTH_HANDS);
+        }
     }
 
     enum Act { NONE, PLAY, STOP }
@@ -43,6 +59,7 @@ final class FidgetClock {
     private String item;
     @Nullable
     private String last;
+    private boolean lastBothHands;
     private boolean showcase;
 
     /**
@@ -62,11 +79,12 @@ final class FidgetClock {
      * @param fidgets  the held item's fidgets, empty when it has none
      * @param still    standing still on the ground
      * @param free     nothing else running for the hand
+     * @param offHand  the off hand holds nothing
      * @return what to do now. After {@link Act#PLAY}, {@link #chosen()} names the fidget
      */
     @Nonnull
     Act tick(long now, @Nullable String heldItem, @Nonnull List<Fidget> fidgets, boolean still, boolean free,
-             @Nonnull RandomGenerator rng) {
+             boolean offHand, @Nonnull RandomGenerator rng) {
         boolean playing = now < playingUntil;
         boolean switched = !Objects.equals(heldItem, item);
         item = heldItem;
@@ -74,7 +92,7 @@ final class FidgetClock {
             calm = false;
             return stop(playing);
         }
-        if (!still) {
+        if (!still || (playing && lastBothHands && !offHand)) {
             calm = false;
             return stop(playing);
         }
@@ -91,8 +109,13 @@ final class FidgetClock {
         if (playing || now < due) {
             return Act.NONE;
         }
-        Fidget next = showcase ? following(fidgets) : pick(fidgets, rng);
+        Fidget next = showcase ? following(fidgets, offHand) : pick(fidgets, offHand, rng);
+        if (next == null) {
+            // Every fidget needs the off hand and it is full: wait for it to empty.
+            return Act.NONE;
+        }
         last = next.name();
+        lastBothHands = next.bothHands();
         playingUntil = now + seconds(next.seconds());
         due = playingUntil + seconds(showcase ? SHOWCASE_WAIT : wait(rng));
         return Act.PLAY;
@@ -115,31 +138,41 @@ final class FidgetClock {
     }
 
     /**
-     * Any fidget but the one before, evenly. A set with only one plays it every time.
+     * Any fidget it may play now but the one before, evenly. When only one may play, it plays every time. When none
+     * may, null.
      */
-    @Nonnull
-    private Fidget pick(@Nonnull List<Fidget> fidgets, @Nonnull RandomGenerator rng) {
-        if (fidgets.size() == 1) {
-            return fidgets.get(0);
+    @Nullable
+    private Fidget pick(@Nonnull List<Fidget> fidgets, boolean offHand, @Nonnull RandomGenerator rng) {
+        List<Fidget> may = fidgets.stream().filter(f -> offHand || !f.bothHands()).toList();
+        if (may.size() <= 1) {
+            return may.isEmpty() ? null : may.get(0);
         }
         Fidget next;
         do {
-            next = fidgets.get(rng.nextInt(fidgets.size()));
+            next = may.get(rng.nextInt(may.size()));
         } while (next.name().equals(last));
         return next;
     }
 
     /**
-     * The fidget after the one before, in the set's order, round and round: the showcase shows every one in turn.
+     * The fidget after the one before, in the set's order, round and round, passing over any it may not play now:
+     * the showcase shows every one in turn. Null when none may play.
      */
-    @Nonnull
-    private Fidget following(@Nonnull List<Fidget> fidgets) {
+    @Nullable
+    private Fidget following(@Nonnull List<Fidget> fidgets, boolean offHand) {
+        int from = -1;
         for (int i = 0; i < fidgets.size(); i++) {
             if (fidgets.get(i).name().equals(last)) {
-                return fidgets.get((i + 1) % fidgets.size());
+                from = i;
             }
         }
-        return fidgets.get(0);
+        for (int step = 1; step <= fidgets.size(); step++) {
+            Fidget next = fidgets.get(Math.floorMod(from + step, fidgets.size()));
+            if (offHand || !next.bothHands()) {
+                return next;
+            }
+        }
+        return null;
     }
 
     static double wait(@Nonnull RandomGenerator rng) {

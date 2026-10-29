@@ -25,10 +25,10 @@ class FidgetClockTest {
      */
     private static List<double[]> run(FidgetClock clock, SplittableRandom rng, long start, double seconds,
                                       String item, List<FidgetClock.Fidget> fidgets, boolean still, boolean free,
-                                      List<String> played) {
+                                      boolean offHand, List<String> played) {
         List<double[]> acts = new ArrayList<>();
         for (long t = start; t < start + (long) (seconds * 1e9); t += TICK) {
-            FidgetClock.Act act = clock.tick(t, item, fidgets, still, free, rng);
+            FidgetClock.Act act = clock.tick(t, item, fidgets, still, free, offHand, rng);
             if (act != FidgetClock.Act.NONE) {
                 acts.add(new double[]{t / 1e9, act.ordinal()});
                 if (act == FidgetClock.Act.PLAY) {
@@ -44,7 +44,7 @@ class FidgetClockTest {
         for (int seed = 0; seed < 200; seed++) {
             FidgetClock clock = new FidgetClock();
             List<String> played = new ArrayList<>();
-            List<double[]> acts = run(clock, new SplittableRandom(seed), 0, 30, DIE, FIDGETS, true, true, played);
+            List<double[]> acts = run(clock, new SplittableRandom(seed), 0, 30, DIE, FIDGETS, true, true, true, played);
             double first = acts.get(0)[0];
             assertTrue(first >= FidgetClock.MIN_WAIT && first <= FidgetClock.MAX_WAIT + 0.05, "first at " + first);
             assertEquals(FidgetClock.Act.PLAY.ordinal(), (int) acts.get(0)[1]);
@@ -55,7 +55,7 @@ class FidgetClockTest {
     void fidgetsFollowEachOtherWithTheWaitBetweenAndNeverTheSameTwice() {
         FidgetClock clock = new FidgetClock();
         List<String> played = new ArrayList<>();
-        List<double[]> acts = run(clock, new SplittableRandom(7), 0, 3600, DIE, FIDGETS, true, true, played);
+        List<double[]> acts = run(clock, new SplittableRandom(7), 0, 3600, DIE, FIDGETS, true, true, true, played);
         assertTrue(played.size() > 100, played.size() + " fidgets in an hour");
         for (int i = 1; i < played.size(); i++) {
             assertNotEquals(played.get(i - 1), played.get(i), "the same fidget twice at " + i);
@@ -73,9 +73,9 @@ class FidgetClockTest {
             FidgetClock clock = new FidgetClock();
             SplittableRandom rng = new SplittableRandom(seed);
             List<String> played = new ArrayList<>();
-            run(clock, rng, 0, 10, DIE, FIDGETS, true, true, played);
-            run(clock, rng, 10_000_000_000L, 20, DIE, FIDGETS, false, true, played);
-            List<double[]> acts = run(clock, rng, 30_000_000_000L, 30, DIE, FIDGETS, true, true, played);
+            run(clock, rng, 0, 10, DIE, FIDGETS, true, true, true, played);
+            run(clock, rng, 10_000_000_000L, 20, DIE, FIDGETS, false, true, true, played);
+            List<double[]> acts = run(clock, rng, 30_000_000_000L, 30, DIE, FIDGETS, true, true, true, played);
             assertTrue(acts.get(0)[0] - 30 >= FidgetClock.MIN_WAIT, "a fidget " + (acts.get(0)[0] - 30)
                     + " s after stopping");
         }
@@ -86,11 +86,11 @@ class FidgetClockTest {
         FidgetClock clock = new FidgetClock();
         SplittableRandom rng = new SplittableRandom(3);
         List<String> played = new ArrayList<>();
-        List<double[]> acts = run(clock, rng, 0, 25, DIE, FIDGETS, true, true, played);
+        List<double[]> acts = run(clock, rng, 0, 25, DIE, FIDGETS, true, true, true, played);
         double started = acts.get(0)[0];
         long move = (long) ((started + 0.5) * 1e9);
-        assertEquals(FidgetClock.Act.STOP, clock.tick(move, DIE, FIDGETS, false, true, rng));
-        assertEquals(FidgetClock.Act.NONE, clock.tick(move + TICK, DIE, FIDGETS, false, true, rng));
+        assertEquals(FidgetClock.Act.STOP, clock.tick(move, DIE, FIDGETS, false, true, true, rng));
+        assertEquals(FidgetClock.Act.NONE, clock.tick(move + TICK, DIE, FIDGETS, false, true, true, rng));
     }
 
     @Test
@@ -98,11 +98,11 @@ class FidgetClockTest {
         FidgetClock clock = new FidgetClock();
         SplittableRandom rng = new SplittableRandom(4);
         List<String> played = new ArrayList<>();
-        List<double[]> acts = run(clock, rng, 0, 25, DIE, FIDGETS, true, true, played);
+        List<double[]> acts = run(clock, rng, 0, 25, DIE, FIDGETS, true, true, true, played);
         long next = (long) ((acts.get(0)[0] + 0.5) * 1e9);
-        assertEquals(FidgetClock.Act.STOP, clock.tick(next, "Weapon_Sword_Iron", List.of(), true, true, rng));
+        assertEquals(FidgetClock.Act.STOP, clock.tick(next, "Weapon_Sword_Iron", List.of(), true, true, true, rng));
         List<String> none = new ArrayList<>();
-        assertTrue(run(clock, rng, next + TICK, 120, "Weapon_Sword_Iron", List.of(), true, true, none).isEmpty());
+        assertTrue(run(clock, rng, next + TICK, 120, "Weapon_Sword_Iron", List.of(), true, true, true, none).isEmpty());
     }
 
     @Test
@@ -110,12 +110,12 @@ class FidgetClockTest {
         FidgetClock clock = new FidgetClock();
         SplittableRandom rng = new SplittableRandom(5);
         List<String> played = new ArrayList<>();
-        List<double[]> acts = run(clock, rng, 0, 25, DIE, FIDGETS, true, true, played);
+        List<double[]> acts = run(clock, rng, 0, 25, DIE, FIDGETS, true, true, true, played);
         long t = (long) ((acts.get(0)[0] + 0.3) * 1e9);
         // The throw is held, then the player walks off while the throw's animation still plays.
-        assertEquals(FidgetClock.Act.NONE, clock.tick(t, DIE, FIDGETS, true, false, rng));
-        assertEquals(FidgetClock.Act.NONE, clock.tick(t + TICK, DIE, FIDGETS, false, false, rng));
-        assertEquals(FidgetClock.Act.NONE, clock.tick(t + 2 * TICK, DIE, FIDGETS, false, true, rng));
+        assertEquals(FidgetClock.Act.NONE, clock.tick(t, DIE, FIDGETS, true, false, true, rng));
+        assertEquals(FidgetClock.Act.NONE, clock.tick(t + TICK, DIE, FIDGETS, false, false, true, rng));
+        assertEquals(FidgetClock.Act.NONE, clock.tick(t + 2 * TICK, DIE, FIDGETS, false, true, true, rng));
     }
 
     @Test
@@ -123,7 +123,7 @@ class FidgetClockTest {
         FidgetClock clock = new FidgetClock();
         clock.showcase(true);
         List<String> played = new ArrayList<>();
-        List<double[]> acts = run(clock, new SplittableRandom(8), 0, 20, DIE, FIDGETS, true, true, played);
+        List<double[]> acts = run(clock, new SplittableRandom(8), 0, 20, DIE, FIDGETS, true, true, true, played);
         assertTrue(played.size() >= FIDGETS.size(), played.toString());
         for (int i = 0; i < FIDGETS.size(); i++) {
             assertEquals(FIDGETS.get(i).name(), played.get(i));
@@ -136,7 +136,7 @@ class FidgetClockTest {
         }
         clock.showcase(false);
         List<double[]> calm = run(clock, new SplittableRandom(8), 20_000_000_000L, 10, DIE, FIDGETS, true, true,
-                new ArrayList<>());
+                true, new ArrayList<>());
         assertTrue(calm.isEmpty(), "turned off, the next fidget waits the usual 12 s at least");
     }
 
@@ -145,8 +145,58 @@ class FidgetClockTest {
         FidgetClock clock = new FidgetClock();
         List<FidgetClock.Fidget> one = List.of(new FidgetClock.Fidget("Fidget_Toss", 2.0));
         List<String> played = new ArrayList<>();
-        run(clock, new SplittableRandom(6), 0, 300, DIE, one, true, true, played);
+        run(clock, new SplittableRandom(6), 0, 300, DIE, one, true, true, true, played);
         assertFalse(played.isEmpty());
         assertTrue(played.stream().allMatch("Fidget_Toss"::equals));
+    }
+
+    private static final FidgetClock.Fidget PASS = new FidgetClock.Fidget("Fidget_TwoHand_Pass", 3.0);
+    private static final List<FidgetClock.Fidget> WITH_PASS = List.of(
+            new FidgetClock.Fidget("Fidget_Hop", 2.2), new FidgetClock.Fidget("Fidget_Roll", 2.7), PASS,
+            new FidgetClock.Fidget("Fidget_Toss", 2.0));
+
+    @Test
+    void theTossToTheOtherHandPlaysOnlyWhileTheOffHandIsEmpty() {
+        assertTrue(PASS.bothHands());
+        assertFalse(WITH_PASS.get(0).bothHands());
+        FidgetClock clock = new FidgetClock();
+        List<String> full = new ArrayList<>();
+        run(clock, new SplittableRandom(9), 0, 3600, DIE, WITH_PASS, true, true, false, full);
+        assertTrue(full.size() > 100, full.size() + " fidgets in an hour");
+        assertFalse(full.contains(PASS.name()), "tossed to a hand holding something");
+        List<String> empty = new ArrayList<>();
+        run(clock, new SplittableRandom(9), 3_600_000_000_000L, 3600, DIE, WITH_PASS, true, true, true, empty);
+        assertTrue(empty.contains(PASS.name()), "never tossed to the empty hand");
+    }
+
+    @Test
+    void puttingSomethingInTheOffHandStopsTheTossAtOnce() {
+        FidgetClock clock = new FidgetClock();
+        List<String> played = new ArrayList<>();
+        List<double[]> acts = run(clock, new SplittableRandom(10), 0, 30, DIE, List.of(PASS), true, true, true,
+                played);
+        assertEquals(PASS.name(), played.get(0));
+        long during = (long) ((acts.get(0)[0] + 1.0) * 1e9);
+        assertEquals(FidgetClock.Act.STOP, clock.tick(during, DIE, List.of(PASS), true, true, false,
+                new SplittableRandom(10)));
+        // A one-handed fidget playing is not stopped by the off hand filling.
+        FidgetClock other = new FidgetClock();
+        List<FidgetClock.Fidget> toss = List.of(new FidgetClock.Fidget("Fidget_Toss", 2.0));
+        List<double[]> tossed = run(other, new SplittableRandom(10), 0, 30, DIE, toss, true, true, true,
+                new ArrayList<>());
+        long mid = (long) ((tossed.get(0)[0] + 1.0) * 1e9);
+        assertEquals(FidgetClock.Act.NONE, other.tick(mid, DIE, toss, true, true, false, new SplittableRandom(10)));
+    }
+
+    @Test
+    void theShowcasePassesOverTheTossWhileTheOffHandIsFullAndKeepsItsOrder() {
+        FidgetClock clock = new FidgetClock();
+        clock.showcase(true);
+        List<String> played = new ArrayList<>();
+        run(clock, new SplittableRandom(11), 0, 30, DIE, WITH_PASS, true, true, false, played);
+        assertEquals(List.of("Fidget_Hop", "Fidget_Roll", "Fidget_Toss", "Fidget_Hop"), played.subList(0, 4));
+        List<String> all = new ArrayList<>();
+        run(clock, new SplittableRandom(11), 30_000_000_000L, 30, DIE, WITH_PASS, true, true, true, all);
+        assertTrue(all.contains(PASS.name()), all.toString());
     }
 }

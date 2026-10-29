@@ -51,7 +51,7 @@ final class DiceCharge {
     static final long STALE_NANOS = 400_000_000L;
 
     /**
-     * When each player last held a charge, for the stale check and for the idle fidgets, which wait after a throw.
+     * When each player last held a charge, for the stale check.
      */
     private static final Map<UUID, Long> LAST_HELD = new ConcurrentHashMap<>();
 
@@ -90,14 +90,6 @@ final class DiceCharge {
         if (commandBuffer != null) {
             set(context.getEntity(), 0.0f, commandBuffer);
         }
-    }
-
-    /**
-     * Seconds since the player last held a dice charge, or a very large number if never.
-     */
-    static double secondsSinceHeld(@Nonnull UUID player) {
-        Long at = LAST_HELD.get(player);
-        return at == null ? Double.MAX_VALUE : (System.nanoTime() - at) / 1.0E9;
     }
 
     /**

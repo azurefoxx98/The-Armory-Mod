@@ -91,7 +91,8 @@ public final class DiceModule {
         registry.registerSystem(new DiceCharge.Stale());
         registry.registerSystem(new DiceCharge.Joined());
         registry.registerSystem(new PickUpFlight.Fly());
-        registry.registerSystem(new DiceFidgets());
+        registry.registerSystem(new PickUpFlight.Ended());
+        registry.registerSystem(new PickUpThroughPlants());
 
         try {
             catalog = DiceCatalog.load();

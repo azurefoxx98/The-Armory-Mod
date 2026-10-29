@@ -84,20 +84,6 @@ class RollFeelTest {
     }
 
     @Test
-    void fidgetsComeAtRandomGapsAndAreMostlyRolls() {
-        SplittableRandom rng = new SplittableRandom(3);
-        int rolls = 0;
-        for (int i = 0; i < 10_000; i++) {
-            double gap = DiceFidgets.gap(rng);
-            assertTrue(gap >= DiceFidgets.MIN_GAP && gap <= DiceFidgets.MAX_GAP);
-            if (DiceFidgets.pick(rng).equals(DiceFidgets.ROLL)) {
-                rolls++;
-            }
-        }
-        assertTrue(rolls > 5600 && rolls < 6400, rolls + " rolls of 10000");
-    }
-
-    @Test
     void theHardestStrikeIsKeptWhereItTouched() throws Exception {
         DiceCatalog catalog = DiceCatalog.load();
         DieShape shape = catalog.shapes().get("D6");

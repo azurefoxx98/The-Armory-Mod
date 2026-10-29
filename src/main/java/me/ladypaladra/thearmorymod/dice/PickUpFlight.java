@@ -9,10 +9,14 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
+import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
+import com.hypixel.hytale.server.core.inventory.InventoryComponent;
+import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.inventory.container.SimpleItemContainer;
 import com.hypixel.hytale.server.core.modules.entity.component.Intangible;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
@@ -26,10 +30,13 @@ import java.util.UUID;
 
 /**
  * A picked-up die flying into its new owner's hand: a copy of the landed die that rises along a short arc to the hand,
- * turning and shrinking a little, and ends in a spark of the die's colour. The die itself is already in the
- * inventory; the copy only shows where it went, as the game's own picked-up items fly to the player.
+ * turning and shrinking a little, and ends in a spark of the die's colour. The copy carries the die: it goes into the
+ * inventory in the same tick as the spark and the pickup sound, the moment the copy leaves the screen, so a player
+ * never holds a die that is still in the air in front of them.
  *
- * <p>Nothing can touch the copy, and it is never saved.</p>
+ * <p>Nothing can touch the copy, and it is never saved, so the die it carries is written in the dice ledger until it
+ * arrives. A taker who leaves mid-flight, a copy the world removes, or a server stopping in between makes the die
+ * owed, and the taker gets it back on the spot or at their next login.</p>
  */
 public final class PickUpFlight implements Component<EntityStore> {
 
@@ -61,12 +68,24 @@ public final class PickUpFlight implements Component<EntityStore> {
      * Whether its arrival plays the pickup sound: a D100's pair flies as two copies and is heard once.
      */
     final boolean heard;
+    /**
+     * The item the copy delivers and its line in the ledger, or null for a copy that only shows the way: a D100's
+     * second die, whose pair arrives as one item on the first.
+     */
+    @Nullable
+    final String item;
+    @Nullable
+    final UUID delivery;
+    boolean delivered;
     int age;
     float shownScale = -1.0f;
 
     private PickUpFlight(@Nonnull UUID player, @Nonnull Vector3d start, float startYaw, @Nonnull String modelAsset,
-                         float scale, @Nonnull String colour, boolean heard) {
+                         float scale, @Nonnull String colour, boolean heard, @Nullable String item,
+                         @Nullable UUID delivery) {
         this.heard = heard;
+        this.item = item;
+        this.delivery = delivery;
         this.player = player;
         this.start = new Vector3d(start);
         this.startYaw = startYaw;
@@ -76,12 +95,14 @@ public final class PickUpFlight implements Component<EntityStore> {
     }
 
     /**
-     * Sends a copy of the landed die {@code die} flying to {@code player}'s hand.
+     * Sends a copy of the landed die {@code die} flying to {@code player}'s hand, carrying {@code item} when it is not
+     * null: the ledger holds it as in flight until the copy hands it over.
      *
-     * @return whether the copy is on its way; if not, the caller plays the pickup on the spot
+     * @return whether the copy is on its way; if not, the caller gives the die and plays the pickup on the spot
      */
     static boolean launch(@Nonnull Ref<EntityStore> die, @Nonnull Ref<EntityStore> playerRef, @Nonnull UUID player,
-                          @Nonnull String colour, boolean heard, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+                          @Nonnull String colour, boolean heard, @Nullable String item,
+                          @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         TransformComponent at = commandBuffer.getComponent(die, TransformComponent.getComponentType());
         ModelComponent drawn = commandBuffer.getComponent(die, ModelComponent.getComponentType());
         if (at == null || drawn == null || !playerRef.isValid()) {
@@ -96,10 +117,40 @@ public final class PickUpFlight implements Component<EntityStore> {
                 new NetworkId(commandBuffer.getExternalData().takeNextNetworkId()));
         holder.ensureComponent(Intangible.getComponentType());
         holder.ensureComponent(EntityStore.REGISTRY.getNonSerializedComponentType());
+        UUID delivery = item != null ? UUID.randomUUID() : null;
+        if (delivery != null) {
+            DiceModule.ledger().flying(delivery, player, item);
+        }
         holder.addComponent(DiceModule.pickUpType(), new PickUpFlight(player, at.getPosition(), at.getRotation().yaw(),
-                model.getModelAssetId(), model.getScale(), colour, heard));
+                model.getModelAssetId(), model.getScale(), colour, heard, item, delivery));
         commandBuffer.addEntity(holder, AddReason.SPAWN);
         return true;
+    }
+
+    /**
+     * Puts the carried die into the taker's inventory, or on the ground at their feet when it is full, and strikes it
+     * off the ledger. Once only.
+     */
+    private void deliver(@Nonnull Ref<EntityStore> player, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        if (delivered || item == null) {
+            return;
+        }
+        delivered = true;
+        var inventory = InventoryComponent.getCombined(commandBuffer, player, InventoryComponent.HOTBAR_STORAGE_BACKPACK);
+        SimpleItemContainer.addOrDropItemStack(commandBuffer, player, inventory, new ItemStack(item, 1));
+        if (delivery != null) {
+            DiceModule.ledger().landed(delivery);
+        }
+    }
+
+    /**
+     * The carried die did not arrive: the taker is owed it.
+     */
+    private void undelivered() {
+        if (!delivered && delivery != null) {
+            delivered = true;
+            DiceModule.ledger().lost(delivery);
+        }
     }
 
     @Nonnull
@@ -131,6 +182,7 @@ public final class PickUpFlight implements Component<EntityStore> {
             Ref<EntityStore> ref = chunk.getReferenceTo(index);
             Ref<EntityStore> player = store.getExternalData().getRefFromUUID(flight.player);
             if (player == null || !player.isValid()) {
+                flight.undelivered();
                 commandBuffer.tryRemoveEntity(ref, RemoveReason.REMOVE);
                 return;
             }
@@ -138,6 +190,7 @@ public final class PickUpFlight implements Component<EntityStore> {
             double t = Math.min(1.0, (double) flight.age / TICKS);
             Vector3d hand = DiceCharge.hand(player, commandBuffer);
             if (t >= 1.0) {
+                flight.deliver(player, commandBuffer);
                 DiceShow.particles(SPARK + flight.colour, hand, 1.0f, commandBuffer);
                 if (flight.heard) {
                     DiceShow.pickedUp(hand, commandBuffer);
@@ -155,6 +208,32 @@ public final class PickUpFlight implements Component<EntityStore> {
                     commandBuffer.putComponent(ref, ModelComponent.getComponentType(), new ModelComponent(model));
                 }
                 flight.shownScale = size;
+            }
+        }
+    }
+
+    /**
+     * A copy the world removes before it arrives (its chunk unloaded, the server stopping) leaves its die owed.
+     */
+    public static final class Ended extends RefSystem<EntityStore> {
+
+        @Nonnull
+        @Override
+        public Query<EntityStore> getQuery() {
+            return DiceModule.pickUpType();
+        }
+
+        @Override
+        public void onEntityAdded(@Nonnull Ref<EntityStore> ref, @Nonnull AddReason reason,
+                                  @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        }
+
+        @Override
+        public void onEntityRemove(@Nonnull Ref<EntityStore> ref, @Nonnull RemoveReason reason,
+                                   @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+            PickUpFlight flight = store.getComponent(ref, DiceModule.pickUpType());
+            if (flight != null) {
+                flight.undelivered();
             }
         }
     }

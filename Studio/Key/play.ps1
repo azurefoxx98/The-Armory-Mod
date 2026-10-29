@@ -15,8 +15,10 @@ $ErrorActionPreference = 'Stop'
 
 $root = $env:ARMORY_KEY
 $keyFolder = $env:ARMORY_KEY_FOLDER
+# A window started before this script arrived through Get updates gives no folder, and would not put the game back at
+# Done either, so the key starts again first.
 if (-not $root -or -not $keyFolder) {
-    Write-Host 'Close HyCreator, then start it again with Start The Armory.cmd on the key. Then click Set up again.'
+    Write-Host 'Click Done in the key''s window, then start the key again. Then click Set up again.'
     Write-Host "For Larsonix: ARMORY_KEY '$root', ARMORY_KEY_FOLDER '$keyFolder'"
     exit 1
 }

@@ -30,7 +30,9 @@ param(
     # whether the copy would move from main to her branch.
     [string] $Report = '',
     # Her branch, which a fresh copy on main is moved to.
-    [string] $Branch = 'lady'
+    [string] $Branch = 'lady',
+    # Install what the checks and a release need, and nothing else. Release uses it.
+    [switch] $ChecksOnly
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -40,10 +42,14 @@ $resources = Join-Path $repo 'src\main\resources'
 $mods = Join-Path $UserData 'Mods'
 $setAside = Join-Path $UserData 'Armory set aside'
 
+# What she reads about anything only we can fix. Stop-Setup sends it to us by itself.
+$told = 'Larsonix has been told, and you can keep working.'
+
 function Stop-Setup([string] $text, [string] $detail = '') {
     Write-Host ''
     Write-Host $text
     if ($detail) { Write-Host "For Larsonix: $detail" }
+    if ($text.Contains($told)) { & (Join-Path $PSScriptRoot 'update.ps1') -Report $text -Detail $detail }
     exit 1
 }
 
@@ -96,6 +102,53 @@ function Link-Target([string] $path) {
     return [string]($item.Target | Select-Object -First 1)
 }
 
+# The checks' Python: the official embeddable build from python.org, which needs no install and
+# changes nothing else on this computer. Its fingerprint is the one python.org publishes for it, so a
+# damaged or altered download is refused.
+function Install-Checks {
+    $pythonUrl = 'https://www.python.org/ftp/python/3.15.1/python-3.15.1-embed-amd64.zip'
+    $pythonSha256 = '352E232F25B5120508F11A6DFC1BD9076D3E70C30977D552A63338838C2AE8FB'
+    $python = Join-Path $PythonHome 'python.exe'
+    $checksReady = Test-Path -LiteralPath $python
+    if (-not $checksReady) {
+        $zip = $PythonZip
+        try {
+            if (-not $zip) {
+                $zip = Join-Path ([IO.Path]::GetTempPath()) 'TheArmory-python-3.15.1-embed-amd64.zip'
+                Write-Host 'Downloading the checks (14 MB)...'
+                $ProgressPreference = 'SilentlyContinue'
+                # Windows PowerShell 5.1 may still offer old encryption that python.org refuses.
+                [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+                Invoke-WebRequest -Uri $pythonUrl -OutFile $zip -UseBasicParsing
+            }
+            if ((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash -ne $pythonSha256) {
+                throw 'the download does not match its published checksum'
+            }
+            # Unpacked beside its place and moved in whole, so an interrupted run never leaves half of it.
+            $staging = "$PythonHome.partial"
+            if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
+            # A folder here with no python.exe in it is what an interrupted install left.
+            if (Test-Path -LiteralPath $PythonHome) { Remove-Item -LiteralPath $PythonHome -Recurse -Force }
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $PythonHome) | Out-Null
+            [IO.Compression.ZipFile]::ExtractToDirectory($zip, $staging)
+            Move-Item -LiteralPath $staging -Destination $PythonHome
+            $checksReady = Test-Path -LiteralPath $python
+        } catch {
+            Write-Host 'The checks could not be installed. Everything else is ready, and the next Set up adds them.'
+            & (Join-Path $PSScriptRoot 'update.ps1') -Report 'The checks could not be installed' $_.Exception.Message
+        } finally {
+            if (-not $PythonZip -and $zip -and (Test-Path -LiteralPath $zip)) { Remove-Item -LiteralPath $zip -Force }
+        }
+    }
+    if ($checksReady) { git -C $repo config armory.python ($python -replace '\\', '/') }
+    return $checksReady
+}
+
+if ($ChecksOnly) {
+    [void](Install-Checks)
+    exit 0
+}
+
 Write-Host 'Setting up The Armory on this computer.'
 Write-Host ''
 
@@ -104,7 +157,7 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Stop-Setup 'Git is not installed. Install it from https://git-scm.com/download/win with its default choices, then click Set up again.'
 }
 if (-not (Test-Path -LiteralPath (Join-Path $resources 'manifest.json')) -or -not (Test-Path -LiteralPath (Join-Path $repo '.git'))) {
-    Stop-Setup 'This folder is not a copy of the mod. Send Larsonix a screenshot.' $repo
+    Stop-Setup "This folder is not a copy of the mod. $told" $repo
 }
 if (-not (Test-Path -LiteralPath $UserData)) {
     Stop-Setup 'Hytale was not found. Start Hytale once, then click Set up again.' $UserData
@@ -114,12 +167,8 @@ if (-not (Test-Path -LiteralPath $UserData)) {
 $onBranch = (Invoke-GitQuiet @('rev-parse', '--abbrev-ref', 'HEAD')).Text
 $fromMain = $onBranch -eq 'main' -and (Invoke-GitQuiet @('rev-parse', '--verify', '--quiet', "origin/$Branch")).Code -eq 0
 if ($fromMain -and -not $Report) {
-    if ((Invoke-GitQuiet @('status', '--porcelain', '--untracked-files=no')).Text) {
-        Stop-Setup "Your copy has changes on main. Send Larsonix a screenshot of this window."
-    }
-    $switch = Invoke-GitQuiet @('switch', '-q', $Branch)
-    if ($switch.Code -ne 0) { Stop-Setup "Your copy could not be moved to your branch, $Branch. Send Larsonix a screenshot of this window." $switch.Text }
-    Write-Host "Your copy is now on your branch, $Branch."
+    # Update moves a copy to her branch and carries any work on it.
+    & (Join-Path $PSScriptRoot 'update.ps1') -NoPush -NoRefresh -Own $Branch
 }
 
 # 1c. Her USB key links this computer's game to the mod on the key while it is plugged in, and Done on the key
@@ -193,7 +242,13 @@ $current = Link-Target $ourLink
 if ($current -eq $resources) {
     Write-Host 'Hytale already loads The Armory from this copy.'
 } elseif (Test-Path -LiteralPath $ourLink) {
-    Stop-Setup "A folder named TheArmory is already in your mods folder: $ourLink. Rename it or move it away, then click Set up again."
+    # Something else holds the name the link needs. It moves aside like the old copies: nothing is deleted.
+    New-Item -ItemType Directory -Force -Path $setAside | Out-Null
+    $place = Join-Path $setAside ('Mods - TheArmory (' + (Get-Date -Format 'yyyy-MM-dd HH-mm-ss') + ')')
+    Move-Item -LiteralPath $ourLink -Destination $place
+    Write-Host "  Moved to $place"
+    New-Item -ItemType Junction -Path $ourLink -Target $resources | Out-Null
+    Write-Host 'Hytale now loads The Armory from this copy.'
 } else {
     New-Item -ItemType Junction -Path $ourLink -Target $resources | Out-Null
     Write-Host 'Hytale now loads The Armory from this copy.'
@@ -209,45 +264,9 @@ if (-not (Test-Path -LiteralPath $Plugins)) {
 & (Join-Path $PSScriptRoot 'sync.ps1')
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-# 6. The checks' Python: the official embeddable build from python.org, which needs no install and
-# changes nothing else on this computer. Its fingerprint is the one python.org publishes for it, so a
-# damaged or altered download is refused.
-$pythonUrl = 'https://www.python.org/ftp/python/3.15.1/python-3.15.1-embed-amd64.zip'
-$pythonSha256 = '352E232F25B5120508F11A6DFC1BD9076D3E70C30977D552A63338838C2AE8FB'
-$python = Join-Path $PythonHome 'python.exe'
-$checksReady = Test-Path -LiteralPath $python
-if (-not $checksReady) {
-    $zip = $PythonZip
-    try {
-        if (-not $zip) {
-            $zip = Join-Path ([IO.Path]::GetTempPath()) 'TheArmory-python-3.15.1-embed-amd64.zip'
-            Write-Host 'Downloading the checks (14 MB)...'
-            $ProgressPreference = 'SilentlyContinue'
-            # Windows PowerShell 5.1 may still offer old encryption that python.org refuses.
-            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-            Invoke-WebRequest -Uri $pythonUrl -OutFile $zip -UseBasicParsing
-        }
-        if ((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash -ne $pythonSha256) {
-            throw 'the download does not match its published checksum'
-        }
-        # Unpacked beside its place and moved in whole, so an interrupted run never leaves half of it.
-        $staging = "$PythonHome.partial"
-        if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
-        if (Test-Path -LiteralPath $PythonHome) { Stop-Setup "The checks could not be installed. Delete this folder, then click Set up again: $PythonHome" }
-        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $PythonHome) | Out-Null
-        [IO.Compression.ZipFile]::ExtractToDirectory($zip, $staging)
-        Move-Item -LiteralPath $staging -Destination $PythonHome
-        $checksReady = Test-Path -LiteralPath $python
-    } catch {
-        Write-Host 'The checks could not be installed. Everything else is ready. Click Set up again later to add them.'
-        Write-Host "For Larsonix: $($_.Exception.Message)"
-    } finally {
-        if (-not $PythonZip -and $zip -and (Test-Path -LiteralPath $zip)) { Remove-Item -LiteralPath $zip -Force }
-    }
-}
-if ($checksReady) {
-    git -C $repo config armory.python ($python -replace '\\', '/')
-    & $python (Join-Path $repo 'Studio\Tools\Checks\check.py') --spawn
+# 6. The checks.
+if (Install-Checks) {
+    & (Join-Path $PythonHome 'python.exe') (Join-Path $repo 'Studio\Tools\Checks\check.py') --spawn
     Write-Host 'The checks are installed. They run by themselves each time you commit.'
 }
 

@@ -9,6 +9,7 @@
 #   -Task release         -Version 1.2.3 -Choice draft|message|publish -NotesFile <file> [-MessageFile <file>]
 #   -Task setup-report    what setup would move, so the panel can ask before anything moves
 #   -Task setup           setup, once she agreed (setup.ps1 -Yes)
+#   -Task report          -Title <problem> -Detail <what happened>: tells us, through update.ps1 -Report
 #
 # On her USB key both setup tasks run Studio\Key\play.ps1 instead, which links this computer's Hytale to the key.
 #
@@ -24,14 +25,16 @@ param(
     [string] $Version = '',
     [string] $Choice = '',
     [string] $NotesFile = '',
-    [string] $MessageFile = ''
+    [string] $MessageFile = '',
+    [string] $Title = '',
+    [string] $Detail = ''
 )
 $ErrorActionPreference = 'Stop'
 $tools = $PSScriptRoot
 $runs = Join-Path $tools 'Runs'
 $tasks = @{
     'update' = 'update.ps1'; 'release-info' = 'release.ps1'; 'release' = 'release.ps1'
-    'setup-report' = 'setup.ps1'; 'setup' = 'setup.ps1'
+    'setup-report' = 'setup.ps1'; 'setup' = 'setup.ps1'; 'report' = 'update.ps1'
 }
 if (-not $tasks.ContainsKey($Task)) { Write-Host "run.ps1: no task named '$Task'. Tasks: $($tasks.Keys -join ', ')"; exit 2 }
 New-Item -ItemType Directory -Force -Path $runs | Out-Null
@@ -83,6 +86,7 @@ switch ($Task) {
     }
     'setup-report' { $arguments.AddRange([string[]]@('-Report', $dataFile)) }
     'setup' { $arguments.Add('-Yes') }
+    'report' { $arguments.AddRange([string[]]@('-Report', $Title, '-Detail', $Detail)) }
 }
 foreach ($a in $args) { $arguments.Add([string]$a) }
 if (Test-Path -LiteralPath $dataFile) { Remove-Item -LiteralPath $dataFile -Force }
@@ -104,7 +108,8 @@ $info.WorkingDirectory = (Resolve-Path (Join-Path $tools '..\..')).Path
 try {
     $process = [Diagnostics.Process]::Start($info)
 } catch {
-    Stop-Run "The task could not start. Send Larsonix a screenshot."
+    & (Join-Path $tools 'update.ps1') -Report "The task $Task could not start" $_.Exception.Message
+    Stop-Run "This could not start. Larsonix has been told, and you can keep working."
 }
 # Nothing a task asks can be answered here: an input that is closed makes any question end at once instead of waiting.
 $process.StandardInput.Close()
@@ -117,6 +122,10 @@ $process.WaitForExit()
 foreach ($line in ($errors.Result -split "`r?`n")) { if ($line.Trim()) { $result.lines.Add("For Larsonix: $($line.TrimEnd())") } }
 if (Test-Path -LiteralPath $dataFile) {
     try { $result.data = [IO.File]::ReadAllText($dataFile) | ConvertFrom-Json } catch { $result.data = $null }
+}
+# A task that broke on something its own lines never named still reaches us.
+if ($process.ExitCode -ne 0 -and $Task -ne 'report' -and $errors.Result.Trim()) {
+    & (Join-Path $tools 'update.ps1') -Report "The task $Task broke" $errors.Result.Trim()
 }
 $result.code = $process.ExitCode
 $result.state = if ($process.ExitCode -eq 0) { 'done' } else { 'failed' }

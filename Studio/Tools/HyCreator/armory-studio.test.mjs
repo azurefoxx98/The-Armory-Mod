@@ -294,7 +294,7 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
       { ...quality, items: [{ label: 'B', open: 'Item/Items/A/B.json' }] },
       { ...quality, items: [{ label: 'C', open: 'Item/Items/A/C.json' }] }] },
     { id: 'recipecheck', title: 'R', status: 'error', problems: [], output_tail: ['boom'], lady: [
-      { says: 'The check "R" could not run, so it says nothing about your work.', do: 'Send Larsonix a screenshot.', items: [], known: true, detail: 'boom' }] }] };
+      { says: 'The check "R" could not run, so it says nothing about your work.', do: 'This one is ours to fix, and you can keep working.', items: [], known: true, detail: 'boom' }] }] };
   const broke = { ...pass, finished: '2026-10-25T21:06:00+01:00', error: 'Hytale\'s files were not found. Start Hytale once, then commit again.', checks: [] };
   check('panel: a clean result is a pass', checkView(pass, null).state === 'pass' && checkView(pass, null).problems === 0);
   const v = checkView(fail, null);
@@ -363,7 +363,7 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
     { says: 'No icon.', do: 'Generate one.', key: 'game|icon|C', items: [{ label: 'C', open: 'Item/Items/Z/C.json' }] },
     { says: 'No name.', do: 'Add one.', key: 'game|name|B', items: [{ label: 'B', open: 'Item/Items/A/B.json' }], new: true },
     { says: 'Its stat X does not exist.', do: 'x', key: 'game|stat|B', owner: 'us', items: [{ label: 'B' }] },
-    { says: 'The check could not run.', do: 'Send a screenshot.', key: 'branch|run', items: [] }] }] };
+    { says: 'The check could not run.', do: 'This one is ours to fix, and you can keep working.', key: 'branch|run', items: [] }] }] };
   const bv = checkView(two, null, []);
   const li = ladyItems(bv.entries);
   const b = li.items.find(i => i.label === 'B');

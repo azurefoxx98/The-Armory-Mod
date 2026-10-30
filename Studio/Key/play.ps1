@@ -44,8 +44,9 @@ if (Test-HytaleRunning) {
 try {
     $done = Connect-KeyGame $root $keyFolder
 } catch {
-    Write-Host 'Hytale could not be linked to your key. Close Hytale, then click Set up again. If it happens again, send Larsonix a screenshot.'
+    Write-Host 'Hytale could not be linked to your key. Close Hytale, then click Set up again.'
     Write-Host "For Larsonix: $($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)"
+    & (Join-Path $PSScriptRoot '..\Tools\update.ps1') -Report 'The key could not link Hytale' "$($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)"
     exit 1
 }
 Add-KeyComputer $root

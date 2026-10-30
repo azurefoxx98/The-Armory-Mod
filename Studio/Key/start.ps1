@@ -23,9 +23,21 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 [Windows.Forms.Application]::EnableVisualStyles()
 $title = 'The Armory'
+# Reaches us by itself, through Update's report, and never waits or stops the window.
+function Send-KeyProblem([string] $text) {
+    try {
+        $info = New-Object Diagnostics.ProcessStartInfo
+        $info.FileName = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+        $update = Join-Path $Key 'The-Armory-Mod\Studio\Tools\update.ps1'
+        $info.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$update`" -Report `"The key: $($text -replace '"', '')`""
+        $info.UseShellExecute = $false; $info.CreateNoWindow = $true
+        [void][Diagnostics.Process]::Start($info)
+    } catch { }
+}
 # Anything unexpected is said in a window, since the console it would print in is hidden.
 trap {
-    [void][Windows.Forms.MessageBox]::Show("The Armory stopped on something unexpected. Send Larsonix a screenshot of this window.`n`nFor Larsonix: $($_.InvocationInfo.ScriptName):$($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)", $title)
+    Send-KeyProblem "The Armory stopped on something unexpected."
+    [void][Windows.Forms.MessageBox]::Show("The Armory stopped on something unexpected. Larsonix has been told, and you can keep working.`n`nFor Larsonix: $($_.InvocationInfo.ScriptName):$($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)", $title)
     exit 0
 }
 # The console of Start The Armory.cmd, hidden now that this runs. It stays open behind, and shows again
@@ -57,7 +69,8 @@ function Show-Message([string] $text, [string] $buttons = 'OK') {
 # her as the .NET error box, and on a hidden desktop it waits for a click that never comes.
 function Invoke-Safely([scriptblock] $block) {
     try { & $block } catch {
-        [void](Show-Message "The Armory stopped on something unexpected. Send Larsonix a screenshot of this window.`n`nFor Larsonix: $($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)")
+        Send-KeyProblem "The Armory stopped on something unexpected."
+        [void](Show-Message "The Armory stopped on something unexpected. Larsonix has been told, and you can keep working.`n`nFor Larsonix: $($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)")
     }
 }
 
@@ -75,7 +88,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $Key 'Programs\Python\python.exe')))
 if (-not (Test-Path -LiteralPath (Join-Path $Key 'The-Armory-Mod\.git'))) { $missing += 'your copy of the mod' }
 if ($missing.Count) {
     $names = if ($missing.Count -eq 1) { $missing[0] } else { ($missing[0..($missing.Count - 2)] -join ', ') + ' and ' + $missing[-1] }
-    [void](Show-Message "This key is not fully unzipped. Missing: $names.`n`nDelete the folder The Armory key from the key. Then unzip the zip onto the key again, and wait until Windows has finished.`n`nThe key needs at least 7 GB free: 2 GB for this, and 5 GB for Hytale's files later.`n`nIf it happens again, send Larsonix a screenshot of this window.")
+    [void](Show-Message "This key is not fully unzipped. Missing: $names.`n`nDelete the folder The Armory key from the key. Then unzip the zip onto the key again, and wait until Windows has finished.`n`nThe key needs at least 7 GB free: 2 GB for this, and 5 GB for Hytale's files later.`n`n")
     exit 0
 }
 
@@ -89,7 +102,8 @@ if (-not $mutex.WaitOne(0)) {
 # 2. The letter and the environment.
 $letter = Mount-KeyLetter $Key
 if (-not $letter) {
-    [void](Show-Message "The key could not get a drive letter on this computer. Send Larsonix a screenshot of this window.`n`nFor Larsonix: no free letter among $($KeyLetters -join ', ')")
+    Send-KeyProblem "The key could not get a drive letter on this computer."
+    [void](Show-Message "The key could not get a drive letter on this computer. Larsonix has been told, and you can keep working.`n`nFor Larsonix: no free letter among $($KeyLetters -join ', ')")
     exit 0
 }
 $root = Get-KeyRoot $letter
@@ -198,7 +212,8 @@ function Get-ProgramExe([string] $name) {
 function Open-Program([string] $name) {
     $exe = Get-ProgramExe $name
     if (-not $exe -or -not (Test-Path -LiteralPath $exe)) {
-        [void](Show-Message "$name is missing from this key. Send Larsonix a screenshot of this window.")
+        Send-KeyProblem "$name is missing from this key."
+        [void](Show-Message "$name is missing from this key. Larsonix has been told, and you can keep working.")
         return
     }
     $running = @(Get-KeyProcesses $root | Where-Object { $_.Path -ieq $exe -and $_.MainWindowHandle -ne 0 }) | Select-Object -First 1
@@ -281,10 +296,12 @@ function Get-GameLines {
         if ($s.Error -eq 'space') {
             $lines += "The key is too full for Hytale's files. They need $([math]::Ceiling($s.Total / 1GB) + 1) GB free."
         } elseif ($s.Error -eq 'fat32') {
-            $lines += "This USB key cannot hold Hytale's largest file, which is over 4 GB. Send Larsonix a screenshot of this window."
+            Send-KeyProblem "This USB key cannot hold Hytale's largest file, which is over 4 GB."
+            $lines += "This USB key cannot hold Hytale's largest file, which is over 4 GB. Larsonix has been told, and you can keep working."
             $lines += 'For Larsonix: the key is FAT32. Formatted as exFAT it would hold it.'
         } elseif ($s.Error) {
-            $lines += "Hytale's files could not be copied to the key. Send Larsonix a screenshot of this window."
+            Send-KeyProblem "Hytale's files could not be copied to the key."
+            $lines += "Hytale's files could not be copied to the key. Larsonix has been told, and you can keep working."
             $lines += "For Larsonix: $($s.Error)"
         } elseif (-not $s.Finished) {
             $percent = if ($s.Total -gt 0) { [math]::Floor(100 * $s.Done / $s.Total) } else { 0 }

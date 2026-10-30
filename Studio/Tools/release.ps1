@@ -74,11 +74,12 @@ function Stop-Release([string] $text, [string] $detail = '') {
     Write-Host ''
     Write-Host $text
     if ($detail) { Write-Host "For Larsonix: $detail" }
+    if ($text.Contains($send)) { & (Join-Path $PSScriptRoot 'update.ps1') -Report $text -Detail $detail }
     exit 1
 }
 
-# The one hand-off for anything she cannot fix herself.
-$send = 'Send Larsonix a screenshot.'
+# What she reads about anything only we can fix. Stop-Release sends it to us by itself.
+$send = 'Larsonix has been told, and you can keep working.'
 $downloadsAnnounced = $false
 
 function Get-Checked([string] $url, [string] $sha256, [string] $what) {
@@ -89,16 +90,17 @@ function Get-Checked([string] $url, [string] $sha256, [string] $what) {
     }
     $ProgressPreference = 'SilentlyContinue'
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-    try {
-        Invoke-WebRequest -Uri $url -OutFile $file -UseBasicParsing
-    } catch {
-        Stop-Release 'A download failed. Check your internet, then try again.' "$what, $($_.Exception.Message)"
-    }
-    if ((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ne $sha256) {
+    foreach ($try in 1..3) {
+        try {
+            Invoke-WebRequest -Uri $url -OutFile $file -UseBasicParsing
+        } catch {
+            if ($try -lt 3) { Start-Sleep -Seconds 5; continue }
+            Stop-Release 'A release needs the internet for its first download. Click Release once you are back online.' "$what, $($_.Exception.Message)"
+        }
+        if ((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -eq $sha256) { return $file }
         Remove-Item -LiteralPath $file -Force
-        Stop-Release 'A download arrived damaged, so it was refused. Try again later. If it happens again, send Larsonix a screenshot of this window.' "$what does not match its published checksum"
     }
-    return $file
+    Stop-Release "A download kept arriving damaged. $send" "$what does not match its published checksum"
 }
 
 # ---- what a release needs on this computer ----------------------------------------------------
@@ -106,7 +108,9 @@ function Get-Checked([string] $url, [string] $sha256, [string] $what) {
 function Install-Tools {
     $python = (Invoke-Git @('config', '--get', 'armory.python')).Out
     if (-not $python -or -not (Test-Path -LiteralPath $python)) {
-        Stop-Release 'The checks are not installed. Click Set up in The Armory panel first, then Release again.'
+        & (Join-Path $PSScriptRoot 'setup.ps1') -ChecksOnly
+        $python = (Invoke-Git @('config', '--get', 'armory.python')).Out
+        if (-not $python -or -not (Test-Path -LiteralPath $python)) { Stop-Release "The release tools could not be installed. $send" 'still missing after the install' }
     }
     $pythonHome = Split-Path -Parent $python
     $site = Join-Path $pythonHome 'Lib\site-packages'
@@ -147,7 +151,7 @@ function Install-Tools {
 
 function Read-ModVersion {
     $text = [IO.File]::ReadAllText((Join-Path $repo 'gradle.properties'))
-    if ($text -notmatch "(?m)^version\s*=\s*([0-9]+\.[0-9]+\.[0-9]+)\s*$") { Stop-Release "The mod's version was not found. $send" 'no version line in gradle.properties' }
+    if ($text -notmatch "(?m)^version\s*=\s*([0-9]+\.[0-9]+\.[0-9]+)\s*$") { Stop-Release "The mod's version was not found. $send" 'no version line found' }
     return $Matches[1]
 }
 
@@ -158,19 +162,20 @@ function Compare-Version([string] $a, [string] $b) {
     return 0
 }
 
-function Set-ModVersion([string] $old, [string] $new) {
+# Each file is set whatever version it holds: joining two sides can leave the three disagreeing.
+function Set-ModVersion([string] $new) {
+    $number = '[0-9]+\.[0-9]+\.[0-9]+'
     $files = @(
-        @{ Path = 'gradle.properties'; From = "= $old"; To = "= $new" },
-        @{ Path = 'src\main\resources\manifest.json'; From = "`"Version`": `"$old`""; To = "`"Version`": `"$new`"" },
-        @{ Path = '.hytale\project.json'; From = "`"version`": `"$old`""; To = "`"version`": `"$new`"" },
-        @{ Path = '.hytale\project.json'; From = "TheArmoryMod-$old.jar"; To = "TheArmoryMod-$new.jar" }
+        @{ Path = 'gradle.properties'; From = "(?m)^(version\s*=\s*)$number"; To = "`${1}$new" },
+        @{ Path = 'src\main\resources\manifest.json'; From = "(`"Version`":\s*`")$number(`")"; To = "`${1}$new`${2}" },
+        @{ Path = '.hytale\project.json'; From = "(`"version`":\s*`")$number(`")"; To = "`${1}$new`${2}" },
+        @{ Path = '.hytale\project.json'; From = "(TheArmoryMod-)$number(\.jar)"; To = "`${1}$new`${2}" }
     )
     foreach ($f in $files) {
         $path = Join-Path $repo $f.Path
         $text = [IO.File]::ReadAllText($path)
-        $count = ([regex]::Matches($text, [regex]::Escape($f.From))).Count
-        if ($count -ne 1) { Stop-Release "The mod's version could not be set. $send" "$($f.Path) does not hold its version where expected" }
-        [IO.File]::WriteAllText($path, $text.Replace($f.From, $f.To), (New-Object Text.UTF8Encoding $false))
+        if ([regex]::Matches($text, $f.From).Count -ne 1) { Stop-Release "The mod's version could not be set. $send" "$($f.Path) does not hold its version where expected" }
+        [IO.File]::WriteAllText($path, [regex]::Replace($text, $f.From, $f.To), (New-Object Text.UTF8Encoding $false))
     }
 }
 
@@ -237,13 +242,11 @@ if ($Info) {
 }
 
 Write-Host 'Making a release of The Armory.'
-if ($branch -eq $main -or $branch -eq 'HEAD' -or -not $branch) { Stop-Release "Releases are made from your branch. In HyCreator, click $(if ($branch) { $branch } else { 'the git button' }) at the top, then Branches..., then lady. Then click Release again." }
-if ((Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Out) { Stop-Release "Some of your changes are not committed. In HyCreator, click $branch at the top, then Commit changes... and commit them. Then click Release again." }
 
-if (-not $NoGitHub) {
-    & (Join-Path $PSScriptRoot 'update.ps1')
-    if ($LASTEXITCODE -ne 0) { exit 1 }
-}
+# Update commits her work, puts the copy on her branch and joins the latest, so a release holds all of it.
+if ($NoGitHub) { & (Join-Path $PSScriptRoot 'update.ps1') -NoPush -NoRefresh } else { & (Join-Path $PSScriptRoot 'update.ps1') }
+if ($LASTEXITCODE -ne 0) { exit 1 }
+$branch = (Invoke-Git @('rev-parse', '--abbrev-ref', 'HEAD')).Out
 [void](Invoke-Git @('fetch', '--tags', 'origin'))
 
 $versions = Get-Versions
@@ -268,8 +271,8 @@ if ($Choice -eq 'message') {
     if (-not $message) { Stop-Release 'Release stopped: the message was empty.' }
 }
 
-# Build. A draft made again for the same version finds the version set already.
-if ($current -ne $Version) { Set-ModVersion $current $Version }
+# Build.
+Set-ModVersion $Version
 try {
     if ($Jar) {
         $built = $Jar
@@ -299,7 +302,8 @@ try {
     }
 } catch {
     [void](Invoke-Git @('checkout', '--', 'gradle.properties', 'src/main/resources/manifest.json', '.hytale/project.json'))
-    Stop-Release "The release could not be built, so nothing was released. $send" $_.Exception.Message
+    $tail = if ($log -and (Test-Path -LiteralPath $log)) { (Get-Content -LiteralPath $log -Tail 25) -join "`n" } else { '' }
+    Stop-Release "The release could not be built, so nothing was released. $send" "$($_.Exception.Message)`n$tail"
 }
 Write-Host 'Built.'
 
@@ -325,7 +329,12 @@ if ($NoGitHub) {
 
 $refs = @("HEAD:$branch"); if ($Choice -eq 'publish') { $refs += "v$Version" }
 $push = Invoke-Git (@('push', 'origin') + $refs)
-if ($push.Code -ne 0) { Stop-Release "The release is built, but sending it to GitHub failed. $send" $push.Text }
+if ($push.Code -ne 0) {
+    # The tag goes too, so the next Release does not read this version as released already.
+    if ($Choice -eq 'publish') { [void](Invoke-Git @('tag', '-d', "v$Version")) }
+    if ((Invoke-Git @('fetch', 'origin')).Code -ne 0) { Stop-Release 'The release is built, but GitHub cannot be reached. Click Release once you are back online.' }
+    Stop-Release "The release is built, but GitHub did not take it. $send" $push.Text
+}
 $gh = Get-GitHub
 try {
 # The message goes in with the changelog when the draft is made: editing a draft afterwards makes
@@ -354,8 +363,8 @@ if ($Choice -eq 'publish') {
     try {
         [void](Invoke-RestMethod -Method Patch -Uri "$($gh.Api)/git/refs/heads/$main" -Headers $gh.Headers -Body $move -ContentType 'application/json')
     } catch {
-        Write-Host "The release is out, but one last step on GitHub failed. $send"
-        Write-Host "For Larsonix: $main was not moved to the release"
+        Write-Host "The release is out. One last step on GitHub failed. $send"
+        & (Join-Path $PSScriptRoot 'update.ps1') -Report 'A release did not move main' "$main was not moved to v$Version"
     }
 }
 } catch {

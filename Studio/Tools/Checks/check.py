@@ -16,7 +16,7 @@ comes first).
 The gates print for us, so their words never change here. Every line they print is translated
 below into what Lady reads: what is wrong in her words, and the one thing to change. Both places
 she reads checks in, the HyCreator panel and this script's own window, show that translation. A
-line no rule knows is shown whole, with the screenshot hand-off, never dropped.
+line no rule knows is shown whole, marked as ours, never dropped.
 
   python check.py            run every check, print the result, exit 1 when something is wrong
   python check.py --spawn    start a run in the background and return at once (the git hooks)
@@ -65,7 +65,7 @@ GATES = [
 ]
 
 # The one hand-off for anything she cannot fix herself.
-SEND = "Send Larsonix a screenshot."
+SEND = "This one is ours to fix, and you can keep working."
 
 # Files the mod's tools write whole from a list of their own. The HyCreator plugin warns before
 # one of them is edited (madeByTool in armory-studio.js), and its test fails when the two rules
@@ -475,7 +475,7 @@ def owner_of_card(check_id: str, e: dict) -> str:
     what the game check found."""
     if e.get("owner") in ("us", "mod"):
         return e["owner"]
-    if e["do"].startswith("Send Larsonix a screenshot"):
+    if e["do"].startswith(SEND):
         return "us"
     if GAME_DIR not in sys.path:
         sys.path.insert(0, GAME_DIR)
@@ -514,6 +514,17 @@ def run_gate(name: str, game: str) -> dict:
         status = "error"
     tail = [] if status == "pass" else output.strip().splitlines()[-12:]
     return {"status": status, "problems": problems, "seconds": seconds, "output_tail": tail}
+
+
+def tell_us(detail: str) -> None:
+    """Sends a stopped run to us through Update's report, and never waits for it or fails on it."""
+    try:
+        script = os.path.join(REPO, "Studio", "Tools", "update.ps1")
+        subprocess.Popen(["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script,
+                          "-Report", "The checks stopped", "-Detail", detail],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+    except OSError:
+        pass
 
 
 def lang_keys(text: str) -> set[str]:
@@ -584,7 +595,7 @@ def check_languages(own: list[str] | None, starts: list[str], why: str) -> dict:
             # A file deleted in HyCreator waits in its trash, which puts it back byte for byte.
             lady.append({"says": f"The language file {rel} is gone, so players see raw names.",
                          "do": "If you deleted it in HyCreator, click Workspace at the top left, then Trash (restore deleted)..., "
-                               "and click Restore. If not, send Larsonix a screenshot.",
+                               "and click Restore. If not, this one is ours to restore.",
                          "items": [], "line": problems[-1], "known": True})
             continue
         with open(here, encoding="utf-8-sig") as fh:
@@ -628,7 +639,7 @@ def check_generated(own: list[str] | None, starts: list[str], why: str) -> dict:
             problems.append(f"{rel} is made by a tool from {tool}, and this branch changed it. "
                             "The change is erased the next time the tool runs.")
             lady.append({"says": f"You changed a file our tools rewrite from {tool}, so the change will be lost.",
-                         "do": "Send Larsonix a screenshot, and say what should change.",
+                         "do": "Send Larsonix what should change.",
                          "items": [{"label": os.path.splitext(os.path.basename(rel))[0],
                                     "open": rel[len("Server/"):] if rel.startswith("Server/") else None}],
                          "line": problems[-1], "known": True})
@@ -1256,6 +1267,7 @@ def main(argv: list[str]) -> int:
                       "uncommitted": None, "python": sys.version.split()[0], "game": None, "checks": [],
                       "error": "The checks stopped on something unexpected. " + SEND,
                       "error_detail": f"{type(exc).__name__}: {exc}"}
+            tell_us(f"{type(exc).__name__}: {exc}")
         write_json(RESULT, result)
     finally:
         # Only this run's own marker is removed: a later run that started meanwhile keeps its own.

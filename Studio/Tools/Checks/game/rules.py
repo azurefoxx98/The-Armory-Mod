@@ -5,10 +5,14 @@
 from __future__ import annotations
 import json
 import re
+import sys
 from collections import Counter
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
 from model import Asset, Pair, leaves, map_keys, normal_path, present_paths, short, values_at
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from pairedmods import paired_mod_of_stat
 
 @dataclass
 class Finding:
@@ -54,6 +58,11 @@ def defining_files(findings: list[Finding], pair: Pair) -> list[Finding]:
 KIND_MIN_GROUP = 20
 KIND_PRESENT_SHARE = 0.95
 KIND_DEFAULT_SHARE = 0.05
+KIND_FAMILY_MIN = 5
+
+def _family(ident: str) -> str | None:
+    head, sep, _ = ident.lstrip('*').partition('_')
+    return head if sep and head else None
 KIND_EFFECTS = {('BlockType', 'ParticleColor', 'unset'): 'the world map draws it white', ('BlockType', 'BlockParticleSetId', 'unset'): 'nothing stepping on it or hitting it raises particles', ('BlockType', 'BlockSoundSetId', 'default'): 'it makes no sound when placed or broken', ('Item', 'Categories', 'unset'): 'it shows in no tab of the creative inventory', ('Item', 'PlayerAnimationsId', 'default'): "a player holds it in a pose the game's own items of that use never have", ('ResourceType', 'Icon', 'unset'): 'the crafting window shows an empty square for it'}
 
 def _shown_ingredient(pair: Pair) -> set[str]:
@@ -92,6 +101,7 @@ def _context_text(ctx: tuple) -> str:
 
 def like_its_kind(pair: Pair) -> list[Finding]:
     findings: list[Finding] = []
+    left: list[str] = []
     vrefs = pair.referrers(pair.vanilla)
     mrefs = pair.referrers(pair.modded)
     for kind_full in pair.modded.store_names.values():
@@ -109,6 +119,16 @@ def like_its_kind(pair: Pair) -> list[Finding]:
         defaults = pair.vanilla.defaults(kind)
         default_leaves = {p: v for p, v in defaults.items() if not isinstance(v, (dict, list))}
         stats_cache: dict[tuple, tuple[dict, dict]] = {}
+        families: dict[str, list[Asset]] = {}
+        for v in vanilla.values():
+            if _family(v.id):
+                families.setdefault(_family(v.id), []).append(v)
+
+        def family_agrees(a: Asset, does) -> list[Asset] | None:
+            fam = families.get(_family(a.id) or '', [])
+            if len(fam) < KIND_FAMILY_MIN:
+                return None
+            return fam if sum((1 for v in fam if does(v))) / len(fam) >= KIND_PRESENT_SHARE else None
 
         def stats(c: tuple) -> tuple[dict, dict]:
             if c not in stats_cache:
@@ -147,11 +167,20 @@ def like_its_kind(pair: Pair) -> list[Finding]:
             for p, why in sorted(missing.items()):
                 if len(why) != len(ctxs):
                     continue
+                fam = family_agrees(a, lambda v: p not in top_present(v.asset))
+                if fam:
+                    left.append(f"{a.id} sets no {p}, as {len(fam)} of the game's {_family(a.id)}_ {kind} assets do")
+                    continue
                 findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} sets no {p}, which the game's own {kind} assets of the same use set: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'unset', 'effect': effect(p, 'unset', a.id)}))
             for p, why in sorted(defaulted.items()):
                 if len(why) != len(ctxs):
                     continue
+                fam = family_agrees(a, lambda v: v.asset.get(p) == default_leaves[p])
+                if fam:
+                    left.append(f"{a.id} leaves {p} at {default_leaves[p]!r}, as {len(fam)} of the game's {_family(a.id)}_ {kind} assets do")
+                    continue
                 findings.append(Finding('like-its-kind', kind, a.id, a.path, f"{a.id} leaves {p} at the engine's default {default_leaves[p]!r}, which the game's own {kind} assets of the same use almost never hold: " + '; '.join(why) + '.', family=f'{kind}:{p}', detail={'field': p, 'form': 'default', 'effect': effect(p, 'default', a.id)}))
+    pair.notes['like-its-kind'] = left
     return findings
 SIBLING_MIN_FAMILY = 4
 SIBLING_PRESENT_SHARE = 0.9
@@ -187,6 +216,18 @@ def _lacks(members: list[Asset]) -> dict[str, dict[str, int]]:
             if p not in sets[a.id]:
                 out.setdefault(a.id, {})[p] = cnt
     return out
+LOOK_TWINS_MIN = 2
+
+def _look(pair: Pair, a: Asset) -> str | None:
+    m = a.asset.get('Model')
+    if isinstance(m, str) and m:
+        return m
+    bt = a.asset.get('BlockType')
+    if not isinstance(bt, dict):
+        b = pair.modded.store('BlockType').get(a.id)
+        bt = b.asset if b is not None else None
+    m = bt.get('CustomModel') if isinstance(bt, dict) else None
+    return m if isinstance(m, str) and m else None
 
 def like_its_siblings(pair: Pair) -> list[Finding]:
     families = _item_families(pair)
@@ -194,6 +235,22 @@ def like_its_siblings(pair: Pair) -> list[Finding]:
     for (name, _, _), members in families.items():
         whole_sets.setdefault(name, []).extend(members)
     findings: list[Finding] = []
+    items = pair.modded.store('Item')
+    wearers: dict[str, list[Asset]] = {}
+    for a in items.values():
+        look = _look(pair, a)
+        if look:
+            wearers.setdefault(look, []).append(a)
+    left: list[str] = []
+
+    def own_kind_agrees(lone: Asset, paths: list[str]) -> str | None:
+        look = _look(pair, lone)
+        twins = [a for a in wearers.get(look or '', []) if a.id != lone.id]
+        if any((p == 'ResourceTypes' or p.startswith('ResourceTypes.') for p in paths)) and look and (not twins):
+            return f'{lone.id} sets no ResourceTypes and no other item wears its model {look}: it has no colours'
+        if len(twins) >= LOOK_TWINS_MIN and all((not any((p in present_paths(t.asset) for p in paths)) for t in twins)):
+            return f"{lone.id} sets no {', '.join(paths)}, as all {len(twins)} other items wearing its model {look} do not"
+        return None
 
     def report(members: list[Asset], name: str, group: str, only: set[str] | None=None) -> None:
         n = len(members)
@@ -209,6 +266,10 @@ def like_its_siblings(pair: Pair) -> list[Finding]:
                 else:
                     groups.append((p, [p]))
             for parent, paths in groups + sorted(by_parent.items()):
+                why = own_kind_agrees(by_id[lone], paths)
+                if why:
+                    left.append(why)
+                    continue
                 cnt = min((missing[p] for p in paths))
                 if len(paths) == 1:
                     p = paths[0]
@@ -228,6 +289,7 @@ def like_its_siblings(pair: Pair) -> list[Finding]:
     for name, ids in sorted(small.items()):
         if len(whole_sets[name]) >= SIBLING_MIN_FAMILY:
             report(whole_sets[name], name, f"items of the set '{name}'", only=ids)
+    pair.notes['like-its-siblings'] = sorted(set(left))
     return findings
 SIBLING_VALUE_FIELDS = ('Armor.', 'MaxDurability', 'DurabilityLossOnHit', 'ItemLevel')
 
@@ -415,10 +477,14 @@ def reachable(pair: Pair) -> list[Finding]:
     for g, v in vanilla_items.items():
         if g in items and isinstance(items[g].asset.get('Model'), str):
             wearers.setdefault(items[g].asset['Model'], set()).add(g)
+    developer: list[str] = []
     for i, a in sorted(mod_items.items()):
         if a.asset.get('Armor') is None and a.asset.get('Weapon') is None:
             continue
         if i in reach:
+            continue
+        if a.asset.get('Quality') == 'Developer':
+            developer.append(i)
             continue
         if i.startswith('*') and a.parent in items:
             states += 1
@@ -438,7 +504,7 @@ def reachable(pair: Pair) -> list[Finding]:
                 detail = {'form': 'base outside', 'makers': [r.id for r in makers], 'base': base, 'name': family}
                 fact += f" Its base, the game's {base}, has a way in but does not carry {family}."
         findings.append(Finding('reachable', 'Item', i, a.path, fact, family=f"set:{a.asset.get('SubCategory') or '-'}", detail=detail))
-    unreachable_items = {f.id for f in findings}
+    unreachable_items = {f.id for f in findings} | set(developer)
     for r in recipes:
         outs = outputs(r)
         if not any((o in mod_items for o in outs)) or any((o in unreachable_items for o in outs)):
@@ -447,7 +513,7 @@ def reachable(pair: Pair) -> list[Finding]:
         if blocked:
             out = outs[0]
             findings.append(Finding('reachable', 'CraftingRecipe', r.id, items[out].path if out in items else '', f'{r.id} can never be made, so {out} cannot be crafted (it has another way in: {reach.get(out)}): ' + '; '.join(blocked) + '.', family=f"set:{items[out].asset.get('SubCategory') or '-'}" if out in items else '', detail={'form': 'recipe', 'output': out}))
-    pair.notes['reachable'] = [f"{states} item state(s) left to their item: a stack becomes a state only when an interaction or the mod's code switches it"] if states else []
+    pair.notes['reachable'] = ([f"{states} item state(s) left to their item: a stack becomes a state only when an interaction or the mod's code switches it"] if states else []) + ([f"{len(developer)} item(s) of the Developer quality with no way in, as the game's own: {', '.join(developer)}"] if developer else [])
     return findings
 ALTERATION_BENCH = 'ArmoryAlteration'
 
@@ -487,6 +553,7 @@ def names_resolve(pair: Pair) -> list[Finding]:
     for (form, kind, path), spec in pair.reference_paths.items():
         by_kind.setdefault(kind, []).append((form, path, spec))
     findings: list[Finding] = []
+    paired: dict[str, set[str]] = {}
     for kind, specs in sorted(by_kind.items()):
         base = pair.vanilla.store(kind)
         for a in snap.store(kind).values():
@@ -499,8 +566,12 @@ def names_resolve(pair: Pair) -> list[Finding]:
                 for n in names:
                     if n in spec['seen'] or any((n in ids[t] for t in spec['targets'])):
                         continue
+                    if 'EntityStatType' in spec['targets'] and paired_mod_of_stat(n):
+                        paired.setdefault(f"{paired_mod_of_stat(n)}'s {n}", set()).add(a.id)
+                        continue
                     where = ' or '.join(sorted(spec['targets']))
                     findings.append(Finding('names-resolve', kind, a.id, a.path, f"{a.id} names {n!r} {('as a key of' if form == 'key' else 'at')} {path}, where the game names a {where}; no {where} called {n!r} exists in the game as loaded with the mod.", family=f'{kind}:{path}', detail={'field': path, 'name': n, 'form': form}))
+    pair.notes['names-resolve'] = [f'{name}, named by {len(users)} asset(s): a stat of a mod this one is made to run beside (pairedmods.py)' for name, users in sorted(paired.items())]
     return findings
 _LOG_LINE = re.compile('\\[[0-9/ :]+\\s+(WARN|SEVERE|WARNING)\\]\\s+(.*)')
 _SHUTDOWN = re.compile('\\[HytaleServer\\] Shutdown triggered')
@@ -615,8 +686,13 @@ def common_files(pair: Pair) -> list[Finding]:
             if is_game(f) or not game:
                 continue
             replaced.add((f['pack'], f['name']))
-            same = hash_of.get((f['pack'], f['name'])) is not None and hash_of.get((f['pack'], f['name'])) == hash_of.get((game[0]['pack'], game[0]['name']))
-            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"The mod ships {f['name']} under the game's own file name, so it replaces the game's file everywhere the game uses it" + (', with identical bytes (no visible change)' if same else ", with different bytes (the game's own items or pages change too)") + '.', family='replaces a game file' + (' (identical)' if same else ''), detail={'field': 'replace', 'form': 'identical' if same else 'different', 'pack': f['pack'], 'effect': None if same else "the game's own items and pages using it change too"}))
+            if f.get('hash') and game[0].get('hash'):
+                same = f['hash'] == game[0]['hash']
+            else:
+                same = hash_of.get((f['pack'], f['name'])) is not None and hash_of.get((f['pack'], f['name'])) == hash_of.get((game[0]['pack'], game[0]['name']))
+            picture = not same and bool(f.get('picture')) and (f.get('picture') == game[0].get('picture'))
+            form = 'identical' if same else 'same picture' if picture else 'different'
+            findings.append(Finding('common-files', 'CommonFile', f['name'], f['name'], f"The mod ships {f['name']} under the game's own file name, so it replaces the game's file everywhere the game uses it" + {'identical': ', with identical bytes (no visible change)', 'same picture': ', with other bytes that hold the same picture (no visible change)', 'different': ", with different bytes (the game's own items or pages change too)"}[form] + '.', family='replaces a game file' + ('' if form == 'different' else f' ({form})'), detail={'field': 'replace', 'form': form, 'pack': f['pack'], 'hash': f.get('hash'), 'effect': "the game's own items and pages using it change too" if form == 'different' else None}))
     for group in data['sameBytes']:
         files = group['files']
         mine = [f for f in files if not is_game(f) and (f['pack'], f['name']) not in replaced]

@@ -20,7 +20,7 @@ The same guide is in HyCreator: click ? at the top.
 - When you finish, click lady at the top, then Commit changes... Write what you did in one line, then click Commit.
 - Then click lady at the top, then Push.
 - If Pull or Push says your branch has diverged, click Update in The Armory panel instead.
-- If Update says your work and ours changed the same files, send Larsonix a screenshot and keep working.
+- If you and Larsonix change the same file, yours is kept and he is told.
 - When The Armory panel says a new version is ready, save your work and click Reload.
 
 ## The checks
@@ -73,6 +73,7 @@ The same guide is in HyCreator: click ? at the top.
 
 ## See it in Hytale
 
+- On the USB key, click Set up once on each computer. Hytale then plays your work from the key until you click Done.
 - Start a world with The Armory turned on in its mods list.
 - A file you save in HyCreator changes in the running world. If an item still looks the same, take it off and put it on again, or rejoin the world.
 - To get an item in your world, click /give at the top of its page, then paste it in Hytale's chat.
@@ -117,4 +118,4 @@ The same guide is in HyCreator: click ? at the top.
 
 ## When something goes wrong
 
-- Send Larsonix a screenshot, and say what you did.
+- Our tools fix what they can, and Larsonix hears about the rest. You can keep working.

@@ -20,6 +20,30 @@
       -39
     ]
   },
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Ruined_Shield"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Ruined_Shield"
+    }
+  ],
   "SubCategory": "Praetorian Elite",
   "Categories": [ "ArmoryCategory.ArmoryShields", "Items.Weapons" ],
   "Recipe": {

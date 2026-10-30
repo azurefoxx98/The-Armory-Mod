@@ -12,6 +12,7 @@ import tempfile
 import zipfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from assetcheck import model_faces
+from pairedmods import paired_mod_of_stat
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODRES = os.environ.get('ARMORY_RESOURCES') or os.path.join(ROOT, 'The-Armory-Mod', 'src', 'main', 'resources')
 GAME = os.environ.get('ARMORY_GAME') or os.path.join(os.environ.get('APPDATA', ''), 'Hytale', 'install', 'release', 'package', 'game', 'latest')
@@ -149,7 +150,7 @@ def item_problems(doc: dict, tree: Tree, known: dict[str, set[str]]) -> list[str
         part = doc.get(block_name)
         mods = part.get('StatModifiers') if isinstance(part, dict) else None
         for stat in mods or {} if isinstance(mods, dict) else {}:
-            if stat not in known['stat']:
+            if stat not in known['stat'] and (not paired_mod_of_stat(stat)):
                 out.append(f'its {block_name} changes the stat {stat}, which does not exist')
     categories = doc.get('Categories')
     if isinstance(categories, list):

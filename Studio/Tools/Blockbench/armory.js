@@ -74,7 +74,7 @@
     // The export's top nodes, in its own order, matched to the model's top groups.
     const roots = Outliner.root.filter(n => (n instanceof Group || n instanceof Cube) && n.export);
     if (roots.length !== model.nodes.length) {
-      Blockbench.showMessageBox({ title: 'The Armory', message: 'The groups of this model could not be read, so nothing was saved. Send Larsonix a screenshot and the model.' });
+      Blockbench.showMessageBox({ title: 'The Armory', message: 'The groups of this model could not be read, so nothing was saved. Close this model, open it again, then try again.' });
       return;
     }
     if (!model.nodes.length) {

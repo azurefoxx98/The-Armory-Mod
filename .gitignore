@@ -32,3 +32,10 @@ Studio/Tools/Checks/*.tmp
 # What the buttons of The Armory's panel in HyCreator last did, for the same reason.
 Studio/Tools/Runs/
 __pycache__/
+
+# The CurseForge upload token for publishToCurseForge. It must never be committed. AzureDoom's
+# publisher appends this line itself when it is missing, so naming it here keeps that silent edit away.
+key.properties
+
+# The local server folder AzureDoom's runServer task creates.
+run/

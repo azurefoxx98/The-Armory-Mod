@@ -1,0 +1,165 @@
+{
+  "Parent": "Template_Armory_Dice",
+  "TranslationProperties": {
+    "Name": "server.items.Armory_Dice_D8.name"
+  },
+  "Quality": "Rare",
+  "Model": "Items/Armory_Dice/Armory_Dice_D8_Held.blockymodel",
+  "Texture": "Items/Armory_Dice/Armory_Dice_D8_Texture.png",
+  "Icon": "Icons/ItemsGenerated/Armory_Dice_D8.png",
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Rune_Shard",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Rock_Gem_Emerald",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Rock_Stone_Cobble",
+        "Quantity": 3
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Arcanebench",
+        "Type": "Crafting",
+        "Categories": [
+          "Arcane_Misc"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 2
+  },
+  "ItemAppearanceConditions": {
+    "Armory_Dice_Charge": [
+      {
+        "Condition": [
+          1,
+          39
+        ],
+        "Model": "Items/Armory_Dice/Armory_Dice_D8_Held_Lit.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_D8_Texture_Charge_1.png",
+        "Particles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Faint_Green",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            }
+          }
+        ],
+        "FirstPersonParticles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Faint_Green",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            },
+            "Scale": 0.7
+          }
+        ]
+      },
+      {
+        "Condition": [
+          40,
+          79
+        ],
+        "Model": "Items/Armory_Dice/Armory_Dice_D8_Held_Lit.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_D8_Texture_Charge_2.png",
+        "Particles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Gather_Green",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            }
+          }
+        ],
+        "FirstPersonParticles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Gather_Green",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            },
+            "Scale": 0.7
+          }
+        ]
+      },
+      {
+        "Condition": [
+          80,
+          99
+        ],
+        "Model": "Items/Armory_Dice/Armory_Dice_D8_Held_Lit.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_D8_Texture_Charge_3.png",
+        "Particles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Swirl_Green",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            }
+          }
+        ],
+        "FirstPersonParticles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Swirl_Green",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            },
+            "Scale": 0.7
+          }
+        ]
+      },
+      {
+        "Condition": [
+          100,
+          100
+        ],
+        "Model": "Items/Armory_Dice/Armory_Dice_D8_Held_Lit.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_D8_Texture.png",
+        "Particles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Full_Green",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            }
+          }
+        ],
+        "FirstPersonParticles": [
+          {
+            "SystemId": "Armory_Dice_Charge_Full_Green",
+            "TargetEntityPart": "PrimaryItem",
+            "PositionOffset": {
+              "X": 0,
+              "Y": 0.1,
+              "Z": 0
+            },
+            "Scale": 0.7
+          }
+        ]
+      }
+    ]
+  }
+}

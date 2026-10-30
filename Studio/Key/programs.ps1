@@ -26,6 +26,9 @@ function Stop-Programs([string] $text, [string] $detail = '') {
     Write-Host ''
     Write-Host $text
     if ($detail) { Write-Host "For Larsonix: $detail" }
+    if ($text.Contains('has been told')) {
+        try { & (Join-Path $Root 'The-Armory-Mod\Studio\Tools\update.ps1') -Report "The key: $text" -Detail $detail } catch { }
+    }
     if ($GetUpdates) { [void](Read-Host 'Press Enter to close this window') }
     exit 1
 }
@@ -35,7 +38,7 @@ function Read-ProgramList {
         $list = Read-KeyJson $place
         if ($list -and $list.programs) { return @($list.programs) }
     }
-    Stop-Programs 'The list of programs was not found on this key. Send Larsonix a screenshot of this window.' $Root
+    Stop-Programs 'The list of programs was not found on this key. Larsonix has been told, and you can keep working.' $Root
 }
 
 function Read-Installed {
@@ -67,7 +70,7 @@ function Get-ProgramFile($file, [string] $name) {
     }
     if ((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $file.sha256) {
         Remove-Item -LiteralPath $path -Force
-        Stop-Programs 'A download arrived damaged, so it was refused. Try again later. If it happens again, send Larsonix a screenshot of this window.' "$($file.url) does not match its published checksum"
+        Stop-Programs 'A download arrived damaged, so it was refused. Larsonix has been told, and you can keep working.' "$($file.url) does not match its published checksum"
     }
     return $path
 }
@@ -75,7 +78,7 @@ function Get-ProgramFile($file, [string] $name) {
 function Invoke-Quiet([string] $exe, [string[]] $arguments, [string] $what) {
     $ErrorActionPreference = 'Continue'
     $out = & $exe @arguments 2>&1
-    if ($LASTEXITCODE -ne 0) { Stop-Programs "$what could not be installed. Send Larsonix a screenshot of this window." (($out | Select-Object -Last 5) -join ' ') }
+    if ($LASTEXITCODE -ne 0) { Stop-Programs "$what could not be installed. Larsonix has been told, and you can keep working." (($out | Select-Object -Last 5) -join ' ') }
 }
 
 # Git's own first step after unpacking, which its self-extractor runs: it must run from Git's folder. Its
@@ -94,11 +97,11 @@ function Complete-PortableGit([string] $folder) {
         $info.EnvironmentVariables['HOME'] = $scratch
         $info.EnvironmentVariables['USERPROFILE'] = $scratch
         $process = [Diagnostics.Process]::Start($info)
-        if (-not $process.WaitForExit(300000)) { $process.Kill(); Stop-Programs 'Git could not be installed. Send Larsonix a screenshot of this window.' 'post-install.bat did not finish' }
+        if (-not $process.WaitForExit(300000)) { $process.Kill(); Stop-Programs 'Git could not be installed. Larsonix has been told, and you can keep working.' 'post-install.bat did not finish' }
     } finally {
         Remove-Item -LiteralPath $scratch -Recurse -Force -ErrorAction SilentlyContinue
     }
-    if (Test-Path -LiteralPath (Join-Path $folder 'post-install.bat')) { Stop-Programs 'Git could not be installed. Send Larsonix a screenshot of this window.' 'post-install.bat is still there' }
+    if (Test-Path -LiteralPath (Join-Path $folder 'post-install.bat')) { Stop-Programs 'Git could not be installed. Larsonix has been told, and you can keep working.' 'post-install.bat is still there' }
 }
 
 function Install-Program($program) {
@@ -143,10 +146,10 @@ function Install-Program($program) {
         'exe' {
             Copy-Item -LiteralPath $files[0] -Destination (Join-Path $new $program.exe)
         }
-        default { Stop-Programs "$name could not be installed. Send Larsonix a screenshot of this window." "unknown kind $($program.kind)" }
+        default { Stop-Programs "$name could not be installed. Larsonix has been told, and you can keep working." "unknown kind $($program.kind)" }
     }
     if ($program.exe -and -not (Test-Path -LiteralPath (Join-Path $new $program.exe))) {
-        Stop-Programs "$name could not be installed. Send Larsonix a screenshot of this window." "no $($program.exe) after unpacking"
+        Stop-Programs "$name could not be installed. Larsonix has been told, and you can keep working." "no $($program.exe) after unpacking"
     }
     if ($program.keep -and (Test-Path -LiteralPath (Join-Path $target $program.keep))) {
         Move-Item -LiteralPath (Join-Path $target $program.keep) -Destination (Join-Path $new $program.keep)

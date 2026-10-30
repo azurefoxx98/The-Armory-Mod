@@ -8,6 +8,8 @@ import math
 import os
 import struct
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pairedmods import paired_mod_of_stat
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.environ.get('ARMORY_RESOURCES') or os.path.join(ROOT, 'The-Armory-Mod', 'src', 'main', 'resources')
 ITEMS = os.path.join(MOD, 'Server', 'Item', 'Items')
@@ -177,6 +179,8 @@ def check_tooltip_names():
             if key in vanilla:
                 continue
             if kind == 'stat':
+                if paired_mod_of_stat(name):
+                    continue
                 if name not in hidden:
                     hidden[name] = stat_hidden(name, zf)
                 if hidden[name]:

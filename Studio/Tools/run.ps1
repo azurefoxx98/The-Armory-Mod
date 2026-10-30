@@ -9,6 +9,9 @@
 #   -Task release         -Version 1.2.3 -Choice draft|message|publish -NotesFile <file> [-MessageFile <file>]
 #   -Task setup-report    what setup would move, so the panel can ask before anything moves
 #   -Task setup           setup, once she agreed (setup.ps1 -Yes)
+#   -Task report          -Title <problem> -Detail <what happened>: tells us, through update.ps1 -Report
+#
+# On her USB key both setup tasks run Studio\Key\play.ps1 instead, which links this computer's Hytale to the key.
 #
 # Any other argument is passed on to the task's script. Only tests use that.
 #
@@ -22,14 +25,16 @@ param(
     [string] $Version = '',
     [string] $Choice = '',
     [string] $NotesFile = '',
-    [string] $MessageFile = ''
+    [string] $MessageFile = '',
+    [string] $Title = '',
+    [string] $Detail = ''
 )
 $ErrorActionPreference = 'Stop'
 $tools = $PSScriptRoot
 $runs = Join-Path $tools 'Runs'
 $tasks = @{
     'update' = 'update.ps1'; 'release-info' = 'release.ps1'; 'release' = 'release.ps1'
-    'setup-report' = 'setup.ps1'; 'setup' = 'setup.ps1'
+    'setup-report' = 'setup.ps1'; 'setup' = 'setup.ps1'; 'report' = 'update.ps1'
 }
 if (-not $tasks.ContainsKey($Task)) { Write-Host "run.ps1: no task named '$Task'. Tasks: $($tasks.Keys -join ', ')"; exit 2 }
 New-Item -ItemType Directory -Force -Path $runs | Out-Null
@@ -68,10 +73,8 @@ foreach ($other in Get-ChildItem -LiteralPath $runs -Filter '*.json' -File) {
 }
 Save-Result
 
-# The USB key sets up its own copy. Its checks wait only for Hytale's files, which the key copies from her computer.
-if ($env:ARMORY_KEY -and $Task -like 'setup*') {
-    Stop-Run "This copy is on your USB key, which sets itself up. If the checks are missing, Hytale's files are not on the key yet. Plug the key into your own computer once, with Hytale installed, and it copies them."
-}
+# On the USB key, Set up links this computer's Hytale to the mod on the key. The key sets up everything else itself.
+if ($env:ARMORY_KEY -and $Task -like 'setup*') { $tasks[$Task] = '..\Key\play.ps1' }
 
 $arguments = New-Object System.Collections.Generic.List[string]
 switch ($Task) {
@@ -83,6 +86,7 @@ switch ($Task) {
     }
     'setup-report' { $arguments.AddRange([string[]]@('-Report', $dataFile)) }
     'setup' { $arguments.Add('-Yes') }
+    'report' { $arguments.AddRange([string[]]@('-Report', $Title, '-Detail', $Detail)) }
 }
 foreach ($a in $args) { $arguments.Add([string]$a) }
 if (Test-Path -LiteralPath $dataFile) { Remove-Item -LiteralPath $dataFile -Force }
@@ -104,7 +108,8 @@ $info.WorkingDirectory = (Resolve-Path (Join-Path $tools '..\..')).Path
 try {
     $process = [Diagnostics.Process]::Start($info)
 } catch {
-    Stop-Run "The task could not start. Send Larsonix a screenshot."
+    & (Join-Path $tools 'update.ps1') -Report "The task $Task could not start" $_.Exception.Message
+    Stop-Run "This could not start. Larsonix has been told, and you can keep working."
 }
 # Nothing a task asks can be answered here: an input that is closed makes any question end at once instead of waiting.
 $process.StandardInput.Close()
@@ -117,6 +122,10 @@ $process.WaitForExit()
 foreach ($line in ($errors.Result -split "`r?`n")) { if ($line.Trim()) { $result.lines.Add("For Larsonix: $($line.TrimEnd())") } }
 if (Test-Path -LiteralPath $dataFile) {
     try { $result.data = [IO.File]::ReadAllText($dataFile) | ConvertFrom-Json } catch { $result.data = $null }
+}
+# A task that broke on something its own lines never named still reaches us.
+if ($process.ExitCode -ne 0 -and $Task -ne 'report' -and $errors.Result.Trim()) {
+    & (Join-Path $tools 'update.ps1') -Report "The task $Task broke" $errors.Result.Trim()
 }
 $result.code = $process.ExitCode
 $result.state = if ($process.ExitCode -eq 0) { 'done' } else { 'failed' }

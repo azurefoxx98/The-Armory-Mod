@@ -28,3 +28,6 @@
 *.md              text eol=lf
 *.gitignore       text eol=lf
 *.gitattributes   text eol=lf
+
+# Both sides add names at the end of a language file. A line by line merge keeps them all.
+*.lang merge=union

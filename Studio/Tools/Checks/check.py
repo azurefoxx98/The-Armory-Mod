@@ -16,7 +16,7 @@ comes first).
 The gates print for us, so their words never change here. Every line they print is translated
 below into what Lady reads: what is wrong in her words, and the one thing to change. Both places
 she reads checks in, the HyCreator panel and this script's own window, show that translation. A
-line no rule knows is shown whole, with the screenshot hand-off, never dropped.
+line no rule knows is shown whole, marked as ours, never dropped.
 
   python check.py            run every check, print the result, exit 1 when something is wrong
   python check.py --spawn    start a run in the background and return at once (the git hooks)
@@ -25,6 +25,7 @@ line no rule knows is shown whole, with the screenshot hand-off, never dropped.
 from __future__ import annotations
 
 import datetime
+import hashlib
 import json
 import os
 import re
@@ -41,6 +42,10 @@ RESULT = os.path.join(HERE, "last-check.json")
 # The single problems she judged normal for her work, written by the panel's "Normal for me" button and
 # committed with her work, so we see her judgments too. One entry hides one problem on one item.
 NORMAL = os.path.join(REPO, "Studio", "Checks", "normal.json")
+# The problems judged as meant to be, each with who decided and why. Written by us, never by the panel, so a problem
+# in it leaves her cards for good. A file that replaces a game file is keyed with its hash, so a changed file is a
+# problem again.
+ACCEPTED = os.path.join(REPO, "Studio", "Checks", "accepted.json")
 RUNNING = os.path.join(HERE, "last-check.running.json")
 # 2 adds "lady" to each check: its problems as she reads them.
 FORMAT = 2
@@ -60,7 +65,7 @@ GATES = [
 ]
 
 # The one hand-off for anything she cannot fix herself.
-SEND = "Send Larsonix a screenshot."
+SEND = "This one is ours to fix, and you can keep working."
 
 # Files the mod's tools write whole from a list of their own. The HyCreator plugin warns before
 # one of them is edited (madeByTool in armory-studio.js), and its test fails when the two rules
@@ -470,7 +475,7 @@ def owner_of_card(check_id: str, e: dict) -> str:
     what the game check found."""
     if e.get("owner") in ("us", "mod"):
         return e["owner"]
-    if e["do"].startswith("Send Larsonix a screenshot"):
+    if e["do"].startswith(SEND):
         return "us"
     if GAME_DIR not in sys.path:
         sys.path.insert(0, GAME_DIR)
@@ -509,6 +514,17 @@ def run_gate(name: str, game: str) -> dict:
         status = "error"
     tail = [] if status == "pass" else output.strip().splitlines()[-12:]
     return {"status": status, "problems": problems, "seconds": seconds, "output_tail": tail}
+
+
+def tell_us(detail: str) -> None:
+    """Sends a stopped run to us through Update's report, and never waits for it or fails on it."""
+    try:
+        script = os.path.join(REPO, "Studio", "Tools", "update.ps1")
+        subprocess.Popen(["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script,
+                          "-Report", "The checks stopped", "-Detail", detail],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+    except OSError:
+        pass
 
 
 def lang_keys(text: str) -> set[str]:
@@ -579,7 +595,7 @@ def check_languages(own: list[str] | None, starts: list[str], why: str) -> dict:
             # A file deleted in HyCreator waits in its trash, which puts it back byte for byte.
             lady.append({"says": f"The language file {rel} is gone, so players see raw names.",
                          "do": "If you deleted it in HyCreator, click Workspace at the top left, then Trash (restore deleted)..., "
-                               "and click Restore. If not, send Larsonix a screenshot.",
+                               "and click Restore. If not, this one is ours to restore.",
                          "items": [], "line": problems[-1], "known": True})
             continue
         with open(here, encoding="utf-8-sig") as fh:
@@ -623,10 +639,91 @@ def check_generated(own: list[str] | None, starts: list[str], why: str) -> dict:
             problems.append(f"{rel} is made by a tool from {tool}, and this branch changed it. "
                             "The change is erased the next time the tool runs.")
             lady.append({"says": f"You changed a file our tools rewrite from {tool}, so the change will be lost.",
-                         "do": "Send Larsonix a screenshot, and say what should change.",
+                         "do": "Send Larsonix what should change.",
                          "items": [{"label": os.path.splitext(os.path.basename(rel))[0],
                                     "open": rel[len("Server/"):] if rel.startswith("Server/") else None}],
                          "line": problems[-1], "known": True})
+    return {"status": "fail" if problems else "pass", "problems": problems, "lady": lady, "output_tail": []}
+
+
+# The showcase world dresses a figure in every piece she can wear, and its stands name what each figure wears. A piece
+# she adds stands nowhere until we add it, which is ours to do, so it is a card for us and never one of her problems.
+SHOWCASE = os.path.join(RESOURCES, "Server", "Prefabs", "Armory_Showcase")
+SHOWCASE_STAND = "ArmoryShowcaseFigureStand"
+# A developer test item, kept out of the showcase on purpose.
+NOT_SHOWN = {"TestBroom"}
+
+
+def item_json(text: str) -> dict:
+    return json.loads(re.sub(r"(?m)^\s*//.*$", "", text))
+
+
+def wearable_items(game: str) -> set[str]:
+    """Every armour piece, weapon and shield of the mod, read as the showcase reads them: an armour slot or a weapon
+    block on the item or on a parent, in the mod or in the game, or a parent that is a game weapon."""
+    import zipfile
+    items = {}
+    for dirpath, _dirs, files in os.walk(os.path.join(RESOURCES, "Server", "Item", "Items")):
+        for f in files:
+            if f.endswith(".json"):
+                try:
+                    with open(os.path.join(dirpath, f), encoding="utf-8-sig") as fh:
+                        items[f[:-5]] = item_json(fh.read())
+                except (OSError, ValueError):
+                    continue  # a file that does not parse is the item check's to name
+    with zipfile.ZipFile(os.path.join(game, "Assets.zip")) as archive:
+        vanilla = {n.rsplit("/", 1)[1][:-5]: n for n in archive.namelist()
+                   if n.startswith("Server/Item/Items/") and n.endswith(".json")}
+
+        def data(item_id: str) -> dict | None:
+            if item_id in items:
+                return items[item_id]
+            if item_id in vanilla:
+                try:
+                    return item_json(archive.read(vanilla[item_id]).decode("utf-8-sig"))
+                except ValueError:
+                    return None
+            return None
+
+        def resolve(item_id: str, key: str):
+            for _ in range(13):
+                d = data(item_id)
+                if d is None:
+                    return None
+                if key in d:
+                    return d[key]
+                item_id = d.get("Parent")
+                if not item_id:
+                    return None
+            return None
+
+        out = set()
+        for item_id, d in items.items():
+            armor = resolve(item_id, "Armor")
+            parent = d.get("Parent") or ""
+            if (isinstance(armor, dict) and armor.get("ArmorSlot")) or resolve(item_id, "Weapon") is not None \
+                    or parent.startswith(("Weapon_", "Template_Weapon_")):
+                out.add(item_id)
+    return out - NOT_SHOWN
+
+
+def check_showcase(game: str) -> dict:
+    """Pieces she can wear that no figure of the showcase world wears yet."""
+    if not os.path.isdir(SHOWCASE):
+        return {"status": "pass", "problems": [], "output_tail": ["this copy holds no showcase world"]}
+    shown = set()
+    for dirpath, _dirs, files in os.walk(SHOWCASE):
+        for f in files:
+            if f.endswith(".prefab.json"):
+                with open(os.path.join(dirpath, f), encoding="utf-8-sig") as fh:
+                    for block in json.load(fh).get("blocks") or []:
+                        worn = ((block.get("components") or {}).get("Components") or {}).get(SHOWCASE_STAND) or {}
+                        shown |= {v for v in worn.values() if isinstance(v, str)}
+    missing = sorted(wearable_items(game) - shown)
+    problems = [f"{item} stands on no figure of the showcase world" for item in missing]
+    lady = [{"says": "No figure in the showcase world wears it yet.", "do": "Nothing to do. Larsonix adds it to the showcase.",
+             "items": [{"label": item, "find": "Item/Items/"}], "line": line, "known": True, "owner": "us"}
+            for item, line in zip(missing, problems)]
     return {"status": "fail" if problems else "pass", "problems": problems, "lady": lady, "output_tail": []}
 
 
@@ -779,8 +876,9 @@ def game_words(f: dict) -> dict:
 
 def finding_key(f: dict) -> str:
     d = f.get("detail") or {}
+    # The hash goes last and only where a finding carries one, so every other key stays as her marks recorded it.
     return "|".join(str(x) for x in (f["rule"], f["kind"], f["id"], d.get("field"), d.get("form"), d.get("name"),
-                                      d.get("word")))
+                                      d.get("word")) + ((d["hash"],) if d.get("hash") else ()))
 
 
 def run_snapshot(out: str, game: str, packs: list[str], jar: str | None) -> tuple[bool, str]:
@@ -824,12 +922,15 @@ def keep_as(mine: str, shared: str, replace: bool) -> str:
     """Moves this run's finished snapshot to the shared folder and returns where it is now.
 
     replace: an older snapshot there gives way. Without it, a finished one there is kept and this run's is dropped,
-    since another run made the same one first. A shared folder with no run.json, left by an older version of these
-    checks that was cut off, always gives way.
+    since another run made the same one first. A shared folder that is not a whole snapshot always gives way: one with
+    no run.json, left by an older version of these checks that was cut off, or one whose log a second run's server
+    wrote over, as two runs into one folder once did.
     """
     import pathlib
+    import model
     import snapshot
-    finished = os.path.isfile(os.path.join(shared, "run.json"))
+    # Only a whole one is kept: one whose log another run's server wrote over is made again.
+    finished = not model.snapshot_problems(shared)
     if finished and not replace:
         snapshot.remove_tree(pathlib.Path(mine))
         return shared
@@ -878,11 +979,12 @@ def check_game(own: list[str] | None, starts: list[str], why: str, game: str) ->
     if not os.path.isfile(os.path.join(GAME_DIR, "snapshot.py")) or not os.path.isfile(CODE_JAR):
         return {"status": "error", "problems": [], "output_tail": ["the game check's files are missing"]}
     sys.path.insert(0, GAME_DIR)
+    import model
     import snapshot
     version = snapshot.read_version(os.path.join(game, "Server", "HytaleServer.jar")) or "unknown"
     os.makedirs(WORK, exist_ok=True)
     vanilla = os.path.join(WORK, f"vanilla-{version}")
-    if not os.path.isfile(os.path.join(vanilla, "run.json")):
+    if model.snapshot_problems(vanilla):
         mine = own_folder(f"vanilla-{version}")
         ok, text = run_snapshot(mine, game, [], None)
         if not ok:
@@ -890,9 +992,12 @@ def check_game(own: list[str] | None, starts: list[str], why: str, game: str) ->
         vanilla = keep_as(mine, vanilla, replace=False)
     # What her branch started from, computed once per starting commit, game version and rules.
     rules_id = git("hash-object", os.path.join(GAME_DIR, "rules.py")) or "?"
+    # And against this game-alone snapshot: one made again starts its own.
+    with open(os.path.join(vanilla, "run.json"), "rb") as fh:
+        vanilla_id = hashlib.sha1(fh.read()).hexdigest()
     base_keys: set[str] = set()
     for start in starts if compare else []:
-        cache = os.path.join(WORK, f"base-{start[:12]}-{version}-{rules_id[:12]}.json")
+        cache = os.path.join(WORK, f"base-{start[:12]}-{version}-{rules_id[:12]}-{vanilla_id[:12]}.json")
         if not os.path.isfile(cache):
             keys = base_findings(start, game, vanilla)
             if keys is None:
@@ -972,6 +1077,7 @@ def run_all() -> dict:
             ("branch", "Your branch", check_branch()),
             ("languages", "Language files", check_languages(own, starts, why)),
             ("generated", "Files our tools make", check_generated(own, starts, why)),
+            ("showcase", "The showcase world", check_showcase(game)),
             ("game", "Your work in the game", check_game(own, starts, why, game)),
         ):
             entry = {"id": name, "title": title, "seconds": None}
@@ -984,6 +1090,7 @@ def run_all() -> dict:
                 e["owner"] = owner_of_card(c["id"], e)
                 e.setdefault("key", c["id"] + "|" + e["line"])
         result["normal"] = apply_normal(result["checks"], read_normal())
+        result["accepted"] = apply_accepted(result["checks"], read_normal(ACCEPTED, "accepted"))
     result["finished"] = now()
     result["seconds"] = round(time.monotonic() - clock, 1)
     return result
@@ -997,11 +1104,12 @@ def write_json(path: str, value: dict) -> None:
     os.replace(temp, path)
 
 
-def read_normal() -> list[dict]:
-    """Her "Normal for me" entries, or none when the file is missing or unreadable (a broken file hides nothing)."""
+def read_normal(path: str = NORMAL, name: str = "normal") -> list[dict]:
+    """Her "Normal for me" entries, or none when the file is missing or unreadable (a broken file hides nothing). The
+    same for the accepted ones, from their own file."""
     try:
-        with open(NORMAL, encoding="utf-8-sig") as fh:
-            entries = json.load(fh).get("normal")
+        with open(path, encoding="utf-8-sig") as fh:
+            entries = json.load(fh).get(name)
     except (OSError, ValueError, AttributeError):
         return []
     return [e for e in entries or [] if isinstance(e, dict) and isinstance(e.get("key"), str)]
@@ -1020,6 +1128,36 @@ def apply_normal(checks: list[dict], entries: list[dict]) -> dict:
             seen |= {e["key"] + "|" + lab for lab in e["hidden"]}
     stale = [e for e in entries if e["key"] + "|" + str(e.get("item") or "") not in seen]
     return {"hidden": len(seen), "stale": stale}
+
+
+def apply_accepted(checks: list[dict], entries: list[dict]) -> dict:
+    """Takes each problem judged as meant to be off its item, as a mark of hers hides one, but for good: the panel never
+    shows it. An entry that matches nothing any more (the problem was fixed, or the file it judged changed) becomes a
+    card for us, and we remove it. Returns how many are accepted and the entries that matched nothing."""
+    wanted = {e["key"] + "|" + str(e.get("item") or ""): e for e in entries}
+    seen = set()
+    for c in checks:
+        kept = []
+        for e in c.get("lady") or []:
+            labels = [i["label"] for i in e["items"]] or [""]
+            hit = {lab for lab in labels if e["key"] + "|" + lab in wanted}
+            seen |= {e["key"] + "|" + lab for lab in hit}
+            rest = [i for i in e["items"] if i["label"] not in hit]
+            if not hit:
+                kept.append(e)
+            elif rest:
+                kept.append(dict(e, items=rest))
+        c["lady"] = kept
+    stale = [e for k, e in wanted.items() if k not in seen]
+    if stale:
+        checks.append({"id": "accepted", "title": "Problems meant to be", "status": "fail", "seconds": None,
+                       "problems": [e["key"] for e in stale], "output_tail": [], "lady": [
+                           {"says": "A problem marked as meant to be is no longer found, so its mark can go.",
+                            "do": "Nothing to do for you. Larsonix removes it.",
+                            "items": [{"label": str(e.get("item") or "")}] if e.get("item") else [], "line": e["key"],
+                            "known": True, "owner": "us", "key": "accepted|" + e["key"], "hidden": []}
+                           for e in stale]})
+    return {"accepted": len(seen), "stale": stale}
 
 
 def groups(result: dict, owner: str | None = None) -> list[dict]:
@@ -1067,6 +1205,9 @@ def summary(result: dict) -> tuple[str, bool]:
                                                                   for g in ours]
     if normal.get("hidden"):
         tail += ["", f"Hidden as normal for you: {normal['hidden']}. The checks panel in HyCreator shows them."]
+    accepted = (result.get("accepted") or {}).get("accepted")
+    if accepted:
+        tail += ["", f"Meant to be, so not shown: {accepted}."]
     if normal.get("stale"):
         tail += ["", "Marked normal, but no longer found: " + ", ".join(str(e.get("item") or "") for e in normal["stale"][:10])
                  + ". Remove them in the checks panel."]
@@ -1126,6 +1267,7 @@ def main(argv: list[str]) -> int:
                       "uncommitted": None, "python": sys.version.split()[0], "game": None, "checks": [],
                       "error": "The checks stopped on something unexpected. " + SEND,
                       "error_detail": f"{type(exc).__name__}: {exc}"}
+            tell_us(f"{type(exc).__name__}: {exc}")
         write_json(RESULT, result)
     finally:
         # Only this run's own marker is removed: a later run that started meanwhile keeps its own.

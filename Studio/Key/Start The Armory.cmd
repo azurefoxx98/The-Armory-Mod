@@ -11,7 +11,7 @@ set "KEY=%~dp0"
 set "WINDOW=%KEY%The-Armory-Mod\Studio\Key\start.ps1"
 if not exist "%WINDOW%" set "WINDOW=%KEY%Key\start.ps1"
 if not exist "%WINDOW%" (
-    echo The Armory cannot start: its files are missing from this key. Send Larsonix a screenshot of this window.
+    echo The Armory cannot start: its files are missing from this key. Unzip the key's zip onto it again.
     pause
     exit /b 1
 )
@@ -23,7 +23,7 @@ echo Starting The Armory...
 "%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "%WINDOW%" -Key "%KEY%."
 if errorlevel 1 (
     echo.
-    echo The Armory could not start on this computer. Send Larsonix a screenshot of this window.
+    echo The Armory could not start on this computer. Restart this computer, then start it again.
     pause
     exit /b 1
 )

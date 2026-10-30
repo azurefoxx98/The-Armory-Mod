@@ -376,6 +376,27 @@ GAME_SAMPLES = [
 ]
 
 
+# A whole snapshot's log: one server, one verdict. And the real damage of 2026-10-27: two servers wrote one log, and a
+# record starts inside another.
+WHOLE_LOG = ("[2026/10/27 19:09:26   INFO] [Hytale] Loading NPC assets phase...\n"
+             "[2026/10/27 19:09:40   INFO] CHECKS snapshot complete=true assets=1\n")
+WRITTEN_OVER = ("[2026/10/27 19:09:29   WARN] [NPC|P] Replacing asset 'Test[2026/10/27 19:09:29   WARN] [NPC|P] Replacing\n"
+                "[2026/10/27 19:09:40   INFO] CHECKS snapshot complete=true assets=1\n")
+
+
+def snapshot_at(folder: str, made: str, log: str = WHOLE_LOG) -> None:
+    os.makedirs(os.path.join(folder, "stores"), exist_ok=True)
+    with open(os.path.join(folder, "run.json"), "w", encoding="utf-8") as fh:
+        json.dump({"complete": True, "made": made}, fh)
+    with open(os.path.join(folder, "boot.log"), "w", encoding="utf-8") as fh:
+        fh.write(log)
+
+
+def made_by(folder: str) -> str:
+    with open(os.path.join(folder, "run.json"), encoding="utf-8") as fh:
+        return json.load(fh).get("made")
+
+
 def own_folders(expect) -> None:
     """Two game check runs at once, or one cut off halfway, never stop the next one (the shared snapshot folder did)."""
     work = tempfile.mkdtemp(prefix="armory-work-")
@@ -393,26 +414,25 @@ def own_folders(expect) -> None:
         expect("a run snapshots into a folder of its own", os.path.basename(mine) == f"now.{os.getpid()}")
         expect("a folder left by a run cut off long ago is removed", not os.path.exists(stale))
         expect("a folder of a run still going is left alone", os.path.isdir(live))
-        os.makedirs(os.path.join(mine, "stores"))
-        with open(os.path.join(mine, "run.json"), "w", encoding="utf-8") as fh:
-            fh.write("{}")
+        snapshot_at(mine, "now")
         kept = check.keep_as(mine, os.path.join(work, "now"), replace=True)
         expect("the finished snapshot replaces the half-written shared folder", kept == os.path.join(work, "now")
                and os.path.isfile(os.path.join(work, "now", "run.json")) and not os.path.exists(mine))
         # The game alone, already made by another run: this run's own copy is dropped and theirs is read.
         van = os.path.join(work, "vanilla-x")
-        os.makedirs(van)
-        with open(os.path.join(van, "run.json"), "w", encoding="utf-8") as fh:
-            fh.write('{"run": "first"}')
+        snapshot_at(van, "first")
         other = check.own_folder("vanilla-x")
-        os.makedirs(other)
-        with open(os.path.join(other, "run.json"), "w", encoding="utf-8") as fh:
-            fh.write('{"run": "second"}')
+        snapshot_at(other, "second")
         kept = check.keep_as(other, van, replace=False)
-        with open(os.path.join(van, "run.json"), encoding="utf-8") as fh:
-            first = json.load(fh).get("run") == "first"
         expect("a finished game-alone snapshot made first by another run is kept, this run's dropped",
-               kept == van and first and not os.path.exists(other))
+               kept == van and made_by(van) == "first" and not os.path.exists(other))
+        # The game alone, written by two servers at once: its log is cut, so this run's whole one takes its place.
+        snapshot_at(van, "written over", log=WRITTEN_OVER)
+        other = check.own_folder("vanilla-x")
+        snapshot_at(other, "whole")
+        kept = check.keep_as(other, van, replace=False)
+        expect("a game-alone snapshot whose log two servers wrote gives way to this run's whole one",
+               kept == van and made_by(van) == "whole" and not os.path.exists(other))
     finally:
         check.WORK = saved
         shutil.rmtree(work, ignore_errors=True)
@@ -495,6 +515,34 @@ def words(expect) -> None:
            ok and "Larsonix's problems" in text and "Uses a stat" in text and "Hidden as normal for you: 2" in text, text)
     result["checks"].append({"id": "recipecheck", "status": "error", "lady": []})
     expect("a check that could not run still fails the run", not check.summary(result)[1])
+    # Problems meant to be (accepted.json): taken off her cards for good, and a judgment matching nothing any more is a
+    # card for us. A file that replaces a game file is judged by its hash, so a changed file is a problem again.
+    picture = {"rule": "common-files", "kind": "CommonFile", "id": "Icons/A.png", "file": "Icons/A.png", "fact": "f",
+               "detail": {"field": "replace", "form": "different", "hash": "h1"}}
+    key = "game|" + check.finding_key(picture)
+    expect("a replacement's key ends with its file's hash, and other keys are as before",
+           key.endswith("|h1") and check.finding_key(dict(picture, detail={"field": "x"})).count("|") == 6, key)
+    unreached = {"says": "No player can get it", "do": "x", "items": [{"label": "RookHelmGhost"}, {"label": "Ruined_Sword_Gold"}],
+                 "line": "r", "key": "game|reach", "owner": "mod"}
+    replaced = {"says": "Replaces a game file", "do": "x", "items": [{"label": "Icons/A.png"}], "line": "p", "key": key,
+                "owner": "mod"}
+    result = {"finished": "2026-10-28T18:00:00", "error": None,
+              "checks": [{"id": "game", "status": "fail", "lady": [unreached, replaced]}]}
+    accepted = [{"key": "game|reach", "item": "RookHelmGhost", "by": "Lady"}, {"key": key, "item": "Icons/A.png", "by": "Larsonix"}]
+    result["accepted"] = check.apply_accepted(result["checks"], accepted)
+    mine = check.groups(result, "mod")
+    expect("an accepted problem leaves her cards, the same problem on another item stays",
+           [g["items"] for g in mine] == [["Ruined_Sword_Gold"]] and result["accepted"]["accepted"] == 2, mine)
+    text, _ = check.summary(result)
+    expect("the window counts what is meant to be", "Meant to be, so not shown: 2." in text, text)
+    changed = "game|" + check.finding_key(dict(picture, detail=dict(picture["detail"], hash="h2")))
+    result = {"finished": "2026-10-28T18:00:00", "error": None, "checks": [{"id": "game", "status": "fail", "lady": [
+        dict(replaced, key=changed)]}]}
+    result["accepted"] = check.apply_accepted(result["checks"], accepted)
+    expect("a changed file is her problem again, and the judgment that no longer matches is Larsonix's",
+           [g["items"] for g in check.groups(result, "mod")] == [["Icons/A.png"]]
+           and [g["items"] for g in check.groups(result, "us")] == [["RookHelmGhost", "Icons/A.png"]]
+           and check.summary(result)[1] is False, check.groups(result))
     opened = check.game_words(GAME_SAMPLES[0][0])
     expect("a game finding about an item opens its file",
            opened["items"] == [{"label": "Praetorian_Boots", "open": "Item/Items/Praetorian_Boots.json"}], opened["items"])
@@ -619,7 +667,7 @@ def main(argv: list[str]) -> int:
         # The checks that read the whole mod report what the branch already holds (since her October import, the
         # Praetorian stats and families), so a branch of her own is judged on what it adds, never on that.
         before = {k: set(v["problems"]) for k, v in checks.items()}
-        own = ("branch", "languages", "generated")
+        own = ("branch", "languages", "generated", "showcase")
         expect("a branch made from ours shows no problem of its own, and no check stops",
                not result["error"] and all(checks[k]["status"] == "pass" for k in own)
                and all(v["status"] != "error" for v in checks.values()),
@@ -644,23 +692,47 @@ def main(argv: list[str]) -> int:
         rel_item = os.path.relpath(item, res).replace(os.sep, "/")
         # A sound set that exists nowhere, written twice at the end, where the game reads it.
         edit(item, lambda t: t.rstrip()[:-1].rstrip() + ',\n  "ItemSoundSetId": "ISS_Ghost",\n  "ItemSoundSetId": "ISS_Ghost"\n}\n')
-        # A language file saved from an older copy: its last name is lost.
+        # A language file saved from an older copy: its last name is lost. The last one at most one file uses, so the
+        # planted fault stays one fault whatever her file ends with (a description shared by 13 items once made it 13).
         lang = os.path.join(res, "Server", "Languages", "en-US", "server.lang")
         lost = None
+        users: dict[str, int] = {}
+        for dirpath, _dirs, files in os.walk(os.path.join(res, "Server")):
+            for f in files:
+                if f.endswith(".json"):
+                    with open(os.path.join(dirpath, f), encoding="utf-8-sig", errors="replace") as fh:
+                        for key in set(re.findall(r'"server\.([^"]+)"', fh.read())):
+                            users[key] = users.get(key, 0) + 1
 
         def drop_last(text: str) -> str:
             nonlocal lost
             lines = text.splitlines(keepends=True)
             for i in range(len(lines) - 1, -1, -1):
-                if "=" in lines[i] and not lines[i].lstrip().startswith("#"):
+                if "=" in lines[i] and not lines[i].lstrip().startswith("#") \
+                        and users.get(lines[i].split("=", 1)[0].strip(), 0) <= 1:
                     lost = lines[i].split("=", 1)[0].strip()
                     return "".join(lines[:i] + lines[i + 1:])
-            raise SystemExit("server.lang holds no name")
+            raise SystemExit("server.lang holds no name used by at most one file")
         edit(lang, drop_last)
         # A hand edit to a patch the loot tool writes, which puts her loot tables in chests.
         drops = os.path.join(res, "Server", "Drops", "Prefabs")
         loot = os.path.join(drops, sorted(n for n in os.listdir(drops) if n.endswith(".patch"))[0])
         edit(loot, lambda t: t + "\n")
+        # A piece that stood on one figure of the showcase alone now stands nowhere: its stand wears another piece.
+        stands: dict[str, list[str]] = {}
+        for dirpath, _dirs, files in os.walk(os.path.join(res, "Server", "Prefabs", "Armory_Showcase")):
+            for f in files:
+                if f.endswith(".prefab.json"):
+                    with open(os.path.join(dirpath, f), encoding="utf-8") as fh:
+                        for block in json.load(fh)["blocks"]:
+                            worn = ((block.get("components") or {}).get("Components") or {}).get(check.SHOWCASE_STAND) or {}
+                            for v in worn.values():
+                                stands.setdefault(v, []).append(os.path.join(dirpath, f))
+        # Never the item the sound set was planted in: that one is rightly among her problems for the sound.
+        planted = os.path.splitext(os.path.basename(rel_item))[0]
+        unshown = sorted(i for i, at in stands.items() if len(at) == 1 and i.startswith("Atlantean") and i != planted)[0]
+        other = sorted(i for i, at in stands.items() if len(at) > 1)[0]
+        edit(stands[unshown][0], lambda t: t.replace(f'"{unshown}"', f'"{other}"', 1))
         # Her own loot table, edited the way she now may, with one item misspelled.
         table = os.path.join(res, "Server", "Drops", "TheArmory", "Armory_Zone1_Loot.json")
         edit(table, lambda t: t.replace('"ItemId": "Mace_Iron_Rusty"', '"ItemId": "Mace_Iron_Rustyy"', 1))
@@ -680,6 +752,12 @@ def main(argv: list[str]) -> int:
         expect("the edited chest patch is named, and her edited loot table is not", checks["generated"]["status"] == "fail"
                and any(os.path.basename(loot) in p for p in checks["generated"]["problems"])
                and not any("Armory_Zone1_Loot" in p for p in checks["generated"]["problems"]), checks["generated"])
+        showcase = checks["showcase"]
+        expect("the piece no figure wears any more is named, as ours alone",
+               showcase["status"] == "fail" and [e["items"][0]["label"] for e in showcase["lady"]] == [unshown]
+               and all(e["owner"] == "us" for e in showcase["lady"]), showcase)
+        expect("and it is not among her problems", not any(unshown in g["items"] for g in check.groups(result, "mod")),
+               [g["says"] for g in check.groups(result, "mod") if unshown in g["items"]])
         expect("the misspelled chest item is named", checks["lootcheck"]["status"] == "fail"
                and any("Mace_Iron_Rustyy" in p for p in checks["lootcheck"]["problems"]), checks["lootcheck"])
         game = checks.get("game", {})

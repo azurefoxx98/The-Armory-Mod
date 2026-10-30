@@ -16,6 +16,8 @@ import zipfile
 from ctypes import wintypes
 from pathlib import Path
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+from model import VERDICT, log_problems
 READER = HERE / 'reader'
 READER_SOURCE = READER / 'src' / 'checks' / 'SnapshotReader.java'
 READER_CLASSES = READER / 'classes'
@@ -24,7 +26,6 @@ APPDATA = Path(os.environ.get('APPDATA', ''))
 DEFAULT_GAME = APPDATA / 'Hytale' / 'install' / 'release' / 'package' / 'game' / 'latest'
 DEFAULT_JAVA = APPDATA / 'Hytale' / 'install' / 'release' / 'package' / 'jre' / 'latest' / 'bin' / 'java.exe'
 DEFAULT_JDK = Path('C:\\Program Files\\Java\\jdk-25\\bin\\javac.exe')
-VERDICT = re.compile('CHECKS snapshot complete=(true|false)(.*)')
 CI_LINE = re.compile('::(error|warning) file=(.*?)(?:,line=(\\d+))?(?:,col=(\\d+))?::(.*)')
 NO_WINDOW = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
 REFUSED = re.compile('Asset validation FAILED with \\d+ reason\\(s\\):\\s*\\n(.*?)(?=\\n\\[\\d{4}/)', re.S)
@@ -180,12 +181,15 @@ def main() -> int:
     for f in (out / 'stores').glob('*.jsonl') if (out / 'stores').exists() else []:
         with open(f, 'rb') as fh:
             on_disk += sum((1 for _ in fh))
-    whole = complete and meta.get('written') == on_disk
-    run = {'command': cmd, 'mods': [str(m.resolve()) for m in a.mod] + [str(p.resolve()) for p in a.pack], 'game': str(a.game), 'server_version': read_version(game_jar), 'exit_code': code, 'timed_out': timed_out, 'seconds': seconds, 'peak_memory_mb': round(peak / 2 ** 20) if peak else None, 'verdict': verdicts[-1][1].strip() if verdicts else None, 'complete': whole, 'assets_on_disk': on_disk, 'engine_lines': len(lines), 'refused': refused}
+    log_damage = log_problems(text)
+    whole = complete and meta.get('written') == on_disk and (not log_damage)
+    run = {'command': cmd, 'mods': [str(m.resolve()) for m in a.mod] + [str(p.resolve()) for p in a.pack], 'game': str(a.game), 'server_version': read_version(game_jar), 'exit_code': code, 'timed_out': timed_out, 'seconds': seconds, 'peak_memory_mb': round(peak / 2 ** 20) if peak else None, 'verdict': verdicts[-1][1].strip() if verdicts else None, 'complete': whole, 'assets_on_disk': on_disk, 'engine_lines': len(lines), 'refused': refused, 'log_problems': log_damage}
     (out / 'run.json').write_text(json.dumps(run, indent=2), encoding='utf-8')
     remove_tree(work)
     if refused:
         print(f"snapshot: the server REFUSED to start with these mods ({len(refused['files'])} file(s) failed to load); read again past them with --ignore-broken-mods")
+    for line in log_damage:
+        print(f'snapshot: {line}')
     print(f"snapshot: {('complete' if whole else 'NOT complete')}: {on_disk} assets, {meta.get('refused', '?')} refused by their codec, {len(lines)} engine lines, {seconds} s, peak {run['peak_memory_mb']} MB, server {run['server_version']}")
     return 0 if whole else 1
 

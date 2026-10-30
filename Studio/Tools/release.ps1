@@ -242,8 +242,11 @@ if ($Info) {
 }
 
 Write-Host 'Making a release of The Armory.'
+if ($branch -ne $main -and $branch -ne 'HEAD' -and $branch -and (Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Out) {
+    Stop-Release "Some of your changes are not committed. In HyCreator, click $branch at the top, then Commit changes... and commit them. Then click Release again."
+}
 
-# Update commits her work, puts the copy on her branch and joins the latest, so a release holds all of it.
+# Update puts the copy on her branch and joins the latest, so a release holds all of it.
 if ($NoGitHub) { & (Join-Path $PSScriptRoot 'update.ps1') -NoPush -NoRefresh } else { & (Join-Path $PSScriptRoot 'update.ps1') }
 if ($LASTEXITCODE -ne 0) { exit 1 }
 $branch = (Invoke-Git @('rev-parse', '--abbrev-ref', 'HEAD')).Out

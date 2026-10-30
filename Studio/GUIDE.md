@@ -17,7 +17,8 @@ The same guide is in HyCreator: click ? at the top.
 ## Each time you work
 
 - Before you start, click Update in The Armory panel. It brings in Larsonix's latest work and sends yours to GitHub.
-- When you finish, click Update again. It saves your work and sends it to GitHub.
+- When you finish, click lady at the top, then Commit changes... Write what you did in one line, then click Commit.
+- Then click lady at the top, then Push.
 - If Pull or Push says your branch has diverged, click Update in The Armory panel instead.
 - If you and Larsonix change the same file, yours is kept and he is told.
 - When The Armory panel says a new version is ready, save your work and click Reload.

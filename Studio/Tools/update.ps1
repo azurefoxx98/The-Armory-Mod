@@ -3,8 +3,8 @@
 # Get updates and Done, and Release before it builds.
 #
 # It solves what it meets and never leaves her stuck:
-#   - work she has not committed is committed for her,
-#   - a copy on main or on no branch moves to her branch, carrying its work,
+#   - work she has not committed waits for her commit, so it keeps her own words,
+#   - a copy on main or on no branch moves to her branch, carrying its work (commits only this case makes for her),
 #   - an earlier update left unfinished is cleared,
 #   - names both sides added are all kept (*.lang merges line by line),
 #   - a file both sides changed is settled by who owns it, and we are told which,
@@ -205,6 +205,11 @@ function Resolve-Side([string] $path) {
 # Brings one side in. True when it is joined and committed.
 function Join-Source([string] $source) {
     $merge = Invoke-Git ((Get-Identity) + @('merge', '--no-edit', '-m', "Bring in $source", $source))
+    # A new file she never committed sits where our side adds one. Committing it keeps it and lets the merge run.
+    if ($merge.Code -ne 0 -and $merge.Text -match 'untracked working tree files') {
+        Save-Work
+        $merge = Invoke-Git ((Get-Identity) + @('merge', '--no-edit', '-m', "Bring in $source", $source))
+    }
     if ($merge.Code -eq 0) { return @{ Ok = $true } }
     $both = @((Invoke-Git @('diff', '--name-only', '--diff-filter=U')).Out -split "`n" | Where-Object { $_ })
     $done = $both.Count -gt 0
@@ -301,11 +306,20 @@ if ($online -and -not $Fresh -and -not $NoRefresh) {
     }
 }
 
-Save-Work
-
 $branch = (Invoke-Git @('rev-parse', '--abbrev-ref', 'HEAD')).Out
-if ($branch -eq 'HEAD' -or $branch -eq $Main -or -not $branch) {
+$wrongBranch = $branch -eq 'HEAD' -or $branch -eq $Main -or -not $branch
+
+# Her commit carries her own words about her work, so Update waits for it. The newest copy of this file has
+# already run by here, and nothing has changed. On a wrong branch there is no sensible place for her to commit.
+if (-not $wrongBranch -and (Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Out) {
+    Write-Host ''
+    Write-Host "Some of your changes are not committed. In HyCreator, click $branch at the top, then Commit changes... and commit them. Then click Update again."
+    exit 1
+}
+
+if ($wrongBranch) {
     # The work on this branch comes along, so moving loses nothing.
+    Save-Work
     $was = (Invoke-Git @('rev-parse', 'HEAD')).Out
     $move = if ((Invoke-Git @('rev-parse', '--verify', '--quiet', "refs/heads/$Own")).Code -eq 0) { @('switch', '-q', $Own) }
             elseif ((Invoke-Git @('rev-parse', '--verify', '--quiet', "origin/$Own")).Code -eq 0) { @('switch', '-q', '-c', $Own, "origin/$Own") }

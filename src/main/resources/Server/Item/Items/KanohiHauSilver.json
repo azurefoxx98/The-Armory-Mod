@@ -14,19 +14,10 @@
       -87
     ]
   },
-  "Armor": {
-    "DamageResistance": {
-      "Fire": [
-        {
-          "CalculationType": "Percent",
-          "Amount": 100
-        }
-      ]
-    }
-  },
+  "Armor": {},
   "TranslationProperties": {
     "Name": "server.items.KanohiHau.name",
-    "Description": "server.items.KanohiHau.description"
+    "Description": "server.items.KanohiHauSilver.description"
   },
   "ResourceTypes": [
     {
@@ -54,5 +45,8 @@
   },
   "SubCategory": "Kanohi",
   "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
-  "PlayerAnimationsId": "Block"
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "ArmoryOnLanding": [ "Armory_Kanohi_Landing" ]
+  }
 }

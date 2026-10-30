@@ -15,11 +15,19 @@
     ]
   },
   "Armor": {
-    "DamageResistance": {
-      "Fire": [
+    "StatModifiers": {
+      "TA_Blast_Resistance": [
         {
-          "CalculationType": "Percent",
-          "Amount": 100
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": 0.75
+        }
+      ],
+      "TA_Ore_Find": [
+        {
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": 0.5
         }
       ]
     }

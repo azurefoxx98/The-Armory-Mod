@@ -15,11 +15,16 @@
     ]
   },
   "Armor": {
+    "MovementSettings": {
+      "ExtraJumpCount": 2,
+      "ExtraJumpSoundEvent": "SFX_Ability_Wind_Strike_Slash",
+      "ExtraJumpParticleSystem": "Heal_Stick_ThornsUp"
+    },
     "DamageResistance": {
-      "Fire": [
+      "Fall": [
         {
-          "CalculationType": "Percent",
-          "Amount": 100
+          "CalculationType": "Flat",
+          "Amount": 90
         }
       ]
     }

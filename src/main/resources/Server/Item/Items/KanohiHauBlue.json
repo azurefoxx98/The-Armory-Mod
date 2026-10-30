@@ -16,13 +16,14 @@
   },
   "Armor": {
     "DamageResistance": {
-      "Fire": [
+      "Water": [
         {
-          "CalculationType": "Percent",
-          "Amount": 100
+          "Amount": 1,
+          "CalculationType": "Percent"
         }
       ]
-    }
+    },
+    "StatModifiers": {}
   },
   "TranslationProperties": {
     "Name": "server.items.KanohiHau.name",
@@ -54,5 +55,8 @@
   },
   "SubCategory": "Kanohi",
   "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
-  "PlayerAnimationsId": "Block"
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "ArmoryWaterBreathing": []
+  }
 }

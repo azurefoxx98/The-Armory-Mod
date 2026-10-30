@@ -16,10 +16,19 @@
   },
   "Armor": {
     "DamageResistance": {
-      "Fire": [
+      "Earth": [
         {
           "CalculationType": "Percent",
-          "Amount": 100
+          "Amount": 0.75
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Move_Speed": [
+        {
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": 1.05
         }
       ]
     }

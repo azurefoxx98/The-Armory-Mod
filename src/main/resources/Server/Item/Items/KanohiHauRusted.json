@@ -15,11 +15,12 @@
     ]
   },
   "Armor": {
-    "DamageResistance": {
-      "Fire": [
+    "DamageEnhancement": {
+      "Poison": [
         {
-          "CalculationType": "Percent",
-          "Amount": 100
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": 0.5
         }
       ]
     }

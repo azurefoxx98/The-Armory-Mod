@@ -15,11 +15,19 @@
     ]
   },
   "Armor": {
-    "DamageResistance": {
-      "Fire": [
+    "StatModifiers": {
+      "Mana": [
         {
-          "CalculationType": "Percent",
+          "Target": "Max",
+          "CalculationType": "Additive",
           "Amount": 100
+        }
+      ],
+      "TA_Night_Mana": [
+        {
+          "Target": "Max",
+          "CalculationType": "Additive",
+          "Amount": -60
         }
       ]
     }

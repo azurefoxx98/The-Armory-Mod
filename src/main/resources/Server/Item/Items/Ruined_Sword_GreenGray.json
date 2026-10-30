@@ -1,6 +1,6 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.Weapon_Longsword_Ruined_Giant.name"
+    "Name": "server.items.Weapon_Ruined_Sword_Replica"
   },
   "Categories": [
     "Items.Weapons",
@@ -31,7 +31,7 @@
           "DamageCalculator": {
             "Type": "Absolute",
             "BaseDamage": {
-              "Physical": 195
+              "Physical": 80
             },
             "RandomPercentageModifier": 0.15
           },
@@ -58,7 +58,7 @@
           "DamageCalculator": {
             "Type": "Absolute",
             "BaseDamage": {
-              "Physical": 195
+              "Physical": 80
             },
             "RandomPercentageModifier": 0.15
           },
@@ -85,7 +85,7 @@
           "DamageCalculator": {
             "Type": "Absolute",
             "BaseDamage": {
-              "Physical": 195
+              "Physical": 80
             },
             "RandomPercentageModifier": 0.15
           },
@@ -102,7 +102,7 @@
           "Parent": "Longsword_Stab_Charged_Damage",
           "DamageCalculator": {
             "BaseDamage": {
-              "Physical": 307
+              "Physical": 160
             },
             "Type": "Absolute",
             "RandomPercentageModifier": 0.15
@@ -128,7 +128,7 @@
   },
   "DroppedItemAnimation": "Items/Animations/Dropped/Dropped_Diagonal_Left.blockyanim",
   "Texture": "Items/Weapons/Praetorian/EliteSword/GreenGray.png",
-  "MaxDurability": 200,
+  "MaxDurability": 400,
   "DurabilityLossOnHit": 0.52,
   "Tags": {
     "Type": [

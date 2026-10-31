@@ -18,7 +18,7 @@ The same guide is in HyCreator: click ? at the top.
 - Work as usual in HyCreator, Blockbench and Photoshop.
 - When you finish, click the hammer at the top: The Armory panel.
 - Write what you did in one line, then click Send my work.
-- To ask Larsonix for something, click Add a message before you send. Anyone can read it on GitHub.
+- Need something from Larsonix? Click Add a message before you send. Anyone can read it on GitHub.
 - That saves your work, brings in what is new and puts everything on GitHub.
 - The first line of the panel always says where your work is.
 - When the panel says a new version is ready, save your work and click Reload.

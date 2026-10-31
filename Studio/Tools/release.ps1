@@ -370,7 +370,7 @@ if ($Choice -eq 'publish') {
         [void](Invoke-RestMethod -Method Patch -Uri "$($gh.Api)/git/refs/heads/$main" -Headers $gh.Headers -Body $move -ContentType 'application/json')
     } catch {
         Write-Host "The release is out. One last step on GitHub failed. $send"
-        & (Join-Path $PSScriptRoot 'update.ps1') -Report 'A release did not move main' "$main was not moved to v$Version"
+        & (Join-Path $PSScriptRoot 'update.ps1') -Report 'A release did not move main' -Detail "$main was not moved to v$Version"
     }
 }
 } catch {

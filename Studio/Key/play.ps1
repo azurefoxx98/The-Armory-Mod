@@ -46,7 +46,7 @@ try {
 } catch {
     Write-Host 'Hytale could not be linked to your key. Close Hytale, then click Set up again.'
     Write-Host "For Larsonix: $($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)"
-    & (Join-Path $PSScriptRoot '..\Tools\update.ps1') -Report 'The key could not link Hytale' "$($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)"
+    & (Join-Path $PSScriptRoot '..\Tools\update.ps1') -Report 'The key could not link Hytale' -Detail "$($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)"
     exit 1
 }
 Add-KeyComputer $root

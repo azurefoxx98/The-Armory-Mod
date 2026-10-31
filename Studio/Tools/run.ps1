@@ -118,6 +118,9 @@ $info.Arguments = (@('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypas
 $info.UseShellExecute = $false
 $info.RedirectStandardOutput = $true
 $info.RedirectStandardError = $true
+# A start from a newer PowerShell leaves its module folders in the environment, and Windows PowerShell then cannot find
+# its own commands. With the setting gone it uses its own places.
+[void]$info.EnvironmentVariables.Remove('PSModulePath')
 $info.RedirectStandardInput = $true
 $info.StandardOutputEncoding = New-Object Text.UTF8Encoding $false
 $info.StandardErrorEncoding = New-Object Text.UTF8Encoding $false
@@ -125,7 +128,7 @@ $info.WorkingDirectory = (Resolve-Path (Join-Path $tools '..\..')).Path
 try {
     $process = [Diagnostics.Process]::Start($info)
 } catch {
-    & (Join-Path $tools 'update.ps1') -Report "The task $Task could not start" $_.Exception.Message
+    & (Join-Path $tools 'update.ps1') -Report "The task $Task could not start" -Detail $_.Exception.Message
     Stop-Run "This could not start. You can keep working."
 }
 # Nothing a task asks can be answered here: an input that is closed makes any question end at once instead of waiting.
@@ -142,7 +145,7 @@ if (Test-Path -LiteralPath $dataFile) {
 }
 # A task that broke on something its own lines never named still reaches us.
 if ($process.ExitCode -ne 0 -and $Task -ne 'report' -and $errors.Result.Trim()) {
-    & (Join-Path $tools 'update.ps1') -Report "The task $Task broke" $errors.Result.Trim()
+    & (Join-Path $tools 'update.ps1') -Report "The task $Task broke" -Detail $errors.Result.Trim()
 }
 $result.code = $process.ExitCode
 $result.state = if ($process.ExitCode -eq 0) { 'done' } else { 'failed' }

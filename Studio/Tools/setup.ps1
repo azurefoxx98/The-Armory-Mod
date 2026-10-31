@@ -135,7 +135,7 @@ function Install-Checks {
             $checksReady = Test-Path -LiteralPath $python
         } catch {
             Write-Host 'The checks could not be installed. Everything else is ready, and the next Set up adds them.'
-            & (Join-Path $PSScriptRoot 'update.ps1') -Report 'The checks could not be installed' $_.Exception.Message
+            & (Join-Path $PSScriptRoot 'update.ps1') -Report 'The checks could not be installed' -Detail $_.Exception.Message
         } finally {
             if (-not $PythonZip -and $zip -and (Test-Path -LiteralPath $zip)) { Remove-Item -LiteralPath $zip -Force }
         }

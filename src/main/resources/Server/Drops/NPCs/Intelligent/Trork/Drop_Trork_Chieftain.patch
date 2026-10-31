@@ -1,0 +1,85 @@
+{
+  "Container": {
+    "Containers": [
+      {
+        "Type": "Choice",
+        "Weight": 100,
+        "Containers": [
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Ingredient_Fabric_Scrap_Linen",
+              "QuantityMin": 1,
+              "QuantityMax": 3
+            }
+          }
+        ]
+      },
+      {
+        "Type": "Choice",
+        "Weight": 5,
+        "Containers": [
+          {
+            "Weight": 25,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Armor_Trork_Head",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 25,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Armor_Trork_Chest",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 25,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Armor_Trork_Hands",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Weight": 25,
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Armor_Trork_Legs",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          },
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Armor_TrorkChief_Chest",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            },
+            "Weight": 21.951
+          }
+        ]
+      },
+      {
+        "Type": "Choice",
+        "Weight": 15,
+        "Containers": [
+          {
+            "Type": "Single",
+            "Item": {
+              "ItemId": "Weapon_Battleaxe_Stone_Trork",
+              "QuantityMin": 1,
+              "QuantityMax": 1
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

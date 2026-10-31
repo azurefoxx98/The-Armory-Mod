@@ -10,24 +10,6 @@
  "PortalKey": {
   "PortalType": "Armory_Showcase"
  },
- "BlockType": {
-  "DrawType": "Model",
-  "Material": "Solid",
-  "Opacity": "Transparent",
-  "CustomModel": "Items/Armory_Invitation/Invitation.blockymodel",
-  "CustomModelTexture": [
-   {
-    "Texture": "Items/Armory_Invitation/Invitation_Texture.png",
-    "Weight": 1
-   }
-  ],
-  "CustomModelAnimation": "Items/Armory_Invitation/Invitation_Unfurl.blockyanim",
-  "TextureComputedColor": "#d8d2c2",
-  "Light": {
-   "Color": "#4cd",
-   "Radius": 2
-  }
- },
  "Recipe": {
   "TimeSeconds": 5,
   "KnowledgeRequired": false,
@@ -88,5 +70,8 @@
    -4,
    0
   ]
- }
+ },
+ "Animation": "Items/Armory_Invitation/Invitation_Unfurl.blockyanim",
+ "Model": "Items/Armory_Invitation/Invitation.blockymodel",
+ "Texture": "Items/Armory_Invitation/Invitation_Texture.png"
 }

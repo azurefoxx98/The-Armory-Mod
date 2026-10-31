@@ -356,7 +356,7 @@ if (-not $wrongBranch) {
         # HyCreator opening on work in progress: the look at GitHub above is all it needs.
         if ($OnOpen) { exit 0 }
         Write-Host ''
-        Write-Host 'Write what you did in The Armory panel, then click Send my work.'
+        Write-Host 'Commit your changes in HyCreator, then click the same button again.'
         exit 1
     }
 }

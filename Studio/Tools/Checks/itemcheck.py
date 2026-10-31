@@ -19,6 +19,7 @@ GAME = os.environ.get('ARMORY_GAME') or os.path.join(os.environ.get('APPDATA', '
 SOUND_KEY = re.compile('"(?:WorldSoundEventId|LocalSoundEventId|SoundEventId)": "([^"]+)"')
 PARTICLE_KEY = re.compile('"SystemId": "([^"]+)"')
 CAMERA_KEY = re.compile('"CameraEffect": "([^"]+)"')
+ASSET_PATH = re.compile('"([^"\\n]+\\.(?:png|blockymodel|blockyanim|particlesystem|ogg))"', re.I)
 VANILLA_CATEGORY = {'ArmoryCategory.ArmoryArmors': 'Items.Armors', 'ArmoryCategory.ArmoryShields': 'Items.Weapons', 'ArmoryCategory.ArmoryWeapons': 'Items.Weapons'}
 
 def png_size(data: bytes) -> tuple[int, int]:
@@ -32,9 +33,22 @@ class Tree:
         self.res = resources
         self.zip = archive
         self.vanilla = set(archive.namelist())
+        self.mod = set()
+        for dirpath, _dirs, names in os.walk(resources):
+            base = os.path.relpath(dirpath, resources).replace(os.sep, '/')
+            self.mod.update((n if base == '.' else base + '/' + n for n in names))
+        self.capitals = {n.casefold(): n for n in self.vanilla | self.mod}
 
     def exists(self, rel: str) -> bool:
-        return os.path.isfile(os.path.join(self.res, *rel.split('/'))) or rel in self.vanilla
+        return rel in self.mod or rel in self.vanilla
+
+    def twin(self, rel: str) -> str | None:
+        if self.exists(rel):
+            return None
+        return self.capitals.get(rel.casefold())
+
+    def absent(self, rel: str) -> bool:
+        return not self.exists(rel) and self.twin(rel) is None
 
     def read(self, rel: str) -> bytes:
         path = os.path.join(self.res, *rel.split('/'))
@@ -88,6 +102,7 @@ def check(resources: str, game: str) -> tuple[list[str], list[str], dict]:
                     for row in block.get('CustomModelTexture') or []:
                         if isinstance(row, dict) and isinstance(row.get('Texture'), str):
                             pairs.setdefault((block['CustomModel'], row['Texture']), rel)
+        problems += capital_problems(resources, tree)
         off = 0
         for (model, texture), rel in sorted(pairs.items()):
             if not (tree.exists('Common/' + model) and tree.exists('Common/' + texture)):
@@ -112,18 +127,38 @@ def check(resources: str, game: str) -> tuple[list[str], list[str], dict]:
                 notes.append(f'{model}: {len(outside)} face(s) partly outside {texture} ({w}x{h})')
     return (problems, notes, {'files': files, 'pairs': len(pairs), 'models_off': off})
 
+def capital_problems(resources: str, tree: Tree) -> list[str]:
+    out: list[str] = []
+    for dirpath, _dirs, names in os.walk(os.path.join(resources, 'Server')):
+        for fname in sorted(names):
+            if not fname.endswith(('.json', '.patch')):
+                continue
+            path = os.path.join(dirpath, fname)
+            rel = os.path.relpath(path, resources).replace(os.sep, '/')
+            with open(path, encoding='utf-8', errors='replace') as fh:
+                text = fh.read()
+            for named in sorted(set(ASSET_PATH.findall(text))):
+                clean = named.replace('\\', '/').lstrip('/')
+                tries = (clean, 'Common/' + clean)
+                if any((tree.exists(t) for t in tries)):
+                    continue
+                real = next((tree.twin(t) for t in tries if tree.twin(t)), None)
+                if real:
+                    out.append(f'{rel}: it names {clean} but the file is {real}. The capitals must match, or a server stops at boot')
+    return out
+
 def item_problems(doc: dict, tree: Tree, known: dict[str, set[str]]) -> list[str]:
     out: list[str] = []
     for key in ('Model', 'Texture', 'Icon'):
         value = doc.get(key)
-        if isinstance(value, str) and value and (not tree.exists('Common/' + value)):
+        if isinstance(value, str) and value and tree.absent('Common/' + value):
             out.append(f'{key} {value} exists in neither the mod nor the game')
     block = doc.get('BlockType') if isinstance(doc.get('BlockType'), dict) else {}
-    if isinstance(block.get('CustomModel'), str) and (not tree.exists('Common/' + block['CustomModel'])):
+    if isinstance(block.get('CustomModel'), str) and tree.absent('Common/' + block['CustomModel']):
         out.append(f"CustomModel {block['CustomModel']} exists in neither the mod nor the game")
     for row in block.get('CustomModelTexture') or []:
         texture = row.get('Texture') if isinstance(row, dict) else None
-        if isinstance(texture, str) and (not tree.exists('Common/' + texture)):
+        if isinstance(texture, str) and tree.absent('Common/' + texture):
             out.append(f'CustomModelTexture {texture} exists in neither the mod nor the game')
     recipe = doc.get('Recipe') if isinstance(doc.get('Recipe'), dict) else {}
     for row in recipe.get('Input') or []:

@@ -188,6 +188,7 @@ GATE_STRINGS = [
     'itemcheck\t{} {} exists in neither the mod nor the game',
     'itemcheck\t{}: cannot be read as JSON, so the game never loads it ({})',
     'itemcheck\t{}: is not a JSON object, so the game never loads it',
+    'itemcheck\t{}: it names {} but the file is {}. The capitals must match, or a server stops at boot',
     'itemcheck\t{}: its model {} cannot be read ({})',
     'itemcheck\t{}: its texture {} is not a PNG picture',
     'itemcheck\t{}: {} face(s) partly outside {} ({}x{})',
@@ -299,6 +300,7 @@ SAMPLES = [
     ("lootcheck", "Server/Drops/Prefabs/Zone1_Goblin_Tier1.patch: it puts the drop list Armory_Zone1_Loot in chests, but Armory_Zone1_Loot does not exist", "Name one of your chest loot tables Armory_Zone1_Loot again."),
     ("lootcheck", "Server/Drops/ScrapArmorDrops.json: it names the drop list Ghost_Drops, which does not exist", "names the table Ghost_Drops"),
     ("lootcheck", "Server/Drops/TheArmory/Armory_Zone1_Loot.json: it drops nothing at all, so the game refuses the whole file", "add an item"),
+    ("itemcheck", "Server/Item/Items/A/B.json: it names Items/X/Red.png but the file is Common/Items/X/red.png. The capitals must match, or a server stops at boot", "different capital letters"),
 ]
 
 

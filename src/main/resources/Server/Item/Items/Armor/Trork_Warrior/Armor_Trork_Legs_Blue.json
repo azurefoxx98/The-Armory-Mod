@@ -1,0 +1,79 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Trork_Legs.name"
+  },
+  "Parent": "Armor_Iron_Legs",
+  "Quality": "Uncommon",
+  "ItemLevel": 25,
+  "Icon": "Icons/ItemsGenerated/Armor_Trork_Legs_Blue.png",
+  "IconProperties": {
+    "Scale": 0.6,
+    "Translation": [ -1, -2 ],
+    "Rotation": [ 22.5, 45, 22.5 ]
+  },
+  "Model": "Items/Armors/Trork_Warrior/Legs.blockymodel",
+  "Texture": "Items/Armors/Trork/Legs_Blue.png",
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [ "Shoes", "Overpants" ],
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 13,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.07,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.07,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Charged": [
+        {
+          "Amount": 0.04,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [ "Armor" ],
+    "Family": [ "Trork" ]
+  },
+  "MaxDurability": 50,
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Trork_Legs"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [ "ArmoryAlteration" ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Trork_Legs"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "Parent": "Armor_Trork_Chest",
+  "Quality": "Uncommon",
+  "Icon": "Icons/ItemsGenerated/Armor_Trork_Chest_Cyan.png",
+  "Texture": "Items/Armors/Trork/Chest_Cyan.png",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors",
+    "Items.Armors"
+  ],
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Trork_Chest"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  }
+}

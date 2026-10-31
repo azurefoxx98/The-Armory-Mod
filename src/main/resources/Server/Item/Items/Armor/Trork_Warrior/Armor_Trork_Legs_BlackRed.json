@@ -1,0 +1,34 @@
+{
+  "Parent": "Armor_Trork_Legs",
+  "Quality": "Uncommon",
+  "Icon": "Icons/ItemsGenerated/Armor_Trork_Legs_BlackRed.png",
+  "Texture": "Items/Armors/Trork/Legs_BlackRed.png",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors",
+    "Items.Armors"
+  ],
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Trork_Legs"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "IconProperties": {
+    "Scale": 0.6,
+    "Translation": [ -1, -2 ],
+    "Rotation": [ 22.5, 45, 22.5 ]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Trork_Chieftain_Chest"
+  },
+  "Parent": "Armor_Iron_Chest",
+  "ItemLevel": 25,
+  "Icon": "Icons/ItemsGenerated/Armor_TrorkChief_Chest.png",
+  "IconProperties": {
+    "Scale": 0.21,
+    "Translation": [ -1, -20 ],
+    "Rotation": [ 22.5, 45, 22.5 ]
+  },
+  "Texture": "Items/Armors/Trork/Chieftain/Chieftain_Red.png",
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [ "Overtop" ],
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 25,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.12,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.3,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Charged": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [ "Armor" ],
+    "Family": [ "Trork" ]
+  },
+  "MaxDurability": 50,
+  "Quality": "Uncommon",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Trork_Chieftain_Chest"
+    }
+  ],
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
+  "Model": "Items/Armors/Trork/Chieftain/Chest.blockymodel"
+}

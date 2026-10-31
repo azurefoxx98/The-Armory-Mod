@@ -4,9 +4,13 @@
 #
 #   conhost.exe --headless powershell.exe -NoProfile -ExecutionPolicy Bypass -File run.ps1 -Task <task> -Id <id> ...
 #
-#   -Task update          brings in the mod's latest work and sends hers (update.ps1)
+#   -Task update          -WorkFile <file> -NoteFile <file>: commits her work with her line, joins the latest, sends it,
+#                         and sends us her message (update.ps1)
+#   -Task sync            HyCreator just opened: brings in what is new when her copy is clean (update.ps1 -OnOpen)
+#   -Task programs-info   on her USB key, the newer programs on offer. Elsewhere it ends at once
+#   -Task programs-install -Program <name>: installs one of them
 #   -Task release-info    what the release form shows: the last version, the next one, what changed since
-#   -Task release         -Version 1.2.3 -Choice draft|message|publish -NotesFile <file> [-MessageFile <file>]
+#   -Task release         -Version 1.2.3 -Choice draft|publish -NotesFile <file>
 #   -Task setup-report    what setup would move, so the panel can ask before anything moves
 #   -Task setup           setup, once she agreed (setup.ps1 -Yes)
 #   -Task report          -Title <problem> -Detail <what happened>: tells us, through update.ps1 -Report
@@ -25,7 +29,9 @@ param(
     [string] $Version = '',
     [string] $Choice = '',
     [string] $NotesFile = '',
-    [string] $MessageFile = '',
+    [string] $WorkFile = '',
+    [string] $NoteFile = '',
+    [string] $Program = '',
     [string] $Title = '',
     [string] $Detail = ''
 )
@@ -33,8 +39,9 @@ $ErrorActionPreference = 'Stop'
 $tools = $PSScriptRoot
 $runs = Join-Path $tools 'Runs'
 $tasks = @{
-    'update' = 'update.ps1'; 'release-info' = 'release.ps1'; 'release' = 'release.ps1'
+    'update' = 'update.ps1'; 'sync' = 'update.ps1'; 'release-info' = 'release.ps1'; 'release' = 'release.ps1'
     'setup-report' = 'setup.ps1'; 'setup' = 'setup.ps1'; 'report' = 'update.ps1'
+    'programs-info' = '..\Key\programs.ps1'; 'programs-install' = '..\Key\programs.ps1'
 }
 if (-not $tasks.ContainsKey($Task)) { Write-Host "run.ps1: no task named '$Task'. Tasks: $($tasks.Keys -join ', ')"; exit 2 }
 New-Item -ItemType Directory -Force -Path $runs | Out-Null
@@ -62,8 +69,9 @@ function Stop-Run([string] $text, [int] $code = 1) {
 }
 
 # Another task still running, by a result marked running whose process is still this runner.
+# A look at the programs only reads, so it neither waits for a task nor holds one up.
 foreach ($other in Get-ChildItem -LiteralPath $runs -Filter '*.json' -File) {
-    if ($other.Name -like '*.data.json' -or $other.FullName -eq $resultFile) { continue }
+    if ($Task -eq 'programs-info' -or $other.Name -like '*.data.json' -or $other.Name -eq 'programs-info.json' -or $other.FullName -eq $resultFile) { continue }
     try { $seen = [IO.File]::ReadAllText($other.FullName) | ConvertFrom-Json } catch { continue }
     if ($seen.state -ne 'running' -or -not $seen.pid) { continue }
     $alive = Get-CimInstance Win32_Process -Filter "ProcessId=$([int]$seen.pid)" -ErrorAction SilentlyContinue
@@ -75,12 +83,25 @@ Save-Result
 
 # On the USB key, Set up links this computer's Hytale to the mod on the key. The key sets up everything else itself.
 if ($env:ARMORY_KEY -and $Task -like 'setup*') { $tasks[$Task] = '..\Key\play.ps1' }
+# Newer programs exist only on the key.
+if ($Task -like 'programs*' -and -not $env:ARMORY_KEY) {
+    $result.state = 'done'; $result.code = 0; $result.finished = (Get-Date).ToString('o')
+    Save-Result
+    exit 0
+}
 
 $arguments = New-Object System.Collections.Generic.List[string]
 switch ($Task) {
+    'update' {
+        if ($WorkFile) { $arguments.AddRange([string[]]@('-WorkFile', $WorkFile)) }
+        if ($NoteFile) { $arguments.AddRange([string[]]@('-NoteFile', $NoteFile)) }
+    }
+    'sync' { $arguments.Add('-OnOpen') }
+    'programs-info' { $arguments.AddRange([string[]]@('-Root', $env:ARMORY_KEY, '-List', $dataFile)) }
+    'programs-install' { $arguments.AddRange([string[]]@('-Root', $env:ARMORY_KEY, '-One', $Program)) }
     'release-info' { $arguments.AddRange([string[]]@('-Info', $dataFile)) }
     'release' {
-        foreach ($pair in @(@('-Version', $Version), @('-Choice', $Choice), @('-NotesFile', $NotesFile), @('-MessageFile', $MessageFile))) {
+        foreach ($pair in @(@('-Version', $Version), @('-Choice', $Choice), @('-NotesFile', $NotesFile), @('-WorkFile', $WorkFile))) {
             if ($pair[1]) { $arguments.AddRange([string[]]$pair) }
         }
     }
@@ -101,6 +122,9 @@ $info.Arguments = (@('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypas
 $info.UseShellExecute = $false
 $info.RedirectStandardOutput = $true
 $info.RedirectStandardError = $true
+# A start from a newer PowerShell leaves its module folders in the environment, and Windows PowerShell then cannot find
+# its own commands. With the setting gone it uses its own places.
+[void]$info.EnvironmentVariables.Remove('PSModulePath')
 $info.RedirectStandardInput = $true
 $info.StandardOutputEncoding = New-Object Text.UTF8Encoding $false
 $info.StandardErrorEncoding = New-Object Text.UTF8Encoding $false
@@ -108,8 +132,8 @@ $info.WorkingDirectory = (Resolve-Path (Join-Path $tools '..\..')).Path
 try {
     $process = [Diagnostics.Process]::Start($info)
 } catch {
-    & (Join-Path $tools 'update.ps1') -Report "The task $Task could not start" $_.Exception.Message
-    Stop-Run "This could not start. Larsonix has been told, and you can keep working."
+    & (Join-Path $tools 'update.ps1') -Report "The task $Task could not start" -Detail $_.Exception.Message
+    Stop-Run "This could not start. You can keep working."
 }
 # Nothing a task asks can be answered here: an input that is closed makes any question end at once instead of waiting.
 $process.StandardInput.Close()
@@ -125,7 +149,7 @@ if (Test-Path -LiteralPath $dataFile) {
 }
 # A task that broke on something its own lines never named still reaches us.
 if ($process.ExitCode -ne 0 -and $Task -ne 'report' -and $errors.Result.Trim()) {
-    & (Join-Path $tools 'update.ps1') -Report "The task $Task broke" $errors.Result.Trim()
+    & (Join-Path $tools 'update.ps1') -Report "The task $Task broke" -Detail $errors.Result.Trim()
 }
 $result.code = $process.ExitCode
 $result.state = if ($process.ExitCode -eq 0) { 'done' } else { 'failed' }

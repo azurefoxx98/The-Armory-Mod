@@ -1,9 +1,10 @@
 # Installs the key's programs from programs.json, each file checked against the sha256 its release page
-# publishes. The builder runs it to make a key, and Get updates on the key runs it to offer every newer
+# publishes. The builder runs it to make a key, and The Armory panel on the key runs it to offer every newer
 # version listed, so a key that is built and a key that is updated hold the same programs.
 #
 #   programs.ps1 -Root L:\ -Install [-Cache <folder>]   install every listed program not yet installed
-#   programs.ps1 -Root L:\ -GetUpdates                  bring in the mod's latest work, then offer each newer program
+#   programs.ps1 -Root L:\ -List <file>                 writes the newer programs on offer to the file
+#   programs.ps1 -Root L:\ -One <name>                  installs one of them
 #
 # A program is unpacked beside its place and swapped in whole, so a failed download or an unplugged key
 # leaves the one already there. What each program keeps in its own folder (PhotoCraft's settings) moves
@@ -11,7 +12,8 @@
 param(
     [Parameter(Mandatory)] [string] $Root,
     [switch] $Install,
-    [switch] $GetUpdates,
+    [string] $List = '',
+    [string] $One = '',
     # Where downloads are kept and looked for first. Only the builder uses it.
     [string] $Cache = ''
 )
@@ -29,7 +31,6 @@ function Stop-Programs([string] $text, [string] $detail = '') {
     if ($text.Contains('has been told')) {
         try { & (Join-Path $Root 'The-Armory-Mod\Studio\Tools\update.ps1') -Report "The key: $text" -Detail $detail } catch { }
     }
-    if ($GetUpdates) { [void](Read-Host 'Press Enter to close this window') }
     exit 1
 }
 
@@ -38,7 +39,7 @@ function Read-ProgramList {
         $list = Read-KeyJson $place
         if ($list -and $list.programs) { return @($list.programs) }
     }
-    Stop-Programs 'The list of programs was not found on this key. Larsonix has been told, and you can keep working.' $Root
+    Stop-Programs 'The list of programs was not found on this key. You can keep working.' $Root
 }
 
 function Read-Installed {
@@ -70,7 +71,7 @@ function Get-ProgramFile($file, [string] $name) {
     }
     if ((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $file.sha256) {
         Remove-Item -LiteralPath $path -Force
-        Stop-Programs 'A download arrived damaged, so it was refused. Larsonix has been told, and you can keep working.' "$($file.url) does not match its published checksum"
+        Stop-Programs 'A download arrived damaged, so it was refused. You can keep working.' "$($file.url) does not match its published checksum"
     }
     return $path
 }
@@ -78,7 +79,7 @@ function Get-ProgramFile($file, [string] $name) {
 function Invoke-Quiet([string] $exe, [string[]] $arguments, [string] $what) {
     $ErrorActionPreference = 'Continue'
     $out = & $exe @arguments 2>&1
-    if ($LASTEXITCODE -ne 0) { Stop-Programs "$what could not be installed. Larsonix has been told, and you can keep working." (($out | Select-Object -Last 5) -join ' ') }
+    if ($LASTEXITCODE -ne 0) { Stop-Programs "$what could not be installed. You can keep working." (($out | Select-Object -Last 5) -join ' ') }
 }
 
 # Git's own first step after unpacking, which its self-extractor runs: it must run from Git's folder. Its
@@ -97,11 +98,11 @@ function Complete-PortableGit([string] $folder) {
         $info.EnvironmentVariables['HOME'] = $scratch
         $info.EnvironmentVariables['USERPROFILE'] = $scratch
         $process = [Diagnostics.Process]::Start($info)
-        if (-not $process.WaitForExit(300000)) { $process.Kill(); Stop-Programs 'Git could not be installed. Larsonix has been told, and you can keep working.' 'post-install.bat did not finish' }
+        if (-not $process.WaitForExit(300000)) { $process.Kill(); Stop-Programs 'Git could not be installed. You can keep working.' 'post-install.bat did not finish' }
     } finally {
         Remove-Item -LiteralPath $scratch -Recurse -Force -ErrorAction SilentlyContinue
     }
-    if (Test-Path -LiteralPath (Join-Path $folder 'post-install.bat')) { Stop-Programs 'Git could not be installed. Larsonix has been told, and you can keep working.' 'post-install.bat is still there' }
+    if (Test-Path -LiteralPath (Join-Path $folder 'post-install.bat')) { Stop-Programs 'Git could not be installed. You can keep working.' 'post-install.bat is still there' }
 }
 
 function Install-Program($program) {
@@ -146,10 +147,10 @@ function Install-Program($program) {
         'exe' {
             Copy-Item -LiteralPath $files[0] -Destination (Join-Path $new $program.exe)
         }
-        default { Stop-Programs "$name could not be installed. Larsonix has been told, and you can keep working." "unknown kind $($program.kind)" }
+        default { Stop-Programs "$name could not be installed. You can keep working." "unknown kind $($program.kind)" }
     }
     if ($program.exe -and -not (Test-Path -LiteralPath (Join-Path $new $program.exe))) {
-        Stop-Programs "$name could not be installed. Larsonix has been told, and you can keep working." "no $($program.exe) after unpacking"
+        Stop-Programs "$name could not be installed. You can keep working." "no $($program.exe) after unpacking"
     }
     if ($program.keep -and (Test-Path -LiteralPath (Join-Path $target $program.keep))) {
         Move-Item -LiteralPath (Join-Path $target $program.keep) -Destination (Join-Path $new $program.keep)
@@ -175,36 +176,27 @@ if ($Install) {
     exit 0
 }
 
-if ($GetUpdates) {
-    Write-Host 'Getting updates for The Armory and its programs.'
-    Write-Host ''
-    & (Join-Path $Root 'The-Armory-Mod\Studio\Tools\update.ps1')
-    $programs = Read-ProgramList
-    $programs = @($programs | Where-Object { $_.kind -eq '7zip' }) + @($programs | Where-Object { $_.kind -ne '7zip' })
+if ($List) {
     $key = Read-Installed
-    $offered = 0
-    foreach ($program in $programs) {
+    $newer = @()
+    foreach ($program in Read-ProgramList) {
         # HyCreator replaces itself when it finds a newer version, so it is never offered here.
         if ($program.updatesItself) { continue }
-        $have = $key.programs.($program.name)
-        if ($have -eq $program.version) { continue }
-        $offered++
-        Write-Host ''
-        $now = if ($have) { " You have $have." } else { '' }
-        Write-Host "A newer $($program.name) is ready: $($program.version).$now"
-        Write-Host 'Yes installs it now. No keeps the one you have.'
-        $answer = Read-Host 'Install it? (y/n)'
-        if ($answer -notmatch '^\s*y') { continue }
-        Install-Program $program
-        Save-Installed $key $program.name $program.version
-        Write-Host 'Installed.'
+        if ($key.programs.($program.name) -ne $program.version) { $newer += @{ name = $program.name; version = $program.version } }
     }
-    Write-Host ''
-    if ($offered -eq 0) { Write-Host 'Your programs are up to date.' }
-    Write-Host 'Done.'
-    [void](Read-Host 'Press Enter to close this window')
+    [IO.File]::WriteAllText($List, (ConvertTo-Json @{ newer = @($newer) } -Depth 4), (New-Object Text.UTF8Encoding $false))
     exit 0
 }
 
-Write-Host 'Run this from the key with -Install or -GetUpdates.'
+if ($One) {
+    $program = @(Read-ProgramList | Where-Object { $_.name -eq $One }) | Select-Object -First 1
+    if (-not $program) { Stop-Programs "$One could not be installed. You can keep working." 'not on the list' }
+    $key = Read-Installed
+    Install-Program $program
+    Save-Installed $key $program.name $program.version
+    Write-Host "$One is installed."
+    exit 0
+}
+
+Write-Host 'Run this from the key with -Install, -List or -One.'
 exit 2

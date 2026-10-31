@@ -454,6 +454,9 @@ def words(expect) -> None:
     tool_files = ["Server/Item/Items/Armory_Showcase/X.json", "Server/Models/Showcase_Theatre/Y.json",
                   "Server/Drops/Prefabs/Zone1_Goblin_Tier1.patch"]
     wrong = [p for p in tool_files if check.made_by(p) and owners.owner_of(file=p)[0] != "us"]
+    expect("a check that could not run makes no mark look stale", check.apply_accepted([{"id": "game", "status": "error", "lady": []}], [{"key": "k"}])["stale"] == []
+           and check.apply_normal([{"id": "game", "status": "error", "lady": []}], [{"key": "k"}])["stale"] == [])
+    expect("with every check run, a mark matching nothing is stale", len(check.apply_normal([{"id": "game", "status": "pass", "lady": []}], [{"key": "k"}])["stale"]) == 1)
     expect("every file our tools rewrite is ours in the owner table", not wrong and all(check.made_by(p) for p in tool_files),
            str(wrong))
     stat = check.for_lady("itemcheck", "Server/Item/Items/Praetorian_Boots.json: its Armor changes the stat Volatility, which does not exist")
@@ -667,7 +670,7 @@ def main(argv: list[str]) -> int:
         # The checks that read the whole mod report what the branch already holds (since her October import, the
         # Praetorian stats and families), so a branch of her own is judged on what it adds, never on that.
         before = {k: set(v["problems"]) for k, v in checks.items()}
-        own = ("branch", "languages", "generated", "showcase")
+        own = ("branch", "languages", "showcase")
         expect("a branch made from ours shows no problem of its own, and no check stops",
                not result["error"] and all(checks[k]["status"] == "pass" for k in own)
                and all(v["status"] != "error" for v in checks.values()),
@@ -749,9 +752,6 @@ def main(argv: list[str]) -> int:
                and any("ItemSoundSetId" in p for p in checks["dupkeycheck"]["problems"]), checks["dupkeycheck"])
         expect("the lost language name is named", checks["languages"]["status"] == "fail"
                and any(lost in p for p in checks["languages"]["problems"]), checks["languages"])
-        expect("the edited chest patch is named, and her edited loot table is not", checks["generated"]["status"] == "fail"
-               and any(os.path.basename(loot) in p for p in checks["generated"]["problems"])
-               and not any("Armory_Zone1_Loot" in p for p in checks["generated"]["problems"]), checks["generated"])
         showcase = checks["showcase"]
         expect("the piece no figure wears any more is named, as ours alone",
                showcase["status"] == "fail" and [e["items"][0]["label"] for e in showcase["lady"]] == [unshown]

@@ -431,7 +431,7 @@ def lady_view(checks: list[dict]) -> None:
             if any(t in tail for t in typos):
                 waiting = True
             else:
-                entries.append({"says": f"The check \"{c['title']}\" could not run, so it says nothing about your work.",
+                entries.append({"says": f"One check could not run this time: {c['title']}. The other checks still ran.",
                                 "do": SEND, "items": [], "line": tail, "known": True, "detail": tail})
         c["lady"] = entries
     if waiting:
@@ -562,7 +562,7 @@ def check_branch() -> dict:
     if branch in ("main", "HEAD", ""):
         problem = "Your copy is on main, not on your branch." if branch == "main" else "Your copy is on no branch."
         # HyCreator's git button, at the top, shows the branch the copy is on: main, or HEAD for none.
-        switch = f"In HyCreator, click {branch or 'HEAD'} at the top, then Branches..., then lady."
+        switch = "Click Send my work in The Armory panel. It moves your copy to lady."
         return {"status": "fail", "output_tail": [], "problems": [problem], "lady": [
             {"says": problem, "do": switch, "items": [], "line": problem, "known": True}]}
     return {"status": "pass", "problems": [], "output_tail": []}
@@ -615,35 +615,6 @@ def made_by(rel: str) -> str | None:
         if re.search(pattern, rel):
             return tool
     return None
-
-
-def check_generated(own: list[str] | None, starts: list[str], why: str) -> dict:
-    """Files the mod's tools write that this branch's own commits, or its uncommitted work, changed."""
-    if own is None:
-        return {"status": "error", "problems": [], "output_tail": [why]}
-    changed = set()
-    for commit in own:
-        listing = git("show", "--format=", "--name-only", "--no-renames", commit)
-        parents = (git("rev-list", "--parents", "-n", "1", commit) or "").split()
-        if len(parents) > 2:
-            continue  # a merge brings work from elsewhere, its own changes are the branches it joins
-        changed |= set((listing or "").splitlines())
-    for line in (git("status", "--porcelain", "--no-renames", "--untracked-files=all", "--", "src/main/resources") or "").splitlines():
-        changed.add(line[3:].strip().strip('"'))
-    problems = []
-    lady = []
-    for path in sorted(p for p in changed if p.startswith("src/main/resources/")):
-        rel = path[len("src/main/resources/"):]
-        tool = made_by(rel)
-        if tool:
-            problems.append(f"{rel} is made by a tool from {tool}, and this branch changed it. "
-                            "The change is erased the next time the tool runs.")
-            lady.append({"says": f"You changed a file our tools rewrite from {tool}, so the change will be lost.",
-                         "do": "Send Larsonix what should change.",
-                         "items": [{"label": os.path.splitext(os.path.basename(rel))[0],
-                                    "open": rel[len("Server/"):] if rel.startswith("Server/") else None}],
-                         "line": problems[-1], "known": True})
-    return {"status": "fail" if problems else "pass", "problems": problems, "lady": lady, "output_tail": []}
 
 
 # The showcase world dresses a figure in every piece she can wear, and its stands name what each figure wears. A piece
@@ -1076,7 +1047,6 @@ def run_all() -> dict:
         for name, title, outcome in (
             ("branch", "Your branch", check_branch()),
             ("languages", "Language files", check_languages(own, starts, why)),
-            ("generated", "Files our tools make", check_generated(own, starts, why)),
             ("showcase", "The showcase world", check_showcase(game)),
             ("game", "Your work in the game", check_game(own, starts, why, game)),
         ):
@@ -1126,7 +1096,9 @@ def apply_normal(checks: list[dict], entries: list[dict]) -> dict:
             labels = [i["label"] for i in e["items"]] or [""]
             e["hidden"] = [lab for lab in labels if e["key"] + "|" + lab in wanted]
             seen |= {e["key"] + "|" + lab for lab in e["hidden"]}
-    stale = [e for e in entries if e["key"] + "|" + str(e.get("item") or "") not in seen]
+    # A check that could not run finds nothing, which says nothing about a mark.
+    broken = any(c.get("status") == "error" for c in checks)
+    stale = [] if broken else [e for e in entries if e["key"] + "|" + str(e.get("item") or "") not in seen]
     return {"hidden": len(seen), "stale": stale}
 
 
@@ -1148,11 +1120,12 @@ def apply_accepted(checks: list[dict], entries: list[dict]) -> dict:
             elif rest:
                 kept.append(dict(e, items=rest))
         c["lady"] = kept
-    stale = [e for k, e in wanted.items() if k not in seen]
+    broken = any(c.get("status") == "error" for c in checks)
+    stale = [] if broken else [e for k, e in wanted.items() if k not in seen]
     if stale:
         checks.append({"id": "accepted", "title": "Problems meant to be", "status": "fail", "seconds": None,
                        "problems": [e["key"] for e in stale], "output_tail": [], "lady": [
-                           {"says": "A problem marked as meant to be is no longer found, so its mark can go.",
+                           {"says": "This problem is gone, so its old note can be removed.",
                             "do": "Nothing to do for you. Larsonix removes it.",
                             "items": [{"label": str(e.get("item") or "")}] if e.get("item") else [], "line": e["key"],
                             "known": True, "owner": "us", "key": "accepted|" + e["key"], "hidden": []}

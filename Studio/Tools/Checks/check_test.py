@@ -454,6 +454,9 @@ def words(expect) -> None:
     tool_files = ["Server/Item/Items/Armory_Showcase/X.json", "Server/Models/Showcase_Theatre/Y.json",
                   "Server/Drops/Prefabs/Zone1_Goblin_Tier1.patch"]
     wrong = [p for p in tool_files if check.made_by(p) and owners.owner_of(file=p)[0] != "us"]
+    expect("a check that could not run makes no mark look stale", check.apply_accepted([{"id": "game", "status": "error", "lady": []}], [{"key": "k"}])["stale"] == []
+           and check.apply_normal([{"id": "game", "status": "error", "lady": []}], [{"key": "k"}])["stale"] == [])
+    expect("with every check run, a mark matching nothing is stale", len(check.apply_normal([{"id": "game", "status": "pass", "lady": []}], [{"key": "k"}])["stale"]) == 1)
     expect("every file our tools rewrite is ours in the owner table", not wrong and all(check.made_by(p) for p in tool_files),
            str(wrong))
     stat = check.for_lady("itemcheck", "Server/Item/Items/Praetorian_Boots.json: its Armor changes the stat Volatility, which does not exist")

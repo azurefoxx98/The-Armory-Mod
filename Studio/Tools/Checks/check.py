@@ -431,7 +431,7 @@ def lady_view(checks: list[dict]) -> None:
             if any(t in tail for t in typos):
                 waiting = True
             else:
-                entries.append({"says": f"The check \"{c['title']}\" could not run, so it says nothing about your work.",
+                entries.append({"says": f"One check could not run this time: {c['title']}. The other checks still ran.",
                                 "do": SEND, "items": [], "line": tail, "known": True, "detail": tail})
         c["lady"] = entries
     if waiting:
@@ -1096,7 +1096,9 @@ def apply_normal(checks: list[dict], entries: list[dict]) -> dict:
             labels = [i["label"] for i in e["items"]] or [""]
             e["hidden"] = [lab for lab in labels if e["key"] + "|" + lab in wanted]
             seen |= {e["key"] + "|" + lab for lab in e["hidden"]}
-    stale = [e for e in entries if e["key"] + "|" + str(e.get("item") or "") not in seen]
+    # A check that could not run finds nothing, which says nothing about a mark.
+    broken = any(c.get("status") == "error" for c in checks)
+    stale = [] if broken else [e for e in entries if e["key"] + "|" + str(e.get("item") or "") not in seen]
     return {"hidden": len(seen), "stale": stale}
 
 
@@ -1118,11 +1120,12 @@ def apply_accepted(checks: list[dict], entries: list[dict]) -> dict:
             elif rest:
                 kept.append(dict(e, items=rest))
         c["lady"] = kept
-    stale = [e for k, e in wanted.items() if k not in seen]
+    broken = any(c.get("status") == "error" for c in checks)
+    stale = [] if broken else [e for k, e in wanted.items() if k not in seen]
     if stale:
         checks.append({"id": "accepted", "title": "Problems meant to be", "status": "fail", "seconds": None,
                        "problems": [e["key"] for e in stale], "output_tail": [], "lady": [
-                           {"says": "A problem marked as meant to be is no longer found, so its mark can go.",
+                           {"says": "This problem is gone, so its old note can be removed.",
                             "do": "Nothing to do for you. Larsonix removes it.",
                             "items": [{"label": str(e.get("item") or "")}] if e.get("item") else [], "line": e["key"],
                             "known": True, "owner": "us", "key": "accepted|" + e["key"], "hidden": []}

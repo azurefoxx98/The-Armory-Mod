@@ -1658,9 +1658,8 @@ export function releaseProblem(info, form) {
   if (!/^\d+\.\d+\.\d+$/.test(version)) return version + ' is not a version number. Type one like ' + ((info && info.suggested) || '1.0.0') + '.';
   if (info && info.last && compareVersions(version, info.last) <= 0) return version + ' is not newer than the last release, ' + info.last + '.';
   if (info && Array.isArray(info.released) && info.released.includes(version)) return version + ' is already released.';
-  if (!['draft', 'message', 'publish'].includes(form.choice)) return 'Choose what should happen with this release.';
+  if (!['draft', 'publish'].includes(form.choice)) return 'Choose what should happen with this release.';
   if (!String(form.notes || '').trim()) return 'Write the changelog players will read.';
-  if (form.choice === 'message' && !String(form.message || '').trim()) return 'Write your message for Larsonix.';
   if (info && info.uncommitted && !String(form.work || '').trim()) return 'Write what you did since your last send.';
   return null;
 }
@@ -1935,6 +1934,8 @@ function StudioPanel() {
   const [note, setNote] = useState('');
   const [openLog, setOpenLog] = useState({});
   const [workLine, setWorkLine] = useState('');
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteText, setNoteText] = useState('');
   const [where, setWhere] = useState({ line: '', changed: 0 });
   const after = useRef({});
   const lastLook = useRef(0);
@@ -1980,7 +1981,7 @@ function StudioPanel() {
         after.current[w.id] = true;
         const last = view.lines.filter(l => !l.larsonix).slice(-1)[0];
         if (task === 'update') {
-          if (view.state === 'done') { setWorkLine(''); lastLook.current = 0; }
+          if (view.state === 'done') { setWorkLine(''); setNoteText(''); setNoteOpen(false); lastLook.current = 0; }
           if (languageRefresh) languageRefresh();
           if (view.state === 'done') addonChanged(api).then(c => { addonNewer = addonNewer || c; if (c) reloadWhenSafe(api); });
         }
@@ -2019,6 +2020,7 @@ function StudioPanel() {
     if (S && S.getState().saveAll) await S.getState().saveAll();
   };
   const WORK_FILE = RUNS + 'work-line.txt';
+  const NOTE_FILE = RUNS + 'note.txt';
   const workPath = () => info.root.replace(/\//g, '\\') + '\\Studio\\Tools\\Runs\\work-line.txt';
   const send = async () => {
     await saveOpen();
@@ -2026,7 +2028,13 @@ function StudioPanel() {
     if (where.changed > 0 && !line) { setNote('Write what you did, then click Send my work.'); return; }
     setNote('');
     if (line && !(await writeRepoText(api, WORK_FILE, line + '\n'))) { setNote(told('Your line could not be saved.')); return; }
-    start('update', line ? { WorkFile: workPath() } : {});
+    const params = line ? { WorkFile: workPath() } : {};
+    const message = noteText.trim();
+    if (message) {
+      if (!(await writeRepoText(api, NOTE_FILE, message + '\n'))) { setNote(told('Your message could not be saved.')); return; }
+      params.NoteFile = workPath().replace('work-line.txt', 'note.txt');
+    }
+    start('update', params);
   };
 
   const checkNow = async () => {
@@ -2048,7 +2056,7 @@ function StudioPanel() {
   };
 
   const openRelease = () => {
-    setForm({ version: '', choice: 'draft', notes: '', message: '', loading: true, info: null });
+    setForm({ version: '', choice: 'draft', notes: '', loading: true, info: null });
     start('release-info');
   };
   const startRelease = async () => {
@@ -2061,15 +2069,13 @@ function StudioPanel() {
       if (!ok) return;
     }
     const notes = await writeRepoText(api, RUNS + 'release-notes.txt', form.notes.trim() + '\n');
-    const message = form.choice !== 'message' || await writeRepoText(api, RUNS + 'release-message.txt', form.message.trim() + '\n');
-    if (!notes || !message) { setForm({ ...form, problem: told('The changelog could not be saved.') }); return; }
+    if (!notes) { setForm({ ...form, problem: told('The changelog could not be saved.') }); return; }
     const repo = info.root.replace(/\//g, '\\');
     const params = { Version: form.version.trim(), Choice: form.choice, NotesFile: repo + '\\Studio\\Tools\\Runs\\release-notes.txt' };
     if (form.work && form.work.trim()) {
       if (!(await writeRepoText(api, WORK_FILE, form.work.trim() + '\n'))) { setForm({ ...form, problem: told('Your line could not be saved.') }); return; }
       params.WorkFile = workPath();
     }
-    if (form.choice === 'message') params.MessageFile = repo + '\\Studio\\Tools\\Runs\\release-message.txt';
     if (await start('release', params)) setForm(null);
   };
 
@@ -2181,7 +2187,7 @@ function StudioPanel() {
     cards.push(h('div', { key: 'setup', style: cardStyle({ borderColor: tint(LOOK.warn, 50) }) },
       title('Set up this computer'),
       h('p', { style: { marginTop: 0 } }, state === 'none'
-        ? 'Hytale then loads the mod from this copy, the checks run after each commit, and these pages stay up to date.'
+        ? 'Hytale then loads the mod from this copy, the checks run each time you send your work, and these pages stay up to date.'
         : 'The checks are not installed yet. Set up adds them.'),
       button('Set up', () => start('setup-report'), true),
       status(reportView), log('setup-report', reportView),
@@ -2195,7 +2201,12 @@ function StudioPanel() {
     h('input', { style: { background: 'var(--field)', color: LOOK.text, border: '1px solid ' + LOOK.border, borderRadius: 'var(--radius-m, 6px)', padding: '6px 8px', fontSize: 13, width: '100%', boxSizing: 'border-box', marginTop: 4 },
       placeholder: 'What did you do?', value: workLine, onChange: e => { setWorkLine(e.target.value); setNote(''); },
       onKeyDown: e => { if (e.key === 'Enter' && !busyTask) send(); } }),
-    h('div', { style: { marginTop: 8 } }, button(sending ? 'Sending...' : 'Send my work', send, true)),
+    noteOpen ? h('div', { style: { marginTop: 8 } },
+      h('textarea', { style: { background: 'var(--field)', color: LOOK.text, border: '1px solid ' + LOOK.border, borderRadius: 'var(--radius-m, 6px)', padding: '6px 8px', fontSize: 13, width: '100%', minHeight: 70, boxSizing: 'border-box', fontFamily: 'inherit' },
+        placeholder: 'Your message for Larsonix', value: noteText, onChange: e => setNoteText(e.target.value) }),
+      dim('It goes with your work. Anyone can read it on GitHub.', 'n')) : null,
+    h('div', { style: { marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' } }, button(sending ? 'Sending...' : 'Send my work', send, true),
+      !noteOpen ? h('button', { className: 'btn', onClick: () => setNoteOpen(true) }, 'Add a message') : null),
     update.state === 'failed' || update.state === 'lost' ? log('update', update) : null));
 
   const checks = info.checks || { state: 'none' };
@@ -2204,7 +2215,7 @@ function StudioPanel() {
     : checks.state === 'error' ? 'The checks could not run.' : 'No check yet.';
   cards.push(h('div', { key: 'checks', style: cardStyle() },
     title('Checks'),
-    dim('They run by themselves after each commit and update.', 'c'),
+    dim('They run by themselves each time you send your work.', 'c'),
     h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 8 } },
       button('Check now', checkNow, false),
       h('button', { className: 'btn', onClick: () => api.ui.openSidePanel && api.ui.openSidePanel('armory.studio.checks') }, 'See the problems')),
@@ -2215,7 +2226,7 @@ function StudioPanel() {
   const infoView = viewOf('release-info');
   const releaseCard = [title('Release')];
   if (!form) {
-    releaseCard.push(dim('Builds the mod and puts it on GitHub: as a draft, as a draft with a message for Larsonix, or published.', 'r'),
+    releaseCard.push(dim('Makes a new version for players to download. A draft stays hidden until you publish it.', 'r'),
       h('div', { key: 'b', style: { marginTop: 8 } }, button(busyTask === 'release' ? 'Releasing...' : 'Make a release...', openRelease, false)),
       status(release), log('release', release));
   } else {
@@ -2233,7 +2244,6 @@ function StudioPanel() {
           h('input', { style: { ...field, width: 140 }, value: form.version, placeholder: fi.suggested, onChange: e => setForm({ ...form, version: e.target.value, problem: null }) })),
         h('div', { key: 'c', style: { marginBottom: 8 } }, h('div', { style: { fontSize: 12, color: LOOK.dim } }, 'What should happen with it?'),
           choice('draft', 'A draft. Players cannot see it yet.'),
-          choice('message', 'A draft with a message for Larsonix, for example an effect you want added.'),
           choice('publish', 'Publish it. Players can download it right away.')),
         h('div', { key: 'n', style: { marginBottom: 8 } }, h('div', { style: { fontSize: 12, color: LOOK.dim } }, 'The changelog players will read.'),
           h('textarea', { style: { ...field, minHeight: 120, fontFamily: 'inherit' }, value: form.notes, onChange: e => setForm({ ...form, notes: e.target.value, problem: null }) })),
@@ -2286,6 +2296,7 @@ export const GUIDE = [
     'Work as usual in HyCreator, Blockbench and Photoshop.',
     'When you finish, click the hammer at the top: The Armory panel.',
     'Write what you did in one line, then click Send my work.',
+    'To ask Larsonix for something, click Add a message before you send. Anyone can read it on GitHub.',
     'That saves your work, brings in what is new and puts everything on GitHub.',
     'The first line of the panel always says where your work is.',
     'When the panel says a new version is ready, save your work and click Reload.',
@@ -2360,7 +2371,7 @@ export const GUIDE = [
   { title: 'Make a release', steps: [
     'Click Make a release... in The Armory panel.',
     'Type the version, or leave it empty for the one it suggests.',
-    'Choose a draft players cannot see, a draft with a message for Larsonix, or publish.',
+    'Choose a draft players cannot see, or publish.',
     'Write the changelog players will read, then click Start the release.',
     'The panel shows each step. It ends with the link to your release on GitHub.',
   ] },

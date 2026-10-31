@@ -4,12 +4,13 @@
 #
 #   conhost.exe --headless powershell.exe -NoProfile -ExecutionPolicy Bypass -File run.ps1 -Task <task> -Id <id> ...
 #
-#   -Task update          -WorkFile <file>: commits her work with her line, joins the latest and sends it (update.ps1)
+#   -Task update          -WorkFile <file> -NoteFile <file>: commits her work with her line, joins the latest, sends it,
+#                         and sends us her message (update.ps1)
 #   -Task sync            HyCreator just opened: brings in what is new when her copy is clean (update.ps1 -OnOpen)
 #   -Task programs-info   on her USB key, the newer programs on offer. Elsewhere it ends at once
 #   -Task programs-install -Program <name>: installs one of them
 #   -Task release-info    what the release form shows: the last version, the next one, what changed since
-#   -Task release         -Version 1.2.3 -Choice draft|message|publish -NotesFile <file> [-MessageFile <file>]
+#   -Task release         -Version 1.2.3 -Choice draft|publish -NotesFile <file>
 #   -Task setup-report    what setup would move, so the panel can ask before anything moves
 #   -Task setup           setup, once she agreed (setup.ps1 -Yes)
 #   -Task report          -Title <problem> -Detail <what happened>: tells us, through update.ps1 -Report
@@ -28,8 +29,8 @@ param(
     [string] $Version = '',
     [string] $Choice = '',
     [string] $NotesFile = '',
-    [string] $MessageFile = '',
     [string] $WorkFile = '',
+    [string] $NoteFile = '',
     [string] $Program = '',
     [string] $Title = '',
     [string] $Detail = ''
@@ -91,13 +92,16 @@ if ($Task -like 'programs*' -and -not $env:ARMORY_KEY) {
 
 $arguments = New-Object System.Collections.Generic.List[string]
 switch ($Task) {
-    'update' { if ($WorkFile) { $arguments.AddRange([string[]]@('-WorkFile', $WorkFile)) } }
+    'update' {
+        if ($WorkFile) { $arguments.AddRange([string[]]@('-WorkFile', $WorkFile)) }
+        if ($NoteFile) { $arguments.AddRange([string[]]@('-NoteFile', $NoteFile)) }
+    }
     'sync' { $arguments.Add('-OnOpen') }
     'programs-info' { $arguments.AddRange([string[]]@('-Root', $env:ARMORY_KEY, '-List', $dataFile)) }
     'programs-install' { $arguments.AddRange([string[]]@('-Root', $env:ARMORY_KEY, '-One', $Program)) }
     'release-info' { $arguments.AddRange([string[]]@('-Info', $dataFile)) }
     'release' {
-        foreach ($pair in @(@('-Version', $Version), @('-Choice', $Choice), @('-NotesFile', $NotesFile), @('-MessageFile', $MessageFile), @('-WorkFile', $WorkFile))) {
+        foreach ($pair in @(@('-Version', $Version), @('-Choice', $Choice), @('-NotesFile', $NotesFile), @('-WorkFile', $WorkFile))) {
             if ($pair[1]) { $arguments.AddRange([string[]]$pair) }
         }
     }

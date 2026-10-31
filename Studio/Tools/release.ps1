@@ -4,7 +4,7 @@
 # What it does, in order:
 #   1. Brings in the mod's latest work, as Update does, so a release always holds it.
 #   2. Takes the version, the changelog and what to do with the release from the form: save it as a
-#      draft, save it as a draft with a message for us, or publish it.
+#      draft, or publish it.
 #   3. Sets the version, builds the mod, optimises its model textures with proof, and stamps the jar.
 #   4. Commits the version, tags it, pushes both, and creates the release on GitHub with the jar,
 #      then downloads the jar back and compares it. A publish also moves main to the release.
@@ -15,12 +15,10 @@
 # The first run installs Java 25 and the two picture libraries the optimiser needs, each checked
 # against the fingerprint its publisher gives. Nothing is installed outside the Armory's own folder.
 param(
-    # What the form gives: the version, a draft, a draft with a message, or a publish, and the files
-    # holding the changelog and the message.
+    # What the form gives: the version, a draft or a publish, and the file holding the changelog.
     [string] $Version = '',
-    [ValidateSet('', 'draft', 'message', 'publish')] [string] $Choice = '',
+    [ValidateSet('', 'draft', 'publish')] [string] $Choice = '',
     [string] $NotesFile = '',
-    [string] $MessageFile = '',
     # The line she wrote about work not committed yet.
     [string] $WorkFile = '',
     # Writes what the form shows to this file, then stops: the branch, the version now, the last
@@ -35,8 +33,6 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $main = 'main'
-# Who a draft with a message is for. GitHub tells this account.
-$reviewer = 'Larsonix'
 
 $javaUrl = 'https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4.1%2B1/OpenJDK25U-jdk_x64_windows_hotspot_25.0.4.1_1.zip'
 $javaSha256 = '00C847D804F4A78E9F04F2683FAF14FED898535B177B7FC704486CB0284E9283'
@@ -267,15 +263,10 @@ $again = "Type a version like $suggested, then click Release again."
 if ($Version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') { Stop-Release "$Version is not a version number. $again" }
 if ($last -and (Compare-Version $Version $last) -le 0) { Stop-Release "$Version is not newer than the last release, $last. $again" }
 if ($tags -contains $Version) { Stop-Release "$Version is already released. $again" }
-if (-not $Choice) { Stop-Release 'Release stopped: choose a draft, a draft with a message, or publish.' }
+if (-not $Choice) { Stop-Release 'Release stopped: choose a draft or publish.' }
 
 $notes = Read-Written $NotesFile
 if (-not $notes) { Stop-Release 'Release stopped: the changelog was empty.' }
-$message = ''
-if ($Choice -eq 'message') {
-    $message = Read-Written $MessageFile
-    if (-not $message) { Stop-Release 'Release stopped: the message was empty.' }
-}
 
 # Build.
 Set-ModVersion $Version
@@ -343,10 +334,7 @@ if ($push.Code -ne 0) {
 }
 $gh = Get-GitHub
 try {
-# The message goes in with the changelog when the draft is made: editing a draft afterwards makes
-# GitHub forget the tag it names, and publishing it would then make no tag.
-$text = if ($Choice -eq 'message') { "$notes`r`n`r`n---`r`nMessage for us:`r`n$message" } else { $notes }
-$body = @{ tag_name = "v$Version"; target_commitish = $releaseCommit; name = "The Armory $Version"; body = $text; draft = ($Choice -ne 'publish') } | ConvertTo-Json
+$body = @{ tag_name = "v$Version"; target_commitish = $releaseCommit; name = "The Armory $Version"; body = $notes; draft = ($Choice -ne 'publish') } | ConvertTo-Json
 $release = Invoke-RestMethod -Method Post -Uri "$($gh.Api)/releases" -Headers $gh.Headers -Body ([Text.Encoding]::UTF8.GetBytes($body)) -ContentType 'application/json'
 $asset = Invoke-RestMethod -Method Post -Uri "$($gh.Upload)/releases/$($release.id)/assets?name=TheArmoryMod-$Version.jar" -Headers $gh.Headers -InFile $built -ContentType 'application/java-archive'
 
@@ -358,10 +346,6 @@ $same = (Get-FileHash -LiteralPath $back -Algorithm SHA256).Hash.ToLower() -eq $
 Remove-Item -LiteralPath $back -Force
 if (-not $same) { Stop-Release "GitHub holds a different file than the one built. $send" $release.html_url }
 
-if ($Choice -eq 'message') {
-    $issue = @{ title = "A release draft from $branch is waiting: $Version"; body = "@$reviewer A release draft with a message for you is on GitHub, under Releases. The message is in the draft." } | ConvertTo-Json
-    [void](Invoke-RestMethod -Method Post -Uri "$($gh.Api)/issues" -Headers $gh.Headers -Body ([Text.Encoding]::UTF8.GetBytes($issue)) -ContentType 'application/json')
-}
 if ($Choice -eq 'publish') {
     # Main always equals the latest release. This branch holds main already (Update joined it), so
     # main only moves forward and nothing on it is replaced.
@@ -380,7 +364,6 @@ if ($Choice -eq 'publish') {
 Write-Host ''
 switch ($Choice) {
     'draft' { Write-Host "Done. Saved as a draft: $($release.html_url)" }
-    'message' { Write-Host "Done. Saved as a draft, and Larsonix has your message: $($release.html_url)" }
     'publish' { Write-Host "Done. Published: $($release.html_url)" }
 }
 exit 0

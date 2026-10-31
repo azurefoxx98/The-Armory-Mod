@@ -24,6 +24,8 @@ param(
     [string] $Own = 'lady',
     # The file holding the line she wrote about her work.
     [string] $WorkFile = '',
+    # The file holding a message she wrote for us, sent with her work.
+    [string] $NoteFile = '',
     # HyCreator just opened: bring in what is new when her copy is clean, and never ask for anything.
     [switch] $OnOpen,
     # Leave out the final push. Only tests use it.
@@ -131,6 +133,22 @@ function Send-Problem([string] $title, [string] $detail) {
         Send-Waiting
     } catch {
         # A report never stops the work it reports on.
+        $ErrorActionPreference = 'Stop'
+    }
+}
+
+# A message she wrote for us: an issue that names him, kept until it can be sent, like a report.
+function Send-Note([string] $file) {
+    if (-not $file -or -not (Test-Path -LiteralPath $file)) { return }
+    $text = ([IO.File]::ReadAllText($file)).Trim()
+    if (-not $text) { return }
+    try {
+        $folder = Get-GitPath 'armory-reports'
+        New-Item -ItemType Directory -Force -Path $folder | Out-Null
+        $body = @{ title = 'A message from Lady'; body = "@Larsonix $(Hide-Private $text)" } | ConvertTo-Json
+        [IO.File]::WriteAllText((Join-Path $folder "$(Get-Hash ((Get-Date).ToString('o') + $text)).json"), $body, (New-Object Text.UTF8Encoding $false))
+        Send-Waiting
+    } catch {
         $ErrorActionPreference = 'Stop'
     }
 }
@@ -320,6 +338,7 @@ if ($online -and -not $Fresh -and -not $NoRefresh) {
             if ($NoPush) { $passed.NoPush = $true }
             if ($OnOpen) { $passed.OnOpen = $true }
             if ($WorkFile) { $passed.WorkFile = $WorkFile }
+            if ($NoteFile) { $passed.NoteFile = $NoteFile }
             & $script @passed
             exit $LASTEXITCODE
         }
@@ -421,6 +440,8 @@ if (-not $NoPush) {
         }
     }
 }
+
+Send-Note $NoteFile
 
 # Git copies the code and the pages after a pull without a word, so a copy that fails while a world
 # holds the code open would go unseen. Doing it here says so. A failed copy is not a failed update,

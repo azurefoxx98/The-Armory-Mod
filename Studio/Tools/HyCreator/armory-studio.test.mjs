@@ -404,8 +404,7 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   check('release form: a version not newer than the last release is named', /not newer than the last release, 1\.24\.2/.test(releaseProblem(info, { ...form, version: '1.24.1' }) || ''));
   check('release form: v in front is allowed', releaseProblem(info, { ...form, version: 'v1.25.0' }) === null);
   check('release form: an empty changelog is named', /changelog/.test(releaseProblem(info, { ...form, notes: '  ' }) || ''));
-  check('release form: a draft with a message needs the message', /message/.test(releaseProblem(info, { ...form, choice: 'message' }) || '')
-    && releaseProblem(info, { ...form, choice: 'message', message: 'Add a glow.' }) === null);
+  check('release form: a draft or a publish, nothing else', /Choose/.test(releaseProblem(info, { ...form, choice: 'message' }) || '') && releaseProblem(info, { ...form, choice: 'publish' }) === null);
   check('release form: no choice is named', /Choose/.test(releaseProblem(info, { ...form, choice: '' }) || ''));
 check('release form: work not sent needs her line', /what you did/.test(releaseProblem({ ...info, uncommitted: true }, form) || '')
   && releaseProblem({ ...info, uncommitted: true }, { ...form, work: 'New gray set' }) === null);

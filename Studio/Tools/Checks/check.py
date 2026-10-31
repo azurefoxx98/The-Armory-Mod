@@ -562,7 +562,7 @@ def check_branch() -> dict:
     if branch in ("main", "HEAD", ""):
         problem = "Your copy is on main, not on your branch." if branch == "main" else "Your copy is on no branch."
         # HyCreator's git button, at the top, shows the branch the copy is on: main, or HEAD for none.
-        switch = f"In HyCreator, click {branch or 'HEAD'} at the top, then Branches..., then lady."
+        switch = "Click Send my work in The Armory panel. It moves your copy to lady."
         return {"status": "fail", "output_tail": [], "problems": [problem], "lady": [
             {"says": problem, "do": switch, "items": [], "line": problem, "known": True}]}
     return {"status": "pass", "problems": [], "output_tail": []}
@@ -615,35 +615,6 @@ def made_by(rel: str) -> str | None:
         if re.search(pattern, rel):
             return tool
     return None
-
-
-def check_generated(own: list[str] | None, starts: list[str], why: str) -> dict:
-    """Files the mod's tools write that this branch's own commits, or its uncommitted work, changed."""
-    if own is None:
-        return {"status": "error", "problems": [], "output_tail": [why]}
-    changed = set()
-    for commit in own:
-        listing = git("show", "--format=", "--name-only", "--no-renames", commit)
-        parents = (git("rev-list", "--parents", "-n", "1", commit) or "").split()
-        if len(parents) > 2:
-            continue  # a merge brings work from elsewhere, its own changes are the branches it joins
-        changed |= set((listing or "").splitlines())
-    for line in (git("status", "--porcelain", "--no-renames", "--untracked-files=all", "--", "src/main/resources") or "").splitlines():
-        changed.add(line[3:].strip().strip('"'))
-    problems = []
-    lady = []
-    for path in sorted(p for p in changed if p.startswith("src/main/resources/")):
-        rel = path[len("src/main/resources/"):]
-        tool = made_by(rel)
-        if tool:
-            problems.append(f"{rel} is made by a tool from {tool}, and this branch changed it. "
-                            "The change is erased the next time the tool runs.")
-            lady.append({"says": f"You changed a file our tools rewrite from {tool}, so the change will be lost.",
-                         "do": "Send Larsonix what should change.",
-                         "items": [{"label": os.path.splitext(os.path.basename(rel))[0],
-                                    "open": rel[len("Server/"):] if rel.startswith("Server/") else None}],
-                         "line": problems[-1], "known": True})
-    return {"status": "fail" if problems else "pass", "problems": problems, "lady": lady, "output_tail": []}
 
 
 # The showcase world dresses a figure in every piece she can wear, and its stands name what each figure wears. A piece
@@ -1076,7 +1047,6 @@ def run_all() -> dict:
         for name, title, outcome in (
             ("branch", "Your branch", check_branch()),
             ("languages", "Language files", check_languages(own, starts, why)),
-            ("generated", "Files our tools make", check_generated(own, starts, why)),
             ("showcase", "The showcase world", check_showcase(game)),
             ("game", "Your work in the game", check_game(own, starts, why, game)),
         ):

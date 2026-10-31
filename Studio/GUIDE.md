@@ -11,28 +11,27 @@ The same guide is in HyCreator: click ? at the top.
 - Click the hammer at the top: The Armory panel. Click Choose a folder..., and pick where the mod goes, such as Documents.
 - Click Get The Armory. When it is copied, HyCreator opens it.
 - Click Set up, and answer its question. Then do the Blockbench step it shows.
-- The button at the top now says lady: your branch. All your work goes there.
-- The first time you push, GitHub asks you to sign in. Sign in once.
+- The first time you send your work, GitHub asks you to sign in. Sign in once.
 
 ## Each time you work
 
-- Before you start, click Update in The Armory panel. It brings in Larsonix's latest work and sends yours to GitHub.
-- When you finish, click lady at the top, then Commit changes... Write what you did in one line, then click Commit.
-- Then click lady at the top, then Push.
-- If Pull or Push says your branch has diverged, click Update in The Armory panel instead.
-- If you and Larsonix change the same file, yours is kept and he is told.
-- When The Armory panel says a new version is ready, save your work and click Reload.
+- Work as usual in HyCreator, Blockbench and Photoshop.
+- When you finish, click the hammer at the top: The Armory panel.
+- Write what you did in one line, then click Send my work.
+- That saves your work, brings in what is new and puts everything on GitHub.
+- The first line of the panel always says where your work is.
+- When the panel says a new version is ready, save your work and click Reload.
 
 ## The checks
 
-- The checks run by themselves each time you commit. When they find something, a notice appears.
+- The checks run by themselves each time you send your work. When they find something, a notice appears.
 - To check now, click Check now in The Armory panel.
 - Click ! at the top to see what to fix. Click an item to open it.
 - Click By item at the top of the panel to see each item once, with all its problems. Open opens the item.
 - To find one item, type part of its name in the box at the top of the panel.
 - If a problem is how you want that item, click Normal for me beside it. It hides that problem on that item only. Hidden, at the bottom, shows it again.
 - Larsonix's problems are his to fix. Nothing to do for you.
-- You can always push, even with things to fix.
+- You can always send your work, even with things to fix.
 
 ## Where your files go
 
@@ -69,7 +68,6 @@ The same guide is in HyCreator: click ? at the top.
 
 - The Colors page makes the icons of the colors it makes.
 - For one item, click Generate icon on its page.
-- Do not use Bake all icons (batch): it remakes every icon of the mod.
 
 ## See it in Hytale
 
@@ -77,7 +75,6 @@ The same guide is in HyCreator: click ? at the top.
 - Start a world with The Armory turned on in its mods list.
 - A file you save in HyCreator changes in the running world. If an item still looks the same, take it off and put it on again, or rejoin the world.
 - To get an item in your world, click /give at the top of its page, then paste it in Hytale's chat.
-- Never click Deploy at the top of HyCreator. The game already reads your copy, and Deploy only adds a large unused file to your mods folder.
 
 ## Undo a mistake
 
@@ -90,7 +87,6 @@ The same guide is in HyCreator: click ? at the top.
 - The Armory adds Move_Speed, Jump_Height, Arrow_Damage_Bonus, TA_Swim_Speed, TA_Fire_Resistance, TA_Blast_Resistance, TA_Mining_Speed, TA_Ore_Find and TA_Unarmed_Damage.
 - Write those as Multiplicative: 0.5 is 50% more.
 - TA_Night_Mana and TA_Night_Health are Additive: 50 is 50 more at night.
-- For anything else, ask Larsonix.
 - For particles and sounds, use only the names HyCreator suggests.
 - Effectly tags are no longer used.
 
@@ -105,17 +101,12 @@ The same guide is in HyCreator: click ? at the top.
 
 ## Make a release
 
-- Commit your work first. Then click Make a release... in The Armory panel.
+- Click Make a release... in The Armory panel.
 - Type the version, or leave it empty for the one it suggests.
 - Choose a draft players cannot see, a draft with a message for Larsonix, or publish.
 - Write the changelog players will read, then click Start the release.
 - The panel shows each step. It ends with the link to your release on GitHub.
 
-## Files our tools make
-
-- Our tools rewrite the showcase world and the list of chests your loot goes in. HyCreator opens those files on a warning.
-- To change one, send Larsonix what should change.
-
 ## When something goes wrong
 
-- Our tools fix what they can, and Larsonix hears about the rest. You can keep working.
+- Our tools fix what they can. You can keep working.

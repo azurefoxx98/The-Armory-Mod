@@ -11,8 +11,8 @@
 #   5. Looks for Hytale on this computer and copies its files to the key, in the background, when the
 #      key has none or older ones.
 #   6. On a computer where she clicked Set up once, links its Hytale to the mod on the key (key.ps1).
-#   7. Shows the window and starts HyCreator. Its buttons start the programs and Get updates, with the
-#      key's Git. Her Update, Check, Release and Set up are buttons of The Armory panel inside HyCreator.
+#   7. Shows the window and starts HyCreator. Its buttons start the programs. Send my work, Check, Release,
+#      newer programs and Set up are in The Armory panel inside HyCreator.
 #   8. Done: closes the programs normally, sends her committed work, puts this computer's Hytale back as it
 #      was, removes the letter and ejects the key. An unplugged key puts Hytale back too.
 param(
@@ -24,20 +24,20 @@ Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 [Windows.Forms.Application]::EnableVisualStyles()
 $title = 'The Armory'
 # Reaches us by itself, through Update's report, and never waits or stops the window.
-function Send-KeyProblem([string] $text) {
+function Send-KeyProblem([string] $text, [string] $detail = '') {
     try {
         $info = New-Object Diagnostics.ProcessStartInfo
         $info.FileName = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
         $update = Join-Path $Key 'The-Armory-Mod\Studio\Tools\update.ps1'
-        $info.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$update`" -Report `"The key: $($text -replace '"', '')`""
+        $info.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$update`" -Report `"The key: $($text -replace '"', '')`" -Detail `"$($detail -replace '"', '')`""
         $info.UseShellExecute = $false; $info.CreateNoWindow = $true
         [void][Diagnostics.Process]::Start($info)
     } catch { }
 }
 # Anything unexpected is said in a window, since the console it would print in is hidden.
 trap {
-    Send-KeyProblem "The Armory stopped on something unexpected."
-    [void][Windows.Forms.MessageBox]::Show("The Armory stopped on something unexpected. Larsonix has been told, and you can keep working.`n`nFor Larsonix: $($_.InvocationInfo.ScriptName):$($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)", $title)
+    Send-KeyProblem "The Armory stopped on something unexpected." "$($_.InvocationInfo.ScriptName):$($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)"
+    [void][Windows.Forms.MessageBox]::Show('The Armory stopped on something unexpected. You can keep working.', $title)
     exit 0
 }
 # The console of Start The Armory.cmd, hidden now that this runs. It stays open behind, and shows again
@@ -69,8 +69,8 @@ function Show-Message([string] $text, [string] $buttons = 'OK') {
 # her as the .NET error box, and on a hidden desktop it waits for a click that never comes.
 function Invoke-Safely([scriptblock] $block) {
     try { & $block } catch {
-        Send-KeyProblem "The Armory stopped on something unexpected."
-        [void](Show-Message "The Armory stopped on something unexpected. Larsonix has been told, and you can keep working.`n`nFor Larsonix: $($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)")
+        Send-KeyProblem "The Armory stopped on something unexpected." "$($_.InvocationInfo.ScriptLineNumber) $($_.Exception.Message)"
+        [void](Show-Message 'The Armory stopped on something unexpected. You can keep working.')
     }
 }
 
@@ -102,8 +102,8 @@ if (-not $mutex.WaitOne(0)) {
 # 2. The letter and the environment.
 $letter = Mount-KeyLetter $Key
 if (-not $letter) {
-    Send-KeyProblem "The key could not get a drive letter on this computer."
-    [void](Show-Message "The key could not get a drive letter on this computer. Larsonix has been told, and you can keep working.`n`nFor Larsonix: no free letter among $($KeyLetters -join ', ')")
+    Send-KeyProblem "The key could not get a drive letter on this computer." "no free letter among $($KeyLetters -join ', ')"
+    [void](Show-Message 'The key could not get a drive letter on this computer. You can keep working.')
     exit 0
 }
 $root = Get-KeyRoot $letter
@@ -213,7 +213,7 @@ function Open-Program([string] $name) {
     $exe = Get-ProgramExe $name
     if (-not $exe -or -not (Test-Path -LiteralPath $exe)) {
         Send-KeyProblem "$name is missing from this key."
-        [void](Show-Message "$name is missing from this key. Larsonix has been told, and you can keep working.")
+        [void](Show-Message "$name is missing from this key. You can keep working.")
         return
     }
     $running = @(Get-KeyProcesses $root | Where-Object { $_.Path -ieq $exe -and $_.MainWindowHandle -ne 0 }) | Select-Object -First 1
@@ -266,10 +266,9 @@ $buttons.HyCreator = New-Button 'HyCreator' 20 40 { Invoke-Safely { Open-Program
 $buttons.Blockbench = New-Button 'Blockbench' 190 40 { Invoke-Safely { Open-Program 'Blockbench' } }
 $buttons.PhotoCraft = New-Button 'PhotoCraft' 360 40 { Invoke-Safely { Open-Program 'PhotoCraft' } }
 New-Heading 'Your work' 96
-$buttons.Updates = New-Button 'Get updates' 20 122 { Invoke-Safely { Open-Console (Join-Path $scripts 'programs.ps1') @('-Root', $root, '-GetUpdates') } }
 $where = New-Object Windows.Forms.Label
-$where.Text = 'Check and Release are in HyCreator: click the hammer at the top.'
-$where.Left = 190; $where.Top = 122; $where.Width = 330; $where.Height = 40; $where.TextAlign = 'MiddleLeft'
+$where.Text = 'Send my work, Check and Release are in HyCreator: click the hammer at the top.'
+$where.Left = 20; $where.Top = 122; $where.Width = 500; $where.Height = 40; $where.TextAlign = 'MiddleLeft'
 $form.Controls.Add($where)
 
 $status = New-Object Windows.Forms.Label
@@ -297,12 +296,10 @@ function Get-GameLines {
             $lines += "The key is too full for Hytale's files. They need $([math]::Ceiling($s.Total / 1GB) + 1) GB free."
         } elseif ($s.Error -eq 'fat32') {
             Send-KeyProblem "This USB key cannot hold Hytale's largest file, which is over 4 GB."
-            $lines += "This USB key cannot hold Hytale's largest file, which is over 4 GB. Larsonix has been told, and you can keep working."
-            $lines += 'For Larsonix: the key is FAT32. Formatted as exFAT it would hold it.'
+            $lines += "This USB key cannot hold Hytale's largest file, which is over 4 GB. You can keep working."
         } elseif ($s.Error) {
-            Send-KeyProblem "Hytale's files could not be copied to the key."
-            $lines += "Hytale's files could not be copied to the key. Larsonix has been told, and you can keep working."
-            $lines += "For Larsonix: $($s.Error)"
+            Send-KeyProblem "Hytale's files could not be copied to the key." "$($s.Error)"
+            $lines += "Hytale's files could not be copied to the key. You can keep working."
         } elseif (-not $s.Finished) {
             $percent = if ($s.Total -gt 0) { [math]::Floor(100 * $s.Done / $s.Total) } else { 0 }
             $lines += "Copying Hytale's files from this computer: $percent%. You can keep working meanwhile."
@@ -330,7 +327,8 @@ function Get-PlayLines {
     if ($script:playing) { return @('Hytale plays The Armory from this key. Done puts this computer back as it was.') }
     if ($script:playWaiting) { return @('Hytale is open. When you close it, the key links Hytale to your work.') }
     if ($script:playError) {
-        return @('Hytale could not be linked to this key. Close Hytale, then click Set up in The Armory panel.', "For Larsonix: $($script:playError)")
+        Send-KeyProblem 'Hytale could not be linked to this key.' "$($script:playError)"
+        return @('Hytale could not be linked to this key. Close Hytale, then click Set up in The Armory panel.')
     }
     return @('To play your work from this key, click Set up in The Armory panel in HyCreator.')
 }
@@ -354,7 +352,8 @@ function Update-Window {
     $unsent = $script:work.Unsent
     if ($unsent -eq 1) { $lines += 'One commit is not on GitHub yet. Done sends it.' }
     elseif ($unsent -gt 1) { $lines += "$unsent commits are not on GitHub yet. Done sends them." }
-    elseif ($script:work.Changed -eq 0) { $lines += 'All your work is on GitHub.' }
+    elseif ($script:work.Changed -gt 0) { $lines += 'Some changes are not on GitHub yet. Done sends them.' }
+    else { $lines += 'All your work is on GitHub.' }
     if (-not $script:online) { $lines += 'No internet right now. Keep working: Done sends your work when you are online again.' }
     $text = $lines -join "`n`n"
     if ($text -ne $script:said) {
@@ -416,22 +415,30 @@ function Invoke-Hidden([string] $exe, [string] $arguments) {
     return @{ Code = $code; Text = $last }
 }
 
-# Her committed work to GitHub: through her own Update, which also joins any new work from GitHub, when
-# nothing is left uncommitted, since Update refuses otherwise. Else a plain send of the commits.
-function Send-Work($work) {
-    if ($work.Changed -eq 0) {
-        $powershell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-        return Invoke-Hidden $powershell "-NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $repo 'Studio\Tools\update.ps1')`""
-    }
-    return Invoke-Hidden (Join-Path $root 'Programs\Git\cmd\git.exe') "push origin HEAD:$($work.Branch)"
+# Her work to GitHub, through the same Update as Send my work: her line commits what is not committed, then it
+# joins any new work from GitHub and sends everything.
+function Send-Work([string] $file) {
+    $powershell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $words = if ($file) { " -WorkFile `"$file`"" } else { '' }
+    return Invoke-Hidden $powershell "-NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $repo 'Studio\Tools\update.ps1')`"$words"
+}
+
+# The line she writes about her work, the same one the panel asks for. Nothing written keeps the window open.
+function Read-WorkLine {
+    if ($testing) { return 'Work from the key' }
+    Add-Type -AssemblyName Microsoft.VisualBasic
+    return [Microsoft.VisualBasic.Interaction]::InputBox('What did you do?', $title)
 }
 
 function Invoke-Done {
     if ($script:busy) { return }
     $work = Get-KeyWork $root
+    $workFile = ''
     if ($work.Changed -gt 0) {
-        $answer = Show-Message "Some of your changes are not committed, so Done cannot send them.`n`nYes goes on, and they stay on this key. No lets you commit them first in HyCreator." 'YesNo'
-        if ($answer -ne 'Yes') { return }
+        $line = Read-WorkLine
+        if (-not $line.Trim()) { return }
+        $workFile = Join-Path $root 'Key\work-line.txt'
+        Write-KeyText $workFile $line.Trim()
     }
     # The game holds the key's files open while it runs, so it closes before the key leaves it.
     if ((Test-KeyPlaying) -and (Test-HytaleRunning)) {
@@ -457,11 +464,12 @@ function Invoke-Done {
     Get-KeyProcesses $root -Everywhere | ForEach-Object { try { $_.Kill() } catch { } }
     $work = Get-KeyWork $root
     $script:online = Test-KeyOnline $root
-    if ($work.Unsent -gt 0 -and $script:online) {
+    if ($workFile -or ($work.Unsent -gt 0 -and $script:online)) {
         Set-Busy $true 'Sending your work to GitHub.'
-        $sent = Send-Work $work
+        $sent = Send-Work $workFile
         if ($sent.Code -ne 0) {
-            $answer = Show-Message "Your work could not be sent to GitHub. It stays safe on this key.`n`n$($sent.Text)`n`nYes ends anyway. No keeps the window open." 'YesNo'
+            Send-KeyProblem 'Done could not send her work.' $sent.Text
+            $answer = Show-Message "Your work could not be sent to GitHub. It stays on this key.`n`nYes ends anyway. No keeps the window open." 'YesNo'
             if ($answer -ne 'Yes') { Set-Busy $false ''; return }
         }
     }

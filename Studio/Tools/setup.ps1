@@ -43,7 +43,7 @@ $mods = Join-Path $UserData 'Mods'
 $setAside = Join-Path $UserData 'Armory set aside'
 
 # What she reads about anything only we can fix. Stop-Setup sends it to us by itself.
-$told = 'Larsonix has been told, and you can keep working.'
+$told = 'You can keep working.'
 
 function Stop-Setup([string] $text, [string] $detail = '') {
     Write-Host ''

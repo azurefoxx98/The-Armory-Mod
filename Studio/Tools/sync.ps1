@@ -39,7 +39,7 @@ $plugins = (git -C $repo config --get armory.plugins) 2>$null
 $ok = $true
 
 if ($mods) {
-    if (-not (Copy-IfChanged (Join-Path $PSScriptRoot 'TheArmory-code.jar') (Join-Path $mods 'TheArmory-code.jar') 'The Armory''s code in Hytale' 'Leave your Hytale world, then click Update.')) {
+    if (-not (Copy-IfChanged (Join-Path $PSScriptRoot 'TheArmory-code.jar') (Join-Path $mods 'TheArmory-code.jar') 'The Armory''s code in Hytale' 'Leave your Hytale world, then click Send my work.')) {
         $ok = $false
     }
 }
@@ -47,7 +47,7 @@ if ($mods) {
 $pluginSource = Join-Path $PSScriptRoot 'HyCreator'
 if ($plugins -and (Test-Path -LiteralPath $pluginSource) -and (Test-Path -LiteralPath $plugins)) {
     Get-ChildItem -LiteralPath $pluginSource -File | Where-Object { $_.Extension -in '.js', '.hcplugin' } | ForEach-Object {
-        if (-not (Copy-IfChanged $_.FullName (Join-Path $plugins $_.Name) 'The Armory''s pages in HyCreator. They show once HyCreator restarts or reloads' 'Close HyCreator and open it again, then click Update.')) {
+        if (-not (Copy-IfChanged $_.FullName (Join-Path $plugins $_.Name) 'The Armory''s pages in HyCreator. They show once HyCreator restarts or reloads' 'Close HyCreator and open it again, then click Send my work.')) {
             $ok = $false
         }
     }

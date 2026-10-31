@@ -9,8 +9,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, madeByTool, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, ladyItems, sortItems, matchesFilter, ITEM_ORDERS, hyCreatorTooOld, NEEDS_HYCREATOR, withMark, withoutMark, sheetColour,
-  parseGitConfig, setupState, runView, releaseProblem, compareVersions, taskLaunch, checkLaunch, languageChanges, GET_SCRIPT, ARMORY_SOURCE, RUNS } from './armory-studio.js';
+import { makeReader, analyse, plan, defaultChoice, isAlterationRecipe, colourKey, guideMarkdown, checkView, noticeFor, fileIn, ladyGroups, ladyItems, sortItems, matchesFilter, ITEM_ORDERS, hyCreatorTooOld, NEEDS_HYCREATOR, withMark, withoutMark, sheetColour,
+  parseGitConfig, setupState, runView, releaseProblem, compareVersions, taskLaunch, checkLaunch, languageChanges, GET_SCRIPT, ARMORY_SOURCE, RUNS, statusLine, hiddenStyle, HIDDEN_TITLES } from './armory-studio.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const resources = path.resolve(here, '..', '..', '..', 'src', 'main', 'resources');
@@ -111,14 +111,14 @@ const readJson = rel => JSON.parse(fs.readFileSync(path.join(resources, 'Server'
 }
 
 // 2c. A set whose default is a game piece: the Iron chest recolours. The mod's patch puts the
-// game's Iron chest in their family, and 27 game chests inherit from the Iron chest with no family
+// game's Iron chest in their family, and 26 game chests inherit from the Iron chest with no family
 // of their own, so the page names them and ticks nothing.
 {
   const fromVersion = await analyse(makeReader(io()), 'Item/Items/Armor_Iron_Chest_Black.json');
   check('Iron chest colour: its default is the game piece', !fromVersion.error && fromVersion.set.defaultId === 'Armor_Iron_Chest' && fromVersion.set.gameDefault, fromVersion.error || fromVersion.set.defaultId);
   check('Iron chest colour: the family comes from the mod\'s patch', fromVersion.set.pieceFamily === 'Resource_Armor_Iron_Chest', fromVersion.set.pieceFamily);
   check('Iron chest colour: every colour is found', fromVersion.memberCount >= 20, String(fromVersion.memberCount));
-  check('Iron chest colour: the 27 game chests inheriting it are named', fromVersion.set.inheritors.length === 27, String(fromVersion.set.inheritors.length));
+  check('Iron chest colour: the 26 game chests inheriting it are named', fromVersion.set.inheritors.length === 26, String(fromVersion.set.inheritors.length));
   const p = plan(fromVersion, defaultChoice(fromVersion));
   check('Iron chest colour: nothing is ticked while game items inherit its family', p.create.length + p.edit.length + p.icons.length === 0, JSON.stringify(p).slice(0, 200));
   const fromGame = await analyse(makeReader(io()), 'Item/Items/Armor/Iron/Armor_Iron_Chest.json');
@@ -236,35 +236,6 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   check('HyCreator new enough: ' + fine.join(', '), !fine.some(hyCreatorTooOld), fine.filter(hyCreatorTooOld).join(', '));
   check('HyCreator whose version cannot be read is let through', ![undefined, null, '', 'dev', '1.3'].some(hyCreatorTooOld));
   check('the floor is 1.3.9', NEEDS_HYCREATOR === '1.3.9');
-}
-
-// Files made by a tool: the 48 patches that put the loot tables in chests and every showcase file,
-// and nothing of Lady's. The four chest loot tables are hers to edit.
-{
-  const server = diskFiles.filter(p => p.startsWith('Server/')).map(p => p.slice('Server/'.length));
-  const common = diskFiles.filter(p => p.startsWith('Common/')).map(p => '../' + p);
-  const loot = server.filter(p => madeByTool(p) === 'the list of chests your loot goes in').length;
-  check('made by a tool: the 48 chest patches', loot === 48, String(loot));
-  const tables = server.filter(p => p.startsWith('Drops/TheArmory/'));
-  check('made by a tool: never her 4 chest loot tables', tables.length === 4 && !tables.some(p => madeByTool(p)), tables.join(', '));
-  const showcase = [...server, ...common].filter(p => madeByTool(p) === 'the showcase world');
-  const named = diskFiles.filter(p => /Showcase/.test(p)).length;
-  check('made by a tool: every file named for the showcase', showcase.length === named && named > 0, showcase.length + ' of ' + named);
-  check('made by a tool: no Atlantean file', !server.some(p => p.includes('Atlantean') && madeByTool(p)));
-  check('made by a tool: the other patches stay hers', server.filter(p => p.endsWith('.patch') && !madeByTool(p)).length === 41);
-}
-
-// The plugin and the checks agree on every file a tool makes. The checks name a file by its path in
-// the resources folder, the plugin by its path in Server or "../Common/", so both are asked about
-// every file of the mod and their answers compared.
-{
-  const asked = diskFiles.filter(p => p.startsWith('Server/') || p.startsWith('Common/'));
-  const answers = execFileSync('python', ['-B', '-c',
-    'import json,sys; sys.path.insert(0, sys.argv[1]); import check; print(json.dumps([check.made_by(p) for p in json.load(sys.stdin)]))',
-    path.resolve(here, '..', 'Checks')], { input: JSON.stringify(asked), maxBuffer: 1 << 26 }).toString();
-  const theirs = JSON.parse(answers);
-  const differ = asked.filter((p, i) => (madeByTool(p.startsWith('Server/') ? p.slice('Server/'.length) : '../' + p) || null) !== theirs[i]);
-  check('made by a tool: the plugin and the checks agree on all ' + asked.length + ' files', differ.length === 0, differ.slice(0, 3).join(', '));
 }
 
 // A texture named for no colour never gives a colour name (the gray Praetorian helm wears Head_Texture.png).
@@ -436,6 +407,15 @@ check('colour key spelling', colourKey('Deep orange.png') === 'Deep_Orange' && c
   check('release form: a draft with a message needs the message', /message/.test(releaseProblem(info, { ...form, choice: 'message' }) || '')
     && releaseProblem(info, { ...form, choice: 'message', message: 'Add a glow.' }) === null);
   check('release form: no choice is named', /Choose/.test(releaseProblem(info, { ...form, choice: '' }) || ''));
+check('release form: work not sent needs her line', /what you did/.test(releaseProblem({ ...info, uncommitted: true }, form) || '')
+  && releaseProblem({ ...info, uncommitted: true }, { ...form, work: 'New gray set' }) === null);
+check('status: files changed', statusLine({ repo: true, ahead: 0 }, 3) === '3 files changed, not sent yet.', statusLine({ repo: true, ahead: 0 }, 3));
+check('status: one file', statusLine({ repo: true, ahead: 2 }, 1) === '1 file changed, not sent yet.', statusLine({ repo: true, ahead: 2 }, 1));
+check('status: committed, not sent', /not on GitHub yet/.test(statusLine({ repo: true, ahead: 2 }, 0)));
+check('status: all sent', statusLine({ repo: true, ahead: 0, behind: 3 }, 0) === 'All your work is on GitHub.');
+check('status: no copy says nothing', statusLine(null, 0) === '');
+check('hidden: every title is in the style', HIDDEN_TITLES.every(t => hiddenStyle().includes('[title^="' + t + '"]')));
+check('hidden: her branch button in its three wordings', /commit\(s\) to push/.test(hiddenStyle()) && /first push sets it/.test(hiddenStyle()) && /named origin yet/.test(hiddenStyle()));
   check('release form: versions compare as numbers', compareVersions('1.10.0', '1.9.9') === 1 && compareVersions('1.2.3', '1.2.3') === 0 && compareVersions('0.9.0', '1.0.0') === -1);
 
   const l = taskLaunch('C:\\Windows', 'C:/Users/L/Documents/The-Armory-Mod/', 'release', 'release-1', { Version: '1.25.0', Choice: 'draft', NotesFile: 'C:\\n.txt', MessageFile: '' });

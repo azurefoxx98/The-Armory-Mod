@@ -1,13 +1,14 @@
-# Brings the mod's latest work into her branch, keeps her work, and sends the result to GitHub. The
-# Update button of The Armory's panel in HyCreator runs it (through run.ps1), and so do the USB key's
-# Get updates and Done, and Release before it builds.
+# Commits her work with her own line, brings the mod's latest work into her branch, and sends the result to
+# GitHub. Send my work in The Armory's panel in HyCreator runs it (through run.ps1), and so do HyCreator's start
+# (-OnOpen), the USB key's Done, and Release before it builds.
 #
 # It solves what it meets and never leaves her stuck:
-#   - work she has not committed waits for her commit, so it keeps her own words,
+#   - her work is committed with the line she wrote (-WorkFile), so it keeps her own words,
 #   - a copy on main or on no branch moves to her branch, carrying its work (commits only this case makes for her),
 #   - an earlier update left unfinished is cleared,
 #   - names both sides added are all kept (*.lang merges line by line),
 #   - a file both sides changed is settled by who owns it, and we are told which,
+#   - a file changed on two of her own computers keeps the later commit, and the other stays in history,
 #   - a merge that still cannot finish sends her work to a branch of its own on GitHub, and we are told,
 #   - no internet leaves everything saved here, and the next Update sends it.
 #
@@ -21,6 +22,10 @@ param(
     [string] $Main = 'main',
     # Her branch, which a copy on main or on no branch moves to.
     [string] $Own = 'lady',
+    # The file holding the line she wrote about her work.
+    [string] $WorkFile = '',
+    # HyCreator just opened: bring in what is new when her copy is clean, and never ask for anything.
+    [switch] $OnOpen,
     # Leave out the final push. Only tests use it.
     [switch] $NoPush,
     # Run this file as it is, without reading the newest copy. Only tests use it.
@@ -166,9 +171,9 @@ function Get-Identity {
 function Save-Work {
     if (-not (Invoke-Git @('status', '--porcelain')).Out) { return }
     [void](Invoke-Git @('add', '-A'))
-    $saved = Invoke-Git ((Get-Identity) + @('commit', '-q', '-m', 'Work saved by Update'))
-    if ($saved.Code -eq 0) { Write-Host 'Your changes are committed.' }
-    else { Send-Problem 'Update could not commit her changes' $saved.Text }
+    $words = if ($WorkFile -and (Test-Path -LiteralPath $WorkFile)) { @('-F', $WorkFile) } else { @('-m', 'Work saved by Update') }
+    $saved = Invoke-Git ((Get-Identity) + @('commit', '-q') + $words)
+    if ($saved.Code -ne 0) { Send-Problem 'Update could not commit her changes' $saved.Text }
 }
 
 # Keeps the names both sides added. A rule in .git/info is read before any merge, so it also works on
@@ -185,20 +190,33 @@ function Set-MergeRule {
 
 $settled = New-Object System.Collections.Generic.List[string]
 $oursKept = New-Object System.Collections.Generic.List[string]
+$laterKept = New-Object System.Collections.Generic.List[string]
+
+# True when the coming side of this file is her own work from another computer, and the later of the two. The
+# author tells the two apart from our work: both sides by one author is her on two computers.
+function Test-HerLater([string] $path, [string] $source) {
+    $base = (Invoke-Git @('merge-base', 'HEAD', $source)).Out
+    if (-not $base) { return $false }
+    $here = (Invoke-Git @('log', '-1', '--format=%an|%ct', "$base..HEAD", '--', $path)).Out -split '\|'
+    $there = (Invoke-Git @('log', '-1', '--format=%an|%ct', "$base..$source", '--', $path)).Out -split '\|'
+    if ($here.Count -lt 2 -or $there.Count -lt 2 -or $here[0] -ne $there[0]) { return $false }
+    return [long]$there[1] -gt [long]$here[1]
+}
 
 # Keeps one side of one conflicted file. Stage 2 is her side, stage 3 ours. A side with no stage
 # deleted the file.
-function Resolve-Side([string] $path) {
+function Resolve-Side([string] $path, [string] $source) {
     $stages = ((Invoke-Git @('ls-files', '-u', '--', $path)).Out -split "`n" | ForEach-Object { if ($_ -match '^\d+ \S+ (\d)\t') { $Matches[1] } })
     $ours = $path -match $oursPattern
-    $side = if ($ours) { '3' } else { '2' }
+    $later = -not $ours -and (Test-HerLater $path $source)
+    $side = if ($ours -or $later) { '3' } else { '2' }
     if ($stages -contains $side) {
-        $flag = if ($ours) { '--theirs' } else { '--ours' }
+        $flag = if ($side -eq '3') { '--theirs' } else { '--ours' }
         $take = Invoke-Git @('checkout', $flag, '--', $path)
         if ($take.Code -ne 0) { return $false }
         if ((Invoke-Git @('add', '--', $path)).Code -ne 0) { return $false }
     } elseif ((Invoke-Git @('rm', '-q', '--', $path)).Code -ne 0) { return $false }
-    if ($ours) { $oursKept.Add($path) } else { $settled.Add($path) }
+    if ($ours) { $oursKept.Add($path) } elseif ($later) { $laterKept.Add($path) } else { $settled.Add($path) }
     return $true
 }
 
@@ -213,7 +231,7 @@ function Join-Source([string] $source) {
     if ($merge.Code -eq 0) { return @{ Ok = $true } }
     $both = @((Invoke-Git @('diff', '--name-only', '--diff-filter=U')).Out -split "`n" | Where-Object { $_ })
     $done = $both.Count -gt 0
-    foreach ($path in $both) { if (-not (Resolve-Side $path)) { $done = $false; break } }
+    foreach ($path in $both) { if (-not (Resolve-Side $path $source)) { $done = $false; break } }
     if ($done) {
         $commit = Invoke-Git ((Get-Identity) + @('commit', '-q', '--no-edit', '-m', "Bring in $source, each file settled by who owns it"))
         if ($commit.Code -eq 0) { return @{ Ok = $true } }
@@ -272,7 +290,7 @@ function Remove-Doubled([string] $start) {
 
 Write-Host 'Updating your copy of The Armory.'
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Write-Host 'Git is not installed. Install it from https://git-scm.com/download/win with its usual choices, then click Update.'
+    Write-Host 'Git is not installed. Install it from https://git-scm.com/download/win with its usual choices, then click Send my work.'
     exit 1
 }
 
@@ -300,6 +318,8 @@ if ($online -and -not $Fresh -and -not $NoRefresh) {
             [IO.File]::WriteAllText($script, $newest.Out, (New-Object Text.UTF8Encoding $true))
             $passed = @{ Main = $Main; Own = $Own; Repo = $repo; Fresh = $true }
             if ($NoPush) { $passed.NoPush = $true }
+            if ($OnOpen) { $passed.OnOpen = $true }
+            if ($WorkFile) { $passed.WorkFile = $WorkFile }
             & $script @passed
             exit $LASTEXITCODE
         }
@@ -309,12 +329,17 @@ if ($online -and -not $Fresh -and -not $NoRefresh) {
 $branch = (Invoke-Git @('rev-parse', '--abbrev-ref', 'HEAD')).Out
 $wrongBranch = $branch -eq 'HEAD' -or $branch -eq $Main -or -not $branch
 
-# Her commit carries her own words about her work, so Update waits for it. The newest copy of this file has
-# already run by here, and nothing has changed. On a wrong branch there is no sensible place for her to commit.
-if (-not $wrongBranch -and (Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Out) {
-    Write-Host ''
-    Write-Host "Some of your changes are not committed. In HyCreator, click $branch at the top, then Commit changes... and commit them. Then click Update again."
-    exit 1
+# Her commit carries her own words about her work. The newest copy of this file has already run by here, and
+# nothing has changed. On a wrong branch the commit waits for the move below.
+if (-not $wrongBranch) {
+    if ($WorkFile) { Save-Work }
+    elseif ((Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Out) {
+        # HyCreator opening on work in progress: the look at GitHub above is all it needs.
+        if ($OnOpen) { exit 0 }
+        Write-Host ''
+        Write-Host 'Write what you did in The Armory panel, then click Send my work.'
+        exit 1
+    }
 }
 
 if ($wrongBranch) {
@@ -362,15 +387,14 @@ if ($stuck) {
     $aside = 'saved/' + (Invoke-Git @('rev-parse', '--short', 'HEAD')).Out
     $sent = if ($NoPush) { @{ Code = 0 } } else { Invoke-Git @('push', 'origin', "HEAD:refs/heads/$aside") }
     Send-Problem 'Update could not join two sides' "Her work: $aside (sent to GitHub: $($sent.Code -eq 0)).`n$stuck"
-    Write-Host 'Your work is safe, and you can keep working. Larsonix has been told, and will bring in what is new.'
 }
-if ($settled.Count -gt 0 -or $oursKept.Count -gt 0 -or $differ.Count -gt 0) {
+if ($settled.Count -gt 0 -or $oursKept.Count -gt 0 -or $laterKept.Count -gt 0 -or $differ.Count -gt 0) {
     $lines = @()
     if ($settled.Count -gt 0) { $lines += "Hers kept over ours:`n" + ($settled -join "`n") }
     if ($oursKept.Count -gt 0) { $lines += "Ours kept over hers:`n" + ($oursKept -join "`n") }
+    if ($laterKept.Count -gt 0) { $lines += "Her later commit kept, from two computers:`n" + ($laterKept -join "`n") }
     if ($differ.Count -gt 0) { $lines += "Names written two ways, the first kept:`n" + ($differ -join "`n") }
     Send-Problem 'Update settled files both sides changed' (($lines -join "`n`n") + "`n`nBoth versions stay in the history.")
-    if ($settled.Count -gt 0) { Write-Host "You and Larsonix both changed $($settled.Count) file(s). Yours were kept, and he has been told." }
 }
 
 if ($brought -eq 0) { Write-Host 'Nothing new.' } else { Write-Host "Brought in $brought new change(s)." }
@@ -392,7 +416,7 @@ if (-not $NoPush) {
         if ($push.Code -eq 0) {
             Write-Host 'Sent.'
         } else {
-            Write-Host 'Your work is saved here. Update sends it the next time it can reach GitHub.'
+            Write-Host 'Your work is saved here. It goes to GitHub the next time it can.'
             if ($online) { Send-Problem 'Update could not send her work to GitHub' $push.Text }
         }
     }

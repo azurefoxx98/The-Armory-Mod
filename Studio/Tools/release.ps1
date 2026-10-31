@@ -21,6 +21,8 @@ param(
     [ValidateSet('', 'draft', 'message', 'publish')] [string] $Choice = '',
     [string] $NotesFile = '',
     [string] $MessageFile = '',
+    # The line she wrote about work not committed yet.
+    [string] $WorkFile = '',
     # Writes what the form shows to this file, then stops: the branch, the version now, the last
     # release, the next version, and the changes since the last release. Nothing else is done.
     [string] $Info = '',
@@ -79,7 +81,7 @@ function Stop-Release([string] $text, [string] $detail = '') {
 }
 
 # What she reads about anything only we can fix. Stop-Release sends it to us by itself.
-$send = 'Larsonix has been told, and you can keep working.'
+$send = 'You can keep working.'
 $downloadsAnnounced = $false
 
 function Get-Checked([string] $url, [string] $sha256, [string] $what) {
@@ -218,7 +220,7 @@ function Get-GitHub {
         $token = (& gh auth token 2>$null | Select-Object -First 1)
         $ErrorActionPreference = 'Stop'
     }
-    if (-not $token) { Stop-Release "GitHub does not know you on this computer yet. In HyCreator, click $branch at the top, then Push, and sign in. Then click Release again." }
+    if (-not $token) { Stop-Release "GitHub does not know you on this computer yet. Click Send my work in The Armory panel and sign in. Then click Release again." }
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     return @{ Api = "https://api.github.com/repos/$owner/$name"; Upload = "https://uploads.github.com/repos/$owner/$name"
               Headers = @{ Authorization = "Bearer $token"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' } }
@@ -242,12 +244,13 @@ if ($Info) {
 }
 
 Write-Host 'Making a release of The Armory.'
-if ($branch -ne $main -and $branch -ne 'HEAD' -and $branch -and (Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Out) {
-    Stop-Release "Some of your changes are not committed. In HyCreator, click $branch at the top, then Commit changes... and commit them. Then click Release again."
+if (-not $WorkFile -and $branch -ne $main -and $branch -ne 'HEAD' -and $branch -and (Invoke-Git @('status', '--porcelain', '--untracked-files=no')).Out) {
+    Stop-Release 'Write what you did in the release form, then click Start the release.'
 }
 
 # Update puts the copy on her branch and joins the latest, so a release holds all of it.
-if ($NoGitHub) { & (Join-Path $PSScriptRoot 'update.ps1') -NoPush -NoRefresh } else { & (Join-Path $PSScriptRoot 'update.ps1') }
+$work = @{}; if ($WorkFile) { $work.WorkFile = $WorkFile }
+if ($NoGitHub) { & (Join-Path $PSScriptRoot 'update.ps1') -NoPush -NoRefresh @work } else { & (Join-Path $PSScriptRoot 'update.ps1') @work }
 if ($LASTEXITCODE -ne 0) { exit 1 }
 $branch = (Invoke-Git @('rev-parse', '--abbrev-ref', 'HEAD')).Out
 [void](Invoke-Git @('fetch', '--tags', 'origin'))

@@ -316,7 +316,7 @@ function Get-KeyWork([string] $root) {
     if ((Invoke-KeyGit $root @('-C', $repo, 'rev-parse', '--verify', '--quiet', "origin/$branch")).Code -eq 0) { $range = "origin/$branch..HEAD" }
     $count = Invoke-KeyGit $root @('-C', $repo, 'rev-list', '--count', $range)
     if ($count.Code -eq 0) { $unsent = [int]$count.Text }
-    $changed = @((Invoke-KeyGit $root @('-C', $repo, 'status', '--porcelain', '--untracked-files=no')).Text -split "`n" | Where-Object { $_ }).Count
+    $changed = @((Invoke-KeyGit $root @('-C', $repo, 'status', '--porcelain')).Text -split "`n" | Where-Object { $_ }).Count
     return @{ Branch = $branch; Unsent = $unsent; Changed = $changed }
 }
 

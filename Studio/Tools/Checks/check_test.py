@@ -749,7 +749,7 @@ def main(argv: list[str]) -> int:
                and any("ItemSoundSetId" in p for p in checks["dupkeycheck"]["problems"]), checks["dupkeycheck"])
         expect("the lost language name is named", checks["languages"]["status"] == "fail"
                and any(lost in p for p in checks["languages"]["problems"]), checks["languages"])
-            showcase = checks["showcase"]
+        showcase = checks["showcase"]
         expect("the piece no figure wears any more is named, as ours alone",
                showcase["status"] == "fail" and [e["items"][0]["label"] for e in showcase["lady"]] == [unshown]
                and all(e["owner"] == "us" for e in showcase["lady"]), showcase)

@@ -1,0 +1,131 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Praetorian_Elite_Boots.name",
+    "Description": "server.items.Titan_Armor.description"
+  },
+  "Parent": "Armor_Iron_Legs",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Praetorian_Elite_Boots_Yellow.png",
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0.6,
+      -33
+    ]
+  },
+  "Model": "Items/Armors/Praetorian/Elite/Legs.blockymodel",
+  "Texture": "Items/Armors/Praetorian/Elite/Legs_Yellow.png",
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "BaseDamageResistance": 2,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Ice": [
+        {
+          "CalculationType": "Percent",
+          "Amount": 0.1
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 20,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "Amount": 20,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Volatility": [
+        {
+          "Amount": 6.5,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Affinity_Ice": [
+        {
+          "Target": "Max",
+          "CalculationType": "Additive",
+          "Amount": 18
+        }
+      ],
+      "Move_Speed": [
+        {
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": -0.05
+        }
+      ],
+      "Jump_Height": [
+        {
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": -0.03
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Pants",
+      "Shoes",
+      "Overpants"
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Steel"
+    ],
+    "ArmoryOnLanding": [
+      "Armory_Praetorian_Elite_Landing"
+    ]
+  },
+  "MaxDurability": 75,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "Quality": "Legendary",
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
+  "SubCategory": "Praetorian Elite",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Elite_Praetorian_Boots"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [ "ArmoryAlteration" ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Elite_Praetorian_Boots"
+    }
+  ]
+}

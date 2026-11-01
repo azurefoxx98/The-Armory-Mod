@@ -1,0 +1,33 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Showcase_Temple_Leaves_Block.name"
+ },
+ "PlayerAnimationsId": "Item",
+ "BlockType": {
+  "DrawType": "Model",
+  "Material": "Empty",
+  "Opacity": "Transparent",
+  "CustomModel": "Blocks/_Debug/Model.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/_Debug/TextureEmpty.png",
+    "Weight": 1
+   }
+  ],
+  "HitboxType": "Rubble",
+  "Flags": {},
+  "Support": {},
+  "BlockParticleSetId": "Stone",
+  "BlockSoundSetId": "Stone",
+  "Particles": [
+   {
+    "SystemId": "ForgottenTemple_Leaves",
+    "TargetEntityPart": "Self",
+    "PositionOffset": {
+     "Y": -0.5
+    }
+   }
+  ]
+ },
+ "Quality": "Armory_Showcase_Hidden"
+}

@@ -1,0 +1,26 @@
+{
+  "$Comment": "Written by tools/showcase-world/beacon.py. The spire beacon: a column of warm light drawn from across the cove.",
+  "Spawners": [
+    {
+      "SpawnerId": "Showcase_Spire_Beacon_Outer",
+      "PositionOffset": {
+        "Y": 32.0
+      }
+    },
+    {
+      "SpawnerId": "Showcase_Spire_Beacon_Core",
+      "PositionOffset": {
+        "Y": 32.0
+      }
+    },
+    {
+      "SpawnerId": "Showcase_Spire_Beacon_Foot",
+      "PositionOffset": {
+        "Y": 1.0
+      }
+    }
+  ],
+  "CullDistance": 260.0,
+  "BoundingRadius": 64,
+  "IsImportant": true
+}

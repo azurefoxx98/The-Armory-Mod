@@ -1,0 +1,78 @@
+{
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "BillboardVelocity",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 0.42,
+    "Max": 0.5
+  },
+  "Shape": "Sphere",
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Shape_Rect_Erosion.png",
+    "Animation": {
+      "0": {
+        "Opacity": 0.0,
+        "Color": "#e2881a"
+      },
+      "30": {
+        "Opacity": 1.0,
+        "Color": "#ffc94a"
+      },
+      "85": {
+        "Opacity": 1.0,
+        "Color": "#fff4cc"
+      },
+      "100": {
+        "Opacity": 0.0
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.16667,
+          "Max": 0.16667
+        },
+        "Y": {
+          "Min": 0.01667,
+          "Max": 0.01667
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#ffc94a"
+    }
+  },
+  "TotalParticles": {
+    "Min": 140,
+    "Max": 140
+  },
+  "MaxConcurrentParticles": 140,
+  "SpawnRate": {
+    "Min": 400,
+    "Max": 400
+  },
+  "SpawnBurst": true,
+  "EmitOffset": {
+    "X": {
+      "Min": 2.8,
+      "Max": 3.2
+    },
+    "Y": {
+      "Min": 1.6,
+      "Max": 2.2
+    },
+    "Z": {
+      "Min": 2.8,
+      "Max": 3.2
+    }
+  },
+  "Attractors": [
+    {
+      "RadialAcceleration": -34.0,
+      "RadialImpulse": -2.0,
+      "Position": {
+        "Y": 0.3
+      }
+    }
+  ]
+}

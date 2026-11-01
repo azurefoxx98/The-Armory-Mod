@@ -1,0 +1,31 @@
+{
+  "Parent": "DamageEntityParent",
+  "DamageCalculator": {
+    "BaseDamage": {
+      "Physical": 10
+    }
+  },
+  "DamageAttribute": "ArmoryFall",
+  "DamageEffects": {
+    "Knockback": {
+      "Type": "Point",
+      "Force": 16,
+      "VelocityY": 6,
+      "VelocityConfig": {
+        "AirResistance": 0.97,
+        "AirResistanceMax": 0.96,
+        "GroundResistance": 0.94,
+        "GroundResistanceMax": 0.3,
+        "Threshold": 3.0,
+        "Style": "Exp"
+      },
+      "VelocityType": "Set"
+    },
+    "WorldSoundEventId": "SFX_Unarmed_Impact",
+    "WorldParticles": [
+      {
+        "SystemId": "Impact_Sword_Basic"
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+ "Type": "Variant",
+ "Reference": "Template_Birds_Passive",
+ "Modify": {
+  "Appearance": "Owl_Brown",
+  "FlockArray": [
+   "Showcase_Temple_Owl"
+  ],
+  "DropList": "Drop_Owl_Brown",
+  "MaxHealth": 29,
+  "WanderRadius": 14,
+  "MinHeightOverGround": 6,
+  "MaxHeightOverGround": 26,
+  "IsMemory": true,
+  "MemoriesCategory": "Avian",
+  "MemoriesNameOverride": "Owl_Brown",
+  "NameTranslationKey": {
+   "Compute": "NameTranslationKey"
+  }
+ },
+ "Parameters": {
+  "NameTranslationKey": {
+   "Value": "server.npcRoles.Owl_Brown.name",
+   "Description": "Translation key for NPC name display"
+  }
+ }
+}

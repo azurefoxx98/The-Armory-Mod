@@ -1,0 +1,127 @@
+{
+  "RenderMode": "Erosion",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": true,
+  "TrailSpawnerPositionMultiplier": 1,
+  "TrailSpawnerRotationMultiplier": 1,
+  "MaxConcurrentParticles": 120,
+  "ParticleLifeSpan": {
+    "Min": 1.2,
+    "Max": 2.6
+  },
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Star2.png",
+    "ScaleRatioConstraint": "OneToOne",
+    "UVOption": "None",
+    "Animation": {
+      "0": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        },
+        "Opacity": 1,
+        "Scale": {
+          "X": {
+            "Min": 0.5,
+            "Max": 1.0
+          }
+        },
+        "Rotation": {
+          "Z": {
+            "Min": 0.0,
+            "Max": 0.0
+          }
+        },
+        "Color": "#bfefff"
+      },
+      "20": {},
+      "30": {
+        "Color": "#bfefff"
+      },
+      "60": {
+        "Scale": {
+          "X": {
+            "Min": 1,
+            "Max": 1
+          }
+        },
+        "Color": "#bfefff"
+      },
+      "100": {
+        "Opacity": 0,
+        "Color": "#bfefff",
+        "Rotation": {
+          "Z": {
+            "Min": 0,
+            "Max": 30
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "Opacity": 0.804,
+      "FrameIndex": {
+        "Min": 0,
+        "Max": 0
+      },
+      "Scale": {
+        "X": {
+          "Min": 0.25,
+          "Max": 0.4
+        }
+      },
+      "Color": "#ffffff"
+    },
+    "SoftParticles": "Disable"
+  },
+  "SpawnRate": {
+    "Min": 20.0,
+    "Max": 50.0
+  },
+  "EmitOffset": {
+    "X": {
+      "Min": 0,
+      "Max": 8
+    },
+    "Y": {
+      "Min": 0,
+      "Max": 6
+    },
+    "Z": {
+      "Min": 0,
+      "Max": 8
+    }
+  },
+  "TotalParticles": {
+    "Min": 120,
+    "Max": 120
+  },
+  "SpawnBurst": true,
+  "InitialVelocity": {
+    "Speed": {
+      "Min": 0.5,
+      "Max": 1.5
+    },
+    "Pitch": {
+      "Min": -90,
+      "Max": -60
+    },
+    "Yaw": {
+      "Min": -180,
+      "Max": 180
+    }
+  },
+  "UseEmitDirection": true,
+  "CameraOffset": -1.12,
+  "Attractors": [
+    {
+      "DampingMultiplier": {
+        "X": 0.8,
+        "Y": 0.8,
+        "Z": 0.8
+      }
+    }
+  ],
+  "$Comment": "Written by tools/showcase-world/ceremony.py from Server/Particles/Explosion/Explosion_Shroom/Spawners/Explosion_Shroom_Sparks_Small.particlespawner: spread over a firework's burst."
+}

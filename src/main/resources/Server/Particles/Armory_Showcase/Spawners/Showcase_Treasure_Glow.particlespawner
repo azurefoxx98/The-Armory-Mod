@@ -1,0 +1,55 @@
+{
+  "$Comment": "Written by tools/showcase-world/ceremony.py.",
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "Billboard",
+  "ParticleLifeSpan": {
+    "Min": 2.5,
+    "Max": 3.5
+  },
+  "SpawnRate": {
+    "Min": 0.6,
+    "Max": 0.9
+  },
+  "MaxConcurrentParticles": 3,
+  "InitialVelocity": {
+    "Speed": {
+      "Min": 0.0,
+      "Max": 0.0
+    },
+    "Pitch": {
+      "Min": 90,
+      "Max": 90
+    }
+  },
+  "LinearFiltering": true,
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Ball3.png",
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 2.6,
+          "Max": 3.2
+        },
+        "Y": {
+          "Min": 2.6,
+          "Max": 3.2
+        }
+      },
+      "Opacity": 0.45
+    },
+    "Animation": {
+      "0": {
+        "Opacity": 0,
+        "Color": "#fff3cf"
+      },
+      "40": {
+        "Opacity": 0.45,
+        "Color": "#ffd36b"
+      },
+      "100": {
+        "Opacity": 0,
+        "Color": "#ffaa3a"
+      }
+    }
+  }
+}

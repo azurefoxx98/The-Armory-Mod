@@ -1,0 +1,78 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Trork_Hands.name"
+  },
+  "Parent": "Armor_Iron_Hands",
+  "ItemLevel": 25,
+  "Icon": "Icons/ItemsGenerated/Armor_Trork_Hands_Blue.png",
+  "IconProperties": {
+    "Rotation": [ 22.5, 45, 22.5 ],
+    "Scale": 0.55,
+    "Translation": [ 0, 0 ]
+  },
+  "Model": "Items/Armors/Trork_Warrior/Hands.blockymodel",
+  "Texture": "Items/Armors/Trork/Hands_Blue.png",
+  "Armor": {
+    "ArmorSlot": "Hands",
+    "BaseDamageResistance": 0,
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 7,
+          "CalculationType": "Additive"
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.04,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.04,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Charged": [
+        {
+          "Amount": 0.03,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [ "Armor" ],
+    "Family": [ "Trork" ]
+  },
+  "MaxDurability": 50,
+  "Quality": "Uncommon",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Trork_Hands"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [ "ArmoryAlteration" ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Trork_Hands"
+    }
+  ],
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ]
+}

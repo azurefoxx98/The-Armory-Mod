@@ -1,0 +1,29 @@
+{
+  "Parent": "Armor_Trork_Hands",
+  "Quality": "Uncommon",
+  "Icon": "Icons/ItemsGenerated/Armor_Trork_Hands_BlackRed.png",
+  "Texture": "Items/Armors/Trork/Hands_BlackRed.png",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors",
+    "Items.Armors"
+  ],
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Trork_Hands"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  }
+}

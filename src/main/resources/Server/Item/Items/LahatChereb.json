@@ -4,7 +4,7 @@
   },
   "Model": "Items/Weapons/Excalibur/excalibur.blockymodel",
   "Texture": "Items/Weapons/Excalibur/excaliburgold.png",
-  "Icon": "Icons/ItemsGenerated/Excalibur.png",
+  "Icon": "Icons/ItemsGenerated/LahatChereb.png",
   "Quality": "Legendary",
   "ItemLevel": 40,
   "Recipe": {
@@ -191,14 +191,14 @@
   "DurabilityLossOnHit": 0.5,
   "IconProperties": {
     "Scale": 0.13,
-    "Rotation": [
-      24,
-      87,
-      167
-    ],
     "Translation": [
-      -13,
-      -58
+      -98,
+      -93
+    ],
+    "Rotation": [
+      35,
+      84,
+      360
     ]
   },
   "Particles": [
@@ -211,7 +211,8 @@
       },
       "RotationOffset": {
         "Pitch": 90
-      }
+      },
+      "Scale": 0.5
     }
   ],
   "SoundEventId": "SFX_Wand_Fire_Shoot",

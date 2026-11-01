@@ -1,0 +1,75 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.Armory_Showcase_Stand.name"
+ },
+ "PlayerAnimationsId": "Block",
+ "BlockType": {
+  "Material": "Solid",
+  "DrawType": "Model",
+  "CustomModel": "Blocks/Armory_Showcase/Showcase_Stand.blockymodel",
+  "CustomModelTexture": [
+   {
+    "Texture": "Blocks/Armory_Showcase/Showcase_Stand_Texture.png",
+    "Weight": 1
+   }
+  ],
+  "Opacity": "Transparent",
+  "HitboxType": "Plant_Tall_Full",
+  "VariantRotation": "NESW",
+  "BlockEntity": {
+   "Components": {
+    "ArmoryShowcaseFigureStand": {}
+   }
+  },
+  "Interactions": {
+   "Use": {
+    "Interactions": [
+     {
+      "Type": "SignalNearbyVolumes",
+      "MatchKey": "armory_placard",
+      "Radius": 0.5
+     }
+    ]
+   }
+  },
+  "InteractionHint": "server.interactionHints.examine",
+  "Gathering": {
+   "Breaking": {
+    "GatherType": "Unbreakable"
+   }
+  },
+  "Support": {
+   "Down": [
+    {
+     "FaceType": "Full"
+    }
+   ]
+  },
+  "State": {
+   "Definitions": {
+    "Riding": {
+     "Material": "Empty",
+     "DrawType": "Model",
+     "CustomModel": "Blocks/_Debug/Model.blockymodel",
+     "CustomModelTexture": [
+      {
+       "Texture": "Blocks/_Debug/TextureEmpty.png",
+       "Weight": 1
+      }
+     ],
+     "HitboxType": "Full",
+     "Support": {},
+     "Interactions": {
+      "Use": null
+     },
+     "InteractionHint": null
+    }
+   }
+  },
+  "BlockParticleSetId": "Wood",
+  "BlockSoundSetId": "Wood",
+  "PhysicalMaterialId": "Wood"
+ },
+ "ItemSoundSetId": "ISS_Blocks_Wood",
+ "Quality": "Armory_Showcase_Hidden"
+}

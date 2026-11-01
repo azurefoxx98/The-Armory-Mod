@@ -1,0 +1,88 @@
+{
+  "$Comment": "Written by tools/showcase-world/ceremony.py from Server/Particles/Status_Effect/Crown_Gold/Effect_Crown_Gold.particlesystem: seen from the platform.",
+  "Spawners": [
+    {
+      "SpawnerId": "Crown_Gold_Rays",
+      "PositionOffset": {
+        "Y": 3.0,
+        "Z": -0.15
+      },
+      "FixedRotation": true,
+      "StartDelay": 0.15
+    },
+    {
+      "SpawnerId": "Crown_Gold_Ray_Gradient",
+      "PositionOffset": {
+        "Y": 2.5,
+        "Z": -0.15
+      },
+      "FixedRotation": true,
+      "StartDelay": 0.15
+    },
+    {
+      "SpawnerId": "Crown_Gold_Rays_Sparks",
+      "StartDelay": 0.18,
+      "PositionOffset": {
+        "Y": 2.0
+      }
+    },
+    {
+      "SpawnerId": "Crown_Gold_Glow",
+      "PositionOffset": {
+        "Y": 0.5,
+        "Z": -0.25
+      }
+    },
+    {
+      "SpawnerId": "Crown_Gold_Glow_Center",
+      "PositionOffset": {
+        "Y": 0.5,
+        "Z": -0.25
+      },
+      "StartDelay": 0.05
+    },
+    {
+      "SpawnerId": "Crown_Gold_Glow_Center",
+      "StartDelay": 1.5,
+      "PositionOffset": {
+        "Y": 0.5,
+        "Z": -0.25
+      }
+    },
+    {
+      "SpawnerId": "Crown_Gold_Sparks",
+      "PositionOffset": {
+        "Y": 0.4,
+        "Z": -0.25
+      },
+      "StartDelay": 0.4
+    },
+    {
+      "SpawnerId": "Crown_Gold_Sparks_Stars",
+      "StartDelay": 0.4,
+      "PositionOffset": {
+        "Y": 0.4,
+        "Z": -0.25
+      }
+    },
+    {
+      "SpawnerId": "Crown_Gold_Flash",
+      "StartDelay": 0.4,
+      "PositionOffset": {
+        "Y": 0.5,
+        "Z": -0.25
+      }
+    },
+    {
+      "SpawnerId": "Crown_Gold_Flash_Sparks",
+      "PositionOffset": {
+        "Y": 0.4,
+        "Z": -0.25
+      },
+      "StartDelay": 0.56
+    }
+  ],
+  "CullDistance": 160.0,
+  "BoundingRadius": 4.0,
+  "IsImportant": true
+}

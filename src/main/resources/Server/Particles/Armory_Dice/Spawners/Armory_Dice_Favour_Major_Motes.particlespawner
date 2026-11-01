@@ -1,0 +1,93 @@
+{
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 2.0,
+    "Max": 2.8
+  },
+  "Shape": "Cube",
+  "Particle": {
+    "Texture": "Particles/Textures/Shapes/Spark_Wave_Gold.png",
+    "Animation": {
+      "0": {
+        "Opacity": 0.0
+      },
+      "20": {
+        "Opacity": 1.0
+      },
+      "80": {
+        "Opacity": 0.8
+      },
+      "100": {
+        "Opacity": 0.0,
+        "Scale": {
+          "X": {
+            "Min": 0.5,
+            "Max": 0.5
+          },
+          "Y": {
+            "Min": 0.5,
+            "Max": 0.5
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.22,
+          "Max": 0.4
+        },
+        "Y": {
+          "Min": 0.22,
+          "Max": 0.22
+        }
+      },
+      "Opacity": 1.0
+    },
+    "ScaleRatioConstraint": "OneToOne"
+  },
+  "MaxConcurrentParticles": 80,
+  "SpawnRate": {
+    "Min": 18.0,
+    "Max": 26.0
+  },
+  "EmitOffset": {
+    "X": {
+      "Min": 0.0,
+      "Max": 2.4
+    },
+    "Y": {
+      "Min": 0.0,
+      "Max": 0.6
+    },
+    "Z": {
+      "Min": 0.0,
+      "Max": 2.4
+    }
+  },
+  "InitialVelocity": {
+    "Pitch": {
+      "Min": -90,
+      "Max": -90
+    },
+    "Speed": {
+      "Min": 0.3,
+      "Max": 0.7
+    }
+  },
+  "Attractors": [
+    {
+      "RadialTangentImpulse": 0.6,
+      "RadialAxis": {
+        "Y": 1.0
+      },
+      "Position": {
+        "Y": 0.0
+      }
+    }
+  ],
+  "LifeSpan": 3.0
+}

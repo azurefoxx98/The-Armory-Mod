@@ -1,0 +1,85 @@
+{
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 0.7,
+    "Max": 1.0
+  },
+  "Shape": "Cube",
+  "Particle": {
+    "Texture": "Particles/Textures/Weather/Shooting_Star.png",
+    "Animation": {
+      "0": {
+        "Opacity": 0.0,
+        "Color": "#ffffff"
+      },
+      "15": {
+        "Opacity": 1.0
+      },
+      "70": {
+        "Color": "#ffc94a"
+      },
+      "100": {
+        "Opacity": 0.0,
+        "Color": "#e2881a"
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.375,
+          "Max": 0.525
+        },
+        "Y": {
+          "Min": 0.375,
+          "Max": 0.375
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#fff4cc",
+      "Rotation": {
+        "Z": {
+          "Min": -8,
+          "Max": 8
+        }
+      }
+    },
+    "ScaleRatioConstraint": "OneToOne"
+  },
+  "MaxConcurrentParticles": 8,
+  "SpawnRate": {
+    "Min": 4,
+    "Max": 6
+  },
+  "EmitOffset": {
+    "X": {
+      "Min": 0.0,
+      "Max": 9.0
+    },
+    "Y": {
+      "Min": 0.0,
+      "Max": 2.0
+    },
+    "Z": {
+      "Min": 0.0,
+      "Max": 9.0
+    }
+  },
+  "InitialVelocity": {
+    "Pitch": {
+      "Min": -40,
+      "Max": -25
+    },
+    "Yaw": {
+      "Min": 20,
+      "Max": 50
+    },
+    "Speed": {
+      "Min": 10,
+      "Max": 14
+    }
+  },
+  "LifeSpan": 3.2
+}

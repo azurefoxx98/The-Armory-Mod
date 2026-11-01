@@ -15,11 +15,19 @@
     ]
   },
   "Armor": {
-    "DamageResistance": {
-      "Fire": [
+    "StatModifiers": {
+      "Mana": [
         {
-          "CalculationType": "Percent",
+          "Target": "Max",
+          "CalculationType": "Additive",
           "Amount": 100
+        }
+      ],
+      "TA_Night_Mana": [
+        {
+          "Target": "Max",
+          "CalculationType": "Additive",
+          "Amount": -60
         }
       ]
     }
@@ -28,29 +36,7 @@
     "Name": "server.items.KanohiHau.name",
     "Description": "server.items.KanohiHau.description"
   },
-  "ResourceTypes": [
-    {
-      "Id": "Resource_Kanohi_Hau"
-    }
-  ],
-  "Recipe": {
-    "Input": [
-      {
-        "Quantity": 1,
-        "ResourceTypeId": "Resource_Kanohi_Hau"
-      }
-    ],
-    "BenchRequirement": [
-      {
-        "Id": "ArmoryAlteration",
-        "Type": "StructuralCrafting",
-        "Categories": [
-          "ArmoryAlteration"
-        ]
-      }
-    ],
-    "KnowledgeRequired": false,
-    "TimeSeconds": 0
-  },
-  "SubCategory": "Kanohi"
+  "SubCategory": "Kanohi",
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
+  "PlayerAnimationsId": "Block"
 }

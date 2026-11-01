@@ -1,0 +1,63 @@
+{
+  "$Comment": "Written by tools/showcase-world/life.py from Server/Particles/_Test/WaterRnD/Water_Splash_Soft.particlesystem: surf breaking every 4.3 s.",
+  "Spawners": [
+    {
+      "SpawnerId": "Water_Splash_Alpha_Sides",
+      "FixedRotation": false,
+      "TotalSpawners": -1,
+      "MaxConcurrent": 1,
+      "WaveDelay": {
+        "Min": 4.3,
+        "Max": 4.3
+      }
+    },
+    {
+      "SpawnerId": "Water_Splash_Core",
+      "TotalSpawners": -1,
+      "MaxConcurrent": 1,
+      "WaveDelay": {
+        "Min": 4.3,
+        "Max": 4.3
+      }
+    },
+    {
+      "SpawnerId": "Water_Splash_Drops",
+      "PositionOffset": {
+        "Y": 0.5
+      },
+      "TotalSpawners": -1,
+      "MaxConcurrent": 1,
+      "WaveDelay": {
+        "Min": 4.3,
+        "Max": 4.3
+      }
+    },
+    {
+      "SpawnerId": "Water_Splash_Circle",
+      "PositionOffset": {
+        "X": 0,
+        "Y": 0.0,
+        "Z": 0
+      },
+      "TotalSpawners": -1,
+      "MaxConcurrent": 1,
+      "WaveDelay": {
+        "Min": 4.3,
+        "Max": 4.3
+      }
+    },
+    {
+      "SpawnerId": "Water_Splash_Circle_Small",
+      "StartDelay": 0.6,
+      "TotalSpawners": -1,
+      "MaxConcurrent": 1,
+      "WaveDelay": {
+        "Min": 4.3,
+        "Max": 4.3
+      }
+    }
+  ],
+  "CullDistance": 96,
+  "BoundingRadius": 3,
+  "IsImportant": false
+}

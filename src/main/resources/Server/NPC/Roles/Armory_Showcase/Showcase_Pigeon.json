@@ -1,0 +1,26 @@
+{
+ "Type": "Variant",
+ "Reference": "Template_Birds_Passive",
+ "Modify": {
+  "Appearance": "Pigeon",
+  "FlockArray": [
+   "Showcase_Pigeon"
+  ],
+  "DropList": "Drop_Pigeon",
+  "MaxHealth": 20,
+  "WanderRadius": 10,
+  "IsMemory": true,
+  "MemoriesCategory": "Avian",
+  "NameTranslationKey": {
+   "Compute": "NameTranslationKey"
+  },
+  "MinHeightOverGround": 5,
+  "MaxHeightOverGround": 22
+ },
+ "Parameters": {
+  "NameTranslationKey": {
+   "Value": "server.npcRoles.Pigeon.name",
+   "Description": "Translation key for NPC name display"
+  }
+ }
+}

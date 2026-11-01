@@ -1,0 +1,135 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Praetorian_Elite_Gauntlet.name",
+    "Description": "server.items.Titan_Armor.description"
+  },
+  "Parent": "Armor_Iron_Hands",
+  "ItemLevel": 30,
+  "Icon": "Icons/ItemsGenerated/Praetorian_Elite_Gauntlets.png",
+  "IconProperties": {
+    "Scale": 0.55,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -1,
+      -7
+    ]
+  },
+  "Model": "Items/Armors/Praetorian/Elite/Hands.blockymodel",
+  "Texture": "NPC/Undead/Skeleton_Elite/Models/Attachments/Elite/Hands_Texture.png",
+  "Armor": {
+    "ArmorSlot": "Hands",
+    "BaseDamageResistance": 2,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.09,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.09,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Ice": [
+        {
+          "CalculationType": "Percent",
+          "Amount": 0.1
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 10,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "Amount": 28,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Volatility": [
+        {
+          "Amount": 8.5,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Affinity_Ice": [
+        {
+          "Target": "Max",
+          "CalculationType": "Additive",
+          "Amount": 26
+        }
+      ],
+      "Move_Speed": [
+        {
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": -0.05
+        }
+      ],
+      "Jump_Height": [
+        {
+          "Target": "Max",
+          "CalculationType": "Multiplicative",
+          "Amount": -0.03
+        }
+      ]
+    }
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Steel"
+    ],
+    "ArmoryOnLanding": [
+      "Armory_Praetorian_Elite_Landing"
+    ]
+  },
+  "MaxDurability": 75,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "Quality": "Legendary",
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
+  "SubCategory": "Praetorian Elite",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Elite_Praetorian_Gauntlets"
+    }
+  ],
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Gold",
+        "Quantity": 25
+      },
+      {
+        "ItemId": "Ingredient_Voidtaken_Grizzly_Hide",
+        "Quantity": 15
+      },
+      {
+        "ItemId": "Ingredient_Ice_Essence",
+        "Quantity": 10
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Armor_Bench",
+        "Type": "Crafting",
+        "Categories": [ "Armor_Hands" ],
+        "RequiredTierLevel": 3
+      }
+    ],
+    "KnowledgeRequired": true,
+    "TimeSeconds": 3
+  }
+}

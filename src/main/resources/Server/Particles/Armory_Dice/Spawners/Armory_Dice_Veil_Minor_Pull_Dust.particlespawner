@@ -1,0 +1,102 @@
+{
+  "RenderMode": "Erosion",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 0.9,
+    "Max": 1.4
+  },
+  "Shape": "Sphere",
+  "Particle": {
+    "Texture": "Particles/Textures/Smoke/Sparks_Cloud.png",
+    "Animation": {
+      "0": {
+        "Opacity": 0.0,
+        "Color": "#2a1440"
+      },
+      "20": {
+        "Opacity": 1.0
+      },
+      "80": {
+        "Opacity": 0.9,
+        "Color": "#000000"
+      },
+      "100": {
+        "Opacity": 0.0,
+        "Color": "#000000",
+        "Scale": {
+          "X": {
+            "Min": 0.2,
+            "Max": 0.2
+          },
+          "Y": {
+            "Min": 0.2,
+            "Max": 0.2
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.25,
+          "Max": 0.4
+        },
+        "Y": {
+          "Min": 0.25,
+          "Max": 0.25
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#2a1440",
+      "FrameIndex": {
+        "Min": 0,
+        "Max": 3
+      }
+    },
+    "FrameSize": {
+      "Width": 64,
+      "Height": 64
+    },
+    "ScaleRatioConstraint": "OneToOne"
+  },
+  "MaxConcurrentParticles": 55,
+  "SpawnRate": {
+    "Min": 27.500000000000004,
+    "Max": 27.500000000000004
+  },
+  "EmitOffset": {
+    "X": {
+      "Min": 1.2100000000000002,
+      "Max": 1.87
+    },
+    "Y": {
+      "Min": 0.0,
+      "Max": 1.2100000000000002
+    },
+    "Z": {
+      "Min": 1.2100000000000002,
+      "Max": 1.87
+    }
+  },
+  "Attractors": [
+    {
+      "Position": {
+        "Y": 1.1550000000000002
+      },
+      "RadialAcceleration": -7.700000000000001,
+      "RadialImpulse": -1.375
+    },
+    {
+      "Position": {
+        "Y": 1.1550000000000002
+      },
+      "RadialAxis": {
+        "Y": 1.0
+      },
+      "RadialTangentImpulse": 1.6500000000000001
+    }
+  ],
+  "LifeSpan": 1.26
+}

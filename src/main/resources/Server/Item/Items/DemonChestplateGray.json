@@ -1,0 +1,117 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.DemonChestplate.name",
+    "Description": "server.items.Daemon.description"
+  },
+  "Parent": "DemonChestplate",
+  "Icon": "Icons/ItemsGenerated/DemonChestplateGray.png",
+  "IconProperties": {
+    "Scale": 0.335,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -1,
+      -8
+    ]
+  },
+  "Model": "Items/Armors/Demon/Chest.blockymodel",
+  "Texture": "Items/Armors/Demon/Chest_Gray.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "ResourceDemonChest"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Adamantite"
+    ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "ResourceDemonChest"
+    }
+  ],
+  "Light": {
+    "Color": "#074",
+    "Radius": 0
+  },
+  "Quality": "Epic",
+  "ItemLevel": 40,
+  "Armor": {
+    "ArmorSlot": "Chest",
+    "BaseDamageResistance": 0,
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 24,
+          "CalculationType": "Additive"
+        }
+      ],
+      "Mana": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 15
+        }
+      ]
+    },
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.144,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.144,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Fire": [
+        {
+          "Amount": 0.2,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "DamageClassEnhancement": {
+      "Charged": [
+        {
+          "Amount": 0.1,
+          "CalculationType": "Multiplicative"
+        }
+      ]
+    },
+    "CosmeticsToHide": [
+      "Overtop"
+    ]
+  },
+  "MaxDurability": 150,
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors",
+"Items.Armors"
+  ],
+  "SubCategory": "Daemon Set"
+}

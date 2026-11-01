@@ -1,0 +1,112 @@
+{
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "None",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 2.4699999999999998,
+    "Max": 2.4699999999999998
+  },
+  "Shape": "Sphere",
+  "Particle": {
+    "Texture": "Particles/Textures/Circles/Portal_Runic.png",
+    "Animation": {
+      "0": {
+        "Scale": {
+          "X": {
+            "Min": 0.1,
+            "Max": 0.1
+          },
+          "Y": {
+            "Min": 0.1,
+            "Max": 0.1
+          }
+        },
+        "Opacity": 0.0,
+        "Color": "#fff4cc",
+        "Rotation": {
+          "X": {
+            "Min": 90,
+            "Max": 90
+          },
+          "Z": {
+            "Min": 0,
+            "Max": 0
+          }
+        }
+      },
+      "14": {
+        "Scale": {
+          "X": {
+            "Min": 1.0,
+            "Max": 1.0
+          },
+          "Y": {
+            "Min": 1.0,
+            "Max": 1.0
+          }
+        },
+        "Opacity": 1.0
+      },
+      "60": {
+        "Color": "#ffc94a"
+      },
+      "100": {
+        "Scale": {
+          "X": {
+            "Min": 1.08,
+            "Max": 1.08
+          },
+          "Y": {
+            "Min": 1.08,
+            "Max": 1.08
+          }
+        },
+        "Opacity": 0.0,
+        "Color": "#e2881a",
+        "Rotation": {
+          "X": {
+            "Min": 90,
+            "Max": 90
+          },
+          "Z": {
+            "Min": 140,
+            "Max": 140
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.15125,
+          "Max": 0.15125
+        },
+        "Y": {
+          "Min": 0.15125,
+          "Max": 0.15125
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#ffc94a",
+      "Rotation": {
+        "X": {
+          "Min": 90,
+          "Max": 90
+        }
+      }
+    },
+    "ScaleRatioConstraint": "OneToOne",
+    "SoftParticles": "Disable"
+  },
+  "TotalParticles": {
+    "Min": 1,
+    "Max": 1
+  },
+  "MaxConcurrentParticles": 1,
+  "SpawnRate": {
+    "Min": 1,
+    "Max": 1
+  },
+  "SpawnBurst": true
+}

@@ -16,7 +16,26 @@ pom.xml.versionsBackup
 !.idea/runConfigurations/
 *.iml
 
+# HyCreator keeps the previous version of every file it saves as <file>.bak. They are
+# editor backups, never part of the mod, and the build already leaves them out of the jar.
+*.bak
+
 # Hytale
 libs/HytaleServer.jar
 server/Assets.zip
 server/HytaleServer.jar
+
+# The last result of the Studio checks, and the marker of a run in progress. They describe one
+# computer's copy, so they are never shared.
+Studio/Tools/Checks/last-check*.json
+Studio/Tools/Checks/*.tmp
+# What the buttons of The Armory's panel in HyCreator last did, for the same reason.
+Studio/Tools/Runs/
+__pycache__/
+
+# The CurseForge upload token for publishToCurseForge. It must never be committed. AzureDoom's
+# publisher appends this line itself when it is missing, so naming it here keeps that silent edit away.
+key.properties
+
+# The local server folder AzureDoom's runServer task creates.
+run/

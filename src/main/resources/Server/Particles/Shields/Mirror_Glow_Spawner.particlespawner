@@ -2,7 +2,10 @@
   "Particle": {
     "Texture": "Particles/Textures/Circles/Portal_Blue.png",
     "Animation": {
-      "1": {
+      "0": {
+        "Opacity": 0
+      },
+      "50": {
         "Opacity": 0.632
       },
       "100": {
@@ -12,11 +15,22 @@
             "Min": 300
           }
         },
-        "Opacity": 0.632
+        "Opacity": 0
       }
     },
     "UseSpriteBlending": true
   },
   "RenderMode": "BlendAdd",
-  "ParticleRotateWithSpawner": true
+  "ParticleRotateWithSpawner": true,
+  "ParticleLifeSpan": {
+    "Min": 2,
+    "Max": 2
+  },
+  "SpawnRate": {
+    "Min": 2,
+    "Max": 2
+  },
+  "MaxConcurrentParticles": 4,
+  "TrailSpawnerPositionMultiplier": 0,
+  "TrailSpawnerRotationMultiplier": 0
 }

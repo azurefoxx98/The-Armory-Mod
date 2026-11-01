@@ -1,0 +1,27 @@
+{
+ "Type": "Variant",
+ "Reference": "Template_Birds_Passive",
+ "Modify": {
+  "Appearance": "Bluebird",
+  "FlockArray": [
+   "Showcase_Temple_Bluebird"
+  ],
+  "DropList": "Drop_Bluebird",
+  "MaxHealth": 18,
+  "WanderRadius": 12,
+  "MinHeightOverGround": 4,
+  "MaxHeightOverGround": 18,
+  "IsMemory": true,
+  "MemoriesCategory": "Avian",
+  "MemoriesNameOverride": "Bluebird",
+  "NameTranslationKey": {
+   "Compute": "NameTranslationKey"
+  }
+ },
+ "Parameters": {
+  "NameTranslationKey": {
+   "Value": "server.npcRoles.Bluebird.name",
+   "Description": "Translation key for NPC name display"
+  }
+ }
+}

@@ -5,6 +5,9 @@ plugins {
     // from Hypixel's own repository, so the mod builds on any machine without the game installed,
     // and it writes manifest.json from gradle.properties. Every setting it reads is there.
     id 'com.azuredoom.hytale-tools' version '1.0.51'
+    // AzureDoom's publisher. It uploads a release to CurseForge with one command, see the
+    // hytalePublisher block below.
+    id 'com.azuredoom.hytalepublisher' version '1.1.13'
 }
 
 group = 'me.ladypaladra.thearmorymod'
@@ -201,6 +204,174 @@ tasks.register('verifyBundledRuntime') {
             }
         }
     }
+}
+
+// The jar a release ships. Test builds and deploys never run this. It takes the built jar,
+// rearranges every model texture so that each picture a face shows is stored once and nothing
+// else is, proves that every face of every model still shows exactly the same texels, and
+// stamps the result. A player sees no difference and the jar is smaller, 54 MB down to 44 MB
+// on 1.25.0. The source is never touched, so the art stays exactly as it was made.
+//
+// The optimiser lives outside this repository. Its location is read from the per-user
+// ~/.gradle/gradle.properties (texopt.python, texopt.pythonpath, texopt.tools), so this public
+// file names no local path. A machine without them gets a clear failure from this task alone,
+// and every other task works as before.
+def texoptPython = providers.gradleProperty('texopt.python')
+def texoptPythonPath = providers.gradleProperty('texopt.pythonpath')
+def texoptTools = providers.gradleProperty('texopt.tools')
+def releaseJarFile = layout.buildDirectory.file(shadowJar.archiveFile.map { "release/${it.asFile.name}" })
+
+tasks.register('releaseJar') {
+    group = 'build'
+    description = 'Builds the release jar in build/release with every model texture optimised, proved and stamped.'
+    dependsOn shadowJar, 'verifyBundledRuntime'
+    inputs.file(shadowJar.archiveFile)
+    outputs.file(releaseJarFile)
+    // The optimiser changes outside this build. It keeps its own record of past results, so a
+    // rerun with unchanged art takes seconds.
+    outputs.upToDateWhen { false }
+    doLast {
+        def required = { provider, key ->
+            if (!provider.present) {
+                throw new GradleException("releaseJar needs ${key} in ~/.gradle/gradle.properties.")
+            }
+            provider.get()
+        }
+        def python = required(texoptPython, 'texopt.python')
+        def pythonPath = required(texoptPythonPath, 'texopt.pythonpath')
+        def tools = required(texoptTools, 'texopt.tools')
+        def vanilla = file("${System.getenv('APPDATA')}/Hytale/install/release/package/game/latest/Assets.zip")
+        if (!vanilla.isFile()) {
+            throw new GradleException("releaseJar found no release Assets.zip at ${vanilla}.")
+        }
+        def output = releaseJarFile.get().asFile
+        output.parentFile.mkdirs()
+        def memory = new File(System.getProperty('user.home'), '.cache/texopt').path
+        def run = { List arguments ->
+            def builder = new ProcessBuilder(([python] + arguments)*.toString()).redirectErrorStream(true)
+            builder.environment().put('PYTHONPATH', pythonPath)
+            def process = builder.start()
+            def text = process.inputStream.getText('UTF-8')
+            def code = process.waitFor()
+            if (code != 0) {
+                throw new GradleException("releaseJar: ${new File(arguments[0].toString()).name} failed with exit ${code}.\n${text.takeRight(3000)}")
+            }
+            text.readLines().findAll { it.trim() && !it.startsWith('EXIT=') }.takeRight(2).each { println it }
+        }
+        run(["${tools}/optimize_jar.py", shadowJar.archiveFile.get().asFile.path, output.path,
+             '--cache', memory, '--vanilla', vanilla.path])
+        run(["${tools}/texopt_stamp.py", 'check', output.path])
+        println "Release jar: ${output}"
+    }
+}
+
+// The plugin without its asset pack, for working on the mod's files in the game directly.
+//
+// The game loads Java only from a jar in a mods folder, and it refuses two packs with the same
+// name, so the normal jar and a folder of the mod's files cannot sit side by side. This jar
+// declares IncludesAssetPack false, so the game loads the plugin from it and takes every item,
+// model and texture from the folder instead, and a file saved there reaches the game without a
+// build. It keeps the one asset the Java reads from its own jar, the Alteration Table page.
+//
+// It is committed under Studio/Tools so that pulling the repository always brings the code that
+// matches the files beside it. Timestamps and entry order are fixed, so the file only changes
+// when the code does, and the build rewrites it every time so it can never fall behind. It
+// carries no HStats key, because it lives in a public repository and a working copy has
+// nothing to report.
+def studioDirectory = layout.buildDirectory.dir('generated/studio')
+
+def generateStudioCodeFiles = tasks.register('generateStudioCodeFiles') {
+    // manifest.json is written by the plugin's updatePluginManifest, so read it only after that.
+    dependsOn 'updatePluginManifest'
+    def manifestSource = file('src/main/resources/manifest.json')
+    inputs.file(manifestSource)
+    inputs.property('version', resolvedArmoryVersion)
+    outputs.dir(studioDirectory)
+    doLast {
+        def manifest = new groovy.json.JsonSlurper().parse(manifestSource, 'UTF-8')
+        if (manifest.IncludesAssetPack != true) {
+            throw new GradleException('manifest.json no longer declares IncludesAssetPack true, so the code-only jar cannot be derived from it.')
+        }
+        manifest.IncludesAssetPack = false
+        def root = studioDirectory.get().asFile
+        new File(root, 'manifest.json').setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifest)) + '\n', 'UTF-8')
+        def metrics = new File(root, 'me/ladypaladra/thearmorymod/metrics/hstats.properties')
+        metrics.parentFile.mkdirs()
+        metrics.setText("key=\nversion=${resolvedArmoryVersion}\n", 'UTF-8')
+    }
+}
+
+def studioCodeJar = tasks.register('studioCodeJar', Jar) {
+    group = 'build'
+    description = 'Builds Studio/Tools/TheArmory-code.jar, the plugin without its asset pack.'
+    dependsOn shadowJar, generateStudioCodeFiles
+    from({ zipTree(shadowJar.archiveFile) }) {
+        exclude 'Common/**', 'Server/**', 'manifest.json', 'icon-256.png', 'META-INF/MANIFEST.MF'
+        exclude 'me/ladypaladra/thearmorymod/metrics/hstats.properties'
+    }
+    from({ zipTree(shadowJar.archiveFile) }) {
+        include 'Common/UI/Custom/Pages/TheArmory/AlterationPage.ui'
+    }
+    from(file('src/main/resources/icon-256.png'))
+    from(studioDirectory)
+    destinationDirectory = layout.projectDirectory.dir('Studio/Tools')
+    archiveFileName = 'TheArmory-code.jar'
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+
+tasks.named('build') {
+    dependsOn studioCodeJar
+}
+
+// Uploading a release to CurseForge: gradlew publishToCurseForge -PcurseforgeChangelog=<notes file>
+//
+// The API token is read from the CURSE_KEY environment variable or from curseKey in key.properties
+// beside this file. key.properties is ignored by git, so the token never reaches this public
+// repository. GitHub releases stay with Studio/Tools/release.ps1, so only CurseForge is enabled.
+//
+// The publisher always uploads build/libs/<name>-<version>.jar, which is the plain jar, and every
+// release must hand out the smaller releaseJar output instead. stageCurseForgeJar copies the release
+// jar into a folder of its own laid out the way the publisher expects, and the upload is pointed
+// there. The publisher also writes an empty changelog when the file is missing and uploads it, so
+// the upload refuses to start without real release notes.
+def curseforgeDirectory = layout.buildDirectory.dir('curseforge')
+def curseforgeName = 'The Armory'
+def curseforgeChangelog = providers.gradleProperty('curseforgeChangelog')
+
+hytalePublisher {
+    releaseType = 'release'
+    changelogFile = curseforgeChangelog.orElse('build/curseforge/changelog.md').get()
+    curseforge {
+        enabled = true
+        projectId = '1448501'
+    }
+}
+
+def stageCurseForgeJar = tasks.register('stageCurseForgeJar', Copy) {
+    dependsOn 'releaseJar'
+    from(releaseJarFile)
+    into(curseforgeDirectory.map { it.dir('libs') })
+    rename { "${curseforgeName}-${project.version}.jar" }
+}
+
+// The publisher registers its task in an afterEvaluate of its own and sets the name and folder in
+// that registration, which runs after any configureEach and overwrote them when tried. Configuring
+// the registered task from a later afterEvaluate is what makes these settings stick.
+afterEvaluate {
+  tasks.named('publishToCurseForge').configure {
+    dependsOn stageCurseForgeJar
+    projectName.set(curseforgeName)
+    buildDirectory.set(curseforgeDirectory)
+    doFirst {
+        def notes = file(changelogFile.get())
+        def text = notes.isFile() ? notes.getText('UTF-8') : ''
+        if (text.replaceAll(/(?m)^#\s*Changelog\s*$/, '').trim().isEmpty()) {
+            throw new GradleException("No release notes in ${notes}. Pass -PcurseforgeChangelog=<file> holding them.")
+        }
+    }
+  }
 }
 
 tasks.named('test') {

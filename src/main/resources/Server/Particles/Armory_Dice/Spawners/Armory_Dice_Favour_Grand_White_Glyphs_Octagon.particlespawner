@@ -1,0 +1,128 @@
+{
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 2.7,
+    "Max": 3.9000000000000004
+  },
+  "Shape": "Sphere",
+  "Particle": {
+    "Texture": "Particles/Textures/Shapes/Octagon_runic.png",
+    "Animation": {
+      "0": {
+        "Opacity": 0.0,
+        "Color": "#ffffff",
+        "Scale": {
+          "X": {
+            "Min": 0.4,
+            "Max": 0.4
+          },
+          "Y": {
+            "Min": 0.4,
+            "Max": 0.4
+          }
+        }
+      },
+      "20": {
+        "Opacity": 1.0,
+        "Color": "#bad2de",
+        "Scale": {
+          "X": {
+            "Min": 1.0,
+            "Max": 1.0
+          },
+          "Y": {
+            "Min": 1.0,
+            "Max": 1.0
+          }
+        }
+      },
+      "75": {
+        "Opacity": 0.8,
+        "Color": "#ffc94a"
+      },
+      "100": {
+        "Opacity": 0.0,
+        "Color": "#e2881a",
+        "Scale": {
+          "X": {
+            "Min": 0.7,
+            "Max": 0.7
+          },
+          "Y": {
+            "Min": 0.7,
+            "Max": 0.7
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.2625,
+          "Max": 0.2625
+        },
+        "Y": {
+          "Min": 0.2625,
+          "Max": 0.2625
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#bad2de",
+      "Rotation": {
+        "Z": {
+          "Min": -20,
+          "Max": 20
+        }
+      }
+    },
+    "ScaleRatioConstraint": "OneToOne"
+  },
+  "MaxConcurrentParticles": 36,
+  "SpawnRate": {
+    "Min": 6.0,
+    "Max": 9.0
+  },
+  "EmitOffset": {
+    "X": {
+      "Min": 1.0499999999999998,
+      "Max": 1.6500000000000001
+    },
+    "Y": {
+      "Min": 0.0,
+      "Max": 0.2
+    },
+    "Z": {
+      "Min": 1.0499999999999998,
+      "Max": 1.6500000000000001
+    }
+  },
+  "InitialVelocity": {
+    "Pitch": {
+      "Min": 90,
+      "Max": 90
+    },
+    "Speed": {
+      "Min": 1.0499999999999998,
+      "Max": 1.6500000000000001
+    }
+  },
+  "Attractors": [
+    {
+      "RadialTangentImpulse": 1.1,
+      "RadialAxis": {
+        "Y": 1.0
+      }
+    },
+    {
+      "DampingMultiplier": {
+        "X": 0.98,
+        "Y": 0.99,
+        "Z": 0.98
+      }
+    }
+  ],
+  "LifeSpan": 3.9000000000000004
+}

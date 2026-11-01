@@ -1,0 +1,77 @@
+{
+ "TranslationProperties": {
+  "Name": "server.items.PortalKey_Armory_Showcase.name",
+  "Description": "server.items.PortalKey_Armory_Showcase.description"
+ },
+ "Icon": "Icons/ItemsGenerated/PortalKey_Armory_Showcase.png",
+ "Categories": [
+  "Blocks.Portals"
+ ],
+ "PortalKey": {
+  "PortalType": "Armory_Showcase"
+ },
+ "Recipe": {
+  "TimeSeconds": 5,
+  "KnowledgeRequired": false,
+  "Input": [
+   {
+    "ItemId": "Ingredient_Bar_Gold",
+    "Quantity": 25
+   },
+   {
+    "ItemId": "Ingredient_Bar_Mithril",
+    "Quantity": 10
+   },
+   {
+    "ItemId": "Ingredient_Bar_Adamantite",
+    "Quantity": 10
+   },
+   {
+    "ItemId": "Ingredient_Bar_Onyxium",
+    "Quantity": 10
+   },
+   {
+    "ItemId": "Ingredient_Bar_Prisma",
+    "Quantity": 10
+   },
+   {
+    "ItemId": "Ingredient_Voidheart",
+    "Quantity": 1
+   }
+  ],
+  "BenchRequirement": [
+   {
+    "Id": "Arcanebench",
+    "Type": "Crafting",
+    "Categories": [
+     "Arcane_Portals"
+    ]
+   }
+  ],
+  "RequiredMemoriesLevel": 5
+ },
+ "PlayerAnimationsId": "Item",
+ "Tags": {
+  "Type": [
+   "Portal",
+   "Temporary"
+  ]
+ },
+ "Quality": "Legendary",
+ "ItemLevel": 60,
+ "IconProperties": {
+  "Scale": 0.42,
+  "Translation": [
+   -1,
+   -31
+  ],
+  "Rotation": [
+   1,
+   -4,
+   0
+  ]
+ },
+ "Animation": "Items/Armory_Invitation/Invitation_Unfurl.blockyanim",
+ "Model": "Items/Armory_Invitation/Invitation.blockymodel",
+ "Texture": "Items/Armory_Invitation/Invitation_Texture.png"
+}

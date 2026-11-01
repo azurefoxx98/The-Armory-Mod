@@ -1,0 +1,85 @@
+{
+  "RenderMode": "Erosion",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 0.22,
+    "Max": 0.3
+  },
+  "Shape": "Sphere",
+  "Particle": {
+    "Texture": "Particles/Textures/Shapes/LightningVoid.png",
+    "Animation": {
+      "0": {
+        "Opacity": 0.0,
+        "Color": "#ffffff"
+      },
+      "15": {
+        "Opacity": 1.0,
+        "Color": "#e8d4ff"
+      },
+      "55": {
+        "Opacity": 1.0,
+        "Color": "#8a3cff"
+      },
+      "85": {
+        "Opacity": 1.0,
+        "Color": "#130025"
+      },
+      "100": {
+        "Opacity": 0.0,
+        "Color": "#000000"
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.675,
+          "Max": 0.975
+        },
+        "Y": {
+          "Min": 0.675,
+          "Max": 0.975
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#d9b8ff",
+      "FrameIndex": {
+        "Min": 0,
+        "Max": 5
+      },
+      "Rotation": {
+        "Z": {
+          "Min": 0,
+          "Max": 360
+        }
+      }
+    },
+    "FrameSize": {
+      "Width": 64,
+      "Height": 128
+    },
+    "ScaleRatioConstraint": "Preserved"
+  },
+  "MaxConcurrentParticles": 9,
+  "SpawnRate": {
+    "Min": 4.5,
+    "Max": 9.0
+  },
+  "EmitOffset": {
+    "X": {
+      "Min": 0.0,
+      "Max": 1.5
+    },
+    "Y": {
+      "Min": 0.0,
+      "Max": 1.2000000000000002
+    },
+    "Z": {
+      "Min": 0.0,
+      "Max": 1.5
+    }
+  },
+  "LifeSpan": 3.1999999999999997
+}

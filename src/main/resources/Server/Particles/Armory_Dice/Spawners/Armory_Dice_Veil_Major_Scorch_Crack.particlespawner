@@ -1,0 +1,84 @@
+{
+  "RenderMode": "BlendLinear",
+  "ParticleRotationInfluence": "None",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 5.2,
+    "Max": 5.2
+  },
+  "Shape": "Sphere",
+  "Particle": {
+    "Texture": "Particles/Textures/Explosion/GroundCrack.png",
+    "Animation": {
+      "0": {
+        "Opacity": 0.0,
+        "Scale": {
+          "X": {
+            "Min": 0.3,
+            "Max": 0.3
+          },
+          "Y": {
+            "Min": 0.3,
+            "Max": 0.3
+          }
+        }
+      },
+      "12": {
+        "Opacity": 1.0,
+        "Scale": {
+          "X": {
+            "Min": 1.0,
+            "Max": 1.0
+          },
+          "Y": {
+            "Min": 1.0,
+            "Max": 1.0
+          }
+        }
+      },
+      "75": {
+        "Opacity": 1.0
+      },
+      "100": {
+        "Opacity": 0.0
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.65,
+          "Max": 0.65
+        },
+        "Y": {
+          "Min": 0.65,
+          "Max": 0.65
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#000000",
+      "Rotation": {
+        "X": {
+          "Min": 90,
+          "Max": 90
+        },
+        "Y": {
+          "Min": 0,
+          "Max": 360
+        }
+      }
+    },
+    "ScaleRatioConstraint": "OneToOne",
+    "SoftParticles": "Disable"
+  },
+  "TotalParticles": {
+    "Min": 1,
+    "Max": 1
+  },
+  "MaxConcurrentParticles": 1,
+  "SpawnRate": {
+    "Min": 1,
+    "Max": 1
+  },
+  "SpawnBurst": true
+}

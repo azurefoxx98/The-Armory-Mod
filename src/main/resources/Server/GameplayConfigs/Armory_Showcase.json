@@ -1,0 +1,32 @@
+{
+ "Parent": "Default",
+ "World": {
+  "DaytimeDurationSeconds": 1728,
+  "NighttimeDurationSeconds": 1152,
+  "BlockPlacementFragilityTimer": 0,
+  "Sleep": {
+   "WakeUpHour": 4.79,
+   "AllowedSleepHoursRange": [
+    19.5,
+    4.79
+   ]
+  },
+  "AllowBlockBreaking": false,
+  "AllowBlockGathering": false,
+  "AllowBlockPlacement": false
+ },
+ "Death": {
+  "ItemsLossMode": "None",
+  "RespawnController": {
+   "Type": "WorldSpawnPoint"
+  }
+ },
+ "Combat": {
+  "DisableNPCIncomingDamage": true,
+  "DisablePlayerIncomingDamage": true
+ },
+ "Plugin": {
+  "Portal": {},
+  "WorldEvents": {}
+ }
+}

@@ -1,0 +1,34 @@
+{
+  "Parent": "Armor_Trork_Head",
+  "Quality": "Uncommon",
+  "Icon": "Icons/ItemsGenerated/Armor_Trork_Head_Blackout.png",
+  "Texture": "Items/Armors/Trork/Head_Blackout.png",
+  "Categories": [
+    "ArmoryCategory.ArmoryArmors",
+    "Items.Armors"
+  ],
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Trork_Helm"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "IconProperties": {
+    "Scale": 0.5,
+    "Translation": [ 0, -3 ],
+    "Rotation": [ 22.5, 45, 22.5 ]
+  }
+}

@@ -1,0 +1,8 @@
+#!/bin/sh
+# Runs the mod's checks on the new commit, in the background, so the commit never waits for them.
+# The result shows in HyCreator's The Armory checks panel. Before setup installs the checks this does nothing.
+py=$(git config --get armory.python)
+if [ -n "$py" ] && [ -f "$py" ] && [ -f Studio/Tools/Checks/check.py ]; then
+    "$py" Studio/Tools/Checks/check.py --spawn
+fi
+exit 0

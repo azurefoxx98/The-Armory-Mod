@@ -1,0 +1,78 @@
+{
+  "$Comment": "Written by tools/showcase-world/beacon.py: the wide faint outer light.",
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "BillboardY",
+  "ParticleLifeSpan": {
+    "Min": 5,
+    "Max": 7
+  },
+  "SpawnRate": {
+    "Min": 0.42857142857142855,
+    "Max": 0.6
+  },
+  "MaxConcurrentParticles": 3,
+  "InitialVelocity": {
+    "Speed": {
+      "Min": 0.0,
+      "Max": 0.0
+    }
+  },
+  "Shape": "Sphere",
+  "EmitOffset": {
+    "X": {
+      "Min": 0,
+      "Max": 0.3
+    },
+    "Z": {
+      "Min": 0,
+      "Max": 0.3
+    }
+  },
+  "LinearFiltering": true,
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Gradient_Reflected.png",
+    "ScaleRatioConstraint": "None",
+    "SoftParticles": "Enable",
+    "SoftParticlesFadeFactor": 0.5,
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 3.2,
+          "Max": 3.8
+        },
+        "Y": {
+          "Min": 40.0,
+          "Max": 43.2
+        }
+      },
+      "Opacity": 0.35
+    },
+    "Animation": {
+      "0": {
+        "Opacity": 0,
+        "Color": "#ffe2a0"
+      },
+      "35": {
+        "Opacity": 0.35,
+        "Color": "#ffcf6a"
+      },
+      "70": {
+        "Opacity": 0.35,
+        "Color": "#ffcf6a"
+      },
+      "100": {
+        "Opacity": 0,
+        "Color": "#ffb84d"
+      }
+    }
+  },
+  "UVMotion": {
+    "Texture": "Particles/Textures/UVMotion/FlowMap3.png",
+    "Strength": 2,
+    "Scale": 1,
+    "StrengthCurveType": "IncreaseLinear",
+    "AddRandomUVOffset": true,
+    "SpeedX": 0.0,
+    "SpeedY": 0.08
+  }
+}

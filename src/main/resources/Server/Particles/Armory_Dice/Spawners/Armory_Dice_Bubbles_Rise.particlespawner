@@ -1,0 +1,94 @@
+{
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 0.8,
+    "Max": 1.5
+  },
+  "Shape": "Sphere",
+  "Particle": {
+    "Texture": "Particles/Textures/Shapes/Bubble.png",
+    "Animation": {
+      "0": {
+        "Opacity": 0.0
+      },
+      "12": {
+        "Opacity": 0.85
+      },
+      "85": {
+        "Opacity": 0.7
+      },
+      "100": {
+        "Opacity": 0.0
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.05,
+          "Max": 0.11
+        },
+        "Y": {
+          "Min": 0.05,
+          "Max": 0.05
+        }
+      },
+      "Opacity": 1.0
+    },
+    "FrameSize": {
+      "Width": 32,
+      "Height": 32
+    },
+    "ScaleRatioConstraint": "OneToOne",
+    "UVOption": "RandomFlipU"
+  },
+  "TotalParticles": {
+    "Min": 4,
+    "Max": 4
+  },
+  "MaxConcurrentParticles": 4,
+  "SpawnRate": {
+    "Min": 60,
+    "Max": 60
+  },
+  "SpawnBurst": true,
+  "EmitOffset": {
+    "X": {
+      "Min": 0.0,
+      "Max": 0.12
+    },
+    "Y": {
+      "Min": 0.0,
+      "Max": 0.05
+    },
+    "Z": {
+      "Min": 0.0,
+      "Max": 0.12
+    }
+  },
+  "InitialVelocity": {
+    "Pitch": {
+      "Min": 90,
+      "Max": 90
+    },
+    "Speed": {
+      "Min": 1.2,
+      "Max": 2.4
+    }
+  },
+  "Attractors": [
+    {
+      "DampingMultiplier": {
+        "X": 0.96,
+        "Y": 0.98,
+        "Z": 0.96
+      }
+    }
+  ],
+  "ParticleCollision": {
+    "BlockType": "Air",
+    "Action": "Expire"
+  }
+}

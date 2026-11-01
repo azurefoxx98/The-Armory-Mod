@@ -1,0 +1,115 @@
+{
+  "RenderMode": "Erosion",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 0.9,
+    "Max": 1.5
+  },
+  "Shape": "Cube",
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Glow_Square.png",
+    "Animation": {
+      "0": {
+        "Color": "#e2881a",
+        "Scale": {
+          "X": {
+            "Min": 0.1,
+            "Max": 0.1
+          },
+          "Y": {
+            "Min": 0.1,
+            "Max": 0.1
+          }
+        }
+      },
+      "20": {
+        "Color": "#fff4cc",
+        "Scale": {
+          "X": {
+            "Min": 1.0,
+            "Max": 1.0
+          },
+          "Y": {
+            "Min": 1.0,
+            "Max": 1.0
+          }
+        }
+      },
+      "80": {
+        "Color": "#ffc94a"
+      },
+      "100": {
+        "Color": "#e2881a",
+        "Scale": {
+          "X": {
+            "Min": 0.05,
+            "Max": 0.05
+          },
+          "Y": {
+            "Min": 0.05,
+            "Max": 0.05
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.06,
+          "Max": 0.16
+        },
+        "Y": {
+          "Min": 0.06,
+          "Max": 0.22
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#ffffff"
+    },
+    "FrameSize": {
+      "Width": 32,
+      "Height": 32
+    },
+    "ScaleRatioConstraint": "None",
+    "UVOption": "RandomFlipU"
+  },
+  "MaxConcurrentParticles": 43,
+  "SpawnRate": {
+    "Min": 24.750000000000004,
+    "Max": 33.0
+  },
+  "EmitOffset": {
+    "X": {
+      "Min": 0.0,
+      "Max": 1.1
+    },
+    "Y": {
+      "Min": 0.0,
+      "Max": 0.0
+    },
+    "Z": {
+      "Min": 0.0,
+      "Max": 1.1
+    }
+  },
+  "InitialVelocity": {
+    "Pitch": {
+      "Min": 90,
+      "Max": 90
+    },
+    "Speed": {
+      "Min": 0.44000000000000006,
+      "Max": 1.2100000000000002
+    }
+  },
+  "Attractors": [
+    {
+      "LinearAcceleration": {
+        "Y": 1.375
+      }
+    }
+  ],
+  "LifeSpan": 1.56
+}

@@ -1,0 +1,101 @@
+{
+  "RenderMode": "BlendAdd",
+  "ParticleRotationInfluence": "Billboard",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": false,
+  "ParticleLifeSpan": {
+    "Min": 0.9,
+    "Max": 0.9
+  },
+  "Shape": "Sphere",
+  "Particle": {
+    "Texture": "Particles/Textures/Basic/Star3.png",
+    "Animation": {
+      "0": {
+        "Scale": {
+          "X": {
+            "Min": 0.3,
+            "Max": 0.3
+          },
+          "Y": {
+            "Min": 0.3,
+            "Max": 0.3
+          }
+        },
+        "Opacity": 1.0,
+        "Color": "#ffffff"
+      },
+      "12": {
+        "Scale": {
+          "X": {
+            "Min": 1.6,
+            "Max": 1.6
+          },
+          "Y": {
+            "Min": 1.6,
+            "Max": 1.6
+          }
+        },
+        "Opacity": 1.0,
+        "Color": "#fff4cc"
+      },
+      "45": {
+        "Color": "#ffc94a"
+      },
+      "100": {
+        "Scale": {
+          "X": {
+            "Min": 2.4,
+            "Max": 2.4
+          },
+          "Y": {
+            "Min": 2.4,
+            "Max": 2.4
+          }
+        },
+        "Opacity": 0.0,
+        "Color": "#e2881a"
+      }
+    },
+    "InitialAnimationFrame": {
+      "Scale": {
+        "X": {
+          "Min": 0.4,
+          "Max": 0.4
+        },
+        "Y": {
+          "Min": 0.4,
+          "Max": 0.4
+        }
+      },
+      "Opacity": 1.0,
+      "Color": "#ffffff",
+      "Rotation": {
+        "Z": {
+          "Min": 0,
+          "Max": 360
+        }
+      }
+    },
+    "ScaleRatioConstraint": "OneToOne"
+  },
+  "TotalParticles": {
+    "Min": 1,
+    "Max": 1
+  },
+  "MaxConcurrentParticles": 1,
+  "SpawnRate": {
+    "Min": 1,
+    "Max": 1
+  },
+  "SpawnBurst": true,
+  "UVMotion": {
+    "Texture": "Particles/Textures/UVMotion/FlowMapWave2.png",
+    "Strength": 6,
+    "SpeedY": 0.24,
+    "SpeedX": 0.08,
+    "AddRandomUVOffset": true,
+    "StrengthCurveType": "IncreaseQuartIn"
+  },
+  "CameraOffset": 0.1
+}

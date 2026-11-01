@@ -100,6 +100,24 @@ shadowJar {
     // The standalone dependency includes development tooling that this plugin never runs.
     // Its engine calls must not become part of the runtime we ship.
     exclude 'com/azuredoom/**'
+    // The dice are held back, and no player can obtain one. Their pictures would still load on
+    // every client and take 42 percent of this mod's room in the entity atlas, and a full atlas
+    // turns other textures black, so they stay out of the jar. They stay in the repository, so
+    // the working copy keeps them and the tests still prove them. A test build that needs them
+    // passes -PwithDice. Bringing the dice back means deleting this block.
+    if (!project.hasProperty('withDice')) {
+        exclude 'Common/Items/Armory_Dice/**'
+        exclude 'Common/Characters/Animations/Items/Armory_Dice/**'
+        exclude 'Common/Icons/ItemsGenerated/Armory_Dice_*'
+        exclude 'Server/Particles/Armory_Dice/**'
+        exclude 'Server/Models/Armory_Dice/**'
+        exclude 'Server/ProjectileConfigs/Armory_Dice/**'
+        exclude 'Server/Item/Items/Armory_Dice/**'
+        exclude 'Server/Item/Interactions/Armory_Dice/**'
+        exclude 'Server/Item/RootInteractions/Armory_Dice/**'
+        exclude 'Server/Item/Animations/Armory_Dice*'
+        exclude 'Server/Entity/Stats/Armory_Dice_Charge.json'
+    }
     inputs.property('excludePatterns', excludes.sort())
     dependencies {
         exclude(dependency { it.moduleGroup == 'com.hypixel' })

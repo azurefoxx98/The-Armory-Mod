@@ -503,6 +503,36 @@ function Get-KeyLinkTarget([string] $path) {
 
 function Test-KeyExists([string] $path) { return [bool](Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue) }
 
+# The key's folder by its own drive, read from the letter the key's programs use: the folder subst maps that letter
+# to, or the letter itself when the key is mounted there directly. Set up needs it to link the game, and finds it here
+# when HyCreator was started by an older window that never passed it on.
+function Find-KeyFolder([string] $root) {
+    $root = Get-KeyFolder $root
+    if ($root -match '^([A-Za-z]):\\$') {
+        $mapped = (Get-SubstMap)[$Matches[1].ToUpper()]
+        if ($mapped) { return $mapped }
+    }
+    return $root
+}
+
+# The key's window running now for this key folder, or nothing. Start The Armory.cmd starts it with the key's folder
+# on its command line.
+function Find-KeyWindow([string] $keyFolder) {
+    $folder = (Get-KeyFolder $keyFolder).TrimEnd('\')
+    return @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue | Where-Object {
+        $_.CommandLine -and $_.CommandLine -match 'start\.ps1' -and $_.CommandLine.IndexOf($folder, [StringComparison]::OrdinalIgnoreCase) -ge 0
+    }) | Select-Object -First 1
+}
+
+# Whether a window runs the script now on the key: started after its file last changed, which an update rewrites.
+# A window started before the key could play a computer's game stays open when the key is pulled out and never puts
+# the game back, so starting the key again only brings that same window forward.
+function Test-KeyWindowCurrent($window) {
+    if (-not $window -or $window.CommandLine -notmatch '-File\s+"([^"]*start\.ps1)"') { return $false }
+    $file = Get-Item -LiteralPath $Matches[1] -ErrorAction SilentlyContinue
+    return [bool]($file -and $window.CreationDate -gt $file.LastWriteTime)
+}
+
 # The game holds the mod's files and its code open while it runs, so the link changes only while it is closed.
 function Test-HytaleRunning {
     if ($env:ARMORY_KEY_TEST_HYTALE) { return $env:ARMORY_KEY_TEST_HYTALE -eq 'running' }

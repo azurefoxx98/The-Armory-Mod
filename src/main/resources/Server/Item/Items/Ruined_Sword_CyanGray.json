@@ -19,7 +19,7 @@
         {
           "Parent": "Longsword_Swing_Left_Effect",
           "Effects": {
-            "WorldSoundEventId": "SFX_Longsword_Special_Swing"
+            "WorldSoundEventId": "SFX_Shield_T2_Swing"
           }
         }
       ]
@@ -46,7 +46,7 @@
         {
           "Parent": "Longsword_Swing_Left_Effect",
           "Effects": {
-            "WorldSoundEventId": "SFX_Longsword_Special_Swing"
+            "WorldSoundEventId": "SFX_Shield_T2_Swing"
           }
         }
       ]
@@ -73,7 +73,7 @@
         {
           "Parent": "Longsword_Swing_Left_Effect",
           "Effects": {
-            "WorldSoundEventId": "SFX_Longsword_Special_Swing"
+            "WorldSoundEventId": "SFX_Shield_T2_Swing"
           }
         }
       ]
@@ -108,7 +108,7 @@
             "RandomPercentageModifier": 0.15
           },
           "DamageEffects": {
-            "WorldSoundEventId": "SFX_Longsword_Special_Impact"
+            "WorldSoundEventId": "SFX_Shield_T2_Swing"
           }
         }
       ]
@@ -169,7 +169,10 @@
       "TrailId": "Armory_Trail_Critical_Cyan",
       "TargetNodeName": "Origin_Projectile",
       "FixedRotation": false,
-      "TargetEntityPart": "PrimaryItem"
+      "TargetEntityPart": "PrimaryItem",
+      "PositionOffset": {
+        "Y": -0.5
+      }
     }
   ]
 }

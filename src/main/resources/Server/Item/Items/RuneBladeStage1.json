@@ -2,13 +2,10 @@
   "TranslationProperties": {
     "Name": "server.items.RuneBladeStage1.name"
   },
-  "Categories": [
-    "ArmoryCategory.ArmoryWeapons",
-"Items.Weapons"
-  ],
+  "Categories": [ "ArmoryCategory.ArmoryWeapons", "Items.Weapons" ],
   "Quality": "Epic",
   "ItemLevel": 40,
-  "PlayerAnimationsId": "Club",
+  "PlayerAnimationsId": "RuneStage1Anim",
   "Utility": {
     "Compatible": true
   },
@@ -32,15 +29,14 @@
     "BenchRequirement": [
       {
         "Type": "Crafting",
-        "Categories": [
-          "Weapon_Sword"
-        ],
+        "Categories": [ "Weapon_Sword" ],
         "Id": "Weapon_Bench"
       }
     ]
   },
   "Interactions": {
-    "Primary": "Club_Attack"
+    "Primary": "Club_Attack",
+    "Ability1": "Root_Weapon_Battleaxe_Signature_Whirlwind"
   },
   "InteractionVars": {
     "Club_Swing_Left_Effect": {
@@ -114,6 +110,23 @@
           }
         }
       ]
+    },
+    "Signature_Whirlwind_Damage": {
+      "Interactions": [
+        {
+          "Parent": "Weapon_Battleaxe_Signature_Whirlwind_Damage",
+          "DamageCalculator": {
+            "BaseDamage": {
+              "Physical": 23
+            }
+          },
+          "EntityStatsOnHit": [],
+          "DamageEffects": {
+            "WorldSoundEventId": "SFX_Battleaxe_T2_Impact",
+            "LocalSoundEventId": "SFX_Battleaxe_T2_Impact"
+          }
+        }
+      ]
     }
   },
   "DroppedItemAnimation": "Items/Animations/Dropped/Dropped_Diagonal_Left.blockyanim",
@@ -121,29 +134,28 @@
   "Model": "Items/Weapons/RuneBlade/runeblade1.blockymodel",
   "IconProperties": {
     "Scale": 0.2,
-    "Rotation": [
-      38,
-      331,
-      13
-    ],
-    "Translation": [
-      5,
-      -14
-    ]
+    "Rotation": [ 38, 331, 13 ],
+    "Translation": [ 5, -14 ]
   },
   "Icon": "Icons/ItemsGenerated/RuneBladeStage1.png",
   "Tags": {
-    "Type": [
-      "Weapon"
-    ],
-    "Family": [
-      "Club"
-    ],
+    "Type": [ "Weapon" ],
+    "Family": [ "RuneStage1Anim" ],
     "ArmoryParry": []
   },
   "MaxDurability": 150,
   "DurabilityLossOnHit": 0,
-  "Weapon": {},
+  "Weapon": {
+    "EntityStatsToClear": [ "SignatureEnergy" ],
+    "StatModifiers": {
+      "SignatureEnergy": [
+        {
+          "Amount": 5,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
   "ItemSoundSetId": "ISS_Weapons_Blunt_Small",
   "DurabilityLossOnDeath": false
 }

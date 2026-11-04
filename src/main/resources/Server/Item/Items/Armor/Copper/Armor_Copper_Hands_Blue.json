@@ -1,0 +1,67 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Copper_Hands.name"
+  },
+  "Parent": "Armor_Iron_Hands",
+  "ItemLevel": 10,
+  "Icon": "Icons/ItemsGenerated/Armor_Copper_Hands_Blue.png",
+  "IconProperties": {
+    "Scale": 0.92,
+    "Translation": [
+      15,
+      -39
+    ],
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ]
+  },
+  "Model": "Items/Armors/Copper/Hands.blockymodel",
+  "Texture": "Items/Armors/VanillaRecolors/Copper/Hands_Blue.png",
+  "Armor": {
+    "ArmorSlot": "Hands",
+    "BaseDamageResistance": 0,
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.0288,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.0288,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 4,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 80,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Copper"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "Quality": "Common",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Copper_Hands"
+    }
+  ],
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
+  "SubCategory": "Vanilla Recolor Copper"
+}

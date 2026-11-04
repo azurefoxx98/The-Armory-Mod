@@ -1,0 +1,71 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Copper_Legs.name"
+  },
+  "Parent": "Armor_Iron_Legs",
+  "ItemLevel": 10,
+  "Icon": "Icons/ItemsGenerated/Armor_Copper_Legs_Blue.png",
+  "IconProperties": {
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Scale": 0.355,
+    "Translation": [
+      0.6,
+      -22.2
+    ]
+  },
+  "Model": "Items/Armors/Copper/Legs.blockymodel",
+  "Texture": "Items/Armors/VanillaRecolors/Copper/Legs_Blue.png",
+  "Armor": {
+    "ArmorSlot": "Legs",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "Pants",
+      "Shoes",
+      "Overpants"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.0504,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.0504,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 7,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 80,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Copper"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "Quality": "Common",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Copper_Boots"
+    }
+  ],
+  "SubCategory": "Vanilla Recolor Copper"
+}

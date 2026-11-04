@@ -1,0 +1,66 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Armor_Copper_Head.name"
+  },
+  "Parent": "Armor_Iron_Head",
+  "ItemLevel": 10,
+  "Icon": "Icons/ItemsGenerated/Armor_Copper_Head_Blue.png",
+  "Model": "Items/Armors/Copper/Head.blockymodel",
+  "Texture": "Items/Armors/VanillaRecolors/Copper/Head_Blue.png",
+  "Armor": {
+    "ArmorSlot": "Head",
+    "BaseDamageResistance": 0,
+    "CosmeticsToHide": [
+      "EarAccessory",
+      "Ear",
+      "Haircut",
+      "HeadAccessory"
+    ],
+    "DamageResistance": {
+      "Physical": [
+        {
+          "Amount": 0.036,
+          "CalculationType": "Percent"
+        }
+      ],
+      "Projectile": [
+        {
+          "Amount": 0.036,
+          "CalculationType": "Percent"
+        }
+      ]
+    },
+    "StatModifiers": {
+      "Health": [
+        {
+          "Amount": 5,
+          "CalculationType": "Additive"
+        }
+      ]
+    }
+  },
+  "MaxDurability": 80,
+  "Tags": {
+    "Type": [
+      "Armor"
+    ],
+    "Family": [
+      "Copper"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Armor_Heavy",
+  "DurabilityLossOnHit": 0.5,
+  "Quality": "Common",
+  "IconProperties": {
+    "Scale": 0.5,
+    "Translation": [ -1, -3 ],
+    "Rotation": [ 22.5, 45, 22.5 ]
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Copper_Helm"
+    }
+  ],
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
+  "SubCategory": "Vanilla Recolor Copper"
+}

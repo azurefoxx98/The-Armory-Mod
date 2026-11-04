@@ -1,0 +1,27 @@
+{
+  "Parent": "Armor_Copper_Legs_Blue",
+  "Quality": "Common",
+  "Icon": "Icons/ItemsGenerated/Armor_Copper_Legs_Cyan.png",
+  "Texture": "Items/Armors/VanillaRecolors/Copper/Legs_Cyan.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Copper_Boots"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
+  "SubCategory": "Vanilla Recolor Copper"
+}

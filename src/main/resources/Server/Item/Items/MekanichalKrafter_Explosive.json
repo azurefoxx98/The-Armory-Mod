@@ -1,0 +1,95 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.MekanichalKrafter_Arrow.name",
+    "Description": "server.items.MekanichalKrafter_Arrow.description"
+  },
+  "Categories": [
+    "Furniture.Benches"
+  ],
+  "Recipe": {
+    "TimeSeconds": 3,
+    "Input": [
+      {
+        "Quantity": 100,
+        "ItemId": "Weapon_Arrow_Crude"
+      },
+      {
+        "ItemId": "Ingredient_Voidheart",
+        "Quantity": 1
+      },
+      {
+        "ResourceTypeId": "Wood_Planks",
+        "Quantity": 3
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Crafting"
+        ],
+        "RequiredTierLevel": 2
+      }
+    ]
+  },
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Items/Weapons/MekanichalKrafters/BarrelKrafter.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Items/Weapons/MekanichalKrafters/BarrelKrafter.png",
+        "Weight": 1
+      }
+    ],
+    "VariantRotation": "NESW",
+    "CubeShadingMode": "Standard",
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Benches"
+      }
+    },
+    "BlockParticleSetId": "Wood",
+    "ParticleColor": "#5C583E",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "BlockSoundSetId": "Wood",
+    "BlockEntity": {},
+    "FlipType": "Symmetric",
+    "RotationYawPlacementOffset": "TwoSeventy",
+    "RandomRotation": "None",
+    "Looping": false,
+    "CustomModelScale": 0.5,
+    "HitboxType": "Full"
+  },
+  "PlayerAnimationsId": "Block",
+  "IconProperties": {
+    "Scale": 0.25,
+    "Translation": [
+      3,
+      -32
+    ],
+    "Rotation": [
+      3,
+      248,
+      331
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Bench",
+      "MekanichalKrafter"
+    ]
+  },
+  "MaxStack": 1,
+  "Quality": "Epic",
+  "ItemSoundSetId": "ISS_Blocks_Wood",
+  "Icon": "Icons/ItemsGenerated/MekanichalKrafter_Explosive.png"
+}

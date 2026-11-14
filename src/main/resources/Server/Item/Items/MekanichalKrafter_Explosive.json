@@ -1,6 +1,6 @@
 {
   "TranslationProperties": {
-    "Name": "server.items.MekanichalKrafter_Arrow.name",
+    "Name": "server.items.MekanichalKrafter_Explosive.name",
     "Description": "server.items.MekanichalKrafter_Arrow.description"
   },
   "Categories": [
@@ -66,8 +66,8 @@
     "RotationYawPlacementOffset": "TwoSeventy",
     "RandomRotation": "None",
     "Looping": false,
-    "CustomModelScale": 0.5,
-    "HitboxType": "Full"
+    "CustomModelScale": 1.5,
+    "HitboxType": "Mekanichal_Crafter_Explosive_HB"
   },
   "PlayerAnimationsId": "Block",
   "IconProperties": {
@@ -91,5 +91,6 @@
   "MaxStack": 1,
   "Quality": "Epic",
   "ItemSoundSetId": "ISS_Blocks_Wood",
-  "Icon": "Icons/ItemsGenerated/MekanichalKrafter_Explosive.png"
+  "Icon": "Icons/ItemsGenerated/MekanichalKrafter_Explosive.png",
+  "Scale": 1
 }

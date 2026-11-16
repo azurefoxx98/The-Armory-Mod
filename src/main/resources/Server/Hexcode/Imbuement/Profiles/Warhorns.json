@@ -1,0 +1,23 @@
+{
+  "PedestalType": "Weapon",
+  "CategoryId": "WarHornsCategory.WarHorns",
+  "Slots": {
+    "Secondary": {
+      "Label": "HornBlast",
+      "Description": "Execute when sounding horn."
+    }
+  },
+  "Defaults": {
+    "HexStorageType": "Overlay",
+     "HexStats": {
+      "Resources": {
+        "Initial": {
+          "Arcane": 30
+        }
+      }
+      "Volatility": {
+        "Initial": 40
+      }
+    }
+  }
+}

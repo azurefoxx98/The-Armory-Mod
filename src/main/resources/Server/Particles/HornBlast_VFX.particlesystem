@@ -1,0 +1,50 @@
+{
+  "Spawners": [
+    {
+      "SpawnerId": "Horn_Blast_Ring",
+      "SpawnRate": {
+        "Min": 2,
+        "Max": 2
+      },
+      "LifeSpan": {
+        "Min": 1,
+        "Max": 1
+      },
+      "TotalSpawners": 3,
+      "WaveDelay": {
+        "Min": 0.1,
+        "Max": 0.1
+      },
+      "FixedRotation": false,
+      "RotationOffset": {
+        "Yaw": 0,
+        "Roll": 0
+      },
+      "MaxConcurrent": 3
+    },
+    {
+      "SpawnerId": "Horn_Blast_Wave",
+      "SpawnRate": {
+        "Min": 2,
+        "Max": 2
+      },
+      "LifeSpan": {
+        "Min": 1,
+        "Max": 1
+      },
+      "TotalSpawners": 8,
+      "WaveDelay": {
+        "Min": 0.1,
+        "Max": 0.1
+      },
+      "FixedRotation": false,
+      "RotationOffset": {
+        "Yaw": 0,
+        "Roll": 0
+      },
+      "MaxConcurrent": 8
+    }
+  ],
+  "IsImportant": true,
+  "CullDistance": 1000
+}

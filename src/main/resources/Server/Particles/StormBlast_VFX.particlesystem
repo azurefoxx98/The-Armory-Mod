@@ -1,0 +1,50 @@
+{
+  "Spawners": [
+    {
+      "SpawnerId": "Storm_Blast_Wave",
+      "SpawnRate": {
+        "Min": 2,
+        "Max": 2
+      },
+      "LifeSpan": {
+        "Min": 3,
+        "Max": 3
+      },
+      "TotalSpawners": 6,
+      "WaveDelay": {
+        "Min": 1,
+        "Max": 1
+      },
+      "FixedRotation": false,
+      "RotationOffset": {
+        "Yaw": 0,
+        "Roll": 0
+      },
+      "MaxConcurrent": 6
+    },
+    {
+      "SpawnerId": "Storm_Blast_Ring_Light",
+      "SpawnRate": {
+        "Min": 2,
+        "Max": 2
+      },
+      "LifeSpan": {
+        "Min": 3,
+        "Max": 3
+      },
+      "TotalSpawners": 6,
+      "WaveDelay": {
+        "Min": 1,
+        "Max": 1
+      },
+      "FixedRotation": false,
+      "RotationOffset": {
+        "Yaw": 0,
+        "Roll": 0
+      },
+      "MaxConcurrent": 6
+    }
+  ],
+  "IsImportant": true,
+  "CullDistance": 1000
+}

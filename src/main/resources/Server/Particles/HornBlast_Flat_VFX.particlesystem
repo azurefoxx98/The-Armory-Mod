@@ -1,0 +1,28 @@
+{
+  "Spawners": [
+    {
+      "SpawnerId": "Horn_Blast_Wave_Flat",
+      "SpawnRate": {
+        "Min": 4,
+        "Max": 4
+      },
+      "LifeSpan": {
+        "Min": 1,
+        "Max": 1
+      },
+      "TotalSpawners": 24,
+      "WaveDelay": {
+        "Min": 0.1,
+        "Max": 0.1
+      },
+      "FixedRotation": false,
+      "RotationOffset": {
+        "Yaw": 0,
+        "Roll": 0
+      },
+      "MaxConcurrent": 24
+    }
+  ],
+  "IsImportant": true,
+  "CullDistance": 1000
+}

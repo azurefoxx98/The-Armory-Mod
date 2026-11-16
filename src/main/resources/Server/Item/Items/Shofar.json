@@ -1,0 +1,104 @@
+{
+  "Model": "Items/Items/Horns/Shofar.blockymodel",
+  "Texture": "Items/Items/Horns/Shofar.png",
+  "MaxStack": 1,
+  "UsePlayerAnimations": true,
+  "PlayerAnimationsId": {
+    "Parent": "Item",
+    "Animations": {
+      "UseHorn": {
+        "FirstPerson": "Characters/Animations/HornBlow_FPS.blockyanim",
+        "ThirdPerson": "Characters/Animations/HornBlow.blockyanim",
+        "Speed": 1,
+        "Looping": false
+      }
+    }
+  },
+  "Utility": {
+    "Usable": true
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Simple",
+          "Effects": {
+            "WorldSoundEventId": "Horn_Shofar_SFX",
+            "ItemAnimationId": "UseHorn",
+            "ClearAnimationOnFinish": true,
+            "ClearSoundEventOnFinish": false,
+            "Particles": [
+              {
+                "SystemId": "HornBlast_VFX",
+                "TargetEntityPart": "Self",
+                "Scale": 0.3,
+                "TargetNodeName": "Emitter",
+                "Color": "#ffffff"
+              }
+            ],
+            "FirstPersonParticles": [
+              {
+                "SystemId": "HornBlast_VFX",
+                "TargetEntityPart": "Self",
+                "Scale": 0.1,
+                "TargetNodeName": "Emitter",
+                "Color": "#ffffff",
+                "RotationOffset": {
+                  "Pitch": 40
+                }
+              }
+            ]
+          },
+          "RunTime": 3,
+          "HorizontalSpeedMultiplier": 0.5,
+          "CancelOnItemChange": true
+        }
+      ],
+      "Cooldown": {
+        "Id": "HornCooldown",
+        "Cooldown": 6
+      }
+    }
+  },
+  "SubCategory": "Horns",
+  "IconProperties": {
+    "Scale": 0.8,
+    "Rotation": [
+      297,
+      121,
+      22.5
+    ],
+    "Translation": [
+      -10,
+      -10
+    ]
+  },
+  "Quality": "Common",
+  "ItemSoundSetId": "ISS_Items_Bones",
+  "Categories": [
+    "WarHornsCategory.WarHorns"
+  ],
+  "Recipe": {
+    "TimeSeconds": 1,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bone_Fragment",
+        "Quantity": 5
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Tinkering"
+        ]
+      }
+    ]
+  },
+  "TranslationProperties": {
+    "Name": "server.items.Shofar.name"
+  },
+  "ItemLevel": 70,
+  "Icon": "Icons/ItemsGenerated/Shofar.png"
+}

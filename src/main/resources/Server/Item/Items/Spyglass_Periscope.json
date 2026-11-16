@@ -1,0 +1,99 @@
+{
+  "PlayerAnimationsId": {
+    "Parent": "Handgun",
+    "Animations": {
+      "Consume": {
+        "ThirdPerson": "Characters/Animations/SpyGlassPlayer.blockyanim",
+        "Speed": 1,
+        "Looping": true
+      }
+    }
+  },
+  "Model": "Items/Spyglasses/Gem_Periscope/Periscope.blockymodel",
+  "Texture": "Items/Spyglasses/Gem_Periscope/Periscope.png",
+  "Icon": "Icons/ItemsGenerated/Spyglass_Periscope.png",
+  "IconProperties": {
+    "Scale": 0.58823,
+    "Rotation": [
+      303,
+      25,
+      15
+    ],
+    "Translation": [
+      -10,
+      10
+    ]
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Charging",
+          "Effects": {
+            "ItemAnimationId": "Consume",
+            "ClearAnimationOnFinish": true,
+            "Zoom": {
+              "MagnificationMultiplier": 4,
+              "OverlayTexture": "ScreenEffects/Periscope.png",
+              "MouseSensitivityMultiplier": 0.1,
+              "OverlayFade": false,
+              "ForcePerspective": "FirstPerson"
+            },
+            "WorldSoundEventId": "Spyglass_Use"
+          },
+          "HorizontalSpeedMultiplier": 0.5,
+          "AllowIndefiniteHold": true,
+          "Camera": {
+            "FirstPerson": [
+              {
+                "Position": {
+                  "Y": 1
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "Animation": "Items/Spyglasses/Gem_Periscope/Spyglass_Nautical_Open.blockyanim",
+  "UsePlayerAnimations": true,
+  "Utility": {
+    "Usable": true
+  },
+  "MaxStack": 1,
+  "Quality": "Epic",
+  "Recipe": {
+    "TimeSeconds": 1,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Copper",
+        "Quantity": 10
+      },
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Rock_Gem_Zephyr",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Arcanebench",
+        "Type": "Crafting",
+        "Categories": [
+          "Arcane_Misc"
+        ]
+      }
+    ]
+  },
+  "SubCategory": "Superior Spyglass",
+  "TranslationProperties": {
+    "Name": "server.items.Spyglass_Periscope.name",
+    "Description": "server.items.Superior_Spyglass.description"
+  },
+  "Scale": 1.5,
+  "Categories": [ "ArmoryCategory.Spyglasses" ]
+}

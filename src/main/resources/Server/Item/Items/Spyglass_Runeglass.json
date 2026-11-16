@@ -1,0 +1,101 @@
+{
+  "PlayerAnimationsId": {
+    "Parent": "Handgun",
+    "Animations": {
+      "Consume": {
+        "ThirdPerson": "Characters/Animations/SpyGlassPlayer.blockyanim",
+        "Speed": 1,
+        "Looping": true
+      }
+    }
+  },
+  "Model": "Items/Spyglasses/Gem_Runeglass/Runeglass.blockymodel",
+  "Texture": "Items/Spyglasses/Gem_Runeglass/Runeglass.png",
+  "Icon": "Icons/ItemsGenerated/Spyglass_Runeglass.png",
+  "IconProperties": {
+    "Scale": 0.94,
+    "Translation": [
+      -1,
+      -1
+    ],
+    "Rotation": [
+      303,
+      25,
+      15
+    ]
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Charging",
+          "Effects": {
+            "ItemAnimationId": "Consume",
+            "ClearAnimationOnFinish": true,
+            "Zoom": {
+              "MagnificationMultiplier": 4,
+              "OverlayTexture": "ScreenEffects/Magic_Eye.png",
+              "MouseSensitivityMultiplier": 0.1,
+              "OverlayFade": true,
+              "ForcePerspective": "FirstPerson",
+              "DepthOfField": false,
+              "OverlayFadePerSecond": 4
+            },
+            "WorldSoundEventId": "Magic_Spyglass_Use"
+          },
+          "HorizontalSpeedMultiplier": 0.5,
+          "AllowIndefiniteHold": true,
+          "Camera": {
+            "FirstPerson": [
+              {}
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "Animation": "Items/Spyglasses/Gem_Runeglass/Runeglass_Open.blockyanim",
+  "UsePlayerAnimations": true,
+  "Utility": {
+    "Usable": true
+  },
+  "MaxStack": 1,
+  "Quality": "Epic",
+  "Recipe": {
+    "TimeSeconds": 1,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Copper",
+        "Quantity": 10
+      },
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Rock_Gem_Sapphire",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Arcanebench",
+        "Type": "Crafting",
+        "Categories": [
+          "Arcane_Misc"
+        ]
+      }
+    ]
+  },
+  "SubCategory": "Superior Spyglass",
+  "TranslationProperties": {
+    "Name": "server.items.Spyglass_Runeglass.name",
+    "Description": "server.items.Superior_Spyglass.description"
+  },
+  "Scale": 1.5,
+  "Light": {
+    "Color": "#03f",
+    "Radius": 2
+  },
+  "Categories": [ "ArmoryCategory.Spyglasses" ]
+}

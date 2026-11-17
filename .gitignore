@@ -5,8 +5,9 @@ build/
 # Holds the HStats ingest key and must never be committed.
 hstats.properties
 
-# Maven
-target/
+# Maven. Only the top folder: git on Windows ignores capitals, so an unanchored rule also hid
+# the armor stand's Target textures, and a build from the repository shipped that look blank.
+/target/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup

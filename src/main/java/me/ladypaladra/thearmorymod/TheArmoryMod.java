@@ -6,6 +6,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.riprod.patchly.PatchManager;
 
 import me.ladypaladra.thearmorymod.alteration.AlterationModule;
+import me.ladypaladra.thearmorymod.armorstand.ArmorStandModule;
 import me.ladypaladra.thearmorymod.dice.DiceModule;
 import me.ladypaladra.thearmorymod.krafter.KrafterModule;
 import me.ladypaladra.thearmorymod.metrics.ArmoryMetrics;
@@ -56,6 +57,7 @@ public class TheArmoryMod extends JavaPlugin {
             KrafterModule.register(this);
             ShowcaseModule.register(this);
             DiceModule.register(this);
+            ArmorStandModule.register(this);
 
             getEntityStoreRegistry().registerSystem(new ScorpianFlailPoisonSystem());
             // getEntityStoreRegistry().registerSystem(new EngineeringRigMobilitySystem());

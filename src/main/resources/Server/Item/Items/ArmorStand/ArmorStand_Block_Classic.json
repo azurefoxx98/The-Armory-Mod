@@ -1,0 +1,80 @@
+{
+  "Parent": "ArmorStand_Block",
+  "TranslationProperties": {
+    "Name": "server.items.ArmorStand_Block_Classic.name",
+    "Description": "server.items.ArmorStand_Block.description"
+  },
+  "Icon": "Icons/ItemsGenerated/ArmorStand_Block_Classic.png",
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      16,
+      28,
+      9
+    ],
+    "Translation": [
+      0,
+      -26
+    ]
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "ResourceTypeId": "Resource_ArmorStand",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Builders",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "WoodPlanks"
+        ]
+      }
+    ],
+    "OutputQuantity": 1,
+    "TimeSeconds": 0,
+    "KnowledgeRequired": false
+  },
+  "ResourceTypes": [
+    {
+      "Id": "Resource_ArmorStand"
+    }
+  ],
+  "BlockType": {
+    "CustomModel": "Blocks/ArmorStand/ArmorStand_Classic.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Blocks/ArmorStand/ArmorStand_Block.png",
+        "Weight": 1
+      }
+    ],
+    "BlockEntity": {
+      "Components": {
+        "ItemContainerBlock": {
+          "Capacity": 6
+        },
+        "ArmorStand_Block": {
+          "StaticPose": true
+        }
+      }
+    },
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Benches",
+        "ItemId": "ArmorStand_Block_Classic"
+      }
+    },
+    "State": {
+      "Definitions": {
+        "OpenWindow": {
+          "InteractionSoundEventId": "SFX_Armour_Bench_Open"
+        },
+        "CloseWindow": {
+          "InteractionSoundEventId": "SFX_Armour_Bench_Close"
+        }
+      }
+    }
+  }
+}

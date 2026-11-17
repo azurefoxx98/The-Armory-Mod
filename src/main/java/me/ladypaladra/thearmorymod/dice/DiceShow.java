@@ -56,6 +56,12 @@ public final class DiceShow {
     static final double NUMBER_RANGE = 32.0;
 
     /**
+     * Whether rolls are written in chat: the server owner's DiceRollsInChat, off by default so a busy server's chat
+     * is not filled with rolls. Set once at setup, before any die can be thrown.
+     */
+    static volatile boolean rollsInChat = false;
+
+    /**
      * Ticks the big number stays: longer for the extremes, longest for a D100's.
      */
     static final int NUMBER_LIFE = 90;
@@ -227,6 +233,9 @@ public final class DiceShow {
 
     private static void chat(@Nonnull ThrowGroup group, @Nonnull List<ThrowGroup.Roll> rolls,
                              @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        if (!rollsInChat) {
+            return;
+        }
         String die = group.type().name();
         Message line;
         if (rolls.size() == 1) {

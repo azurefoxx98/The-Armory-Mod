@@ -5,6 +5,7 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
+import me.ladypaladra.thearmorymod.ArmoryConfig;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
@@ -47,7 +48,8 @@ public final class DiceModule {
     private DiceModule() {
     }
 
-    public static void register(@Nonnull JavaPlugin plugin) {
+    public static void register(@Nonnull JavaPlugin plugin, @Nonnull ArmoryConfig settings) {
+        DiceShow.rollsInChat = settings.diceRollsInChat();
         // Interaction types must exist before any asset naming them is decoded.
         plugin.getCodecRegistry(Interaction.CODEC).register(
                 "ArmoryThrowDie",

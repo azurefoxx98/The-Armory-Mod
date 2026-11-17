@@ -61,7 +61,25 @@
       ]
     },
     "BlockSoundSetId": "Wood",
-    "BlockEntity": {},
+    "BlockEntity": {
+      "Components": {
+        "MekanichalKrafterDispenser": {}
+      }
+    },
+    "Supporting": {
+      "Up": [
+        {
+          "FaceType": "Barrel"
+        }
+      ]
+    },
+    "State": {
+      "Definitions": {
+        "Dispense": {
+          "CustomModelAnimation": "Items/Weapons/MekanichalKrafters/Dispense.blockyanim"
+        }
+      }
+    },
     "FlipType": "Symmetric",
     "RotationYawPlacementOffset": "TwoSeventy",
     "RandomRotation": "None",

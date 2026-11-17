@@ -31,5 +31,18 @@ public final class KrafterModule {
         plugin.getChunkStoreRegistry().registerSystem(
                 new MekanichalKrafterTickSystem(krafterComponentType)
         );
+
+        ComponentType<ChunkStore, MekanichalKrafterDispenser> dispenserComponentType =
+                plugin.getChunkStoreRegistry().registerComponent(
+                        MekanichalKrafterDispenser.class,
+                        "MekanichalKrafterDispenser",
+                        MekanichalKrafterDispenser.CODEC
+                );
+
+        MekanichalKrafterRegistry.setDispenserComponentType(dispenserComponentType);
+
+        plugin.getChunkStoreRegistry().registerSystem(
+                new MekanichalKrafterDispenserTickSystem(dispenserComponentType)
+        );
     }
 }

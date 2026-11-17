@@ -255,7 +255,7 @@ public final class DiceShow {
     }
 
     /**
-     * Raises the big number over a roll, one set of carved tiles per player near, each facing its player.
+     * Raises the big number over a roll, one set of glowing digits per player near, each facing its player.
      */
     private static void number(@Nonnull ThrowGroup.Roll roll, @Nonnull RollBand band, @Nonnull DieShape lead,
                                @Nonnull DieType type, @Nonnull UUID owner,

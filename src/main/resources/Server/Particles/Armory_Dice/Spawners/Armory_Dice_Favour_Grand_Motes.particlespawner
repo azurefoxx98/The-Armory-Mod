@@ -15,10 +15,10 @@
         "Opacity": 0.0
       },
       "20": {
-        "Opacity": 1.0
+        "Opacity": 0.85
       },
       "80": {
-        "Opacity": 0.8
+        "Opacity": 0.6
       },
       "100": {
         "Opacity": 0.0,
@@ -37,35 +37,35 @@
     "InitialAnimationFrame": {
       "Scale": {
         "X": {
-          "Min": 0.22,
-          "Max": 0.4
+          "Min": 0.18,
+          "Max": 0.3
         },
         "Y": {
-          "Min": 0.22,
-          "Max": 0.22
+          "Min": 0.18,
+          "Max": 0.18
         }
       },
-      "Opacity": 1.0
+      "Opacity": 0.85
     },
     "ScaleRatioConstraint": "OneToOne"
   },
-  "MaxConcurrentParticles": 180,
+  "MaxConcurrentParticles": 81,
   "SpawnRate": {
-    "Min": 27.0,
-    "Max": 39.0
+    "Min": 12.0,
+    "Max": 18.0
   },
   "EmitOffset": {
     "X": {
       "Min": 0.0,
-      "Max": 3.5999999999999996
+      "Max": 2.0999999999999996
     },
     "Y": {
       "Min": 0.0,
-      "Max": 0.6
+      "Max": 0.4
     },
     "Z": {
       "Min": 0.0,
-      "Max": 3.5999999999999996
+      "Max": 2.0999999999999996
     }
   },
   "InitialVelocity": {
@@ -75,12 +75,12 @@
     },
     "Speed": {
       "Min": 0.3,
-      "Max": 0.7
+      "Max": 0.6
     }
   },
   "Attractors": [
     {
-      "RadialTangentImpulse": 0.6,
+      "RadialTangentImpulse": 0.5,
       "RadialAxis": {
         "Y": 1.0
       },
@@ -89,5 +89,5 @@
       }
     }
   ],
-  "LifeSpan": 4.5
+  "LifeSpan": 3.9000000000000004
 }

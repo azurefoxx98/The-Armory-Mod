@@ -16,10 +16,10 @@
         "Color": "#ff2440"
       },
       "20": {
-        "Opacity": 1.0
+        "Opacity": 0.85
       },
       "80": {
-        "Opacity": 0.9,
+        "Opacity": 0.7,
         "Color": "#7a0014"
       },
       "100": {
@@ -40,54 +40,54 @@
     "InitialAnimationFrame": {
       "Scale": {
         "X": {
-          "Min": 0.26,
-          "Max": 0.416
+          "Min": 0.22,
+          "Max": 0.352
         },
         "Y": {
-          "Min": 0.26,
-          "Max": 0.26
+          "Min": 0.22,
+          "Max": 0.22
         }
       },
-      "Opacity": 1.0,
+      "Opacity": 0.85,
       "Color": "#ff2440"
     },
     "ScaleRatioConstraint": "OneToOne"
   },
-  "MaxConcurrentParticles": 66,
+  "MaxConcurrentParticles": 26,
   "SpawnRate": {
-    "Min": 33.0,
-    "Max": 33.0
+    "Min": 13.200000000000001,
+    "Max": 13.200000000000001
   },
   "EmitOffset": {
     "X": {
-      "Min": 1.2100000000000002,
-      "Max": 1.87
+      "Min": 0.8800000000000001,
+      "Max": 1.32
     },
     "Y": {
       "Min": 0.0,
-      "Max": 1.2100000000000002
+      "Max": 0.8800000000000001
     },
     "Z": {
-      "Min": 1.2100000000000002,
-      "Max": 1.87
+      "Min": 0.8800000000000001,
+      "Max": 1.32
     }
   },
   "Attractors": [
     {
       "Position": {
-        "Y": 1.1550000000000002
+        "Y": 0.8250000000000001
       },
-      "RadialAcceleration": -7.700000000000001,
-      "RadialImpulse": -1.375
+      "RadialAcceleration": -5.5,
+      "RadialImpulse": -0.9900000000000001
     },
     {
       "Position": {
-        "Y": 1.1550000000000002
+        "Y": 0.8250000000000001
       },
       "RadialAxis": {
         "Y": 1.0
       },
-      "RadialTangentImpulse": 1.6500000000000001
+      "RadialTangentImpulse": 1.1
     }
   ],
   "LifeSpan": 1.26

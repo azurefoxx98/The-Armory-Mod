@@ -33,11 +33,17 @@ class DieRigidPhysicsTest {
         for (DieShape shape : catalog.shapes().values()) {
             DieHull hull = catalog.hull(shape.key());
             Vector3d corner = new Vector3d(hull.corners[0]).sub(hull.centre);
-            Vector3d edge = new Vector3d(corner).add(nearestCorner(hull, 0)).mul(0.5);
+            Vector3d next = nearestCorner(hull, 0);
+            Vector3d edge = new Vector3d(corner).add(next).mul(0.5);
+            Vector3d along = new Vector3d(next).sub(corner);
             for (Vector3d pointDown : List.of(corner, edge)) {
                 String what = shape.key() + (pointDown == corner ? " on a corner" : " on an edge");
-                // Tipped two degrees off the balance, it must fall flat by itself, with no nudge.
-                RigidRoll.Outcome tipped = standOn(shape, hull, pointDown, 2.0, RigidRoll.floor());
+                // Tipped two degrees off the balance, it must fall flat by itself, with no nudge. An edge is tipped
+                // about its own line, off the edge toward a face: tipped along it instead, the die only rocks toward a
+                // corner and can sit still past the nudge's wait, on every die of the old set as on these.
+                RigidRoll.Outcome tipped = pointDown == corner
+                        ? standOn(shape, hull, pointDown, 2.0, RigidRoll.floor())
+                        : standOn(shape, hull, pointDown, along, 2.0, RigidRoll.floor());
                 assertEquals(RigidFlight.Status.LANDED, tipped.status(), what + ", tipped");
                 assertEquals(0, tipped.nudges(), what + ", tipped, needed a nudge");
                 // Balanced exactly, the physics may hold it, and then the nudge must bring it down.
@@ -211,6 +217,24 @@ class DieRigidPhysicsTest {
             spin.orientation.premul(new org.joml.Quaterniond().rotationX(Math.toRadians(tilt))
                     .mul(new org.joml.Quaterniond().rotationZ(Math.toRadians(tilt * 0.7))));
         }
+        RigidFlight probe = new RigidFlight(shape, hull, spin, new Vector3d(), new Vector3d());
+        double lift = -probe.floorY() + 0.0005;
+        DieMotion.Spin still = new DieMotion.Spin();
+        still.orientation.set(spin.orientation);
+        return RigidRoll.fly(shape, hull, world, new Vector3d(0.0, lift, 0.0), new Vector3d(), still,
+                new SplittableRandom(36));
+    }
+
+    /**
+     * The die stood on {@code pointDown}, then tipped {@code tilt} degrees about {@code axis}, a direction in the die's
+     * own frame.
+     */
+    private static RigidRoll.Outcome standOn(DieShape shape, DieHull hull, Vector3dc pointDown, Vector3dc axis,
+                                             double tilt, DieWorld world) {
+        DieMotion.Spin spin = new DieMotion.Spin();
+        spin.orientation.rotationTo(new Vector3d(pointDown).normalize(), DOWN);
+        Vector3d turned = spin.orientation.transform(new Vector3d(axis)).normalize();
+        spin.orientation.premul(new org.joml.Quaterniond().rotationAxis(Math.toRadians(tilt), turned.x, turned.y, turned.z));
         RigidFlight probe = new RigidFlight(shape, hull, spin, new Vector3d(), new Vector3d());
         double lift = -probe.floorY() + 0.0005;
         DieMotion.Spin still = new DieMotion.Spin();

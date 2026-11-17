@@ -1,5 +1,9 @@
 package me.ladypaladra.thearmorymod.dice;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -42,8 +46,22 @@ class DiceCatalogTest {
     @Test
     void aFaceWhoseTurnDoesNotBringItUpIsRejected() throws IOException {
         String good = shippedText();
-        // The D3's first face is +X, carried up by a quarter turn about Z. Reversing that turn sends it down.
-        String bad = good.replaceFirst("0\\.707107,\\s*0\\.707107", "-0.707107, 0.707107");
+        // The D3's first face that does not already point up, given no turn at all: it stays where it points.
+        JsonObject data = JsonParser.parseString(good).getAsJsonObject();
+        JsonObject planted = null;
+        for (JsonElement face : data.getAsJsonObject("dice").getAsJsonObject("D3").getAsJsonArray("results")) {
+            if (face.getAsJsonObject().getAsJsonArray("normal").get(1).getAsDouble() < 0.5) {
+                planted = face.getAsJsonObject();
+                break;
+            }
+        }
+        assertNotNull(planted, "the D3 has no face to plant the fault on");
+        JsonArray none = new JsonArray();
+        for (double c : new double[]{0.0, 0.0, 0.0, 1.0}) {
+            none.add(c);
+        }
+        planted.add("restTurn", none);
+        String bad = data.toString();
         assertTrue(!bad.equals(good), "the planted fault did not land");
         IllegalStateException e = assertThrows(IllegalStateException.class,
                 () -> DiceCatalog.parse(new StringReader(bad)));

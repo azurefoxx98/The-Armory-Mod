@@ -147,8 +147,26 @@ def capital_problems(resources: str, tree: Tree) -> list[str]:
                     out.append(f'{rel}: it names {clean} but the file is {real}. The capitals must match, or a server stops at boot')
     return out
 
+def taught_items(node) -> set[str]:
+    out: set[str] = set()
+    if isinstance(node, dict):
+        if node.get('Type') == 'LearnRecipe' and isinstance(node.get('ItemId'), str):
+            out.add(node['ItemId'])
+        for value in node.values():
+            out |= taught_items(value)
+    elif isinstance(node, list):
+        for value in node:
+            out |= taught_items(value)
+    return out
+
 def item_problems(doc: dict, tree: Tree, known: dict[str, set[str]]) -> list[str]:
     out: list[str] = []
+    taught = sorted(taught_items(doc.get('Interactions')))
+    if len(taught) > 1:
+        out.append(f"it teaches different recipes on different buttons ({', '.join(taught)}), so a player can use it up on the wrong one")
+    for name in taught:
+        if name not in known['item']:
+            out.append(f'it teaches the recipe of {name}, which is no item')
     for key in ('Model', 'Texture', 'Icon'):
         value = doc.get(key)
         if isinstance(value, str) and value and tree.absent('Common/' + value):

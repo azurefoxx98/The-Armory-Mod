@@ -7,25 +7,21 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * One physical die as the art built it: its colour, its flying model, its size, and per face what it reads and how it
- * lies when that face is up.
+ * One physical die as the art built it: its flying model, its size, and per face what it reads and how it lies when
+ * that face is up. Its colour is the item's, never the shape's: every colour of a die flies the same shape
+ * ({@link DieItem}).
  *
  * <p>Every direction is in the flying model's own frame, the frame the die tumbles in. A face's {@code restTurn} is
  * the turn baked into that face's resting model: it carries the face's {@code normal} straight up, so the face the
  * motion finds on top and the model that shows it can never disagree.</p>
  *
  * @param key         the shape's key in the data, such as {@code D20} or {@code D100_Tens}
- * @param colour      the glow colour every model and effect of this die is drawn in
- * @param glow        that colour's edge as red, green and blue from 0 to 255, the colour the die's light is cast in
  * @param flyingModel the model asset of the die in flight
- * @param texture     the texture every model of the die wears
- * @param darkTexture the same texture with every awake mark put out, worn while the Veil holds the die
  * @param radius      blocks from the die's middle to its farthest corner
  * @param corners     the die's true corners in blocks, about its middle: the solid the physics flies
  * @param faces       one entry per result the die can show
  */
-public record DieShape(@Nonnull String key, @Nonnull String colour, @Nonnull Rgb glow, @Nonnull String flyingModel,
-                       @Nonnull String texture, @Nonnull String darkTexture, double radius,
+public record DieShape(@Nonnull String key, @Nonnull String flyingModel, double radius,
                        @Nonnull List<Vector3dc> corners, @Nonnull List<Face> faces) {
 
     /**

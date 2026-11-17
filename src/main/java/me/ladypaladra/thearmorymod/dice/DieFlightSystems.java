@@ -242,7 +242,7 @@ public final class DieFlightSystems {
             normal.normalize();
         }
         flight.motion.bounce(flight.spin, before, after, normal, flight.shape.radius(), ThreadLocalRandom.current());
-        DiceShow.bounce(flight.shape, position, Math.abs(before.dot(normal)), false, commandBuffer);
+        DiceShow.bounce(flight.colour, position, Math.abs(before.dot(normal)), false, commandBuffer);
     }
 
     /**
@@ -366,7 +366,7 @@ public final class DieFlightSystems {
             flight.sinceClack = 0;
             boolean answered = GroundFeel.strike(world, blocks, rigid.report.struckPoint, rigid.report.struckNormal,
                     struck, commandBuffer, rng);
-            DiceShow.bounce(flight.shape, middle, struck, answered, commandBuffer);
+            DiceShow.bounce(flight.colour, middle, struck, answered, commandBuffer);
         }
         if (rigid.enteredWater) {
             GroundFeel.splash(blocks, middle, rigid.entrySpeed, commandBuffer, rng);
@@ -488,7 +488,9 @@ public final class DieFlightSystems {
             lose(flight, commandBuffer);
             return;
         }
-        Model model = Model.createRandomScaleModel(asset);
+        // The resting model's asset wears the default purple: the die's own picture replaces it. A chunk reloading it
+        // rebuilds the model from the asset, and LandedDieSystems.Recolour puts the picture back then.
+        Model model = DiceShow.retextured(Model.createRandomScaleModel(asset), flight.colour.texture());
         Vector3d spot = new Vector3d(transform.getPosition().x, flight.floorY, transform.getPosition().z);
         // The yaw as sent, so the resting model is drawn turned exactly as the die finished its fall. Everything that
         // later turns or restores a landed die (its show, its reload) works from this sent value.
@@ -510,15 +512,15 @@ public final class DieFlightSystems {
         holder.addComponent(Interactions.getComponentType(), interactions);
         holder.addComponent(NetworkId.getComponentType(),
                 new NetworkId(commandBuffer.getExternalData().takeNextNetworkId()));
-        holder.addComponent(DiceModule.landedType(), new LandedDie(flight.type.itemId(), flight.shape.key(),
+        holder.addComponent(DiceModule.landedType(), new LandedDie(group.item().itemId(), flight.shape.key(),
                 flight.face.index(), group.owner(), group.pairId(flight.member), spot.y, sentYaw));
-        holder.addComponent(DiceModule.glowType(), new DieGlow(flight.shape.glow()));
+        holder.addComponent(DiceModule.glowType(), new DieGlow(flight.colour.glow()));
         Ref<EntityStore> landed = commandBuffer.addEntity(holder, AddReason.SPAWN);
 
         if (group.land(flight.member, flight.part, flight.face, spot, landed)) {
             DiceModule.ledger().landed(group.ledgerId(flight.member));
         }
-        DiceShow.awaken(flight.shape, spot, flight.face, commandBuffer);
+        DiceShow.awaken(flight.colour, spot, flight.face, commandBuffer);
         if (group.claimFinished()) {
             DiceShow.announce(group, commandBuffer);
         }

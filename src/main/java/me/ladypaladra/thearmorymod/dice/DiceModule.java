@@ -85,6 +85,7 @@ public final class DiceModule {
         registry.registerSystem(new DieFlightSystems.Turn());
         registry.registerSystem(new DieFlightSystems.Lost());
         registry.registerSystem(new LandedDieSystems.Loaded());
+        registry.registerSystem(new LandedDieSystems.Recolour());
         registry.registerSystem(new LandedDieSystems.Glow());
         registry.registerSystem(new NumberTileSystems.Animate());
         registry.registerSystem(new NumberTileSystems.Latecomers());
@@ -125,6 +126,14 @@ public final class DiceModule {
     @Nullable
     static DiceCatalog catalog() {
         return catalog;
+    }
+
+    /**
+     * The dice item {@code itemId}, any colour, or null when it is no die or the dice data could not be read.
+     */
+    @Nullable
+    static DieItem item(@Nullable String itemId) {
+        return catalog != null ? catalog.item(itemId) : null;
     }
 
     @Nonnull

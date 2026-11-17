@@ -1,16 +1,721 @@
 {
   "unit": 64.0,
-  "dice": {
-    "D3": {
-      "colour": "purple",
+  "colours": {
+    "purple": {
+      "art": "Purple",
+      "light": "Purple",
       "glow": [
         186,
         78,
         232
       ],
-      "model": "Armory_Dice_D3",
       "texture": "Items/Armory_Dice/Armory_Dice_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Dark.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Dark.png"
+    },
+    "red": {
+      "art": "Red",
+      "light": "Red",
+      "glow": [
+        238,
+        84,
+        46
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Red.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Red_Dark.png"
+    },
+    "orange": {
+      "art": "Orange",
+      "light": "Orange",
+      "glow": [
+        255,
+        128,
+        34
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Orange.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Orange_Dark.png"
+    },
+    "gold": {
+      "art": "Gold",
+      "light": "Gold",
+      "glow": [
+        240,
+        158,
+        40
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Gold.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Gold_Dark.png"
+    },
+    "yellow": {
+      "art": "Yellow",
+      "light": "Yellow",
+      "glow": [
+        240,
+        206,
+        62
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Yellow.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Yellow_Dark.png"
+    },
+    "green": {
+      "art": "Green",
+      "light": "Green",
+      "glow": [
+        112,
+        214,
+        74
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Green.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Green_Dark.png"
+    },
+    "cyan": {
+      "art": "Cyan",
+      "light": "Cyan",
+      "glow": [
+        52,
+        206,
+        214
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Cyan.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Cyan_Dark.png"
+    },
+    "blue": {
+      "art": "Blue",
+      "light": "Blue",
+      "glow": [
+        72,
+        128,
+        244
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Blue.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Blue_Dark.png"
+    },
+    "pink": {
+      "art": "Pink",
+      "light": "Pink",
+      "glow": [
+        242,
+        98,
+        156
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Pink.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Pink_Dark.png"
+    },
+    "black": {
+      "art": "Black",
+      "light": "Black",
+      "glow": [
+        96,
+        104,
+        128
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Black.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Black_Dark.png"
+    },
+    "white": {
+      "art": "White",
+      "light": "White",
+      "glow": [
+        186,
+        210,
+        222
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_White.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_White_Dark.png"
+    },
+    "blackwhite": {
+      "art": "BlackWhite",
+      "light": "White",
+      "glow": [
+        186,
+        210,
+        222
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_BlackWhite.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_BlackWhite_Dark.png"
+    },
+    "whiteblack": {
+      "art": "WhiteBlack",
+      "light": "White",
+      "glow": [
+        186,
+        210,
+        222
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_WhiteBlack.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_WhiteBlack_Dark.png"
+    }
+  },
+  "items": {
+    "Armory_Dice_D3": {
+      "die": "D3",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D3_Purple": {
+      "die": "D3",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D3_Red": {
+      "die": "D3",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D3_Orange": {
+      "die": "D3",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D3_Gold": {
+      "die": "D3",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D3_Yellow": {
+      "die": "D3",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D3_Green": {
+      "die": "D3",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D3_Cyan": {
+      "die": "D3",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D3_Blue": {
+      "die": "D3",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D3_Pink": {
+      "die": "D3",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D3_Black": {
+      "die": "D3",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D3_BlackWhite": {
+      "die": "D3",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D3_WhiteBlack": {
+      "die": "D3",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D4": {
+      "die": "D4",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D4_Purple": {
+      "die": "D4",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D4_Orange": {
+      "die": "D4",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D4_Gold": {
+      "die": "D4",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D4_Yellow": {
+      "die": "D4",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D4_Green": {
+      "die": "D4",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D4_Cyan": {
+      "die": "D4",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D4_Blue": {
+      "die": "D4",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D4_Pink": {
+      "die": "D4",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D4_Black": {
+      "die": "D4",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D4_White": {
+      "die": "D4",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D4_BlackWhite": {
+      "die": "D4",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D4_WhiteBlack": {
+      "die": "D4",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D6": {
+      "die": "D6",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D6_Purple": {
+      "die": "D6",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D6_Red": {
+      "die": "D6",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D6_Orange": {
+      "die": "D6",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D6_Gold": {
+      "die": "D6",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D6_Yellow": {
+      "die": "D6",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D6_Green": {
+      "die": "D6",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D6_Blue": {
+      "die": "D6",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D6_Pink": {
+      "die": "D6",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D6_Black": {
+      "die": "D6",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D6_White": {
+      "die": "D6",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D6_BlackWhite": {
+      "die": "D6",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D6_WhiteBlack": {
+      "die": "D6",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D8": {
+      "die": "D8",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D8_Purple": {
+      "die": "D8",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D8_Red": {
+      "die": "D8",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D8_Orange": {
+      "die": "D8",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D8_Gold": {
+      "die": "D8",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D8_Yellow": {
+      "die": "D8",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D8_Cyan": {
+      "die": "D8",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D8_Blue": {
+      "die": "D8",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D8_Pink": {
+      "die": "D8",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D8_Black": {
+      "die": "D8",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D8_White": {
+      "die": "D8",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D8_BlackWhite": {
+      "die": "D8",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D8_WhiteBlack": {
+      "die": "D8",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D10": {
+      "die": "D10",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D10_Purple": {
+      "die": "D10",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D10_Red": {
+      "die": "D10",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D10_Orange": {
+      "die": "D10",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D10_Gold": {
+      "die": "D10",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D10_Yellow": {
+      "die": "D10",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D10_Green": {
+      "die": "D10",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D10_Cyan": {
+      "die": "D10",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D10_Pink": {
+      "die": "D10",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D10_Black": {
+      "die": "D10",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D10_White": {
+      "die": "D10",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D10_BlackWhite": {
+      "die": "D10",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D10_WhiteBlack": {
+      "die": "D10",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D20": {
+      "die": "D20",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D20_Red": {
+      "die": "D20",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D20_Orange": {
+      "die": "D20",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D20_Gold": {
+      "die": "D20",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D20_Yellow": {
+      "die": "D20",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D20_Green": {
+      "die": "D20",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D20_Cyan": {
+      "die": "D20",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D20_Blue": {
+      "die": "D20",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D20_Pink": {
+      "die": "D20",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D20_Black": {
+      "die": "D20",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D20_White": {
+      "die": "D20",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D20_BlackWhite": {
+      "die": "D20",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D20_WhiteBlack": {
+      "die": "D20",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D100": {
+      "die": "D100",
+      "colours": [
+        "yellow",
+        "pink"
+      ]
+    },
+    "Armory_Dice_D100_Purple": {
+      "die": "D100",
+      "colours": [
+        "purple",
+        "purple"
+      ]
+    },
+    "Armory_Dice_D100_Red": {
+      "die": "D100",
+      "colours": [
+        "red",
+        "red"
+      ]
+    },
+    "Armory_Dice_D100_Orange": {
+      "die": "D100",
+      "colours": [
+        "orange",
+        "orange"
+      ]
+    },
+    "Armory_Dice_D100_Gold": {
+      "die": "D100",
+      "colours": [
+        "gold",
+        "gold"
+      ]
+    },
+    "Armory_Dice_D100_Yellow": {
+      "die": "D100",
+      "colours": [
+        "yellow",
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D100_Green": {
+      "die": "D100",
+      "colours": [
+        "green",
+        "green"
+      ]
+    },
+    "Armory_Dice_D100_Cyan": {
+      "die": "D100",
+      "colours": [
+        "cyan",
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D100_Blue": {
+      "die": "D100",
+      "colours": [
+        "blue",
+        "blue"
+      ]
+    },
+    "Armory_Dice_D100_Pink": {
+      "die": "D100",
+      "colours": [
+        "pink",
+        "pink"
+      ]
+    },
+    "Armory_Dice_D100_Black": {
+      "die": "D100",
+      "colours": [
+        "black",
+        "black"
+      ]
+    },
+    "Armory_Dice_D100_White": {
+      "die": "D100",
+      "colours": [
+        "white",
+        "white"
+      ]
+    },
+    "Armory_Dice_D100_BlackWhite": {
+      "die": "D100",
+      "colours": [
+        "blackwhite",
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D100_WhiteBlack": {
+      "die": "D100",
+      "colours": [
+        "whiteblack",
+        "whiteblack"
+      ]
+    }
+  },
+  "dice": {
+    "D3": {
+      "model": "Armory_Dice_D3",
       "scale": 0.840984,
       "radius": 0.2276,
       "hull": [
@@ -161,15 +866,7 @@
       ]
     },
     "D4": {
-      "colour": "purple",
-      "glow": [
-        186,
-        78,
-        232
-      ],
       "model": "Armory_Dice_D4",
-      "texture": "Items/Armory_Dice/Armory_Dice_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Dark.png",
       "scale": 0.931695,
       "radius": 0.2995,
       "hull": [
@@ -266,15 +963,7 @@
       ]
     },
     "D6": {
-      "colour": "purple",
-      "glow": [
-        186,
-        78,
-        232
-      ],
       "model": "Armory_Dice_D6",
-      "texture": "Items/Armory_Dice/Armory_Dice_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Dark.png",
       "scale": 0.70082,
       "radius": 0.2276,
       "hull": [
@@ -425,15 +1114,7 @@
       ]
     },
     "D8": {
-      "colour": "purple",
-      "glow": [
-        186,
-        78,
-        232
-      ],
       "model": "Armory_Dice_D8",
-      "texture": "Items/Armory_Dice/Armory_Dice_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Dark.png",
       "scale": 0.737865,
       "radius": 0.2446,
       "hull": [
@@ -608,15 +1289,7 @@
       ]
     },
     "D10": {
-      "colour": "purple",
-      "glow": [
-        186,
-        78,
-        232
-      ],
       "model": "Armory_Dice_D10",
-      "texture": "Items/Armory_Dice/Armory_Dice_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Dark.png",
       "scale": 0.483944,
       "radius": 0.3209,
       "hull": [
@@ -855,15 +1528,7 @@
       ]
     },
     "D20": {
-      "colour": "purple",
-      "glow": [
-        186,
-        78,
-        232
-      ],
       "model": "Armory_Dice_D20",
-      "texture": "Items/Armory_Dice/Armory_Dice_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Dark.png",
       "scale": 0.7,
       "radius": 0.208,
       "hull": [
@@ -1272,15 +1937,7 @@
       ]
     },
     "D100_Tens": {
-      "colour": "purple",
-      "glow": [
-        186,
-        78,
-        232
-      ],
       "model": "Armory_Dice_D100_Tens",
-      "texture": "Items/Armory_Dice/Armory_Dice_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Dark.png",
       "scale": 0.483944,
       "radius": 0.3209,
       "hull": [
@@ -1519,15 +2176,7 @@
       ]
     },
     "D100_Units": {
-      "colour": "purple",
-      "glow": [
-        186,
-        78,
-        232
-      ],
       "model": "Armory_Dice_D100_Units",
-      "texture": "Items/Armory_Dice/Armory_Dice_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Dark.png",
       "scale": 0.483944,
       "radius": 0.3209,
       "hull": [

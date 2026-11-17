@@ -4,8 +4,8 @@
     "Name": "server.items.Armory_Dice_D100.name"
   },
   "Quality": "Rare",
-  "Model": "Items/Armory_Dice/Armory_Dice_D100_Held.blockymodel",
-  "Texture": "Items/Armory_Dice/Armory_Dice_Texture.png",
+  "Model": "Items/Armory_Dice/Armory_Dice_D100_Held_YellowPink.blockymodel",
+  "Texture": "Items/Armory_Dice/Armory_Dice_Texture_YellowPink.png",
   "Icon": "Icons/ItemsGenerated/Armory_Dice_D100.png",
   "ItemAppearanceConditions": {
     "Armory_Dice_Charge": [
@@ -14,11 +14,11 @@
           1,
           39
         ],
-        "Model": "Items/Armory_Dice/Armory_Dice_D100_Held_Lit.blockymodel",
-        "Texture": "Items/Armory_Dice/Armory_Dice_Texture_Charge_1.png",
+        "Model": "Items/Armory_Dice/Armory_Dice_D100_Held_Lit_YellowPink.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_Texture_YellowPink_Charge_1.png",
         "Particles": [
           {
-            "SystemId": "Armory_Dice_Charge_Faint_Purple",
+            "SystemId": "Armory_Dice_Charge_Faint_Yellow",
             "TargetEntityPart": "PrimaryItem",
             "PositionOffset": {
               "X": 0,
@@ -29,7 +29,7 @@
         ],
         "FirstPersonParticles": [
           {
-            "SystemId": "Armory_Dice_Charge_Faint_Purple",
+            "SystemId": "Armory_Dice_Charge_Faint_Yellow",
             "TargetEntityPart": "PrimaryItem",
             "PositionOffset": {
               "X": 0,
@@ -45,11 +45,11 @@
           40,
           79
         ],
-        "Model": "Items/Armory_Dice/Armory_Dice_D100_Held_Lit.blockymodel",
-        "Texture": "Items/Armory_Dice/Armory_Dice_Texture_Charge_2.png",
+        "Model": "Items/Armory_Dice/Armory_Dice_D100_Held_Lit_YellowPink.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_Texture_YellowPink_Charge_2.png",
         "Particles": [
           {
-            "SystemId": "Armory_Dice_Charge_Gather_Purple",
+            "SystemId": "Armory_Dice_Charge_Gather_Yellow",
             "TargetEntityPart": "PrimaryItem",
             "PositionOffset": {
               "X": 0,
@@ -60,7 +60,7 @@
         ],
         "FirstPersonParticles": [
           {
-            "SystemId": "Armory_Dice_Charge_Gather_Purple",
+            "SystemId": "Armory_Dice_Charge_Gather_Yellow",
             "TargetEntityPart": "PrimaryItem",
             "PositionOffset": {
               "X": 0,
@@ -76,11 +76,11 @@
           80,
           99
         ],
-        "Model": "Items/Armory_Dice/Armory_Dice_D100_Held_Lit.blockymodel",
-        "Texture": "Items/Armory_Dice/Armory_Dice_Texture_Charge_3.png",
+        "Model": "Items/Armory_Dice/Armory_Dice_D100_Held_Lit_YellowPink.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_Texture_YellowPink_Charge_3.png",
         "Particles": [
           {
-            "SystemId": "Armory_Dice_Charge_Swirl_Purple",
+            "SystemId": "Armory_Dice_Charge_Swirl_Yellow",
             "TargetEntityPart": "PrimaryItem",
             "PositionOffset": {
               "X": 0,
@@ -91,7 +91,7 @@
         ],
         "FirstPersonParticles": [
           {
-            "SystemId": "Armory_Dice_Charge_Swirl_Purple",
+            "SystemId": "Armory_Dice_Charge_Swirl_Yellow",
             "TargetEntityPart": "PrimaryItem",
             "PositionOffset": {
               "X": 0,
@@ -107,11 +107,11 @@
           100,
           100
         ],
-        "Model": "Items/Armory_Dice/Armory_Dice_D100_Held_Lit.blockymodel",
-        "Texture": "Items/Armory_Dice/Armory_Dice_Texture.png",
+        "Model": "Items/Armory_Dice/Armory_Dice_D100_Held_Lit_YellowPink.blockymodel",
+        "Texture": "Items/Armory_Dice/Armory_Dice_Texture_YellowPink.png",
         "Particles": [
           {
-            "SystemId": "Armory_Dice_Charge_Full_Purple",
+            "SystemId": "Armory_Dice_Charge_Full_Yellow",
             "TargetEntityPart": "PrimaryItem",
             "PositionOffset": {
               "X": 0,
@@ -122,7 +122,7 @@
         ],
         "FirstPersonParticles": [
           {
-            "SystemId": "Armory_Dice_Charge_Full_Purple",
+            "SystemId": "Armory_Dice_Charge_Full_Yellow",
             "TargetEntityPart": "PrimaryItem",
             "PositionOffset": {
               "X": 0,
@@ -166,5 +166,11 @@
     ],
     "KnowledgeRequired": false,
     "TimeSeconds": 4
-  }
+  },
+  "SubCategory": "D100",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Armory_Dice_D100"
+    }
+  ]
 }

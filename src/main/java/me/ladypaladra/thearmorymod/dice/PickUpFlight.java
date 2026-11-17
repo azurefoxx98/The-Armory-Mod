@@ -63,6 +63,10 @@ public final class PickUpFlight implements Component<EntityStore> {
     final float startYaw;
     final String modelAsset;
     final float scale;
+    /**
+     * The picture the landed die wore, kept as the copy shrinks.
+     */
+    final String texture;
     final String colour;
     /**
      * Whether its arrival plays the pickup sound: a D100's pair flies as two copies and is heard once.
@@ -81,8 +85,9 @@ public final class PickUpFlight implements Component<EntityStore> {
     float shownScale = -1.0f;
 
     private PickUpFlight(@Nonnull UUID player, @Nonnull Vector3d start, float startYaw, @Nonnull String modelAsset,
-                         float scale, @Nonnull String colour, boolean heard, @Nullable String item,
-                         @Nullable UUID delivery) {
+                         float scale, @Nonnull String texture, @Nonnull String colour, boolean heard,
+                         @Nullable String item, @Nullable UUID delivery) {
+        this.texture = texture;
         this.heard = heard;
         this.item = item;
         this.delivery = delivery;
@@ -122,7 +127,7 @@ public final class PickUpFlight implements Component<EntityStore> {
             DiceModule.ledger().flying(delivery, player, item);
         }
         holder.addComponent(DiceModule.pickUpType(), new PickUpFlight(player, at.getPosition(), at.getRotation().yaw(),
-                model.getModelAssetId(), model.getScale(), colour, heard, item, delivery));
+                model.getModelAssetId(), model.getScale(), model.getTexture(), colour, heard, item, delivery));
         commandBuffer.addEntity(holder, AddReason.SPAWN);
         return true;
     }
@@ -203,7 +208,7 @@ public final class PickUpFlight implements Component<EntityStore> {
             transform.getRotation().set(0.0f, (float) (flight.startYaw + TURNS * 2.0 * Math.PI * ease(t)), 0.0f);
             float size = size(flight.scale, t);
             if (Math.abs(size - flight.shownScale) > 1.0E-3) {
-                Model model = scaled(flight.modelAsset, size);
+                Model model = scaled(flight.modelAsset, size, flight.texture);
                 if (model != null) {
                     commandBuffer.putComponent(ref, ModelComponent.getComponentType(), new ModelComponent(model));
                 }
@@ -260,19 +265,25 @@ public final class PickUpFlight implements Component<EntityStore> {
         return Math.round((float) (scale * shrink) * 50.0f) / 50.0f;
     }
 
+    /**
+     * The copy at {@code size}, wearing the picture it left the ground in: a model built from its asset wears the
+     * asset's own picture, which is purple for every colour of die.
+     */
     @Nullable
-    private static Model scaled(@Nonnull String modelAsset, float size) {
+    private static Model scaled(@Nonnull String modelAsset, float size, @Nonnull String texture) {
         ModelAsset asset = ModelAsset.getAssetMap().getAsset(modelAsset);
-        return asset != null ? Model.createScaledModel(asset, size) : null;
+        return asset != null ? DiceShow.retextured(Model.createScaledModel(asset, size), texture) : null;
     }
 
     /**
-     * The colour a landed die's spark is drawn in.
+     * The light a landed die's spark is drawn in.
      */
     @Nonnull
     static String colourOf(@Nullable LandedDie die) {
         DiceCatalog catalog = DiceModule.catalog();
-        DieShape shape = die != null && die.shape() != null && catalog != null ? catalog.shapes().get(die.shape()) : null;
-        return shape != null ? RollBand.capitalise(shape.colour()) : "White";
+        if (die == null || die.shape() == null || catalog == null || !catalog.shapes().containsKey(die.shape())) {
+            return "White";
+        }
+        return catalog.colourOf(die.item(), die.shape()).light();
     }
 }

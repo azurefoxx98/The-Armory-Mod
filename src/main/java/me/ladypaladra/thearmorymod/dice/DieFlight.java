@@ -23,6 +23,10 @@ public final class DieFlight implements Component<EntityStore> {
 
     final DieType type;
     final DieShape shape;
+    /**
+     * The colour this die wears: its item's colour for its part of the throw.
+     */
+    final DieColour colour;
     final DieMotion motion;
     final DieMotion.Spin spin = new DieMotion.Spin();
     final ThrowGroup group;
@@ -73,6 +77,7 @@ public final class DieFlight implements Component<EntityStore> {
               int member, int part) {
         this.type = type;
         this.shape = shape;
+        this.colour = group.item().colour(part);
         this.motion = motion;
         this.group = group;
         this.member = member;

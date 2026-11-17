@@ -3,10 +3,15 @@ package me.ladypaladra.thearmorymod.dice;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.component.dependency.Dependency;
+import com.hypixel.hytale.component.dependency.Order;
+import com.hypixel.hytale.component.dependency.SystemDependency;
 import com.hypixel.hytale.component.query.Query;
+import com.hypixel.hytale.component.system.HolderSystem;
 import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.protocol.ColorLight;
@@ -14,6 +19,7 @@ import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.modules.entity.component.DynamicLight;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.entity.system.ModelSystems;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
@@ -139,6 +145,52 @@ public final class LandedDieSystems {
         UUID owner = die.owner();
         if (owner != null && die.item() != null) {
             DiceModule.ledger().owe(owner, die.item());
+        }
+    }
+
+    /**
+     * Gives a landed die its colour back when its chunk loads. The engine saves only which model asset an entity wears
+     * and rebuilds the model from that asset as it loads (ModelSystems.SetRenderedModel), so every die would come back
+     * in the asset's own purple. This runs right after that, on the entity before it is placed in the world, so no
+     * player is ever sent the purple one.
+     */
+    public static final class Recolour extends HolderSystem<EntityStore> {
+
+        private final Set<Dependency<EntityStore>> dependencies =
+                Set.of(new SystemDependency<>(Order.AFTER, ModelSystems.SetRenderedModel.class));
+
+        @Nonnull
+        @Override
+        public Query<EntityStore> getQuery() {
+            return DiceModule.landedType();
+        }
+
+        @Nonnull
+        @Override
+        public Set<Dependency<EntityStore>> getDependencies() {
+            return dependencies;
+        }
+
+        @Override
+        public void onEntityAdd(@Nonnull Holder<EntityStore> holder, @Nonnull AddReason reason,
+                                @Nonnull Store<EntityStore> store) {
+            LandedDie die = holder.getComponent(DiceModule.landedType());
+            ModelComponent model = holder.getComponent(ModelComponent.getComponentType());
+            DiceCatalog catalog = DiceModule.catalog();
+            if (die == null || die.shape() == null || model == null || model.getModel() == null || catalog == null
+                    || !catalog.shapes().containsKey(die.shape())) {
+                return;
+            }
+            String texture = catalog.colourOf(die.item(), die.shape()).texture();
+            if (!texture.equals(model.getModel().getTexture())) {
+                holder.putComponent(ModelComponent.getComponentType(),
+                        new ModelComponent(DiceShow.retextured(model.getModel(), texture)));
+            }
+        }
+
+        @Override
+        public void onEntityRemoved(@Nonnull Holder<EntityStore> holder, @Nonnull RemoveReason reason,
+                                    @Nonnull Store<EntityStore> store) {
         }
     }
 

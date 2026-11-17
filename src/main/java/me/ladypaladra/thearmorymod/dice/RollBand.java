@@ -32,12 +32,12 @@ public enum RollBand {
     }
 
     /**
-     * The texture the big number's tiles wear in this band. The middle bands are drawn in the die's own colour. The
-     * extremes and the very low band have one look for every die.
+     * The texture the big number's tiles wear in this band. The middle bands are drawn in the die's own light
+     * ({@link DieColour#light()}, such as {@code Cyan}). The extremes and the very low band have one look for every die.
      */
     @Nonnull
-    public String numberTexture(@Nonnull String dieColour) {
-        String colour = inDieColour ? "_" + capitalise(dieColour) : "";
+    public String numberTexture(@Nonnull String dieLight) {
+        String colour = inDieColour ? "_" + dieLight : "";
         return "Items/Armory_Dice/Number/Armory_Dice_Number_" + artName + colour + "_Texture.png";
     }
 
@@ -92,10 +92,5 @@ public enum RollBand {
                 default -> MINOR;
             };
         }
-    }
-
-    @Nonnull
-    static String capitalise(@Nonnull String word) {
-        return word.isEmpty() ? word : Character.toUpperCase(word.charAt(0)) + word.substring(1);
     }
 }

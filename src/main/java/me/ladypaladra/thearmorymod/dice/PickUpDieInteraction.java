@@ -73,7 +73,13 @@ public final class PickUpDieInteraction extends SimpleInstantInteraction {
             return false;
         }
         LandedDie die = commandBuffer.getComponent(target, DiceModule.landedType());
-        if (die == null || die.item() == null || !die.claim()) {
+        if (die == null || die.item() == null) {
+            return false;
+        }
+        // A die called back to make room under its owner's limit is theirs again already, and leaves the ground on
+        // its world's next tick: taking it in between would make a second one.
+        UUID thrown = die.thrown();
+        if ((thrown != null && DiceModule.ledger().isRecalled(thrown)) || !die.claim()) {
             return false;
         }
 

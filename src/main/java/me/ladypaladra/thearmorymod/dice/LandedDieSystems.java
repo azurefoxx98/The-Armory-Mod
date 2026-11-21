@@ -20,6 +20,7 @@ import com.hypixel.hytale.server.core.modules.entity.component.DynamicLight;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.entity.system.ModelSystems;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
@@ -45,7 +46,35 @@ public final class LandedDieSystems {
      */
     private static final Set<Ref<EntityStore>> LOADED = ConcurrentHashMap.newKeySet();
 
+    /**
+     * Each loaded die by the thrown item it is, with its world, so an item called back to make room under its owner's
+     * limit can have its dice cleared from whichever world they lie in.
+     */
+    private static final Map<UUID, Map<Ref<EntityStore>, World>> THROWS = new ConcurrentHashMap<>();
+
     private LandedDieSystems() {
+    }
+
+    /**
+     * Clears from the ground the loaded dice of the thrown item {@code thrown}, which the ledger has just called back
+     * and already owes to its owner. Each die is removed by its own world, on that world's next tick. A die of it in
+     * an unloaded chunk is cleared when that chunk loads.
+     */
+    static void recall(@Nonnull UUID thrown) {
+        Map<Ref<EntityStore>, World> dice = THROWS.get(thrown);
+        if (dice == null) {
+            return;
+        }
+        dice.forEach((ref, world) -> world.execute(() -> {
+            if (!ref.isValid()) {
+                return;
+            }
+            Store<EntityStore> store = world.getEntityStore().getStore();
+            LandedDie die = store.getComponent(ref, DiceModule.landedType());
+            if (die != null && die.claim()) {
+                store.removeEntity(ref, RemoveReason.REMOVE);
+            }
+        }));
     }
 
     @Nonnull
@@ -89,6 +118,17 @@ public final class LandedDieSystems {
                 settle(die, commandBuffer.getComponent(ref, TransformComponent.getComponentType()));
             }
             LOADED.add(ref);
+            UUID thrown = die != null ? die.thrown() : null;
+            if (thrown != null) {
+                if (DiceModule.ledger().isRecalled(thrown)) {
+                    // Called back while this chunk was unloaded: its owner already has the item.
+                    die.claim();
+                    commandBuffer.tryRemoveEntity(ref, RemoveReason.REMOVE);
+                    return;
+                }
+                THROWS.computeIfAbsent(thrown, k -> new ConcurrentHashMap<>())
+                        .put(ref, commandBuffer.getExternalData().getWorld());
+            }
             UUID pair = die != null ? die.pair() : null;
             if (pair == null) {
                 return;
@@ -116,8 +156,23 @@ public final class LandedDieSystems {
                     return dice.isEmpty() ? null : dice;
                 });
             }
-            if (reason == RemoveReason.REMOVE && !die.claimed()) {
+            UUID thrown = die.thrown();
+            if (thrown != null) {
+                THROWS.computeIfPresent(thrown, (k, dice) -> {
+                    dice.remove(ref);
+                    return dice.isEmpty() ? null : dice;
+                });
+            }
+            if (reason != RemoveReason.REMOVE) {
+                return;
+            }
+            // A die of an item called back is already owed to its owner, whoever removed it.
+            boolean recalled = thrown != null && DiceModule.ledger().clearRecalled(thrown);
+            if (!die.claimed() && !recalled) {
                 returnToOwner(die, pair, commandBuffer);
+            }
+            if (thrown != null) {
+                DiceModule.ledger().gone(thrown);
             }
         }
     }

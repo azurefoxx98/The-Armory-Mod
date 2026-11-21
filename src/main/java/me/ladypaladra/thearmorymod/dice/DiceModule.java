@@ -50,6 +50,7 @@ public final class DiceModule {
 
     public static void register(@Nonnull JavaPlugin plugin, @Nonnull ArmoryConfig settings) {
         DiceShow.rollsInChat = settings.diceRollsInChat();
+        DiceLimit.configure(settings.maxDicePerPlayer(), settings.diceLimitsByPermission());
         // Interaction types must exist before any asset naming them is decoded.
         plugin.getCodecRegistry(Interaction.CODEC).register(
                 "ArmoryThrowDie",

@@ -34,6 +34,8 @@ public final class LandedDie implements Component<EntityStore> {
             .add()
             .append(new KeyedCodec<>("RestYaw", Codec.DOUBLE), (d, v) -> d.restYaw = v, d -> d.restYaw)
             .add()
+            .append(new KeyedCodec<>("Throw", Codec.STRING), (d, v) -> d.thrown = v, d -> d.thrown)
+            .add()
             .build();
 
     private String item;
@@ -42,6 +44,13 @@ public final class LandedDie implements Component<EntityStore> {
     private String owner;
     @Nullable
     private String pair;
+
+    /**
+     * The thrown item this die is, or one of the two dice of, as the dice ledger counts it toward its owner's limit.
+     * A die that landed before the limit existed has none and is not counted.
+     */
+    @Nullable
+    private String thrown;
 
     /**
      * Where the die came to rest: its height and its turn. The Favour lifts and turns a die and the Veil shakes it,
@@ -60,12 +69,13 @@ public final class LandedDie implements Component<EntityStore> {
     }
 
     LandedDie(@Nonnull String item, @Nonnull String shape, int face, @Nonnull UUID owner, @Nullable UUID pair,
-              double restY, double restYaw) {
+              @Nullable UUID thrown, double restY, double restYaw) {
         this.item = item;
         this.shape = shape;
         this.face = face;
         this.owner = owner.toString();
         this.pair = pair != null ? pair.toString() : null;
+        this.thrown = thrown != null ? thrown.toString() : null;
         this.restY = restY;
         this.restYaw = restYaw;
     }
@@ -108,6 +118,11 @@ public final class LandedDie implements Component<EntityStore> {
         return parse(owner);
     }
 
+    @Nullable
+    public UUID thrown() {
+        return parse(thrown);
+    }
+
     /**
      * Whether a player took the die, or the dice code itself removed it on purpose. A landed die removed while
      * unclaimed was taken by the world, and its owner gets it back.
@@ -137,6 +152,7 @@ public final class LandedDie implements Component<EntityStore> {
         copy.face = face;
         copy.owner = owner;
         copy.pair = pair;
+        copy.thrown = thrown;
         copy.restY = restY;
         copy.restYaw = restYaw;
         copy.claimed = claimed;

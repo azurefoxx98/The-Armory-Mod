@@ -117,6 +117,13 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
         Vector3d carried = velocity != null ? new Vector3d(velocity.getClientVelocity()) : new Vector3d();
 
         int count = crouching ? Math.min(HANDFUL, held.getQuantity()) : 1;
+        // The owner's limit: the oldest dice they left lying come back to them to make room for these.
+        count = DiceLimit.makeRoom(DiceModule.ledger(), playerRef.getUuid(), count,
+                DiceLimit.of(node -> playerRef.hasPermission(node)), LandedDieSystems::recall);
+        if (count <= 0) {
+            context.getState().state = InteractionState.Failed;
+            return;
+        }
         var taken = container.removeItemStackFromSlot(context.getHeldItemSlot(), held, count);
         if (!taken.succeeded()) {
             context.getState().state = InteractionState.Failed;
@@ -145,7 +152,7 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
         int slot = 0;
         for (int member = 0; member < count; member++) {
             // The item as thrown, colour and all, so a die lost to the world comes back the colour it left.
-            DiceModule.ledger().flying(group.ledgerId(member), group.owner(), item.itemId());
+            DiceModule.ledger().thrown(group.ledgerId(member), group.owner(), item.itemId(), shapes.size());
             for (int part = 0; part < shapes.size(); part++) {
                 DieShape shape = shapes.get(part);
                 double offset = (slot - (dice - 1) / 2.0) * SPREAD;

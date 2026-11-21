@@ -513,12 +513,14 @@ public final class DieFlightSystems {
         holder.addComponent(NetworkId.getComponentType(),
                 new NetworkId(commandBuffer.getExternalData().takeNextNetworkId()));
         holder.addComponent(DiceModule.landedType(), new LandedDie(group.item().itemId(), flight.shape.key(),
-                flight.face.index(), group.owner(), group.pairId(flight.member), spot.y, sentYaw));
+                flight.face.index(), group.owner(), group.pairId(flight.member), group.ledgerId(flight.member),
+                spot.y, sentYaw));
         holder.addComponent(DiceModule.glowType(), new DieGlow(flight.colour.glow()));
         Ref<EntityStore> landed = commandBuffer.addEntity(holder, AddReason.SPAWN);
 
         if (group.land(flight.member, flight.part, flight.face, spot, landed)) {
-            DiceModule.ledger().landed(group.ledgerId(flight.member));
+            // The world saves it from here. It stays in the ledger as lying, counted toward its owner's limit.
+            DiceModule.ledger().lying(group.ledgerId(flight.member));
         }
         DiceShow.awaken(flight.colour, spot, flight.face, commandBuffer);
         if (group.claimFinished()) {

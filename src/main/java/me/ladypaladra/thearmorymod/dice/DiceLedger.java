@@ -6,6 +6,7 @@ import com.google.gson.JsonParseException;
 import com.hypixel.hytale.logger.HytaleLogger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,6 +34,10 @@ import java.util.concurrent.TimeUnit;
  *
  * <p>It also remembers each D100 pair taken back while one of its two dice lay in an unloaded chunk, so that die is
  * cleared when its chunk loads rather than picked up for a second D100.</p>
+ *
+ * <p>And it counts each player's thrown dice for the limit (DiceLimit): a thrown item stays here while it lies on the
+ * ground, until someone takes it. One called back to make room is owed at once, and remembered until the dice it left
+ * on the ground are cleared, which for a die in an unloaded chunk is when that chunk loads.</p>
  */
 public final class DiceLedger {
 
@@ -48,6 +53,8 @@ public final class DiceLedger {
 
     private final Map<UUID, Entry> entries = new LinkedHashMap<>();
     private final Set<UUID> collectedPairs = new HashSet<>();
+    // Each thrown item called back, with how many of its dice are still to be cleared from the ground.
+    private final Map<UUID, Integer> recalled = new LinkedHashMap<>();
     private volatile boolean anyOwed;
 
     private DiceLedger(@Nonnull Path file) {
@@ -55,7 +62,8 @@ public final class DiceLedger {
     }
 
     /**
-     * Opens the ledger. A die recorded as flying when the server stopped cannot still be in the air: it is owed.
+     * Opens the ledger. A die recorded as flying when the server stopped cannot still be in the air: it is owed. One
+     * recorded as lying is still on the ground, saved with its chunk.
      */
     @Nonnull
     public static DiceLedger open(@Nonnull Path file) {
@@ -67,13 +75,22 @@ public final class DiceLedger {
                     if (saved.entries != null) {
                         for (Entry e : saved.entries) {
                             if (e.id != null && e.owner != null && e.item != null) {
-                                e.owed = true;
+                                if (!e.lying) {
+                                    e.owed = true;
+                                }
                                 ledger.entries.put(e.id, e);
                             }
                         }
                     }
                     if (saved.collectedPairs != null) {
                         ledger.collectedPairs.addAll(saved.collectedPairs);
+                    }
+                    if (saved.recalled != null) {
+                        for (Recalled r : saved.recalled) {
+                            if (r.id != null && r.dice > 0) {
+                                ledger.recalled.put(r.id, r.dice);
+                            }
+                        }
                     }
                 }
             } catch (IOException | JsonParseException e) {
@@ -88,10 +105,109 @@ public final class DiceLedger {
             }
         }
         synchronized (ledger) {
-            ledger.anyOwed = !ledger.entries.isEmpty();
+            ledger.anyOwed = ledger.entries.values().stream().anyMatch(e -> e.owed);
             ledger.save();
         }
         return ledger;
+    }
+
+    /**
+     * A thrown item leaves its owner's hand, as {@code dice} dice (two for a D100). From here it counts toward the
+     * owner's limit until it is taken from the ground, lost, or called back.
+     */
+    public synchronized void thrown(@Nonnull UUID id, @Nonnull UUID owner, @Nonnull String item, int dice) {
+        Entry e = new Entry();
+        e.id = id;
+        e.owner = owner;
+        e.item = item;
+        e.thrown = true;
+        e.dice = dice;
+        entries.put(id, e);
+        save();
+    }
+
+    /**
+     * A thrown item has landed whole: the world saves its dice from here, and it still counts toward its owner's limit.
+     */
+    public synchronized void lying(@Nonnull UUID id) {
+        Entry e = entries.get(id);
+        if (e != null && e.thrown && !e.owed && !e.lying) {
+            e.lying = true;
+            save();
+        }
+    }
+
+    /**
+     * A lying item left the ground for good: picked up, or taken by the world.
+     */
+    public synchronized void gone(@Nonnull UUID id) {
+        Entry e = entries.get(id);
+        if (e != null && e.lying) {
+            entries.remove(id);
+            save();
+        }
+    }
+
+    /**
+     * How many thrown items of {@code owner} are out in the world: flying or lying.
+     */
+    public synchronized int out(@Nonnull UUID owner) {
+        int count = 0;
+        for (Entry e : entries.values()) {
+            if (e.thrown && !e.owed && owner.equals(e.owner)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Calls back the item of {@code owner} that has lain longest: it is owed to them at once, and its id is returned
+     * so the caller can clear its dice from the ground. Null when none of the owner's dice is lying.
+     */
+    @Nullable
+    public synchronized UUID recallOldest(@Nonnull UUID owner) {
+        for (Entry e : entries.values()) {
+            if (e.lying && owner.equals(e.owner)) {
+                entries.remove(e.id);
+                recalled.put(e.id, Math.max(1, e.dice));
+                Entry back = new Entry();
+                back.id = UUID.randomUUID();
+                back.owner = e.owner;
+                back.item = e.item;
+                back.owed = true;
+                entries.put(back.id, back);
+                anyOwed = true;
+                save();
+                return e.id;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Whether the thrown item {@code id} was called back and still has a die on the ground. Such a die belongs to
+     * nobody: its owner already has the item back.
+     */
+    public synchronized boolean isRecalled(@Nonnull UUID id) {
+        return recalled.containsKey(id);
+    }
+
+    /**
+     * One die of a called-back item was cleared from the ground. Returns false when the item was not called back.
+     */
+    public synchronized boolean clearRecalled(@Nonnull UUID id) {
+        Integer left = recalled.get(id);
+        if (left == null) {
+            return false;
+        }
+        if (left <= 1) {
+            recalled.remove(id);
+        } else {
+            recalled.put(id, left - 1);
+        }
+        save();
+        return true;
     }
 
     public synchronized void flying(@Nonnull UUID id, @Nonnull UUID owner, @Nonnull String item) {
@@ -113,6 +229,7 @@ public final class DiceLedger {
         Entry e = entries.get(id);
         if (e != null && !e.owed) {
             e.owed = true;
+            e.lying = false;
             anyOwed = true;
             save();
         }
@@ -198,6 +315,13 @@ public final class DiceLedger {
             saved.entries.add(e.copy());
         }
         saved.collectedPairs = new ArrayList<>(collectedPairs);
+        saved.recalled = new ArrayList<>(recalled.size());
+        for (Map.Entry<UUID, Integer> r : recalled.entrySet()) {
+            Recalled one = new Recalled();
+            one.id = r.getKey();
+            one.dice = r.getValue();
+            saved.recalled.add(one);
+        }
         String text = GSON.toJson(saved);
         if (writer.isShutdown()) {
             write(text);
@@ -225,6 +349,10 @@ public final class DiceLedger {
         UUID owner;
         String item;
         boolean owed;
+        // Thrown by its owner, so it counts toward their limit. A die on its way into a taker's hand does not.
+        boolean thrown;
+        boolean lying;
+        int dice;
 
         Entry copy() {
             Entry c = new Entry();
@@ -232,12 +360,21 @@ public final class DiceLedger {
             c.owner = owner;
             c.item = item;
             c.owed = owed;
+            c.thrown = thrown;
+            c.lying = lying;
+            c.dice = dice;
             return c;
         }
+    }
+
+    static final class Recalled {
+        UUID id;
+        int dice;
     }
 
     static final class Saved {
         List<Entry> entries;
         List<UUID> collectedPairs;
+        List<Recalled> recalled;
     }
 }

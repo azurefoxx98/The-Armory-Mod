@@ -1,0 +1,27 @@
+{
+  "Parent": "Armor_Copper_Chest_Blue",
+  "Quality": "Common",
+  "Icon": "Icons/ItemsGenerated/Armor_Copper_Chest_Green.png",
+  "Texture": "Items/Armors/VanillaRecolors/Copper/Chest_Green.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_Copper_Chest"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  },
+  "Categories": [ "ArmoryCategory.ArmoryArmors", "Items.Armors" ],
+  "SubCategory": "Vanilla Recolor Copper"
+}

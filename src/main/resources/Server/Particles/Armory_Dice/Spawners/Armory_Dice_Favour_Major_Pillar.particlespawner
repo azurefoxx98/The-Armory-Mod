@@ -4,8 +4,8 @@
   "LinearFiltering": true,
   "ParticleRotateWithSpawner": false,
   "ParticleLifeSpan": {
-    "Min": 3.6,
-    "Max": 3.6
+    "Min": 3.0,
+    "Max": 3.0
   },
   "Shape": "Sphere",
   "Particle": {
@@ -25,8 +25,8 @@
           }
         }
       },
-      "8": {
-        "Opacity": 1.0,
+      "10": {
+        "Opacity": 0.55,
         "Scale": {
           "X": {
             "Min": 1.0,
@@ -42,7 +42,7 @@
         "Color": "#ffc94a"
       },
       "75": {
-        "Opacity": 0.8,
+        "Opacity": 0.4,
         "Color": "#e2881a"
       },
       "100": {
@@ -62,15 +62,15 @@
     "InitialAnimationFrame": {
       "Scale": {
         "X": {
-          "Min": 0.9,
-          "Max": 0.9
+          "Min": 0.45,
+          "Max": 0.45
         },
         "Y": {
-          "Min": 14.0,
-          "Max": 14.0
+          "Min": 6.0,
+          "Max": 6.0
         }
       },
-      "Opacity": 1.0,
+      "Opacity": 0.55,
       "Color": "#ffc94a"
     },
     "ScaleRatioConstraint": "None"
@@ -88,8 +88,8 @@
   "UVMotion": {
     "Texture": "Particles/Textures/UVMotion/FlowMapWave.png",
     "Scale": 0.5,
-    "Strength": 2.0,
-    "SpeedY": 0.5
+    "Strength": 1.2,
+    "SpeedY": 0.35
   },
   "CameraOffset": 0.5
 }

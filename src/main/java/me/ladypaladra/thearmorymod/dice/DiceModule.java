@@ -5,6 +5,7 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
+import me.ladypaladra.thearmorymod.ArmoryConfig;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
@@ -47,7 +48,9 @@ public final class DiceModule {
     private DiceModule() {
     }
 
-    public static void register(@Nonnull JavaPlugin plugin) {
+    public static void register(@Nonnull JavaPlugin plugin, @Nonnull ArmoryConfig settings) {
+        DiceShow.rollsInChat = settings.diceRollsInChat();
+        DiceLimit.configure(settings.maxDicePerPlayer(), settings.diceLimitsByPermission());
         // Interaction types must exist before any asset naming them is decoded.
         plugin.getCodecRegistry(Interaction.CODEC).register(
                 "ArmoryThrowDie",
@@ -83,6 +86,7 @@ public final class DiceModule {
         registry.registerSystem(new DieFlightSystems.Turn());
         registry.registerSystem(new DieFlightSystems.Lost());
         registry.registerSystem(new LandedDieSystems.Loaded());
+        registry.registerSystem(new LandedDieSystems.Recolour());
         registry.registerSystem(new LandedDieSystems.Glow());
         registry.registerSystem(new NumberTileSystems.Animate());
         registry.registerSystem(new NumberTileSystems.Latecomers());
@@ -123,6 +127,14 @@ public final class DiceModule {
     @Nullable
     static DiceCatalog catalog() {
         return catalog;
+    }
+
+    /**
+     * The dice item {@code itemId}, any colour, or null when it is no die or the dice data could not be read.
+     */
+    @Nullable
+    static DieItem item(@Nullable String itemId) {
+        return catalog != null ? catalog.item(itemId) : null;
     }
 
     @Nonnull

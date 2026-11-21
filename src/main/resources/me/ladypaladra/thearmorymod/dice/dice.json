@@ -1,147 +1,766 @@
 {
   "unit": 64.0,
-  "scale": 0.7,
-  "dice": {
-    "D3": {
-      "colour": "white",
+  "colours": {
+    "purple": {
+      "art": "Purple",
+      "light": "Purple",
+      "glow": [
+        186,
+        78,
+        232
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Dark.png"
+    },
+    "red": {
+      "art": "Red",
+      "light": "Red",
+      "glow": [
+        238,
+        84,
+        46
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Red.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Red_Dark.png"
+    },
+    "orange": {
+      "art": "Orange",
+      "light": "Orange",
+      "glow": [
+        255,
+        128,
+        34
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Orange.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Orange_Dark.png"
+    },
+    "gold": {
+      "art": "Gold",
+      "light": "Gold",
+      "glow": [
+        240,
+        158,
+        40
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Gold.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Gold_Dark.png"
+    },
+    "yellow": {
+      "art": "Yellow",
+      "light": "Yellow",
+      "glow": [
+        240,
+        206,
+        62
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Yellow.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Yellow_Dark.png"
+    },
+    "green": {
+      "art": "Green",
+      "light": "Green",
+      "glow": [
+        112,
+        214,
+        74
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Green.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Green_Dark.png"
+    },
+    "cyan": {
+      "art": "Cyan",
+      "light": "Cyan",
+      "glow": [
+        52,
+        206,
+        214
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Cyan.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Cyan_Dark.png"
+    },
+    "blue": {
+      "art": "Blue",
+      "light": "Blue",
+      "glow": [
+        72,
+        128,
+        244
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Blue.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Blue_Dark.png"
+    },
+    "pink": {
+      "art": "Pink",
+      "light": "Pink",
+      "glow": [
+        242,
+        98,
+        156
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Pink.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Pink_Dark.png"
+    },
+    "black": {
+      "art": "Black",
+      "light": "Black",
+      "glow": [
+        96,
+        104,
+        128
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_Black.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_Black_Dark.png"
+    },
+    "white": {
+      "art": "White",
+      "light": "White",
       "glow": [
         186,
         210,
         222
       ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_White.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_White_Dark.png"
+    },
+    "blackwhite": {
+      "art": "BlackWhite",
+      "light": "White",
+      "glow": [
+        186,
+        210,
+        222
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_BlackWhite.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_BlackWhite_Dark.png"
+    },
+    "whiteblack": {
+      "art": "WhiteBlack",
+      "light": "White",
+      "glow": [
+        186,
+        210,
+        222
+      ],
+      "texture": "Items/Armory_Dice/Armory_Dice_Texture_WhiteBlack.png",
+      "darkTexture": "Items/Armory_Dice/Armory_Dice_Texture_WhiteBlack_Dark.png"
+    }
+  },
+  "items": {
+    "Armory_Dice_D3": {
+      "die": "D3",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D3_Purple": {
+      "die": "D3",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D3_Red": {
+      "die": "D3",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D3_Orange": {
+      "die": "D3",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D3_Gold": {
+      "die": "D3",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D3_Yellow": {
+      "die": "D3",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D3_Green": {
+      "die": "D3",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D3_Cyan": {
+      "die": "D3",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D3_Blue": {
+      "die": "D3",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D3_Pink": {
+      "die": "D3",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D3_Black": {
+      "die": "D3",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D3_BlackWhite": {
+      "die": "D3",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D3_WhiteBlack": {
+      "die": "D3",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D4": {
+      "die": "D4",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D4_Purple": {
+      "die": "D4",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D4_Orange": {
+      "die": "D4",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D4_Gold": {
+      "die": "D4",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D4_Yellow": {
+      "die": "D4",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D4_Green": {
+      "die": "D4",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D4_Cyan": {
+      "die": "D4",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D4_Blue": {
+      "die": "D4",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D4_Pink": {
+      "die": "D4",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D4_Black": {
+      "die": "D4",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D4_White": {
+      "die": "D4",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D4_BlackWhite": {
+      "die": "D4",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D4_WhiteBlack": {
+      "die": "D4",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D6": {
+      "die": "D6",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D6_Purple": {
+      "die": "D6",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D6_Red": {
+      "die": "D6",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D6_Orange": {
+      "die": "D6",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D6_Gold": {
+      "die": "D6",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D6_Yellow": {
+      "die": "D6",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D6_Green": {
+      "die": "D6",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D6_Blue": {
+      "die": "D6",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D6_Pink": {
+      "die": "D6",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D6_Black": {
+      "die": "D6",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D6_White": {
+      "die": "D6",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D6_BlackWhite": {
+      "die": "D6",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D6_WhiteBlack": {
+      "die": "D6",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D8": {
+      "die": "D8",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D8_Purple": {
+      "die": "D8",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D8_Red": {
+      "die": "D8",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D8_Orange": {
+      "die": "D8",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D8_Gold": {
+      "die": "D8",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D8_Yellow": {
+      "die": "D8",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D8_Cyan": {
+      "die": "D8",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D8_Blue": {
+      "die": "D8",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D8_Pink": {
+      "die": "D8",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D8_Black": {
+      "die": "D8",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D8_White": {
+      "die": "D8",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D8_BlackWhite": {
+      "die": "D8",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D8_WhiteBlack": {
+      "die": "D8",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D10": {
+      "die": "D10",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D10_Purple": {
+      "die": "D10",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D10_Red": {
+      "die": "D10",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D10_Orange": {
+      "die": "D10",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D10_Gold": {
+      "die": "D10",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D10_Yellow": {
+      "die": "D10",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D10_Green": {
+      "die": "D10",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D10_Cyan": {
+      "die": "D10",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D10_Pink": {
+      "die": "D10",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D10_Black": {
+      "die": "D10",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D10_White": {
+      "die": "D10",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D10_BlackWhite": {
+      "die": "D10",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D10_WhiteBlack": {
+      "die": "D10",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D20": {
+      "die": "D20",
+      "colours": [
+        "purple"
+      ]
+    },
+    "Armory_Dice_D20_Red": {
+      "die": "D20",
+      "colours": [
+        "red"
+      ]
+    },
+    "Armory_Dice_D20_Orange": {
+      "die": "D20",
+      "colours": [
+        "orange"
+      ]
+    },
+    "Armory_Dice_D20_Gold": {
+      "die": "D20",
+      "colours": [
+        "gold"
+      ]
+    },
+    "Armory_Dice_D20_Yellow": {
+      "die": "D20",
+      "colours": [
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D20_Green": {
+      "die": "D20",
+      "colours": [
+        "green"
+      ]
+    },
+    "Armory_Dice_D20_Cyan": {
+      "die": "D20",
+      "colours": [
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D20_Blue": {
+      "die": "D20",
+      "colours": [
+        "blue"
+      ]
+    },
+    "Armory_Dice_D20_Pink": {
+      "die": "D20",
+      "colours": [
+        "pink"
+      ]
+    },
+    "Armory_Dice_D20_Black": {
+      "die": "D20",
+      "colours": [
+        "black"
+      ]
+    },
+    "Armory_Dice_D20_White": {
+      "die": "D20",
+      "colours": [
+        "white"
+      ]
+    },
+    "Armory_Dice_D20_BlackWhite": {
+      "die": "D20",
+      "colours": [
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D20_WhiteBlack": {
+      "die": "D20",
+      "colours": [
+        "whiteblack"
+      ]
+    },
+    "Armory_Dice_D100": {
+      "die": "D100",
+      "colours": [
+        "yellow",
+        "pink"
+      ]
+    },
+    "Armory_Dice_D100_Purple": {
+      "die": "D100",
+      "colours": [
+        "purple",
+        "purple"
+      ]
+    },
+    "Armory_Dice_D100_Red": {
+      "die": "D100",
+      "colours": [
+        "red",
+        "red"
+      ]
+    },
+    "Armory_Dice_D100_Orange": {
+      "die": "D100",
+      "colours": [
+        "orange",
+        "orange"
+      ]
+    },
+    "Armory_Dice_D100_Gold": {
+      "die": "D100",
+      "colours": [
+        "gold",
+        "gold"
+      ]
+    },
+    "Armory_Dice_D100_Yellow": {
+      "die": "D100",
+      "colours": [
+        "yellow",
+        "yellow"
+      ]
+    },
+    "Armory_Dice_D100_Green": {
+      "die": "D100",
+      "colours": [
+        "green",
+        "green"
+      ]
+    },
+    "Armory_Dice_D100_Cyan": {
+      "die": "D100",
+      "colours": [
+        "cyan",
+        "cyan"
+      ]
+    },
+    "Armory_Dice_D100_Blue": {
+      "die": "D100",
+      "colours": [
+        "blue",
+        "blue"
+      ]
+    },
+    "Armory_Dice_D100_Pink": {
+      "die": "D100",
+      "colours": [
+        "pink",
+        "pink"
+      ]
+    },
+    "Armory_Dice_D100_Black": {
+      "die": "D100",
+      "colours": [
+        "black",
+        "black"
+      ]
+    },
+    "Armory_Dice_D100_White": {
+      "die": "D100",
+      "colours": [
+        "white",
+        "white"
+      ]
+    },
+    "Armory_Dice_D100_BlackWhite": {
+      "die": "D100",
+      "colours": [
+        "blackwhite",
+        "blackwhite"
+      ]
+    },
+    "Armory_Dice_D100_WhiteBlack": {
+      "die": "D100",
+      "colours": [
+        "whiteblack",
+        "whiteblack"
+      ]
+    }
+  },
+  "dice": {
+    "D3": {
       "model": "Armory_Dice_D3",
-      "texture": "Items/Armory_Dice/Armory_Dice_D3_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_D3_Texture_Dark.png",
-      "radius": 0.1894,
+      "scale": 0.840984,
+      "radius": 0.2276,
       "hull": [
         [
-          -0.109375,
-          -0.109375,
-          -0.109375
+          -0.131404,
+          -0.131404,
+          -0.131404
         ],
         [
-          -0.109375,
-          -0.109375,
-          0.109375
+          -0.131404,
+          -0.131404,
+          0.131404
         ],
         [
-          -0.109375,
-          0.109375,
-          -0.109375
+          -0.131404,
+          0.131404,
+          -0.131404
         ],
         [
-          -0.109375,
-          0.109375,
-          0.109375
+          -0.131404,
+          0.131404,
+          0.131404
         ],
         [
-          0.109375,
-          -0.109375,
-          -0.109375
+          0.131404,
+          -0.131404,
+          -0.131404
         ],
         [
-          0.109375,
-          -0.109375,
-          0.109375
+          0.131404,
+          -0.131404,
+          0.131404
         ],
         [
-          0.109375,
-          0.109375,
-          -0.109375
+          0.131404,
+          0.131404,
+          -0.131404
         ],
         [
-          0.109375,
-          0.109375,
-          0.109375
+          0.131404,
+          0.131404,
+          0.131404
         ]
       ],
-      "nodes": 99,
       "results": [
-        {
-          "result": "2",
-          "normal": [
-            1.0,
-            0.0,
-            0.0
-          ],
-          "restTurn": [
-            0.0,
-            0.0,
-            0.707107,
-            0.707107
-          ],
-          "restHeight": 0.2188,
-          "restMiddle": 0.1094,
-          "model": "Armory_Dice_D3_Rest_01"
-        },
-        {
-          "result": "2",
-          "normal": [
-            -1.0,
-            0.0,
-            0.0
-          ],
-          "restTurn": [
-            0.0,
-            0.0,
-            -0.707107,
-            0.707107
-          ],
-          "restHeight": 0.2188,
-          "restMiddle": 0.1094,
-          "model": "Armory_Dice_D3_Rest_02"
-        },
-        {
-          "result": "3",
-          "normal": [
-            0.0,
-            1.0,
-            0.0
-          ],
-          "restTurn": [
-            0.0,
-            0.0,
-            0.0,
-            1.0
-          ],
-          "restHeight": 0.2188,
-          "restMiddle": 0.1094,
-          "model": "Armory_Dice_D3_Rest_03"
-        },
-        {
-          "result": "3",
-          "normal": [
-            0.0,
-            -1.0,
-            0.0
-          ],
-          "restTurn": [
-            1.0,
-            0.0,
-            0.0,
-            0.0
-          ],
-          "restHeight": 0.2188,
-          "restMiddle": 0.1094,
-          "model": "Armory_Dice_D3_Rest_04"
-        },
-        {
-          "result": "1",
-          "normal": [
-            0.0,
-            0.0,
-            1.0
-          ],
-          "restTurn": [
-            -0.707107,
-            0.0,
-            0.0,
-            0.707107
-          ],
-          "restHeight": 0.2188,
-          "restMiddle": 0.1094,
-          "model": "Armory_Dice_D3_Rest_05"
-        },
         {
           "result": "1",
           "normal": [
@@ -155,96 +774,173 @@
             0.0,
             0.707107
           ],
-          "restHeight": 0.2188,
-          "restMiddle": 0.1094,
+          "restHeight": 0.2707,
+          "restMiddle": 0.1353,
+          "model": "Armory_Dice_D3_Rest_01"
+        },
+        {
+          "result": "1",
+          "normal": [
+            -0.0,
+            -0.0,
+            1.0
+          ],
+          "restTurn": [
+            -0.707107,
+            0.0,
+            0.0,
+            0.707107
+          ],
+          "restHeight": 0.2707,
+          "restMiddle": 0.1353,
+          "model": "Armory_Dice_D3_Rest_02"
+        },
+        {
+          "result": "2",
+          "normal": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "restTurn": [
+            0.0,
+            0.0,
+            -0.707107,
+            0.707107
+          ],
+          "restHeight": 0.2707,
+          "restMiddle": 0.1353,
+          "model": "Armory_Dice_D3_Rest_03"
+        },
+        {
+          "result": "2",
+          "normal": [
+            1.0,
+            -0.0,
+            -0.0
+          ],
+          "restTurn": [
+            0.0,
+            -0.0,
+            0.707107,
+            0.707107
+          ],
+          "restHeight": 0.2707,
+          "restMiddle": 0.1353,
+          "model": "Armory_Dice_D3_Rest_04"
+        },
+        {
+          "result": "3",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "restTurn": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "restHeight": 0.2707,
+          "restMiddle": 0.1353,
+          "model": "Armory_Dice_D3_Rest_05"
+        },
+        {
+          "result": "3",
+          "normal": [
+            -0.0,
+            -1.0,
+            -0.0
+          ],
+          "restTurn": [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "restHeight": 0.2707,
+          "restMiddle": 0.1353,
           "model": "Armory_Dice_D3_Rest_06"
         }
       ]
     },
     "D4": {
-      "colour": "red",
-      "glow": [
-        238,
-        84,
-        46
-      ],
       "model": "Armory_Dice_D4",
-      "texture": "Items/Armory_Dice/Armory_Dice_D4_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_D4_Texture_Dark.png",
-      "radius": 0.2242,
+      "scale": 0.931695,
+      "radius": 0.2995,
       "hull": [
         [
-          0.204192,
-          -0.07474,
-          0.054713
-        ],
-        [
-          -0.149479,
-          -0.07474,
-          0.149479
-        ],
-        [
-          -0.054713,
-          -0.07474,
-          -0.204192
+          0.0,
+          0.299536,
+          0.0
         ],
         [
           0.0,
-          0.224219,
-          -0.0
+          -0.099845,
+          -0.282405
+        ],
+        [
+          -0.24457,
+          -0.099845,
+          0.141203
+        ],
+        [
+          0.24457,
+          -0.099845,
+          0.141203
         ]
       ],
-      "nodes": 152,
       "results": [
         {
           "result": "1",
           "normal": [
-            0.910684,
+            0.816497,
             -0.333333,
-            0.244017
+            0.471405
           ],
           "restTurn": [
-            -0.211325,
+            -0.408248,
             0.0,
-            0.788675,
+            0.707107,
             0.57735
           ],
-          "restHeight": 0.2763,
-          "restMiddle": 0.0793,
+          "restHeight": 0.4004,
+          "restMiddle": 0.1042,
           "model": "Armory_Dice_D4_Rest_01"
-        },
-        {
-          "result": "3",
-          "normal": [
-            -0.666667,
-            -0.333333,
-            0.666667
-          ],
-          "restTurn": [
-            -0.57735,
-            0.0,
-            -0.57735,
-            0.57735
-          ],
-          "restHeight": 0.2763,
-          "restMiddle": 0.0793,
-          "model": "Armory_Dice_D4_Rest_02"
         },
         {
           "result": "2",
           "normal": [
-            -0.244017,
+            -0.816497,
             -0.333333,
-            -0.910684
+            0.471405
           ],
           "restTurn": [
-            0.788675,
+            -0.408248,
             0.0,
-            -0.211325,
+            -0.707107,
             0.57735
           ],
-          "restHeight": 0.2763,
-          "restMiddle": 0.0793,
+          "restHeight": 0.4004,
+          "restMiddle": 0.1042,
+          "model": "Armory_Dice_D4_Rest_02"
+        },
+        {
+          "result": "3",
+          "normal": [
+            0.0,
+            -0.333333,
+            -0.942809
+          ],
+          "restTurn": [
+            0.816496,
+            -0.0,
+            0.0,
+            0.57735
+          ],
+          "restHeight": 0.4004,
+          "restMiddle": 0.1042,
           "model": "Armory_Dice_D4_Rest_03"
         },
         {
@@ -252,91 +948,117 @@
           "normal": [
             0.0,
             1.0,
-            -0.0
-          ],
-          "restTurn": [
-            0.0,
-            -0.0,
-            0.0,
-            1.0
-          ],
-          "restHeight": 0.2756,
-          "restMiddle": 0.0786,
-          "model": "Armory_Dice_D4_Rest_04"
-        }
-      ]
-    },
-    "D6": {
-      "colour": "cyan",
-      "glow": [
-        52,
-        206,
-        214
-      ],
-      "model": "Armory_Dice_D6",
-      "texture": "Items/Armory_Dice/Armory_Dice_D6_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_D6_Texture_Dark.png",
-      "radius": 0.2273,
-      "hull": [
-        [
-          -0.13125,
-          -0.13125,
-          -0.13125
-        ],
-        [
-          -0.13125,
-          -0.13125,
-          0.13125
-        ],
-        [
-          -0.13125,
-          0.13125,
-          -0.13125
-        ],
-        [
-          -0.13125,
-          0.13125,
-          0.13125
-        ],
-        [
-          0.13125,
-          -0.13125,
-          -0.13125
-        ],
-        [
-          0.13125,
-          -0.13125,
-          0.13125
-        ],
-        [
-          0.13125,
-          0.13125,
-          -0.13125
-        ],
-        [
-          0.13125,
-          0.13125,
-          0.13125
-        ]
-      ],
-      "nodes": 103,
-      "results": [
-        {
-          "result": "3",
-          "normal": [
-            1.0,
-            0.0,
             0.0
           ],
           "restTurn": [
             0.0,
             0.0,
+            0.0,
+            1.0
+          ],
+          "restHeight": 0.4004,
+          "restMiddle": 0.1042,
+          "model": "Armory_Dice_D4_Rest_04"
+        }
+      ]
+    },
+    "D6": {
+      "model": "Armory_Dice_D6",
+      "scale": 0.70082,
+      "radius": 0.2276,
+      "hull": [
+        [
+          -0.131404,
+          -0.131404,
+          -0.131404
+        ],
+        [
+          -0.131404,
+          -0.131404,
+          0.131404
+        ],
+        [
+          -0.131404,
+          0.131404,
+          -0.131404
+        ],
+        [
+          -0.131404,
+          0.131404,
+          0.131404
+        ],
+        [
+          0.131404,
+          -0.131404,
+          -0.131404
+        ],
+        [
+          0.131404,
+          -0.131404,
+          0.131404
+        ],
+        [
+          0.131404,
+          0.131404,
+          -0.131404
+        ],
+        [
+          0.131404,
+          0.131404,
+          0.131404
+        ]
+      ],
+      "results": [
+        {
+          "result": "1",
+          "normal": [
+            -0.0,
+            -1.0,
+            -0.0
+          ],
+          "restTurn": [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "restHeight": 0.2694,
+          "restMiddle": 0.1347,
+          "model": "Armory_Dice_D6_Rest_01"
+        },
+        {
+          "result": "2",
+          "normal": [
+            -0.0,
+            -0.0,
+            1.0
+          ],
+          "restTurn": [
+            -0.707107,
+            0.0,
+            0.0,
+            0.707107
+          ],
+          "restHeight": 0.2694,
+          "restMiddle": 0.1347,
+          "model": "Armory_Dice_D6_Rest_02"
+        },
+        {
+          "result": "3",
+          "normal": [
+            1.0,
+            -0.0,
+            -0.0
+          ],
+          "restTurn": [
+            0.0,
+            -0.0,
             0.707107,
             0.707107
           ],
-          "restHeight": 0.2625,
-          "restMiddle": 0.1313,
-          "model": "Armory_Dice_D6_Rest_01"
+          "restHeight": 0.2694,
+          "restMiddle": 0.1347,
+          "model": "Armory_Dice_D6_Rest_03"
         },
         {
           "result": "4",
@@ -351,60 +1073,9 @@
             -0.707107,
             0.707107
           ],
-          "restHeight": 0.2625,
-          "restMiddle": 0.1313,
-          "model": "Armory_Dice_D6_Rest_02"
-        },
-        {
-          "result": "6",
-          "normal": [
-            0.0,
-            1.0,
-            0.0
-          ],
-          "restTurn": [
-            0.0,
-            0.0,
-            0.0,
-            1.0
-          ],
-          "restHeight": 0.2625,
-          "restMiddle": 0.1312,
-          "model": "Armory_Dice_D6_Rest_03"
-        },
-        {
-          "result": "1",
-          "normal": [
-            0.0,
-            -1.0,
-            0.0
-          ],
-          "restTurn": [
-            1.0,
-            0.0,
-            0.0,
-            0.0
-          ],
-          "restHeight": 0.2625,
-          "restMiddle": 0.1312,
+          "restHeight": 0.2694,
+          "restMiddle": 0.1347,
           "model": "Armory_Dice_D6_Rest_04"
-        },
-        {
-          "result": "2",
-          "normal": [
-            0.0,
-            0.0,
-            1.0
-          ],
-          "restTurn": [
-            -0.707107,
-            0.0,
-            0.0,
-            0.707107
-          ],
-          "restHeight": 0.2625,
-          "restMiddle": 0.1313,
-          "model": "Armory_Dice_D6_Rest_05"
         },
         {
           "result": "5",
@@ -419,1349 +1090,1326 @@
             0.0,
             0.707107
           ],
-          "restHeight": 0.2625,
-          "restMiddle": 0.1313,
+          "restHeight": 0.2694,
+          "restMiddle": 0.1347,
+          "model": "Armory_Dice_D6_Rest_05"
+        },
+        {
+          "result": "6",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "restTurn": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "restHeight": 0.2694,
+          "restMiddle": 0.1347,
           "model": "Armory_Dice_D6_Rest_06"
         }
       ]
     },
     "D8": {
-      "colour": "green",
-      "glow": [
-        112,
-        214,
-        74
-      ],
       "model": "Armory_Dice_D8",
-      "texture": "Items/Armory_Dice/Armory_Dice_D8_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_D8_Texture_Dark.png",
-      "radius": 0.2297,
+      "scale": 0.737865,
+      "radius": 0.2446,
       "hull": [
         [
-          0.048539,
-          -0.13261,
-          -0.181149
+          0.0,
+          0.24457,
+          0.0
         ],
         [
-          -0.048539,
-          0.13261,
-          0.181149
+          0.0,
+          -0.24457,
+          0.0
         ],
         [
-          0.13261,
-          -0.13261,
-          0.13261
+          0.172937,
+          0.0,
+          0.172937
         ],
         [
-          -0.13261,
-          0.13261,
-          -0.13261
+          0.172937,
+          0.0,
+          -0.172937
         ],
         [
-          -0.181149,
-          -0.13261,
-          0.048539
+          -0.172937,
+          0.0,
+          -0.172937
         ],
         [
-          0.181149,
-          0.13261,
-          -0.048539
+          -0.172937,
+          0.0,
+          0.172937
         ]
       ],
-      "nodes": 152,
       "results": [
         {
           "result": "1",
           "normal": [
             0.0,
-            -1.0,
-            0.0
+            -0.57735,
+            -0.816497
           ],
           "restTurn": [
-            1.0,
-            0.0,
-            0.0,
-            0.0
-          ],
-          "restHeight": 0.2727,
-          "restMiddle": 0.1364,
-          "model": "Armory_Dice_D8_Rest_01"
-        },
-        {
-          "result": "4",
-          "normal": [
-            0.910684,
-            -0.333333,
-            -0.244017
-          ],
-          "restTurn": [
-            0.211325,
+            0.888074,
             -0.0,
-            0.788675,
-            0.57735
+            0.0,
+            0.459701
           ],
-          "restHeight": 0.2727,
-          "restMiddle": 0.1364,
-          "model": "Armory_Dice_D8_Rest_02"
+          "restHeight": 0.2893,
+          "restMiddle": 0.1447,
+          "model": "Armory_Dice_D8_Rest_01"
         },
         {
           "result": "2",
           "normal": [
-            -0.666667,
-            -0.333333,
-            -0.666667
-          ],
-          "restTurn": [
-            0.57735,
-            0.0,
+            -0.816497,
             -0.57735,
-            0.57735
-          ],
-          "restHeight": 0.2727,
-          "restMiddle": 0.1364,
-          "model": "Armory_Dice_D8_Rest_03"
-        },
-        {
-          "result": "6",
-          "normal": [
-            0.244017,
-            0.333333,
-            -0.910684
+            -0.0
           ],
           "restTurn": [
-            0.557678,
-            -0.0,
-            0.149429,
-            0.816497
+            0.0,
+            0.0,
+            -0.888074,
+            0.459701
           ],
-          "restHeight": 0.2727,
-          "restMiddle": 0.1364,
-          "model": "Armory_Dice_D8_Rest_04"
+          "restHeight": 0.2893,
+          "restMiddle": 0.1447,
+          "model": "Armory_Dice_D8_Rest_02"
         },
         {
           "result": "3",
           "normal": [
-            -0.244017,
-            -0.333333,
-            0.910684
-          ],
-          "restTurn": [
-            -0.788675,
-            0.0,
-            -0.211325,
-            0.57735
-          ],
-          "restHeight": 0.2727,
-          "restMiddle": 0.1364,
-          "model": "Armory_Dice_D8_Rest_05"
-        },
-        {
-          "result": "7",
-          "normal": [
-            0.666667,
-            0.333333,
-            0.666667
-          ],
-          "restTurn": [
-            -0.408248,
-            0.0,
-            0.408248,
+            -0.0,
+            -0.57735,
             0.816497
           ],
-          "restHeight": 0.2727,
-          "restMiddle": 0.1364,
-          "model": "Armory_Dice_D8_Rest_06"
+          "restTurn": [
+            -0.888074,
+            0.0,
+            0.0,
+            0.459701
+          ],
+          "restHeight": 0.2893,
+          "restMiddle": 0.1447,
+          "model": "Armory_Dice_D8_Rest_03"
+        },
+        {
+          "result": "4",
+          "normal": [
+            0.816497,
+            -0.57735,
+            -0.0
+          ],
+          "restTurn": [
+            0.0,
+            -0.0,
+            0.888074,
+            0.459701
+          ],
+          "restHeight": 0.2893,
+          "restMiddle": 0.1447,
+          "model": "Armory_Dice_D8_Rest_04"
         },
         {
           "result": "5",
           "normal": [
-            -0.910684,
-            0.333333,
-            0.244017
+            -0.816497,
+            0.57735,
+            -0.0
           ],
           "restTurn": [
-            -0.149429,
             0.0,
-            -0.557678,
-            0.816497
+            0.0,
+            -0.459701,
+            0.888074
           ],
-          "restHeight": 0.2727,
-          "restMiddle": 0.1364,
+          "restHeight": 0.2893,
+          "restMiddle": 0.1447,
+          "model": "Armory_Dice_D8_Rest_05"
+        },
+        {
+          "result": "6",
+          "normal": [
+            0.0,
+            0.57735,
+            -0.816497
+          ],
+          "restTurn": [
+            0.459701,
+            -0.0,
+            0.0,
+            0.888074
+          ],
+          "restHeight": 0.2893,
+          "restMiddle": 0.1447,
+          "model": "Armory_Dice_D8_Rest_06"
+        },
+        {
+          "result": "7",
+          "normal": [
+            0.816497,
+            0.57735,
+            0.0
+          ],
+          "restTurn": [
+            0.0,
+            0.0,
+            0.459701,
+            0.888074
+          ],
+          "restHeight": 0.2893,
+          "restMiddle": 0.1447,
           "model": "Armory_Dice_D8_Rest_07"
         },
         {
           "result": "8",
           "normal": [
             -0.0,
-            1.0,
-            -0.0
+            0.57735,
+            0.816497
           ],
           "restTurn": [
-            0.0,
+            -0.459701,
             0.0,
             -0.0,
-            1.0
+            0.888074
           ],
-          "restHeight": 0.2727,
-          "restMiddle": 0.1364,
+          "restHeight": 0.2893,
+          "restMiddle": 0.1447,
           "model": "Armory_Dice_D8_Rest_08"
         }
       ]
     },
     "D10": {
-      "colour": "blue",
-      "glow": [
-        72,
-        128,
-        244
-      ],
       "model": "Armory_Dice_D10",
-      "texture": "Items/Armory_Dice/Armory_Dice_D10_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_D10_Texture_Dark.png",
-      "radius": 0.257,
+      "scale": 0.483944,
+      "radius": 0.3209,
       "hull": [
         [
-          0.010144,
-          -0.108029,
-          -0.09605
+          0.0,
+          0.320865,
+          0.0
         ],
         [
-          -0.087285,
-          -0.09674,
-          -0.063416
+          0.0,
+          -0.320865,
+          0.0
         ],
         [
-          -0.088215,
-          -0.108029,
-          0.039329
+          0.0,
+          -0.033875,
+          0.177698
         ],
         [
-          -0.118609,
-          -0.018525,
-          0.081164
+          0.169001,
+          -0.033875,
+          0.054912
         ],
         [
-          -0.040539,
-          0.018525,
-          0.137885
+          0.104448,
+          -0.033875,
+          -0.143761
         ],
         [
-          -0.010144,
-          0.108029,
-          0.09605
+          -0.104448,
+          -0.033875,
+          -0.143761
         ],
         [
-          0.087285,
-          0.09674,
-          0.063416
+          -0.169001,
+          -0.033875,
+          0.054912
         ],
         [
-          0.088215,
-          0.108029,
-          -0.039329
+          0.104448,
+          0.033875,
+          0.143761
         ],
         [
-          0.118609,
-          0.018525,
-          -0.081164
+          0.169001,
+          0.033875,
+          -0.054912
         ],
         [
-          0.040539,
-          -0.018525,
-          -0.137885
+          0.0,
+          0.033875,
+          -0.177698
         ],
         [
-          0.165355,
-          -0.155852,
-          0.120138
+          -0.169001,
+          0.033875,
+          -0.054912
         ],
         [
-          -0.165355,
-          0.155852,
-          -0.120138
+          -0.104448,
+          0.033875,
+          0.143761
         ]
       ],
-      "nodes": 120,
       "results": [
         {
           "result": "0",
           "normal": [
-            -0.150468,
-            -0.982552,
-            -0.109321
+            -0.525536,
+            -0.447876,
+            0.723339
           ],
           "restTurn": [
-            0.585216,
+            -0.688349,
             0.0,
-            -0.80548,
-            0.093403
+            -0.500114,
+            0.525416
           ],
-          "restHeight": 0.236,
-          "restMiddle": 0.118,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D10_Rest_01"
         },
         {
-          "result": "4",
+          "result": "1",
           "normal": [
-            -0.334062,
-            -0.303625,
-            -0.892309
+            0.525536,
+            -0.447876,
+            0.723339
           ],
           "restTurn": [
-            0.756099,
+            -0.688349,
             0.0,
-            -0.283067,
-            0.590074
+            0.500114,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D10_Rest_02"
         },
         {
           "result": "2",
           "normal": [
-            0.652411,
-            -0.491276,
-            -0.577068
+            -0.0,
+            -0.447876,
+            -0.894096
           ],
           "restTurn": [
-            0.572099,
-            -0.0,
-            0.646793,
-            0.504343
+            0.850845,
+            0.0,
+            0.0,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D10_Rest_03"
         },
         {
           "result": "3",
           "normal": [
-            -0.951867,
-            -0.303625,
-            -0.041973
+            -0.850336,
+            -0.447876,
+            -0.276291
           ],
           "restTurn": [
-            0.035566,
+            0.262926,
             0.0,
-            -0.806565,
-            0.590074
+            -0.809202,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D10_Rest_04"
         },
         {
-          "result": "1",
+          "result": "4",
           "normal": [
-            -0.347219,
-            -0.491276,
-            0.798804
+            0.850336,
+            -0.447876,
+            -0.276291
           ],
           "restTurn": [
-            -0.791925,
-            0.0,
-            -0.344229,
-            0.504343
+            0.262926,
+            -0.0,
+            0.809202,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D10_Rest_05"
-        },
-        {
-          "result": "7",
-          "normal": [
-            -0.652411,
-            0.491276,
-            0.577068
-          ],
-          "restTurn": [
-            -0.334144,
-            0.0,
-            -0.37777,
-            0.863503
-          ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
-          "model": "Armory_Dice_D10_Rest_06"
         },
         {
           "result": "5",
           "normal": [
-            0.334062,
-            0.303625,
-            0.892309
+            -0.850336,
+            0.447876,
+            0.276291
           ],
           "restTurn": [
-            -0.552616,
+            -0.162363,
             0.0,
-            0.206888,
-            0.807349
+            -0.4997,
+            0.850845
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
-          "model": "Armory_Dice_D10_Rest_07"
-        },
-        {
-          "result": "9",
-          "normal": [
-            0.150468,
-            0.982552,
-            0.109321
-          ],
-          "restTurn": [
-            -0.054901,
-            0.0,
-            0.075564,
-            0.995628
-          ],
-          "restHeight": 0.236,
-          "restMiddle": 0.118,
-          "model": "Armory_Dice_D10_Rest_08"
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D10_Rest_06"
         },
         {
           "result": "6",
           "normal": [
-            0.951867,
-            0.303625,
-            0.041973
+            0.850336,
+            0.447876,
+            0.276291
           ],
           "restTurn": [
-            -0.025994,
+            -0.162363,
             0.0,
-            0.589501,
-            0.807349
+            0.4997,
+            0.850845
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
-          "model": "Armory_Dice_D10_Rest_09"
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D10_Rest_07"
+        },
+        {
+          "result": "7",
+          "normal": [
+            0.0,
+            0.447876,
+            0.894096
+          ],
+          "restTurn": [
+            -0.525416,
+            0.0,
+            0.0,
+            0.850845
+          ],
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D10_Rest_08"
         },
         {
           "result": "8",
           "normal": [
-            0.347219,
-            0.491276,
-            -0.798804
+            -0.525536,
+            0.447876,
+            -0.723339
           ],
           "restTurn": [
-            0.462536,
-            -0.0,
-            0.201052,
-            0.863503
+            0.425071,
+            0.0,
+            -0.308832,
+            0.850845
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D10_Rest_09"
+        },
+        {
+          "result": "9",
+          "normal": [
+            0.525536,
+            0.447876,
+            -0.723339
+          ],
+          "restTurn": [
+            0.425071,
+            -0.0,
+            0.308832,
+            0.850845
+          ],
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D10_Rest_10"
         }
       ]
     },
     "D20": {
-      "colour": "purple",
-      "glow": [
-        186,
-        78,
-        232
-      ],
       "model": "Armory_Dice_D20",
-      "texture": "Items/Armory_Dice/Armory_Dice_D20_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_D20_Texture_Dark.png",
-      "radius": 0.2078,
+      "scale": 0.7,
+      "radius": 0.208,
       "hull": [
         [
-          0.100435,
-          -0.165139,
-          -0.076341
+          0.0,
+          0.208044,
+          0.0
         ],
         [
-          0.015896,
-          -0.165139,
-          0.12515
+          0.0,
+          -0.208044,
+          0.0
         ],
         [
-          -0.116331,
-          -0.165139,
-          -0.048808
+          0.109375,
+          0.09304,
+          0.150542
         ],
         [
-          0.02572,
-          0.038984,
-          0.202496
+          0.176972,
+          0.09304,
+          -0.057502
         ],
         [
-          -0.188227,
-          0.038984,
-          -0.078974
+          0.0,
+          0.09304,
+          -0.18608
         ],
         [
-          0.162507,
-          0.038984,
-          -0.123523
+          -0.176972,
+          0.09304,
+          -0.057502
         ],
         [
-          -0.02572,
-          -0.038984,
-          -0.202496
+          -0.109375,
+          0.09304,
+          0.150542
         ],
         [
-          0.188227,
-          -0.038984,
-          0.078974
+          0.0,
+          -0.09304,
+          0.18608
         ],
         [
-          -0.162507,
-          -0.038984,
-          0.123523
+          0.176972,
+          -0.09304,
+          0.057502
         ],
         [
-          -0.100435,
-          0.165139,
-          0.076341
+          0.109375,
+          -0.09304,
+          -0.150542
         ],
         [
-          -0.015896,
-          0.165139,
-          -0.12515
+          -0.109375,
+          -0.09304,
+          -0.150542
         ],
         [
-          0.116331,
-          0.165139,
-          0.048808
+          -0.176972,
+          -0.09304,
+          0.057502
         ]
       ],
-      "nodes": 255,
       "results": [
         {
           "result": "1",
           "normal": [
-            0.0,
-            -1.0,
-            0.0
+            -0.0,
+            -0.794654,
+            -0.607062
           ],
           "restTurn": [
-            1.0,
+            0.947274,
             0.0,
             0.0,
-            0.0
+            0.320426
           ],
-          "restHeight": 0.3353,
-          "restMiddle": 0.1676,
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
           "model": "Armory_Dice_D20_Rest_01"
-        },
-        {
-          "result": "3",
-          "normal": [
-            0.61475,
-            -0.745356,
-            0.257928
-          ],
-          "restTurn": [
-            -0.361424,
-            0.0,
-            0.861424,
-            0.356822
-          ],
-          "restHeight": 0.336,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_02"
         },
         {
           "result": "2",
           "normal": [
-            -0.084003,
-            -0.745356,
-            -0.661353
+            -0.57735,
+            -0.794654,
+            -0.187592
           ],
           "restTurn": [
-            0.926727,
+            0.292723,
             0.0,
-            -0.11771,
-            0.356822
+            -0.900911,
+            0.320426
           ],
-          "restHeight": 0.336,
-          "restMiddle": 0.168,
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_02"
+        },
+        {
+          "result": "3",
+          "normal": [
+            -0.356822,
+            -0.794655,
+            0.491123
+          ],
+          "restTurn": [
+            -0.76636,
+            0.0,
+            -0.556794,
+            0.320426
+          ],
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
           "model": "Armory_Dice_D20_Rest_03"
-        },
-        {
-          "result": "6",
-          "normal": [
-            0.478831,
-            -0.333333,
-            -0.812164
-          ],
-          "restTurn": [
-            0.703355,
-            -0.0,
-            0.414679,
-            0.57735
-          ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_04"
-        },
-        {
-          "result": "7",
-          "normal": [
-            0.910684,
-            -0.333333,
-            -0.244017
-          ],
-          "restTurn": [
-            0.211325,
-            -0.0,
-            0.788675,
-            0.57735
-          ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_05"
         },
         {
           "result": "4",
           "normal": [
-            -0.530747,
-            -0.745356,
-            0.403425
+            0.356822,
+            -0.794655,
+            0.491123
           ],
           "restTurn": [
-            -0.565303,
+            -0.76636,
             0.0,
-            -0.743714,
-            0.356822
+            0.556794,
+            0.320426
           ],
-          "restHeight": 0.336,
-          "restMiddle": 0.168,
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_04"
+        },
+        {
+          "result": "5",
+          "normal": [
+            0.57735,
+            -0.794654,
+            -0.187592
+          ],
+          "restTurn": [
+            0.292723,
+            -0.0,
+            0.900911,
+            0.320426
+          ],
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_05"
+        },
+        {
+          "result": "6",
+          "normal": [
+            0.0,
+            -0.187592,
+            -0.982247
+          ],
+          "restTurn": [
+            0.770582,
+            -0.0,
+            0.0,
+            0.637341
+          ],
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
           "model": "Armory_Dice_D20_Rest_06"
         },
         {
-          "result": "10",
+          "result": "7",
           "normal": [
-            0.463939,
-            -0.333333,
-            0.820761
+            -0.934172,
+            -0.187592,
+            -0.303531
           ],
           "restTurn": [
-            -0.7108,
+            0.238123,
             0.0,
-            0.401783,
-            0.57735
+            -0.732867,
+            0.637341
           ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
           "model": "Armory_Dice_D20_Rest_07"
         },
         {
           "result": "8",
           "normal": [
-            -0.244017,
-            -0.333333,
-            0.910684
-          ],
-          "restTurn": [
-            -0.788675,
-            0.0,
-            -0.211325,
-            0.57735
-          ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_08"
-        },
-        {
-          "result": "5",
-          "normal": [
-            -0.666667,
-            -0.333333,
-            -0.666667
-          ],
-          "restTurn": [
-            0.57735,
-            0.0,
             -0.57735,
-            0.57735
+            -0.187592,
+            0.794654
           ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_09"
+          "restTurn": [
+            -0.623414,
+            0.0,
+            -0.452937,
+            0.637341
+          ],
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_08"
         },
         {
           "result": "9",
           "normal": [
-            -0.94277,
-            -0.333333,
-            -0.008597
+            0.57735,
+            -0.187592,
+            0.794654
           ],
           "restTurn": [
-            0.007446,
+            -0.623414,
             0.0,
-            -0.816463,
-            0.57735
+            0.452937,
+            0.637341
           ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_09"
+        },
+        {
+          "result": "10",
+          "normal": [
+            0.934172,
+            -0.187592,
+            -0.303531
+          ],
+          "restTurn": [
+            0.238123,
+            -0.0,
+            0.732867,
+            0.637341
+          ],
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
           "model": "Armory_Dice_D20_Rest_10"
-        },
-        {
-          "result": "16",
-          "normal": [
-            0.666667,
-            0.333333,
-            0.666667
-          ],
-          "restTurn": [
-            -0.408248,
-            0.0,
-            0.408248,
-            0.816497
-          ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_11"
-        },
-        {
-          "result": "15",
-          "normal": [
-            -0.478831,
-            0.333333,
-            0.812164
-          ],
-          "restTurn": [
-            -0.497347,
-            0.0,
-            -0.293223,
-            0.816497
-          ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_12"
-        },
-        {
-          "result": "19",
-          "normal": [
-            0.084003,
-            0.745356,
-            0.661353
-          ],
-          "restTurn": [
-            -0.353978,
-            0.0,
-            0.044961,
-            0.934172
-          ],
-          "restHeight": 0.336,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_13"
         },
         {
           "result": "11",
           "normal": [
-            -0.463939,
-            0.333333,
-            -0.820761
+            -0.934172,
+            0.187592,
+            0.303531
           ],
           "restTurn": [
-            0.502612,
+            -0.196949,
             0.0,
-            -0.284104,
-            0.816497
+            -0.606148,
+            0.770582
           ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_14"
-        },
-        {
-          "result": "14",
-          "normal": [
-            -0.910684,
-            0.333333,
-            0.244017
-          ],
-          "restTurn": [
-            -0.149429,
-            0.0,
-            -0.557678,
-            0.816497
-          ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_15"
-        },
-        {
-          "result": "18",
-          "normal": [
-            -0.61475,
-            0.745356,
-            -0.257928
-          ],
-          "restTurn": [
-            0.138052,
-            0.0,
-            -0.329035,
-            0.934172
-          ],
-          "restHeight": 0.336,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_16"
-        },
-        {
-          "result": "13",
-          "normal": [
-            0.244017,
-            0.333333,
-            -0.910684
-          ],
-          "restTurn": [
-            0.557678,
-            -0.0,
-            0.149429,
-            0.816497
-          ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_17"
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_11"
         },
         {
           "result": "12",
           "normal": [
-            0.94277,
-            0.333333,
-            0.008597
+            -0.57735,
+            0.187592,
+            -0.794654
           ],
           "restTurn": [
-            -0.005265,
+            0.51562,
             0.0,
-            0.577326,
-            0.816497
+            -0.37462,
+            0.770582
           ],
-          "restHeight": 0.3361,
-          "restMiddle": 0.168,
-          "model": "Armory_Dice_D20_Rest_18"
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_12"
+        },
+        {
+          "result": "13",
+          "normal": [
+            0.57735,
+            0.187592,
+            -0.794654
+          ],
+          "restTurn": [
+            0.51562,
+            -0.0,
+            0.37462,
+            0.770582
+          ],
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_13"
+        },
+        {
+          "result": "14",
+          "normal": [
+            0.934172,
+            0.187592,
+            0.303531
+          ],
+          "restTurn": [
+            -0.196949,
+            0.0,
+            0.606148,
+            0.770582
+          ],
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_14"
+        },
+        {
+          "result": "15",
+          "normal": [
+            -0.0,
+            0.187592,
+            0.982247
+          ],
+          "restTurn": [
+            -0.637341,
+            0.0,
+            -0.0,
+            0.770582
+          ],
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_15"
+        },
+        {
+          "result": "16",
+          "normal": [
+            -0.57735,
+            0.794654,
+            0.187592
+          ],
+          "restTurn": [
+            -0.099017,
+            0.0,
+            -0.304743,
+            0.947274
+          ],
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_16"
         },
         {
           "result": "17",
           "normal": [
-            0.530747,
-            0.745356,
-            -0.403425
+            -0.356822,
+            0.794655,
+            -0.491123
           ],
           "restTurn": [
-            0.215927,
-            -0.0,
-            0.284073,
-            0.934172
+            0.25923,
+            0.0,
+            -0.188342,
+            0.947274
           ],
-          "restHeight": 0.336,
-          "restMiddle": 0.168,
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_17"
+        },
+        {
+          "result": "18",
+          "normal": [
+            0.356822,
+            0.794655,
+            -0.491123
+          ],
+          "restTurn": [
+            0.25923,
+            -0.0,
+            0.188342,
+            0.947274
+          ],
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
+          "model": "Armory_Dice_D20_Rest_18"
+        },
+        {
+          "result": "19",
+          "normal": [
+            0.57735,
+            0.794654,
+            0.187592
+          ],
+          "restTurn": [
+            -0.099017,
+            0.0,
+            0.304743,
+            0.947274
+          ],
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
           "model": "Armory_Dice_D20_Rest_19"
         },
         {
           "result": "20",
           "normal": [
             -0.0,
-            1.0,
-            -0.0
+            0.794654,
+            0.607062
           ],
           "restTurn": [
-            0.0,
+            -0.320426,
             0.0,
             -0.0,
-            1.0
+            0.947274
           ],
-          "restHeight": 0.3353,
-          "restMiddle": 0.1676,
+          "restHeight": 0.3372,
+          "restMiddle": 0.1686,
           "model": "Armory_Dice_D20_Rest_20"
         }
       ]
     },
     "D100_Tens": {
-      "colour": "yellow",
-      "glow": [
-        240,
-        206,
-        62
-      ],
       "model": "Armory_Dice_D100_Tens",
-      "texture": "Items/Armory_Dice/Armory_Dice_D100_Tens_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_D100_Tens_Texture_Dark.png",
-      "radius": 0.257,
+      "scale": 0.483944,
+      "radius": 0.3209,
       "hull": [
         [
-          0.010144,
-          -0.108029,
-          -0.09605
+          0.0,
+          0.320865,
+          0.0
         ],
         [
-          -0.087285,
-          -0.09674,
-          -0.063416
+          0.0,
+          -0.320865,
+          0.0
         ],
         [
-          -0.088215,
-          -0.108029,
-          0.039329
+          0.0,
+          -0.033875,
+          0.177698
         ],
         [
-          -0.118609,
-          -0.018525,
-          0.081164
+          0.169001,
+          -0.033875,
+          0.054912
         ],
         [
-          -0.040539,
-          0.018525,
-          0.137885
+          0.104448,
+          -0.033875,
+          -0.143761
         ],
         [
-          -0.010144,
-          0.108029,
-          0.09605
+          -0.104448,
+          -0.033875,
+          -0.143761
         ],
         [
-          0.087285,
-          0.09674,
-          0.063416
+          -0.169001,
+          -0.033875,
+          0.054912
         ],
         [
-          0.088215,
-          0.108029,
-          -0.039329
+          0.104448,
+          0.033875,
+          0.143761
         ],
         [
-          0.118609,
-          0.018525,
-          -0.081164
+          0.169001,
+          0.033875,
+          -0.054912
         ],
         [
-          0.040539,
-          -0.018525,
-          -0.137885
+          0.0,
+          0.033875,
+          -0.177698
         ],
         [
-          0.165355,
-          -0.155852,
-          0.120138
+          -0.169001,
+          0.033875,
+          -0.054912
         ],
         [
-          -0.165355,
-          0.155852,
-          -0.120138
+          -0.104448,
+          0.033875,
+          0.143761
         ]
       ],
-      "nodes": 136,
       "results": [
         {
           "result": "00",
           "normal": [
-            -0.150468,
-            -0.982552,
-            -0.109321
+            -0.0,
+            -0.447876,
+            -0.894096
           ],
           "restTurn": [
-            0.585216,
+            0.850845,
             0.0,
-            -0.80548,
-            0.093403
+            0.0,
+            0.525416
           ],
-          "restHeight": 0.236,
-          "restMiddle": 0.118,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Tens_Rest_01"
         },
         {
-          "result": "40",
+          "result": "10",
           "normal": [
-            -0.334062,
-            -0.303625,
-            -0.892309
+            -0.850336,
+            -0.447876,
+            -0.276291
           ],
           "restTurn": [
-            0.756099,
+            0.262926,
             0.0,
-            -0.283067,
-            0.590074
+            -0.809202,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Tens_Rest_02"
         },
         {
           "result": "20",
           "normal": [
-            0.652411,
-            -0.491276,
-            -0.577068
+            -0.525536,
+            -0.447876,
+            0.723339
           ],
           "restTurn": [
-            0.572099,
-            -0.0,
-            0.646793,
-            0.504343
+            -0.688349,
+            0.0,
+            -0.500114,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Tens_Rest_03"
         },
         {
           "result": "30",
           "normal": [
-            -0.951867,
-            -0.303625,
-            -0.041973
+            0.525536,
+            -0.447876,
+            0.723339
           ],
           "restTurn": [
-            0.035566,
+            -0.688349,
             0.0,
-            -0.806565,
-            0.590074
+            0.500114,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Tens_Rest_04"
         },
         {
-          "result": "10",
+          "result": "40",
           "normal": [
-            -0.347219,
-            -0.491276,
-            0.798804
+            0.850336,
+            -0.447876,
+            -0.276291
           ],
           "restTurn": [
-            -0.791925,
-            0.0,
-            -0.344229,
-            0.504343
+            0.262926,
+            -0.0,
+            0.809202,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Tens_Rest_05"
-        },
-        {
-          "result": "70",
-          "normal": [
-            -0.652411,
-            0.491276,
-            0.577068
-          ],
-          "restTurn": [
-            -0.334144,
-            0.0,
-            -0.37777,
-            0.863503
-          ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
-          "model": "Armory_Dice_D100_Tens_Rest_06"
         },
         {
           "result": "50",
           "normal": [
-            0.334062,
-            0.303625,
-            0.892309
+            -0.850336,
+            0.447876,
+            0.276291
           ],
           "restTurn": [
-            -0.552616,
+            -0.162363,
             0.0,
-            0.206888,
-            0.807349
+            -0.4997,
+            0.850845
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
-          "model": "Armory_Dice_D100_Tens_Rest_07"
-        },
-        {
-          "result": "90",
-          "normal": [
-            0.150468,
-            0.982552,
-            0.109321
-          ],
-          "restTurn": [
-            -0.054901,
-            0.0,
-            0.075564,
-            0.995628
-          ],
-          "restHeight": 0.236,
-          "restMiddle": 0.118,
-          "model": "Armory_Dice_D100_Tens_Rest_08"
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D100_Tens_Rest_06"
         },
         {
           "result": "60",
           "normal": [
-            0.951867,
-            0.303625,
-            0.041973
+            -0.525536,
+            0.447876,
+            -0.723339
           ],
           "restTurn": [
-            -0.025994,
+            0.425071,
             0.0,
-            0.589501,
-            0.807349
+            -0.308832,
+            0.850845
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
-          "model": "Armory_Dice_D100_Tens_Rest_09"
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D100_Tens_Rest_07"
+        },
+        {
+          "result": "70",
+          "normal": [
+            0.525536,
+            0.447876,
+            -0.723339
+          ],
+          "restTurn": [
+            0.425071,
+            -0.0,
+            0.308832,
+            0.850845
+          ],
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D100_Tens_Rest_08"
         },
         {
           "result": "80",
           "normal": [
-            0.347219,
-            0.491276,
-            -0.798804
+            0.850336,
+            0.447876,
+            0.276291
           ],
           "restTurn": [
-            0.462536,
-            -0.0,
-            0.201052,
-            0.863503
+            -0.162363,
+            0.0,
+            0.4997,
+            0.850845
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D100_Tens_Rest_09"
+        },
+        {
+          "result": "90",
+          "normal": [
+            0.0,
+            0.447876,
+            0.894096
+          ],
+          "restTurn": [
+            -0.525416,
+            0.0,
+            0.0,
+            0.850845
+          ],
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Tens_Rest_10"
         }
       ]
     },
     "D100_Units": {
-      "colour": "pink",
-      "glow": [
-        242,
-        98,
-        156
-      ],
       "model": "Armory_Dice_D100_Units",
-      "texture": "Items/Armory_Dice/Armory_Dice_D100_Units_Texture.png",
-      "darkTexture": "Items/Armory_Dice/Armory_Dice_D100_Units_Texture_Dark.png",
-      "radius": 0.257,
+      "scale": 0.483944,
+      "radius": 0.3209,
       "hull": [
         [
-          0.010144,
-          -0.108029,
-          -0.09605
+          0.0,
+          0.320865,
+          0.0
         ],
         [
-          -0.087285,
-          -0.09674,
-          -0.063416
+          0.0,
+          -0.320865,
+          0.0
         ],
         [
-          -0.088215,
-          -0.108029,
-          0.039329
+          0.0,
+          -0.033875,
+          0.177698
         ],
         [
-          -0.118609,
-          -0.018525,
-          0.081164
+          0.169001,
+          -0.033875,
+          0.054912
         ],
         [
-          -0.040539,
-          0.018525,
-          0.137885
+          0.104448,
+          -0.033875,
+          -0.143761
         ],
         [
-          -0.010144,
-          0.108029,
-          0.09605
+          -0.104448,
+          -0.033875,
+          -0.143761
         ],
         [
-          0.087285,
-          0.09674,
-          0.063416
+          -0.169001,
+          -0.033875,
+          0.054912
         ],
         [
-          0.088215,
-          0.108029,
-          -0.039329
+          0.104448,
+          0.033875,
+          0.143761
         ],
         [
-          0.118609,
-          0.018525,
-          -0.081164
+          0.169001,
+          0.033875,
+          -0.054912
         ],
         [
-          0.040539,
-          -0.018525,
-          -0.137885
+          0.0,
+          0.033875,
+          -0.177698
         ],
         [
-          0.165355,
-          -0.155852,
-          0.120138
+          -0.169001,
+          0.033875,
+          -0.054912
         ],
         [
-          -0.165355,
-          0.155852,
-          -0.120138
+          -0.104448,
+          0.033875,
+          0.143761
         ]
       ],
-      "nodes": 120,
       "results": [
         {
           "result": "0",
           "normal": [
-            -0.150468,
-            -0.982552,
-            -0.109321
+            -0.0,
+            -0.447876,
+            -0.894096
           ],
           "restTurn": [
-            0.585216,
+            0.850845,
             0.0,
-            -0.80548,
-            0.093403
+            0.0,
+            0.525416
           ],
-          "restHeight": 0.236,
-          "restMiddle": 0.118,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Units_Rest_01"
         },
         {
-          "result": "4",
+          "result": "1",
           "normal": [
-            -0.334062,
-            -0.303625,
-            -0.892309
+            -0.850336,
+            -0.447876,
+            -0.276291
           ],
           "restTurn": [
-            0.756099,
+            0.262926,
             0.0,
-            -0.283067,
-            0.590074
+            -0.809202,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Units_Rest_02"
         },
         {
           "result": "2",
           "normal": [
-            0.652411,
-            -0.491276,
-            -0.577068
+            -0.525536,
+            -0.447876,
+            0.723339
           ],
           "restTurn": [
-            0.572099,
-            -0.0,
-            0.646793,
-            0.504343
+            -0.688349,
+            0.0,
+            -0.500114,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Units_Rest_03"
         },
         {
           "result": "3",
           "normal": [
-            -0.951867,
-            -0.303625,
-            -0.041973
+            0.525536,
+            -0.447876,
+            0.723339
           ],
           "restTurn": [
-            0.035566,
+            -0.688349,
             0.0,
-            -0.806565,
-            0.590074
+            0.500114,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Units_Rest_04"
         },
         {
-          "result": "1",
+          "result": "4",
           "normal": [
-            -0.347219,
-            -0.491276,
-            0.798804
+            0.850336,
+            -0.447876,
+            -0.276291
           ],
           "restTurn": [
-            -0.791925,
-            0.0,
-            -0.344229,
-            0.504343
+            0.262926,
+            -0.0,
+            0.809202,
+            0.525416
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Units_Rest_05"
-        },
-        {
-          "result": "7",
-          "normal": [
-            -0.652411,
-            0.491276,
-            0.577068
-          ],
-          "restTurn": [
-            -0.334144,
-            0.0,
-            -0.37777,
-            0.863503
-          ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
-          "model": "Armory_Dice_D100_Units_Rest_06"
         },
         {
           "result": "5",
           "normal": [
-            0.334062,
-            0.303625,
-            0.892309
+            -0.850336,
+            0.447876,
+            0.276291
           ],
           "restTurn": [
-            -0.552616,
+            -0.162363,
             0.0,
-            0.206888,
-            0.807349
+            -0.4997,
+            0.850845
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
-          "model": "Armory_Dice_D100_Units_Rest_07"
-        },
-        {
-          "result": "9",
-          "normal": [
-            0.150468,
-            0.982552,
-            0.109321
-          ],
-          "restTurn": [
-            -0.054901,
-            0.0,
-            0.075564,
-            0.995628
-          ],
-          "restHeight": 0.236,
-          "restMiddle": 0.118,
-          "model": "Armory_Dice_D100_Units_Rest_08"
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D100_Units_Rest_06"
         },
         {
           "result": "6",
           "normal": [
-            0.951867,
-            0.303625,
-            0.041973
+            -0.525536,
+            0.447876,
+            -0.723339
           ],
           "restTurn": [
-            -0.025994,
+            0.425071,
             0.0,
-            0.589501,
-            0.807349
+            -0.308832,
+            0.850845
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
-          "model": "Armory_Dice_D100_Units_Rest_09"
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D100_Units_Rest_07"
+        },
+        {
+          "result": "7",
+          "normal": [
+            0.525536,
+            0.447876,
+            -0.723339
+          ],
+          "restTurn": [
+            0.425071,
+            -0.0,
+            0.308832,
+            0.850845
+          ],
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D100_Units_Rest_08"
         },
         {
           "result": "8",
           "normal": [
-            0.347219,
-            0.491276,
-            -0.798804
+            0.850336,
+            0.447876,
+            0.276291
           ],
           "restTurn": [
-            0.462536,
-            -0.0,
-            0.201052,
-            0.863503
+            -0.162363,
+            0.0,
+            0.4997,
+            0.850845
           ],
-          "restHeight": 0.2361,
-          "restMiddle": 0.1181,
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
+          "model": "Armory_Dice_D100_Units_Rest_09"
+        },
+        {
+          "result": "9",
+          "normal": [
+            0.0,
+            0.447876,
+            0.894096
+          ],
+          "restTurn": [
+            -0.525416,
+            0.0,
+            0.0,
+            0.850845
+          ],
+          "restHeight": 0.292,
+          "restMiddle": 0.146,
           "model": "Armory_Dice_D100_Units_Rest_10"
         }
       ]

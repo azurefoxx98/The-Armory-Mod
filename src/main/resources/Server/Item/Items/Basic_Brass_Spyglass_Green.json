@@ -1,0 +1,89 @@
+{
+  "PlayerAnimationsId": {
+    "Parent": "Handgun",
+    "Animations": {
+      "Consume": {
+        "ThirdPerson": "Characters/Animations/SpyGlassPlayer.blockyanim",
+        "Speed": 1,
+        "Looping": true
+      }
+    }
+  },
+  "Model": "Items/Spyglasses/Basic_Brass/Basic_Brass_Spyglass_Green.blockymodel",
+  "Texture": "Items/Spyglasses/Basic_Brass/Basic_Brass_Spyglass.png",
+  "Icon": "Icons/ItemsGenerated/Basic_Brass_Spyglass_Green.png",
+  "IconProperties": {
+    "Scale": 0.58823,
+    "Rotation": [
+      303,
+      25,
+      15
+    ],
+    "Translation": [
+      -10,
+      10
+    ]
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Charging",
+          "Effects": {
+            "ItemAnimationId": "Consume",
+            "ClearAnimationOnFinish": true,
+            "Zoom": {
+              "MagnificationMultiplier": 2,
+              "OverlayTexture": "ScreenEffects/Green_Crystal.png",
+              "MouseSensitivityMultiplier": 0.1,
+              "OverlayFade": false,
+              "ForcePerspective": "FirstPerson"
+            },
+            "WorldSoundEventId": "Spyglass_Use"
+          },
+          "HorizontalSpeedMultiplier": 0.5,
+          "AllowIndefiniteHold": true
+        }
+      ]
+    }
+  },
+  "Animation": "Items/Spyglasses/Basic_Brass/SpyglassOpen.blockyanim",
+  "UsePlayerAnimations": true,
+  "Utility": {
+    "Usable": true
+  },
+  "MaxStack": 1,
+  "Quality": "Rare",
+  "Recipe": {
+    "TimeSeconds": 1,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Copper",
+        "Quantity": 10
+      },
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Crystal_Green",
+        "Quantity": 1
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Arcanebench",
+        "Type": "Crafting",
+        "Categories": [
+          "Arcane_Misc"
+        ]
+      }
+    ]
+  },
+  "SubCategory": "Spyglass",
+  "TranslationProperties": {
+    "Name": "server.items.Basic_Spyglass_Green.name",
+    "Description": "server.items.Basic_Spyglass.description"
+  },
+  "Categories": [ "ArmoryCategory.Spyglasses" ]
+}

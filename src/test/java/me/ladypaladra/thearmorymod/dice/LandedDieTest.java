@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LandedDieTest {
@@ -30,6 +31,12 @@ class LandedDieTest {
         assertFalse(copy.claim());
         assertEquals(64.0, copy.restY());
         assertEquals(1.25, copy.restYaw());
+        assertEquals(THROWN, copy.thrown());
+    }
+
+    @Test
+    void aDieLandedBeforeTheLimitIsNoThrownItem() {
+        assertNull(new LandedDie().thrown());
     }
 
     @Test
@@ -40,6 +47,8 @@ class LandedDieTest {
     }
 
     private static LandedDie die() {
-        return new LandedDie("Armory_Dice_D20", "D20", 3, UUID.randomUUID(), null, 64.0, 1.25);
+        return new LandedDie("Armory_Dice_D20", "D20", 3, UUID.randomUUID(), null, THROWN, 64.0, 1.25);
     }
+
+    private static final UUID THROWN = UUID.randomUUID();
 }

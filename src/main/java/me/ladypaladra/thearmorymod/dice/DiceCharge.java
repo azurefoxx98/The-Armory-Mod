@@ -119,7 +119,7 @@ final class DiceCharge {
      */
     private static void flash(@Nonnull Ref<EntityStore> ref, @Nullable ItemStack held,
                               @Nonnull CommandBuffer<EntityStore> commandBuffer) {
-        if (held == null || DieType.byItemId(held.getItemId()) == null) {
+        if (held == null || DiceModule.item(held.getItemId()) == null) {
             return;
         }
         Vector3d hand = hand(ref, commandBuffer);

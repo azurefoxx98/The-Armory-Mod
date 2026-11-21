@@ -1,0 +1,120 @@
+{
+  "RenderMode": "Erosion",
+  "ParticleRotationInfluence": "Velocity",
+  "LinearFiltering": true,
+  "ParticleRotateWithSpawner": true,
+  "TrailSpawnerPositionMultiplier": 1,
+  "TrailSpawnerRotationMultiplier": 1,
+  "MaxConcurrentParticles": 1,
+  "ParticleLifeSpan": {
+    "Min": 3,
+    "Max": 3
+  },
+  "TotalParticles": {
+    "Min": 1,
+    "Max": 1
+  },
+  "Particle": {
+    "Texture": "Particles/HornBlast/Twirl.png",
+    "ScaleRatioConstraint": "OneToOne",
+    "UVOption": "RandomFlipU",
+    "Animation": {
+      "0": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        },
+        "Scale": {
+          "X": {
+            "Min": 0.1,
+            "Max": 0.1
+          },
+          "Y": {
+            "Min": 0.1,
+            "Max": 0.1
+          }
+        },
+        "Opacity": 1.0,
+        "Color": "#feca91"
+      },
+      "45": {
+        "FrameIndex": {
+          "Min": 0,
+          "Max": 0
+        },
+        "Scale": {
+          "X": {
+            "Min": 8,
+            "Max": 8
+          },
+          "Y": {
+            "Min": 8,
+            "Max": 8
+          }
+        },
+        "Opacity": 0.5,
+        "Color": "#ff4a00",
+        "Rotation": {
+          "Z": {
+            "Min": 180,
+            "Max": 180
+          }
+        }
+      },
+      "100": {
+        "Opacity": 0.0,
+        "Scale": {
+          "X": {
+            "Min": 30,
+            "Max": 30
+          },
+          "Y": {
+            "Min": 30,
+            "Max": 30
+          }
+        },
+        "Color": "#392e2e",
+        "Rotation": {
+          "Z": {
+            "Min": 360,
+            "Max": 360
+          }
+        }
+      }
+    },
+    "InitialAnimationFrame": {
+      "FrameIndex": {
+        "Min": 0,
+        "Max": 0
+      },
+      "Scale": {
+        "X": {
+          "Min": 0.5,
+          "Max": 0.5
+        }
+      },
+      "Rotation": {
+        "Z": {
+          "Min": -360.0,
+          "Max": 360.0
+        }
+      },
+      "Color": "#ffffff",
+      "Opacity": 1
+    },
+    "SoftParticles": "Enable"
+  },
+  "SpawnBurst": false,
+  "SpawnRate": {
+    "Min": 1.5,
+    "Max": 1.5
+  },
+  "Attractors": [
+    {
+      "Radius": 30,
+      "LinearAcceleration": {
+        "Y": 30
+      }
+    }
+  ]
+}

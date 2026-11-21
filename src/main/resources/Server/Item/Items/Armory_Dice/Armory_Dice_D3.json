@@ -3,9 +3,9 @@
   "TranslationProperties": {
     "Name": "server.items.Armory_Dice_D3.name"
   },
-  "Quality": "Template",
+  "Quality": "Rare",
   "Model": "Items/Armory_Dice/Armory_Dice_D3_Held.blockymodel",
-  "Texture": "Items/Armory_Dice/Armory_Dice_D3_Texture.png",
+  "Texture": "Items/Armory_Dice/Armory_Dice_Texture_White.png",
   "Icon": "Icons/ItemsGenerated/Armory_Dice_D3.png",
   "ItemAppearanceConditions": {
     "Armory_Dice_Charge": [
@@ -15,7 +15,7 @@
           39
         ],
         "Model": "Items/Armory_Dice/Armory_Dice_D3_Held_Lit.blockymodel",
-        "Texture": "Items/Armory_Dice/Armory_Dice_D3_Texture_Charge_1.png",
+        "Texture": "Items/Armory_Dice/Armory_Dice_Texture_White_Charge_1.png",
         "Particles": [
           {
             "SystemId": "Armory_Dice_Charge_Faint_White",
@@ -46,7 +46,7 @@
           79
         ],
         "Model": "Items/Armory_Dice/Armory_Dice_D3_Held_Lit.blockymodel",
-        "Texture": "Items/Armory_Dice/Armory_Dice_D3_Texture_Charge_2.png",
+        "Texture": "Items/Armory_Dice/Armory_Dice_Texture_White_Charge_2.png",
         "Particles": [
           {
             "SystemId": "Armory_Dice_Charge_Gather_White",
@@ -77,7 +77,7 @@
           99
         ],
         "Model": "Items/Armory_Dice/Armory_Dice_D3_Held_Lit.blockymodel",
-        "Texture": "Items/Armory_Dice/Armory_Dice_D3_Texture_Charge_3.png",
+        "Texture": "Items/Armory_Dice/Armory_Dice_Texture_White_Charge_3.png",
         "Particles": [
           {
             "SystemId": "Armory_Dice_Charge_Swirl_White",
@@ -108,7 +108,7 @@
           100
         ],
         "Model": "Items/Armory_Dice/Armory_Dice_D3_Held_Lit.blockymodel",
-        "Texture": "Items/Armory_Dice/Armory_Dice_D3_Texture.png",
+        "Texture": "Items/Armory_Dice/Armory_Dice_Texture_White.png",
         "Particles": [
           {
             "SystemId": "Armory_Dice_Charge_Full_White",
@@ -134,5 +134,38 @@
         ]
       }
     ]
-  }
+  },
+  "Recipe": {
+    "Input": [
+      {
+        "ItemId": "Ingredient_Rune_Shard",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Rock_Gem_Diamond",
+        "Quantity": 1
+      },
+      {
+        "ItemId": "Rock_Stone_Cobble",
+        "Quantity": 2
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Arcanebench",
+        "Type": "Crafting",
+        "Categories": [
+          "Arcane_Misc"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 2
+  },
+  "SubCategory": "D3",
+  "ResourceTypes": [
+    {
+      "Id": "Resource_Armory_Dice_D3"
+    }
+  ]
 }

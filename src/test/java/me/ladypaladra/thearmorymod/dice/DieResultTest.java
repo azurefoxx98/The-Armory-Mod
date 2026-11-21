@@ -64,11 +64,12 @@ class DieResultTest {
     @Test
     void everyBandOfEveryDieHasItsNumberArt() throws IOException {
         DiceCatalog catalog = DiceCatalog.load();
-        for (DieType type : DieType.values()) {
-            String colour = catalog.shapesOf(type).get(0).colour();
+        for (DieItem item : catalog.items().values()) {
+            DieType type = item.type();
+            String light = item.colour(0).light();
             for (int v = 1; v <= type.sides(); v++) {
-                String texture = RollBand.of(v, type.sides()).numberTexture(colour);
-                assertNotNull(getClass().getResource("/Common/" + texture), "no art " + texture);
+                String texture = RollBand.of(v, type.sides()).numberTexture(light);
+                assertNotNull(getClass().getResource("/Common/" + texture), item.itemId() + ": no art " + texture);
             }
         }
     }

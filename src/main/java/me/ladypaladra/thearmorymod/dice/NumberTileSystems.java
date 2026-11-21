@@ -32,14 +32,14 @@ import java.util.Set;
 public final class NumberTileSystems {
 
     /**
-     * The tiles' size: one tile is 18 by 22 units, so at this scale a digit stands about 0.4 block tall.
+     * The digits' size: one digit is 12 by 21.6 units, so at this scale it stands about 0.4 block tall.
      */
     static final float SCALE = 1.2f;
 
     /**
-     * Blocks between the middles of two digits, a tile's width and a little air.
+     * Blocks between the middles of two digits: a glyph's 5 dots and one dot of air, 2.4 units a dot.
      */
-    static final double SPACING = 18.0 / 64.0 * SCALE * 1.08;
+    static final double SPACING = 6 * 2.4 / 64.0 * SCALE;
 
     /**
      * Blocks the number rises to above where it starts, and the eye height a viewer is faced at.

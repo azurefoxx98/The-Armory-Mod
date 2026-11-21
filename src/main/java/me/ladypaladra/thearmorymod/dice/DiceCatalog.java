@@ -9,6 +9,7 @@ import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,10 +38,54 @@ public final class DiceCatalog {
     private static final double UNIT_TOLERANCE = 1.0E-4;
 
     private final Map<String, DieShape> shapes;
+    private final Map<String, DieColour> colours;
+    private final Map<String, DieItem> items;
     private final Map<String, DieHull> hulls = new LinkedHashMap<>();
 
-    private DiceCatalog(@Nonnull Map<String, DieShape> shapes) {
+    private DiceCatalog(@Nonnull Map<String, DieShape> shapes, @Nonnull Map<String, DieColour> colours,
+                        @Nonnull Map<String, DieItem> items) {
         this.shapes = Collections.unmodifiableMap(shapes);
+        this.colours = Collections.unmodifiableMap(colours);
+        this.items = Collections.unmodifiableMap(items);
+    }
+
+    /**
+     * The dice item {@code itemId}, or null when the id is no die.
+     */
+    @Nullable
+    public DieItem item(@Nullable String itemId) {
+        return itemId != null ? items.get(itemId) : null;
+    }
+
+    @Nonnull
+    public Map<String, DieItem> items() {
+        return items;
+    }
+
+    @Nonnull
+    public Map<String, DieColour> colours() {
+        return colours;
+    }
+
+    /**
+     * The colour a die of shape {@code shapeKey} thrown from item {@code itemId} wears. An id no longer in the data (a
+     * die saved before its colour was removed) wears the colour its die is crafted in.
+     */
+    @Nonnull
+    public DieColour colourOf(@Nullable String itemId, @Nonnull String shapeKey) {
+        DieItem item = item(itemId);
+        if (item == null) {
+            for (DieType type : DieType.values()) {
+                if (type.shapeKeys().contains(shapeKey)) {
+                    item = items.get(type.itemId());
+                    break;
+                }
+            }
+        }
+        if (item == null) {
+            throw new IllegalArgumentException("No die shape " + shapeKey);
+        }
+        return item.colourOf(shapeKey);
     }
 
     /**
@@ -73,7 +118,30 @@ public final class DiceCatalog {
         for (Map.Entry<String, JsonElement> entry : dice.entrySet()) {
             shapes.put(entry.getKey(), readShape(entry.getKey(), entry.getValue().getAsJsonObject()));
         }
-        DiceCatalog catalog = new DiceCatalog(shapes);
+        Map<String, DieColour> colours = new LinkedHashMap<>();
+        for (Map.Entry<String, JsonElement> entry : root.getAsJsonObject("colours").entrySet()) {
+            JsonObject c = entry.getValue().getAsJsonObject();
+            JsonArray glow = c.getAsJsonArray("glow");
+            colours.put(entry.getKey(), new DieColour(entry.getKey(), c.get("art").getAsString(),
+                    c.get("light").getAsString(),
+                    new DieShape.Rgb(glow.get(0).getAsInt(), glow.get(1).getAsInt(), glow.get(2).getAsInt()),
+                    c.get("texture").getAsString(), c.get("darkTexture").getAsString()));
+        }
+        Map<String, DieItem> items = new LinkedHashMap<>();
+        for (Map.Entry<String, JsonElement> entry : root.getAsJsonObject("items").entrySet()) {
+            JsonObject i = entry.getValue().getAsJsonObject();
+            DieType type = DieType.valueOf(i.get("die").getAsString());
+            List<DieColour> worn = new ArrayList<>();
+            for (JsonElement key : i.getAsJsonArray("colours")) {
+                DieColour colour = colours.get(key.getAsString());
+                if (colour == null) {
+                    throw new IllegalStateException(entry.getKey() + " wears " + key + ", which is no colour");
+                }
+                worn.add(colour);
+            }
+            items.put(entry.getKey(), new DieItem(entry.getKey(), type, List.copyOf(worn)));
+        }
+        DiceCatalog catalog = new DiceCatalog(shapes, colours, items);
         catalog.check();
         return catalog;
     }
@@ -128,14 +196,9 @@ public final class DiceCatalog {
             JsonArray c = element.getAsJsonArray();
             corners.add(new Vector3d(c.get(0).getAsDouble(), c.get(1).getAsDouble(), c.get(2).getAsDouble()));
         }
-        JsonArray glow = json.getAsJsonArray("glow");
         return new DieShape(
                 key,
-                json.get("colour").getAsString(),
-                new DieShape.Rgb(glow.get(0).getAsInt(), glow.get(1).getAsInt(), glow.get(2).getAsInt()),
                 json.get("model").getAsString(),
-                json.get("texture").getAsString(),
-                json.get("darkTexture").getAsString(),
                 json.get("radius").getAsDouble(),
                 List.copyOf(corners),
                 List.copyOf(faces)
@@ -143,7 +206,19 @@ public final class DiceCatalog {
     }
 
     private void check() {
+        // Every item wears one colour per physical die it throws, and every die keeps its crafted item, the one its
+        // recipe makes and every die saved before the colours came wears.
+        for (DieItem item : items.values()) {
+            if (item.colours().size() != item.type().shapeKeys().size()) {
+                throw new IllegalStateException(item.itemId() + " wears " + item.colours().size() + " colours for "
+                        + item.type().shapeKeys().size() + " dice");
+            }
+        }
         for (DieType type : DieType.values()) {
+            DieItem crafted = items.get(type.itemId());
+            if (crafted == null || crafted.type() != type) {
+                throw new IllegalStateException(type + " has no crafted item " + type.itemId());
+            }
             List<DieShape> dice = shapesOf(type);
             for (DieShape shape : dice) {
                 int expected = expectedFaces(shape.key());

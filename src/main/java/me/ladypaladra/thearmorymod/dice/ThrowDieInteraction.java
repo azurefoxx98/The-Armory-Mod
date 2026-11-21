@@ -13,6 +13,7 @@ import com.hypixel.hytale.protocol.InteractionState;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.protocol.MovementStates;
 import com.hypixel.hytale.protocol.WaitForDataFrom;
+import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
 import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
@@ -92,7 +93,8 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
         CommandBuffer<EntityStore> commandBuffer = context.getCommandBuffer();
         ItemStack held = context.getHeldItem();
         ItemContainer container = context.getHeldItemContainer();
-        DieType dieType = held != null ? DieType.byItemId(held.getItemId()) : null;
+        DieItem item = held != null ? DiceModule.item(held.getItemId()) : null;
+        DieType dieType = item != null ? item.type() : null;
         DiceCatalog catalog = DiceModule.catalog();
         if (commandBuffer == null || dieType == null || container == null || catalog == null) {
             context.getState().state = InteractionState.Failed;
@@ -115,6 +117,13 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
         Vector3d carried = velocity != null ? new Vector3d(velocity.getClientVelocity()) : new Vector3d();
 
         int count = crouching ? Math.min(HANDFUL, held.getQuantity()) : 1;
+        // The owner's limit: the oldest dice they left lying come back to them to make room for these.
+        count = DiceLimit.makeRoom(DiceModule.ledger(), playerRef.getUuid(), count,
+                DiceLimit.of(node -> playerRef.hasPermission(node)), LandedDieSystems::recall);
+        if (count <= 0) {
+            context.getState().state = InteractionState.Failed;
+            return;
+        }
         var taken = container.removeItemStackFromSlot(context.getHeldItemSlot(), held, count);
         if (!taken.succeeded()) {
             context.getState().state = InteractionState.Failed;
@@ -136,13 +145,14 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
         double power = ThrowFeel.power(hold);
         List<DieShape> shapes = catalog.shapesOf(dieType);
         // The die's light leaves the hand with it: barely a glint for a drop, a burst for a hard throw.
-        DiceShow.particles("Armory_Dice_Release_" + RollBand.capitalise(shapes.get(0).colour()),
+        DiceShow.particles("Armory_Dice_Release_" + item.colour(0).light(),
                 DiceCharge.hand(thrower, commandBuffer), (float) (0.5 + 0.9 * power), commandBuffer);
-        ThrowGroup group = new ThrowGroup(dieType, playerRef.getUuid(), playerRef.getUsername(), count);
+        ThrowGroup group = new ThrowGroup(item, playerRef.getUuid(), playerRef.getUsername(), count);
         int dice = count * shapes.size();
         int slot = 0;
         for (int member = 0; member < count; member++) {
-            DiceModule.ledger().flying(group.ledgerId(member), group.owner(), dieType.itemId());
+            // The item as thrown, colour and all, so a die lost to the world comes back the colour it left.
+            DiceModule.ledger().thrown(group.ledgerId(member), group.owner(), item.itemId(), shapes.size());
             for (int part = 0; part < shapes.size(); part++) {
                 DieShape shape = shapes.get(part);
                 double offset = (slot - (dice - 1) / 2.0) * SPREAD;
@@ -187,12 +197,13 @@ public final class ThrowDieInteraction extends SimpleInstantInteraction {
             DieFlightSystems.lose(flight, store);
             return;
         }
-        // Before the die is first sent, so no player ever sees it with the wrong trail.
+        // Before the die is first sent, so no player ever sees it in the wrong colour or with the wrong trail. The
+        // projectile's model is the shape's, in the default purple: the die's own picture and trail replace them.
         ModelComponent drawn = store.getComponent(ref, ModelComponent.getComponentType());
-        String trail = ThrowFeel.trail(power);
-        if (drawn != null && trail != null) {
+        if (drawn != null) {
+            Model dressed = DiceShow.withTrail(drawn.getModel(), ThrowFeel.trail(power), flight.colour.light());
             store.putComponent(ref, ModelComponent.getComponentType(),
-                    new ModelComponent(DiceShow.withTrail(drawn.getModel(), trail)));
+                    new ModelComponent(DiceShow.retextured(dressed, flight.colour.texture())));
         }
         StandardPhysicsProvider physics = store.getComponent(ref, StandardPhysicsProvider.getComponentType());
         TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());

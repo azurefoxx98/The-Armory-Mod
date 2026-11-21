@@ -1,0 +1,105 @@
+{
+  "Model": "Items/Items/Horns/LongHorn.blockymodel",
+  "Texture": "Items/Items/Horns/LongHorn.png",
+  "MaxStack": 1,
+  "UsePlayerAnimations": true,
+  "PlayerAnimationsId": {
+    "Parent": "Handgun",
+    "Animations": {
+      "UseHorn": {
+        "FirstPerson": "Characters/Animations/HornBlow_FPS.blockyanim",
+        "ThirdPerson": "Characters/Animations/HornBlow.blockyanim",
+        "Speed": 1,
+        "Looping": false
+      }
+    }
+  },
+  "Utility": {
+    "Usable": true
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Simple",
+          "Effects": {
+            "WorldSoundEventId": "Horn_War_SFX",
+            "ItemAnimationId": "UseHorn",
+            "ClearAnimationOnFinish": true,
+            "ClearSoundEventOnFinish": false,
+            "Particles": [
+              {
+                "SystemId": "HornBlast_VFX",
+                "TargetEntityPart": "Self",
+                "Scale": 0.5,
+                "TargetNodeName": "Emitter",
+                "Color": "#ffffff"
+              }
+            ],
+            "FirstPersonParticles": [
+              {
+                "SystemId": "HornBlast_VFX",
+                "TargetEntityPart": "Self",
+                "Scale": 0.1,
+                "TargetNodeName": "Emitter",
+                "Color": "#ffffff"
+              }
+            ]
+          },
+          "RunTime": 3,
+          "HorizontalSpeedMultiplier": 0.5,
+          "OnItemChangeBehavior": "Cancel"
+        }
+      ],
+      "Cooldown": {
+        "Id": "HornCooldown",
+        "Cooldown": 6
+      }
+    }
+  },
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      237,
+      14,
+      22.5
+    ],
+    "Translation": [
+      -10,
+      -14
+    ]
+  },
+  "SubCategory": "Horns",
+  "Quality": "Rare",
+  "ItemSoundSetId": "ISS_Items_Bones",
+  "Categories": [
+    "ArmoryCategory.Warhorns"
+  ],
+  "Recipe": {
+    "TimeSeconds": 1,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Bone_Fragment",
+        "Quantity": 5
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Tinkering"
+        ]
+      }
+    ]
+  },
+  "TranslationProperties": {
+    "Name": "server.items.WarHorn.name"
+  },
+  "ItemLevel": 70,
+  "Icon": "Icons/ItemsGenerated/WarHorn.png"
+}

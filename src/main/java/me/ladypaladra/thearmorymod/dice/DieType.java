@@ -1,12 +1,12 @@
 package me.ladypaladra.thearmorymod.dice;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * The seven dice a player carries. Each is one item, and each but the D100 is one physical die. The D100 is thrown as
- * a pair, a tens die and a units die, and read the way a table reads it: the two added, with 00 and 0 making 100.
+ * The seven dice a player carries. Each but the D100 is one physical die. The D100 is thrown as a pair, a tens die and
+ * a units die, and read the way a table reads it: the two added, with 00 and 0 making 100. Each comes in every colour,
+ * one item per colour ({@link DieItem}); {@link #itemId()} is the one its recipe makes.
  */
 public enum DieType {
     D3("Armory_Dice_D3", 3, "D3"),
@@ -27,6 +27,9 @@ public enum DieType {
         this.shapeKeys = List.of(shapeKeys);
     }
 
+    /**
+     * The item its recipe makes, in the colour the die is crafted in.
+     */
     @Nonnull
     public String itemId() {
         return itemId;
@@ -78,19 +81,6 @@ public enum DieType {
             throw new IllegalArgumentException(this + " cannot show " + labels);
         }
         return value;
-    }
-
-    @Nullable
-    public static DieType byItemId(@Nullable String itemId) {
-        if (itemId == null) {
-            return null;
-        }
-        for (DieType type : values()) {
-            if (type.itemId.equals(itemId)) {
-                return type;
-            }
-        }
-        return null;
     }
 
     private static int parse(String label) {

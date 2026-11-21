@@ -75,6 +75,27 @@ public final class MekanichalKrafterUtil {
         );
     }
 
+    /**
+     * The block at this position when it is still a dispensing krafter, or null once it has been broken or replaced.
+     */
+    @Nullable
+    public static BlockType dispenserType(
+            @Nonnull World world,
+            int x,
+            int y,
+            int z
+    ) {
+        MekanichalKrafterDispenser dispenser = BlockModule.getComponent(
+                MekanichalKrafterDispenser.getComponentType(),
+                world,
+                x,
+                y,
+                z
+        );
+
+        return dispenser != null ? BlockAccess.getType(world, x, y, z) : null;
+    }
+
     public static boolean restartCooldown(
             @Nonnull World world,
             int x,

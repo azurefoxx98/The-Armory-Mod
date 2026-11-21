@@ -1,0 +1,25 @@
+{
+  "Parent": "Praetorian_Gauntlets",
+  "Quality": "Legendary",
+  "Icon": "Icons/ItemsGenerated/Praetorian_Gauntlets_Rusty.png",
+  "Texture": "Items/Armors/Praetorian/Hands_Rusty.png",
+  "Recipe": {
+    "Input": [
+      {
+        "Quantity": 1,
+        "ResourceTypeId": "Resource_PraetorianHands"
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "ArmoryAlteration",
+        "Type": "StructuralCrafting",
+        "Categories": [
+          "ArmoryAlteration"
+        ]
+      }
+    ],
+    "KnowledgeRequired": false,
+    "TimeSeconds": 0
+  }
+}

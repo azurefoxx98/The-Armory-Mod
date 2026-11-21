@@ -3,9 +3,11 @@ package me.ladypaladra.thearmorymod;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import com.hypixel.hytale.server.core.util.Config;
 import com.riprod.patchly.PatchManager;
 
 import me.ladypaladra.thearmorymod.alteration.AlterationModule;
+import me.ladypaladra.thearmorymod.armorstand.ArmorStandModule;
 import me.ladypaladra.thearmorymod.dice.DiceModule;
 import me.ladypaladra.thearmorymod.krafter.KrafterModule;
 import me.ladypaladra.thearmorymod.metrics.ArmoryMetrics;
@@ -30,8 +32,15 @@ public class TheArmoryMod extends JavaPlugin {
      */
     private final PatchManager patchManager;
 
+    /**
+     * What the server owner set in config.json. Declared before setup, when the engine still accepts it, and loaded
+     * by the engine before setup runs.
+     */
+    private final Config<ArmoryConfig> config;
+
     public TheArmoryMod(@Nonnull JavaPluginInit init) {
         super(init);
+        config = withConfig(ArmoryConfig.CODEC);
         PatchlyStartup.prepare(this);
         patchManager = new PatchManager(this);
     }
@@ -46,6 +55,9 @@ public class TheArmoryMod extends JavaPlugin {
             // boundary means a merge failure is captured and reported like every other setup
             // failure instead of escaping as an unexplained boot crash.
             patchManager.install();
+            // Writes the file with every setting at its value, so a server owner finds it to edit. A missing file
+            // gives the defaults and the engine does not write it by itself.
+            config.save();
 
             ParryModule.register(this);
             ArmoryStatsModule.register(this);
@@ -55,7 +67,8 @@ public class TheArmoryMod extends JavaPlugin {
             ScribingModule.register(this);
             KrafterModule.register(this);
             ShowcaseModule.register(this);
-            DiceModule.register(this);
+            DiceModule.register(this, config.get());
+            ArmorStandModule.register(this);
 
             getEntityStoreRegistry().registerSystem(new ScorpianFlailPoisonSystem());
             // getEntityStoreRegistry().registerSystem(new EngineeringRigMobilitySystem());

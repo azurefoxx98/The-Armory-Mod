@@ -56,6 +56,12 @@ public final class DiceShow {
     static final double NUMBER_RANGE = 32.0;
 
     /**
+     * Whether rolls are written in chat: the server owner's DiceRollsInChat, off by default so a busy server's chat
+     * is not filled with rolls. Set once at setup, before any die can be thrown.
+     */
+    static volatile boolean rollsInChat = false;
+
+    /**
      * Ticks the big number stays: longer for the extremes, longest for a D100's.
      */
     static final int NUMBER_LIFE = 90;
@@ -113,7 +119,7 @@ public final class DiceShow {
      * The die's own part of a bounce: its rune sparks, and its stone clack where the ground gave no sound of its own.
      * Over a block that answered, the sparks are smaller, so the block's own dust leads.
      */
-    static void bounce(@Nonnull DieShape shape, @Nonnull Vector3d at, double struck, boolean groundAnswered,
+    static void bounce(@Nonnull DieColour colour, @Nonnull Vector3d at, double struck, boolean groundAnswered,
                        @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         if (struck < 1.0) {
             return;
@@ -122,13 +128,13 @@ public final class DiceShow {
             float pitch = 1.35f + ThreadLocalRandom.current().nextFloat() * 0.45f;
             sound(SOUND_BOUNCE, at, GroundSound.volume(struck), pitch, commandBuffer);
         }
-        particles("Armory_Dice_Bounce_" + colour(shape), at, groundAnswered ? 0.65f : 1.0f, commandBuffer);
+        particles("Armory_Dice_Bounce_" + colour.light(), at, groundAnswered ? 0.65f : 1.0f, commandBuffer);
     }
 
-    static void awaken(@Nonnull DieShape shape, @Nonnull Vector3d spot, @Nonnull DieShape.Face face,
+    static void awaken(@Nonnull DieColour colour, @Nonnull Vector3d spot, @Nonnull DieShape.Face face,
                        @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         Vector3d top = new Vector3d(spot).add(0.0, face.restHeight(), 0.0);
-        particles("Armory_Dice_Awaken_" + colour(shape), top, 1.0f, commandBuffer);
+        particles("Armory_Dice_Awaken_" + colour.light(), top, 1.0f, commandBuffer);
         sound(SOUND_AWAKEN, top, 0.55f, 1.15f, commandBuffer);
     }
 
@@ -145,18 +151,16 @@ public final class DiceShow {
             return;
         }
         DieType type = group.type();
-        DiceCatalog catalog = DiceModule.catalog();
-        DieShape lead = catalog != null ? catalog.shapesOf(type).get(0) : null;
+        // A D100's pair is shown in its tens die's colour, the die read first.
+        DieColour lead = group.item().colour(0);
         chat(group, rolls, commandBuffer);
         // What a handful must play once however many of its dice hit an extreme: the stinger and the title.
         Set<String> once = new HashSet<>();
         for (ThrowGroup.Roll roll : rolls) {
             RollBand band = RollBand.of(roll.value(), type.sides());
             RollBand.Tier tier = RollBand.Tier.of(type);
-            if (lead != null) {
-                number(roll, band, lead, type, group.owner(), commandBuffer);
-                bandShow(roll.at(), band, tier, lead, once, commandBuffer);
-            }
+            number(roll, band, lead, type, group.owner(), commandBuffer);
+            bandShow(roll.at(), band, tier, lead, once, commandBuffer);
             if (band == RollBand.FAVOUR || band == RollBand.VEIL) {
                 takeOver(roll.dice(), band == RollBand.FAVOUR ? DieGlow.Style.FAVOUR : DieGlow.Style.VEIL, tier,
                         commandBuffer);
@@ -185,14 +189,15 @@ public final class DiceShow {
                 }
                 LandedDie die = store.getComponent(ref, DiceModule.landedType());
                 TransformComponent where = store.getComponent(ref, TransformComponent.getComponentType());
-                DieShape shape = die != null && die.shape() != null ? catalog.shapes().get(die.shape()) : null;
-                if (where == null || shape == null) {
+                if (where == null || die == null || die.shape() == null
+                        || !catalog.shapes().containsKey(die.shape())) {
                     return;
                 }
+                DieColour colour = catalog.colourOf(die.item(), die.shape());
                 DieGlow glow = store.getComponent(ref, DiceModule.glowType());
-                DieGlow fresh = glow != null ? glow : new DieGlow(shape.glow());
-                fresh.begin(style, tier, where.getPosition(), where.getRotation().yaw(), shape.texture(),
-                        shape.darkTexture());
+                DieGlow fresh = glow != null ? glow : new DieGlow(colour.glow());
+                fresh.begin(style, tier, where.getPosition(), where.getRotation().yaw(), colour.texture(),
+                        colour.darkTexture());
                 if (glow == null) {
                     store.putComponent(ref, DiceModule.glowType(), fresh);
                 }
@@ -227,6 +232,9 @@ public final class DiceShow {
 
     private static void chat(@Nonnull ThrowGroup group, @Nonnull List<ThrowGroup.Roll> rolls,
                              @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        if (!rollsInChat) {
+            return;
+        }
         String die = group.type().name();
         Message line;
         if (rolls.size() == 1) {
@@ -255,13 +263,13 @@ public final class DiceShow {
     }
 
     /**
-     * Raises the big number over a roll, one set of carved tiles per player near, each facing its player.
+     * Raises the big number over a roll, one set of glowing digits per player near, each facing its player.
      */
-    private static void number(@Nonnull ThrowGroup.Roll roll, @Nonnull RollBand band, @Nonnull DieShape lead,
+    private static void number(@Nonnull ThrowGroup.Roll roll, @Nonnull RollBand band, @Nonnull DieColour lead,
                                @Nonnull DieType type, @Nonnull UUID owner,
                                @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         String digits = Integer.toString(roll.value());
-        String texture = band.numberTexture(lead.colour());
+        String texture = band.numberTexture(lead.light());
         int life = type == DieType.D100 ? GRAND_LIFE
                 : band == RollBand.FAVOUR || band == RollBand.VEIL ? EXTREME_LIFE : NUMBER_LIFE;
         Vector3d anchor = new Vector3d(roll.at()).add(0.0, 0.45, 0.0);
@@ -321,9 +329,9 @@ public final class DiceShow {
     }
 
     private static void bandShow(@Nonnull Vector3d at, @Nonnull RollBand band, @Nonnull RollBand.Tier tier,
-                                 @Nonnull DieShape lead, @Nonnull Set<String> once,
+                                 @Nonnull DieColour lead, @Nonnull Set<String> once,
                                  @Nonnull CommandBuffer<EntityStore> commandBuffer) {
-        String colour = colour(lead);
+        String colour = lead.light();
         switch (band) {
             case FAVOUR -> {
                 particles("Armory_Dice_Favour_" + tier.artName() + "_" + colour, at, 1.0f, commandBuffer);
@@ -432,12 +440,12 @@ public final class DiceShow {
     }
 
     /**
-     * The same model with its trail swapped for the {@code band} one of the same colour, such as
-     * {@code Armory_Dice_Trail_Cyan} for {@code Armory_Dice_Trail_Bright_Cyan}. A trail whose swap is missing stays as
-     * it is, with one warning.
+     * The same model with its trail swapped for the one of {@code band} (Faint, Bright, or null for the middle one) in
+     * the light {@code light}, such as {@code Armory_Dice_Trail_Bright_Cyan}. A trail whose swap is missing stays as it
+     * is, with one warning.
      */
     @Nonnull
-    static Model withTrail(@Nonnull Model m, @Nonnull String band) {
+    static Model withTrail(@Nonnull Model m, @Nullable String band, @Nonnull String light) {
         ModelParticle[] particles = m.getParticles();
         if (particles == null || particles.length == 0) {
             return m;
@@ -447,7 +455,7 @@ public final class DiceShow {
             ModelParticle particle = particles[i].clone();
             String id = particle.getSystemId();
             if (id != null && id.startsWith(TRAIL)) {
-                String banded = TRAIL + band + "_" + id.substring(TRAIL.length());
+                String banded = TRAIL + (band != null ? band + "_" : "") + light;
                 if (ParticleSystem.getAssetMap().getAsset(banded) != null) {
                     particle.setSystemId(banded);
                 } else {
@@ -464,11 +472,6 @@ public final class DiceShow {
     }
 
     private static final String TRAIL = "Armory_Dice_Trail_";
-
-    @Nonnull
-    private static String colour(@Nonnull DieShape shape) {
-        return RollBand.capitalise(shape.colour());
-    }
 
     private static void warnOnce(@Nonnull String what) {
         synchronized (warned) {

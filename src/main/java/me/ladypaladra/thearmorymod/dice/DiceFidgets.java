@@ -80,7 +80,7 @@ public final class DiceFidgets extends EntityTickingSystem<EntityStore> {
         }
         Ref<EntityStore> ref = chunk.getReferenceTo(index);
         ItemStack held = InventoryComponent.getItemInHand(commandBuffer, ref);
-        boolean die = held != null && DieType.byItemId(held.getItemId()) != null;
+        boolean die = held != null && DiceModule.item(held.getItemId()) != null;
         UUID id = player.getUuid();
         FidgetClock clock = CLOCKS.get(id);
         if (!die && clock == null) {

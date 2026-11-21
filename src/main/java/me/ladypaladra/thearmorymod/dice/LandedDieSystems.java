@@ -3,10 +3,15 @@ package me.ladypaladra.thearmorymod.dice;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.component.dependency.Dependency;
+import com.hypixel.hytale.component.dependency.Order;
+import com.hypixel.hytale.component.dependency.SystemDependency;
 import com.hypixel.hytale.component.query.Query;
+import com.hypixel.hytale.component.system.HolderSystem;
 import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.protocol.ColorLight;
@@ -14,6 +19,8 @@ import com.hypixel.hytale.server.core.asset.type.model.config.Model;
 import com.hypixel.hytale.server.core.modules.entity.component.DynamicLight;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.entity.system.ModelSystems;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
@@ -39,7 +46,35 @@ public final class LandedDieSystems {
      */
     private static final Set<Ref<EntityStore>> LOADED = ConcurrentHashMap.newKeySet();
 
+    /**
+     * Each loaded die by the thrown item it is, with its world, so an item called back to make room under its owner's
+     * limit can have its dice cleared from whichever world they lie in.
+     */
+    private static final Map<UUID, Map<Ref<EntityStore>, World>> THROWS = new ConcurrentHashMap<>();
+
     private LandedDieSystems() {
+    }
+
+    /**
+     * Clears from the ground the loaded dice of the thrown item {@code thrown}, which the ledger has just called back
+     * and already owes to its owner. Each die is removed by its own world, on that world's next tick. A die of it in
+     * an unloaded chunk is cleared when that chunk loads.
+     */
+    static void recall(@Nonnull UUID thrown) {
+        Map<Ref<EntityStore>, World> dice = THROWS.get(thrown);
+        if (dice == null) {
+            return;
+        }
+        dice.forEach((ref, world) -> world.execute(() -> {
+            if (!ref.isValid()) {
+                return;
+            }
+            Store<EntityStore> store = world.getEntityStore().getStore();
+            LandedDie die = store.getComponent(ref, DiceModule.landedType());
+            if (die != null && die.claim()) {
+                store.removeEntity(ref, RemoveReason.REMOVE);
+            }
+        }));
     }
 
     @Nonnull
@@ -83,6 +118,17 @@ public final class LandedDieSystems {
                 settle(die, commandBuffer.getComponent(ref, TransformComponent.getComponentType()));
             }
             LOADED.add(ref);
+            UUID thrown = die != null ? die.thrown() : null;
+            if (thrown != null) {
+                if (DiceModule.ledger().isRecalled(thrown)) {
+                    // Called back while this chunk was unloaded: its owner already has the item.
+                    die.claim();
+                    commandBuffer.tryRemoveEntity(ref, RemoveReason.REMOVE);
+                    return;
+                }
+                THROWS.computeIfAbsent(thrown, k -> new ConcurrentHashMap<>())
+                        .put(ref, commandBuffer.getExternalData().getWorld());
+            }
             UUID pair = die != null ? die.pair() : null;
             if (pair == null) {
                 return;
@@ -110,8 +156,23 @@ public final class LandedDieSystems {
                     return dice.isEmpty() ? null : dice;
                 });
             }
-            if (reason == RemoveReason.REMOVE && !die.claimed()) {
+            UUID thrown = die.thrown();
+            if (thrown != null) {
+                THROWS.computeIfPresent(thrown, (k, dice) -> {
+                    dice.remove(ref);
+                    return dice.isEmpty() ? null : dice;
+                });
+            }
+            if (reason != RemoveReason.REMOVE) {
+                return;
+            }
+            // A die of an item called back is already owed to its owner, whoever removed it.
+            boolean recalled = thrown != null && DiceModule.ledger().clearRecalled(thrown);
+            if (!die.claimed() && !recalled) {
                 returnToOwner(die, pair, commandBuffer);
+            }
+            if (thrown != null) {
+                DiceModule.ledger().gone(thrown);
             }
         }
     }
@@ -139,6 +200,52 @@ public final class LandedDieSystems {
         UUID owner = die.owner();
         if (owner != null && die.item() != null) {
             DiceModule.ledger().owe(owner, die.item());
+        }
+    }
+
+    /**
+     * Gives a landed die its colour back when its chunk loads. The engine saves only which model asset an entity wears
+     * and rebuilds the model from that asset as it loads (ModelSystems.SetRenderedModel), so every die would come back
+     * in the asset's own purple. This runs right after that, on the entity before it is placed in the world, so no
+     * player is ever sent the purple one.
+     */
+    public static final class Recolour extends HolderSystem<EntityStore> {
+
+        private final Set<Dependency<EntityStore>> dependencies =
+                Set.of(new SystemDependency<>(Order.AFTER, ModelSystems.SetRenderedModel.class));
+
+        @Nonnull
+        @Override
+        public Query<EntityStore> getQuery() {
+            return DiceModule.landedType();
+        }
+
+        @Nonnull
+        @Override
+        public Set<Dependency<EntityStore>> getDependencies() {
+            return dependencies;
+        }
+
+        @Override
+        public void onEntityAdd(@Nonnull Holder<EntityStore> holder, @Nonnull AddReason reason,
+                                @Nonnull Store<EntityStore> store) {
+            LandedDie die = holder.getComponent(DiceModule.landedType());
+            ModelComponent model = holder.getComponent(ModelComponent.getComponentType());
+            DiceCatalog catalog = DiceModule.catalog();
+            if (die == null || die.shape() == null || model == null || model.getModel() == null || catalog == null
+                    || !catalog.shapes().containsKey(die.shape())) {
+                return;
+            }
+            String texture = catalog.colourOf(die.item(), die.shape()).texture();
+            if (!texture.equals(model.getModel().getTexture())) {
+                holder.putComponent(ModelComponent.getComponentType(),
+                        new ModelComponent(DiceShow.retextured(model.getModel(), texture)));
+            }
+        }
+
+        @Override
+        public void onEntityRemoved(@Nonnull Holder<EntityStore> holder, @Nonnull RemoveReason reason,
+                                    @Nonnull Store<EntityStore> store) {
         }
     }
 

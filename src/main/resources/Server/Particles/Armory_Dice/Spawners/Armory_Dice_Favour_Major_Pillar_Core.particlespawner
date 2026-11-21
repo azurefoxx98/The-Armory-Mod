@@ -4,8 +4,8 @@
   "LinearFiltering": true,
   "ParticleRotateWithSpawner": false,
   "ParticleLifeSpan": {
-    "Min": 3.4,
-    "Max": 3.4
+    "Min": 2.8,
+    "Max": 2.8
   },
   "Shape": "Sphere",
   "Particle": {
@@ -14,11 +14,11 @@
       "0": {
         "Opacity": 0.0
       },
-      "6": {
-        "Opacity": 1.0
+      "8": {
+        "Opacity": 0.6
       },
       "70": {
-        "Opacity": 0.9,
+        "Opacity": 0.5,
         "Color": "#fff4cc"
       },
       "100": {
@@ -28,15 +28,15 @@
     "InitialAnimationFrame": {
       "Scale": {
         "X": {
-          "Min": 0.18,
-          "Max": 0.18
+          "Min": 0.08,
+          "Max": 0.08
         },
         "Y": {
-          "Min": 14.0,
-          "Max": 14.0
+          "Min": 6.0,
+          "Max": 6.0
         }
       },
-      "Opacity": 1.0,
+      "Opacity": 0.6,
       "Color": "#ffffff"
     },
     "ScaleRatioConstraint": "None"

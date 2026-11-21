@@ -171,6 +171,8 @@ GATE_STRINGS = [
     'itemcheck\tit belongs to the family {}, which has no family file',
     'itemcheck\tit is in {} but not {}, so other mods cannot find it',
     'itemcheck\tit plays the {} {}, which exists in neither the mod nor the game',
+    'itemcheck\tit teaches different recipes on different buttons ({}), so a player can use it up on the wrong one',
+    'itemcheck\tit teaches the recipe of {}, which is no item',
     'itemcheck\titem directory not found at {}',
     'itemcheck\titem sound set',
     'itemcheck\titemcheck: FAILED: {} problem(s), {} note(s)',
@@ -301,6 +303,8 @@ SAMPLES = [
     ("lootcheck", "Server/Drops/ScrapArmorDrops.json: it names the drop list Ghost_Drops, which does not exist", "names the table Ghost_Drops"),
     ("lootcheck", "Server/Drops/TheArmory/Armory_Zone1_Loot.json: it drops nothing at all, so the game refuses the whole file", "add an item"),
     ("itemcheck", "Server/Item/Items/A/B.json: it names Items/X/Red.png but the file is Common/Items/X/red.png. The capitals must match, or a server stops at boot", "different capital letters"),
+    ("itemcheck", "Server/Item/Items/A/B.json: it teaches different recipes on different buttons (Food_Pie_Apple, Praetorian_Helm), so a player can use it up on the wrong one", "mouse buttons teach different recipes"),
+    ("itemcheck", "Server/Item/Items/A/B.json: it teaches the recipe of Ghost_Item, which is no item", "recipe of Ghost_Item"),
 ]
 
 

@@ -21,6 +21,7 @@ import java.util.UUID;
  */
 public final class ThrowGroup {
 
+    private final DieItem item;
     private final DieType type;
     private final UUID owner;
     private final String ownerName;
@@ -40,8 +41,9 @@ public final class ThrowGroup {
     final List<RigidFlight> bodies = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
-    ThrowGroup(@Nonnull DieType type, @Nonnull UUID owner, @Nonnull String ownerName, int members) {
-        this.type = type;
+    ThrowGroup(@Nonnull DieItem item, @Nonnull UUID owner, @Nonnull String ownerName, int members) {
+        this.item = item;
+        this.type = item.type();
         this.owner = owner;
         this.ownerName = ownerName;
         int parts = type.shapeKeys().size();
@@ -55,6 +57,14 @@ public final class ThrowGroup {
             ledgerIds[i] = UUID.randomUUID();
             pairIds[i] = parts > 1 ? UUID.randomUUID() : null;
         }
+    }
+
+    /**
+     * The item thrown, in its colour: what every die of the throw lands as and goes back to its owner as.
+     */
+    @Nonnull
+    public DieItem item() {
+        return item;
     }
 
     @Nonnull

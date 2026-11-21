@@ -1,0 +1,122 @@
+{
+  "Model": "Items/Items/Horns/BigHorn.blockymodel",
+  "Texture": "Items/Items/Horns/BigHorn.png",
+  "MaxStack": 1,
+  "UsePlayerAnimations": true,
+  "PlayerAnimationsId": {
+    "Parent": "Handgun",
+    "Animations": {
+      "UseHorn": {
+        "FirstPerson": "Characters/Animations/HornBlow_FPS.blockyanim",
+        "ThirdPerson": "Characters/Animations/HornBlow.blockyanim",
+        "Speed": 1,
+        "Looping": false
+      }
+    }
+  },
+  "Utility": {
+    "Usable": true
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "Simple",
+          "Effects": {
+            "WorldSoundEventId": "Dragon_Horn_SFX",
+            "ItemAnimationId": "UseHorn",
+            "ClearAnimationOnFinish": true,
+            "ClearSoundEventOnFinish": false,
+            "Particles": [
+              {
+                "SystemId": "Fiery_HornBlast_VFX",
+                "TargetEntityPart": "Self",
+                "Scale": 2,
+                "TargetNodeName": "Emitter",
+                "Color": "#ff3c00"
+              },
+              {
+                "SystemId": "Flamethrower",
+                "Scale": 0.5,
+                "TargetEntityPart": "Self",
+                "TargetNodeName": "Emitter",
+                "PositionOffset": {
+                  "Y": 1.3,
+                  "X": 0,
+                  "Z": 0
+                },
+                "RotationOffset": {
+                  "Pitch": 90
+                }
+              }
+            ],
+            "LocalSoundEventId": "Dragon_Horn_SFX"
+          },
+          "RunTime": 3,
+          "HorizontalSpeedMultiplier": 0.5,
+          "OnItemChangeBehavior": "Cancel"
+        }
+      ],
+      "Cooldown": {
+        "Id": "HornCooldown",
+        "Cooldown": 6
+      }
+    }
+  },
+  "IconProperties": {
+    "Scale": 0.5,
+    "Rotation": [
+      237,
+      14,
+      22.5
+    ],
+    "Translation": [
+      -4,
+      -18
+    ]
+  },
+  "SubCategory": "Horns",
+  "Quality": "Legendary",
+  "ItemSoundSetId": "ISS_Items_Metal",
+  "Categories": [
+    "ArmoryCategory.Warhorns"
+  ],
+  "Scale": 1,
+  "Recipe": {
+    "TimeSeconds": 1,
+    "Input": [
+      {
+        "ItemId": "Ingredient_Bar_Adamantite",
+        "Quantity": 3
+      },
+      {
+        "ItemId": "Ingredient_Fire_Essence",
+        "Quantity": 50
+      }
+    ],
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Tinkering"
+        ]
+      }
+    ]
+  },
+  "TranslationProperties": {
+    "Name": "server.items.DragonHorn.name"
+  },
+  "ItemLevel": 70,
+  "Icon": "Icons/ItemsGenerated/DragonHorn.png",
+  "Weapon": {
+    "StatModifiers": {
+      "Mana": [
+        {
+          "CalculationType": "Additive",
+          "Amount": 30
+        }
+      ]
+    }
+  }
+}

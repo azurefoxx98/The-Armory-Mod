@@ -33,6 +33,68 @@
       "Name": "Benches",
       "Icon": "Icons/ItemCategories/benches.png",
       "Order": 4
+    },
+    {
+      "Order": 5,
+      "Name": "WarHorns",
+      "Icon": "Icons/ItemCategories/warhorn.png",
+      "Id": "Warhorns"
+    },
+    {
+      "Id": "Spyglasses",
+      "Name": "Spyglasses",
+      "Icon": "Icons/ItemCategories/spyglass.png",
+      "Order": 6
+    },
+    {
+      "Id": "ArmoryDice",
+      "Name": "Dice",
+      "Icon": "Icons/ItemCategories/dice.png",
+      "Order": 7,
+      "SubCategories": [
+        {
+          "Id": "D3",
+          "Name": "server.armoryDice.group.d3.name",
+          "Order": 10,
+          "Description": "server.armoryDice.group.d3.description"
+        },
+        {
+          "Id": "D4",
+          "Name": "server.armoryDice.group.d4.name",
+          "Order": 20,
+          "Description": "server.armoryDice.group.d4.description"
+        },
+        {
+          "Id": "D6",
+          "Name": "server.armoryDice.group.d6.name",
+          "Order": 30,
+          "Description": "server.armoryDice.group.d6.description"
+        },
+        {
+          "Id": "D8",
+          "Name": "server.armoryDice.group.d8.name",
+          "Order": 40,
+          "Description": "server.armoryDice.group.d8.description"
+        },
+        {
+          "Id": "D10",
+          "Name": "server.armoryDice.group.d10.name",
+          "Order": 50,
+          "Description": "server.armoryDice.group.d10.description"
+        },
+        {
+          "Id": "D20",
+          "Name": "server.armoryDice.group.d20.name",
+          "Order": 60,
+          "Description": "server.armoryDice.group.d20.description"
+        },
+        {
+          "Id": "D100",
+          "Name": "server.armoryDice.group.d100.name",
+          "Order": 70,
+          "Description": "server.armoryDice.group.d100.description"
+        }
+      ]
     }
   ]
 }
